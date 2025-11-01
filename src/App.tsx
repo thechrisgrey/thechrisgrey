@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import About from './pages/About';
 import Altivum from './pages/Altivum';
@@ -12,6 +13,7 @@ import Contact from './pages/Contact';
 function App() {
   return (
     <div className="min-h-screen bg-altivum-dark">
+      <ScrollToTop />
       <Navigation />
       <Routes>
         <Route path="/" element={<Home />} />

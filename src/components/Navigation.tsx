@@ -20,8 +20,6 @@ const Navigation = () => {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
-    { path: '/altivum', label: 'Altivum Inc.' },
-    { path: '/podcast', label: 'The Vector Podcast' },
     { path: '/blog', label: 'Blog' },
     { path: '/links', label: 'Links' },
     { path: '/contact', label: 'Contact' },

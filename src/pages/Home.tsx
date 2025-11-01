@@ -21,10 +21,10 @@ const Home = () => {
   }, []);
 
   const keyPoints = [
-    "Founder & CEO | Altivum Inc",
-    "Host | The Vector Podcast",
-    "Author | Beyond the Assessment",
-    "Former Green Beret | 18D"
+    { title: "Founder & CEO", subtitle: "Altivum Inc", link: "/altivum" },
+    { title: "Host", subtitle: "The Vector Podcast", link: "/podcast" },
+    { title: "Author", subtitle: "Beyond the Assessment", link: null },
+    { title: "Former Green Beret", subtitle: "18D", link: null }
   ];
 
   return (
@@ -70,14 +70,28 @@ const Home = () => {
                     : 'opacity-0 transform -translate-x-10'
                 }`}
               >
-                <div className="border-l-4 border-altivum-gold pl-6 py-4">
-                  <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
-                    {point.split(' | ')[0]}
-                  </h3>
-                  <p className="text-lg md:text-xl text-altivum-gold font-medium">
-                    {point.split(' | ')[1]}
-                  </p>
-                </div>
+                {point.link ? (
+                  <Link
+                    to={point.link}
+                    className="block border-l-4 border-altivum-gold pl-6 py-4 hover:pl-8 transition-all duration-300 cursor-pointer group"
+                  >
+                    <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
+                      {point.title}
+                    </h3>
+                    <p className="text-lg md:text-xl text-altivum-gold font-medium">
+                      {point.subtitle}
+                    </p>
+                  </Link>
+                ) : (
+                  <div className="border-l-4 border-altivum-gold pl-6 py-4">
+                    <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-2">
+                      {point.title}
+                    </h3>
+                    <p className="text-lg md:text-xl text-altivum-gold font-medium">
+                      {point.subtitle}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
