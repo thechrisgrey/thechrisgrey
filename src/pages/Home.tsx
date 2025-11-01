@@ -85,7 +85,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-altivum-navy to-altivum-blue">
+      <section className="bg-gradient-to-br from-altivum-navy to-altivum-blue py-[12.5rem]">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6">
             Let's Connect

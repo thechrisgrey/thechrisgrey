@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import logo from '../assets/tcg3.png';
+import logo from '../assets/logo.png';
 
 const Navigation = () => {
   const location = useLocation();
@@ -38,20 +38,20 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-20">
           {/* Logo/Name */}
-          <Link to="/" className="flex items-center space-x-3">
-            <img src={logo} alt="TCG Logo" className="h-12 w-12" />
-            <div className="flex flex-col">
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="TCG Logo" className="h-16 w-16" />
+            <div className="flex flex-col -ml-2">
               <span className="text-2xl font-display font-bold tracking-tight text-white">
                 CHRISTIAN <span className="text-altivum-gold">PEREZ</span>
               </span>
               <span className="text-xs font-light text-altivum-silver tracking-wider">
-                @thechrisgrey
+                thechrisgrey
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:mr-[-10rem]">
             {navItems.map((item) => (
               <Link
                 key={item.path}

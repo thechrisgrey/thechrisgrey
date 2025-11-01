@@ -3,11 +3,11 @@ const Footer = () => {
 
   return (
     <footer className="bg-altivum-navy border-t border-altivum-slate/30">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-display font-bold text-white mb-4">
+            <h3 className="text-lg font-display font-bold text-white mb-2">
               Christian Perez
             </h3>
             <p className="text-altivum-silver text-sm leading-relaxed">
@@ -18,7 +18,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">
               Quick Links
             </h4>
             <ul className="space-y-2">
@@ -47,7 +47,7 @@ const Footer = () => {
 
           {/* Connect */}
           <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-2">
               Connect
             </h4>
             <ul className="space-y-2">
@@ -80,7 +80,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-altivum-slate/30">
+        <div className="mt-4 pt-4 border-t border-altivum-slate/30">
           <p className="text-center text-altivum-silver text-sm">
             &copy; {currentYear} Christian Perez. All rights reserved.
           </p>
