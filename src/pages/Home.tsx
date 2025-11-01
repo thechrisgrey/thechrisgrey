@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import profileImage from '../assets/profile1.jpeg';
 import readingImage from '../assets/reading.jpeg';
+import heroImage from '../assets/hero2.png';
 
 const Home = () => {
   return (
@@ -13,18 +14,13 @@ const Home = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-32">
           <div className="max-w-4xl mx-auto text-center">
             <div className="space-y-8">
-              <div className="space-y-4">
-                <h1 className="text-5xl md:text-7xl font-serif font-bold text-white leading-tight">
-                  Leadership
-                  <span className="block text-altivum-gold">Forged in Service</span>
-                </h1>
-                <div className="h-1 w-24 bg-altivum-gold mx-auto"></div>
+              <div className="mb-8">
+                <img
+                  src={heroImage}
+                  alt="Leadership Forged in Service"
+                  className="w-full max-w-3xl mx-auto"
+                />
               </div>
-
-              <p className="text-xl md:text-2xl text-altivum-silver leading-relaxed">
-                From the mountains of Afghanistan to the frontlines of cloud innovation,
-                I bridge the gap between military precision and technological advancement.
-              </p>
 
               <div className="flex flex-wrap gap-4 justify-center">
                 <Link
