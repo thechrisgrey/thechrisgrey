@@ -12,7 +12,8 @@ const Home = () => {
       const scrollPosition = window.scrollY;
       const windowHeight = window.innerHeight;
       // Calculate which key points should be visible (-1 to 3, where -1 means none visible)
-      const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * 0.25)), 3);
+      // Points are evenly distributed across the 200vh summary section (every 50vh)
+      const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * 0.5)), 3);
       setScrollProgress(Math.max(-1, progress));
     };
 
