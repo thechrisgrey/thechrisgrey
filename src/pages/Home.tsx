@@ -15,17 +15,25 @@ const Home = () => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
+    // Throttle scroll handler with requestAnimationFrame for better performance
+    let ticking = false;
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const windowHeight = window.innerHeight;
-      // Mobile: 300vh section, show tabs every 50vh
-      // Desktop: 500vh section, show tabs every 80vh
-      const scrollInterval = isMobile ? 0.5 : 0.8;
-      const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 4);
-      setScrollProgress(Math.max(-1, progress));
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPosition = window.scrollY;
+          const windowHeight = window.innerHeight;
+          // Mobile: 300vh section, show tabs every 50vh
+          // Desktop: 500vh section, show tabs every 80vh
+          const scrollInterval = isMobile ? 0.5 : 0.8;
+          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 4);
+          setScrollProgress(Math.max(-1, progress));
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', checkMobile);
@@ -62,12 +70,13 @@ const Home = () => {
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
       <section className="relative h-[300vh] md:h-[500vh]">
-        <div className="sticky top-0 h-screen overflow-hidden">
+        <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img
               src={profileImage}
               alt="Christian Perez"
               className="w-full h-full object-cover object-left md:object-center"
+              style={{ transform: 'translate3d(0,0,0)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
           </div>
@@ -77,6 +86,7 @@ const Home = () => {
             {keyPoints.map((point, index) => (
               <div
                 key={index}
+                style={{ willChange: 'opacity, transform' }}
                 className={`transition-all duration-700 ${
                   index <= scrollProgress
                     ? 'opacity-100 transform translate-x-0'
