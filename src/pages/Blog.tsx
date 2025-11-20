@@ -1,3 +1,4 @@
+import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 
 const Blog = () => {
@@ -40,6 +41,13 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen pt-20">
+      <SEO
+        title="Blog & Insights"
+        description="Insights from Christian Perez on cloud architecture, AI integration, military leadership, and entrepreneurship."
+        keywords="Christian Perez blog, Altivum insights, cloud architecture blog, AI technology articles, leadership thoughts"
+        url="https://thechrisgrey.com/blog"
+        type="article"
+      />
       {/* Hero Section */}
       {/* Hero Section */}
       <section className="py-32 bg-altivum-dark">

@@ -1,9 +1,15 @@
 import mpbLogo from '../assets/mpb.png';
+import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 
 const About = () => {
   return (
     <div className="min-h-screen bg-altivum-dark">
+      <SEO
+        title="About Christian Perez"
+        description="Biography of Christian Perez: From Special Forces Medic (18D) to Founder & CEO of Altivum Inc. A journey of service, leadership, and innovation."
+        keywords="Christian Perez bio, Green Beret, 18D, Special Forces Medic, Altivum founder, veteran entrepreneur"
+      />
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden opacity-0 animate-fade-in">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
@@ -59,7 +65,7 @@ const About = () => {
               In <span className="text-white">February 2025</span>, I founded{' '}
               <span className="text-altivum-gold">Altivum Inc.</span>, a public benefit corporation
               dedicated to engineering AI systems that <span className="text-white">empower people and
-              organizations to adapt and excel</span>.
+                organizations to adapt and excel</span>.
             </p>
           </div>
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 // import { useState } from 'react';
+import { SEO } from '../components/SEO';
 import altivumImage from '../assets/altivum.jpg';
 import awsPartnerLogo from '../assets/aws-partner-dark.png';
 import altivumLogo from '../assets/altivum.png';
@@ -183,6 +184,12 @@ const Altivum = () => {
 
   return (
     <div className="min-h-screen bg-altivum-dark">
+      <SEO
+        title="Altivum Inc."
+        description="Altivum Inc. is a cloud architecture and AI integration firm founded by Christian Perez. We build resilient, scalable systems for the future."
+        keywords="Altivum Inc, Altivum Logic, Altivum Vanguard, Altivum Press, Cloud Architecture, AI Integration, Christian Perez"
+        url="https://thechrisgrey.com/altivum"
+      />
       {/* Hero Section */}
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden opacity-0 animate-fade-in">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">

@@ -1,3 +1,4 @@
+import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import builderQR from '../assets/builder-qr.png';
 
@@ -181,6 +182,12 @@ const Links = () => {
 
   return (
     <div className="min-h-screen pt-20">
+      <SEO
+        title="Links & Resources"
+        description="Connect with Christian Perez across the web. Links to Altivum Inc., The Vector Podcast, social media profiles, and featured projects."
+        keywords="Christian Perez links, social media, Altivum links, podcast links, contact Christian Perez"
+        url="https://thechrisgrey.com/links"
+      />
       {/* Hero Section */}
       {/* Hero Section */}
       <section className="py-32 bg-altivum-dark">

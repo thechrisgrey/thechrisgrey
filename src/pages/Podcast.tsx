@@ -1,4 +1,5 @@
 import { typography } from '../utils/typography';
+import { SEO } from '../components/SEO';
 import tvpLogo from '../assets/tvp.png';
 
 const Podcast = () => {
@@ -28,6 +29,12 @@ const Podcast = () => {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="The Vector Podcast"
+        description="The Vector Podcast, hosted by Christian Perez, explores the intersection of technology, business, and military leadership. Conversations on AI, defense, and innovation."
+        keywords="The Vector Podcast, Christian Perez podcast, AI podcast, defense technology, veteran entrepreneurship"
+        url="https://thechrisgrey.com/podcast"
+      />
       {/* Hero Section */}
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden opacity-0 animate-fade-in">

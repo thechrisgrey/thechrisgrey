@@ -1,8 +1,15 @@
+import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 
 const Contact = () => {
   return (
     <div className="min-h-screen pt-20">
+      <SEO
+        title="Contact Christian Perez"
+        description="Get in touch with Christian Perez and Altivum Inc. for inquiries about cloud services, AI integration, or speaking engagements."
+        keywords="contact Christian Perez, hire Altivum, cloud consulting inquiry, AI integration services"
+        url="https://thechrisgrey.com/contact"
+      />
       {/* Hero Section */}
       {/* Hero Section */}
       <section className="py-32 bg-altivum-dark">
