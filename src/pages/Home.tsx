@@ -46,8 +46,7 @@ const Home = () => {
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
     { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
     { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-    { title: "Military Background", subtitle: "Former Green Beret, 18D", link: "/military" }
+    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" }
   ];
 
   return (
@@ -95,8 +94,8 @@ const Home = () => {
                 key={index}
                 style={{ willChange: 'opacity, transform' }}
                 className={`transition-all duration-700 ${index <= scrollProgress
-                    ? 'opacity-100 transform translate-x-0'
-                    : 'opacity-0 transform -translate-x-10'
+                  ? 'opacity-100 transform translate-x-0'
+                  : 'opacity-0 transform -translate-x-10'
                   }`}
               >
                 {point.link ? (

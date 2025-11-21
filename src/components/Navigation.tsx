@@ -43,7 +43,6 @@ const Navigation = () => {
     { path: '/altivum', label: 'Altivum Inc' },
     { path: '/podcast', label: 'The Vector Podcast' },
     { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
-    { path: '/military', label: 'Military Background' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -54,9 +53,8 @@ const Navigation = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${
-        isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-20">
@@ -77,11 +75,10 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:mr-[-10rem]">
             <Link
               to="/"
-              className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${
-                isActive('/')
+              className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive('/')
                   ? 'text-altivum-gold bg-altivum-blue/30'
                   : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-              }`}
+                }`}
             >
               Home
             </Link>
@@ -90,11 +87,10 @@ const Navigation = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsAboutDropdownOpen(!isAboutDropdownOpen)}
-                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 flex items-center ${
-                  isAboutActive()
+                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 flex items-center ${isAboutActive()
                     ? 'text-altivum-gold bg-altivum-blue/30'
                     : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                }`}
+                  }`}
               >
                 About
                 <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,11 +106,10 @@ const Navigation = () => {
                         key={index}
                         to={item.path}
                         onClick={() => setIsAboutDropdownOpen(false)}
-                        className={`block px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                          isActive(item.path)
+                        className={`block px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive(item.path)
                             ? 'text-altivum-gold bg-altivum-blue/30'
                             : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                        }`}
+                          }`}
                       >
                         {item.label}
                       </Link>
@@ -135,11 +130,10 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${
-                  isActive(item.path)
+                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive(item.path)
                     ? 'text-altivum-gold bg-altivum-blue/30'
                     : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>
@@ -164,11 +158,10 @@ const Navigation = () => {
               <Link
                 to="/"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${
-                  isActive('/')
+                className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive('/')
                     ? 'text-altivum-gold bg-altivum-blue/30'
                     : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                }`}
+                  }`}
               >
                 Home
               </Link>
@@ -183,11 +176,10 @@ const Navigation = () => {
                         key={index}
                         to={item.path}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                          isActive(item.path)
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive(item.path)
                             ? 'text-altivum-gold bg-altivum-blue/30'
                             : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                        }`}
+                          }`}
                       >
                         {item.label}
                       </Link>
@@ -208,11 +200,10 @@ const Navigation = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${
-                    isActive(item.path)
+                  className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive(item.path)
                       ? 'text-altivum-gold bg-altivum-blue/30'
                       : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>

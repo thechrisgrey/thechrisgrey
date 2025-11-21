@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" xml:lang="en-US" prefix="rendition: http://www.idpf.org/vocab/rendition/# ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<meta name="generator" content="Adobe InDesign 20.1" />
+		<meta name="cover" content="x1.png" />
+		<meta property="ibooks:specified-fonts">true</meta>
+		<dc:title>Beyond the Assessment FINAL</dc:title>
+		<dc:date>2025-02-03T06:01:04Z</dc:date>
+		<dc:language>en-US</dc:language>
+		<meta property="dcterms:modified">2025-02-03T06:01:04Z</meta>
+		<dc:identifier id="bookid">urn:uuid:29d919dd-24f5-4384-be78-b447c9dc299b</dc:identifier>
+		<!--fixed-layout options-->
+		<meta property="rendition:layout">pre-paginated</meta>
+		<meta property="rendition:orientation">landscape</meta>
+		<meta property="rendition:spread">both</meta>
+		<!--accessibility options-->
+	</metadata>
+	<manifest>
+		<item id="Beyond_the_Assessment_EDITABLE-1" href="Beyond_the_Assessment_EDITABLE-1.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-2" href="Beyond_the_Assessment_EDITABLE-2.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-3" href="Beyond_the_Assessment_EDITABLE-3.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-4" href="Beyond_the_Assessment_EDITABLE-4.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-5" href="Beyond_the_Assessment_EDITABLE-5.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-6" href="Beyond_the_Assessment_EDITABLE-6.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-7" href="Beyond_the_Assessment_EDITABLE-7.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-8" href="Beyond_the_Assessment_EDITABLE-8.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-9" href="Beyond_the_Assessment_EDITABLE-9.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-10" href="Beyond_the_Assessment_EDITABLE-10.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-11" href="Beyond_the_Assessment_EDITABLE-11.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-12" href="Beyond_the_Assessment_EDITABLE-12.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-13" href="Beyond_the_Assessment_EDITABLE-13.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-14" href="Beyond_the_Assessment_EDITABLE-14.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-15" href="Beyond_the_Assessment_EDITABLE-15.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-16" href="Beyond_the_Assessment_EDITABLE-16.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-17" href="Beyond_the_Assessment_EDITABLE-17.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-18" href="Beyond_the_Assessment_EDITABLE-18.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-19" href="Beyond_the_Assessment_EDITABLE-19.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-20" href="Beyond_the_Assessment_EDITABLE-20.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-21" href="Beyond_the_Assessment_EDITABLE-21.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-22" href="Beyond_the_Assessment_EDITABLE-22.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-23" href="Beyond_the_Assessment_EDITABLE-23.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-24" href="Beyond_the_Assessment_EDITABLE-24.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-25" href="Beyond_the_Assessment_EDITABLE-25.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-26" href="Beyond_the_Assessment_EDITABLE-26.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-27" href="Beyond_the_Assessment_EDITABLE-27.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-28" href="Beyond_the_Assessment_EDITABLE-28.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-29" href="Beyond_the_Assessment_EDITABLE-29.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-30" href="Beyond_the_Assessment_EDITABLE-30.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-31" href="Beyond_the_Assessment_EDITABLE-31.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-32" href="Beyond_the_Assessment_EDITABLE-32.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-33" href="Beyond_the_Assessment_EDITABLE-33.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-34" href="Beyond_the_Assessment_EDITABLE-34.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-35" href="Beyond_the_Assessment_EDITABLE-35.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-36" href="Beyond_the_Assessment_EDITABLE-36.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-37" href="Beyond_the_Assessment_EDITABLE-37.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-38" href="Beyond_the_Assessment_EDITABLE-38.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-39" href="Beyond_the_Assessment_EDITABLE-39.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-40" href="Beyond_the_Assessment_EDITABLE-40.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-41" href="Beyond_the_Assessment_EDITABLE-41.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-42" href="Beyond_the_Assessment_EDITABLE-42.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-43" href="Beyond_the_Assessment_EDITABLE-43.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-44" href="Beyond_the_Assessment_EDITABLE-44.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-45" href="Beyond_the_Assessment_EDITABLE-45.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-46" href="Beyond_the_Assessment_EDITABLE-46.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-47" href="Beyond_the_Assessment_EDITABLE-47.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-48" href="Beyond_the_Assessment_EDITABLE-48.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-49" href="Beyond_the_Assessment_EDITABLE-49.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-50" href="Beyond_the_Assessment_EDITABLE-50.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-51" href="Beyond_the_Assessment_EDITABLE-51.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-52" href="Beyond_the_Assessment_EDITABLE-52.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-53" href="Beyond_the_Assessment_EDITABLE-53.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-54" href="Beyond_the_Assessment_EDITABLE-54.xhtml" media-type="application/xhtml+xml" />
+		<item id="Beyond_the_Assessment_EDITABLE-55" href="Beyond_the_Assessment_EDITABLE-55.xhtml" media-type="application/xhtml+xml" />
+		<item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav" />
+		<item id="idGeneratedStyles.css" href="css/idGeneratedStyles.css" media-type="text/css" />
+		<item id="MinionConceptRoman-Bold.otf" href="font/MinionConceptRoman-Bold.otf" media-type="application/vnd.ms-opentype" />
+		<item id="MinionConceptRoman-DisplayBold.otf" href="font/MinionConceptRoman-DisplayBold.otf" media-type="application/vnd.ms-opentype" />
+		<item id="MinionPro-Regular.otf" href="font/MinionPro-Regular.otf" media-type="application/vnd.ms-opentype" />
+		<item id="Palatino-Bold.ttc" href="font/Palatino-Bold.ttc" media-type="application/x-font-ttf" />
+		<item id="Times-Italic.ttc" href="font/Times-Italic.ttc" media-type="application/x-font-ttf" />
+		<item id="TimesNewRomanPS-ItalicMT.ttf" href="font/TimesNewRomanPS-ItalicMT.ttf" media-type="application/x-font-ttf" />
+		<item id="x1.png" href="image/1.png" media-type="image/png" properties="cover-image" />
+		<item id="x2A3CFE5E-3CE9-4941-8B60-F69309B792B7.jpg" href="image/2A3CFE5E-3CE9-4941-8B60-F69309B792B7.jpg" media-type="image/jpeg" />
+		<item id="x5.png" href="image/5.png" media-type="image/png" />
+		<item id="x19.png" href="image/19.png" media-type="image/png" />
+		<item id="x23.png" href="image/23.png" media-type="image/png" />
+		<item id="x34.png" href="image/34.png" media-type="image/png" />
+		<item id="x37.png" href="image/37.png" media-type="image/png" />
+		<item id="x82.png" href="image/82.png" media-type="image/png" />
+		<item id="x99.png" href="image/99.png" media-type="image/png" />
+	</manifest>
+	<spine>
+		<itemref idref="Beyond_the_Assessment_EDITABLE-1" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-2" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-3" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-4" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-5" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-6" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-7" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-8" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-9" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-10" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-11" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-12" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-13" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-14" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-15" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-16" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-17" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-18" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-19" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-20" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-21" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-22" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-23" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-24" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-25" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-26" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-27" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-28" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-29" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-30" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-31" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-32" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-33" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-34" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-35" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-36" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-37" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-38" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-39" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-40" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-41" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-42" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-43" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-44" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-45" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-46" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-47" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-48" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-49" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-50" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-51" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-52" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-53" properties="page-spread-right" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-54" properties="page-spread-left" />
+		<itemref idref="Beyond_the_Assessment_EDITABLE-55" properties="page-spread-right" />
+	</spine>
+</package>
