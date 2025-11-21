@@ -47,9 +47,9 @@ const BeyondTheAssessment = () => {
               {/* Decorative Quote Card */}
               <div className="hidden lg:block absolute -bottom-12 -right-12 max-w-xs bg-altivum-navy p-6 rounded-lg border border-altivum-gold/20 shadow-xl">
                 <p className="text-altivum-gold italic text-sm leading-relaxed" style={typography.bodyText}>
-                  "The harder the conflict, the more glorious the triumph. What we obtain too cheap, we esteem too lightly."
+                  "Control the controllable. Influence the variables."
                 </p>
-                <p className="text-white/60 text-xs mt-3 uppercase tracking-wider">— Thomas Paine</p>
+                <p className="text-white/60 text-xs mt-3 uppercase tracking-wider">— Christian Perez</p>
               </div>
             </div>
 
