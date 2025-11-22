@@ -205,7 +205,7 @@ const Altivum = () => {
         </div>
 
         {/* AWS Partner Logo - Bottom Right */}
-        <div className="absolute bottom-64 right-8 z-20">
+        <div className="absolute bottom-[12.5rem] right-8 z-20">
           <img
             src={awsPartnerLogo}
             alt="AWS Partner"
