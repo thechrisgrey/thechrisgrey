@@ -246,9 +246,16 @@ const Altivum = () => {
                 <div className="hidden md:block w-px h-12 bg-altivum-gold/30 mb-4"></div>
                 <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-6 rounded-lg w-full max-w-sm hover:border-altivum-gold/30 transition-colors duration-300 group">
                   <h4 className="text-white text-xl mb-3 group-hover:text-altivum-gold transition-colors">Altivum Vanguard</h4>
-                  <p className="text-altivum-silver text-sm leading-relaxed">
+                  <p className="text-altivum-silver text-sm leading-relaxed mb-4">
                     Serving the <span className="text-white">veteran population</span>. Empowering those who served with technology and opportunity.
                   </p>
+                  <ul className="text-xs text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3">
+                    <li className="flex items-center">
+                      <span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>
+                      <a href="https://vetroi.altivum.ai" target="_blank" rel="noopener noreferrer" className="hover:text-altivum-gold transition-colors">VetROI</a>
+                    </li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>NextMission.ai on Amazon PartyRock</li>
+                  </ul>
                 </div>
               </div>
 
@@ -257,9 +264,15 @@ const Altivum = () => {
                 <div className="hidden md:block w-px h-12 bg-altivum-gold/30 mb-4"></div>
                 <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-6 rounded-lg w-full max-w-sm hover:border-altivum-gold/30 transition-colors duration-300 group">
                   <h4 className="text-white text-xl mb-3 group-hover:text-altivum-gold transition-colors">Altivum Logic</h4>
-                  <p className="text-altivum-silver text-sm leading-relaxed">
+                  <p className="text-altivum-silver text-sm leading-relaxed mb-4">
                     Serving <span className="text-white">small businesses</span>. Democratizing access to enterprise-grade cloud & AI solutions.
                   </p>
+                  <ul className="text-xs text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3">
+                    <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Web Design</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>SEO and AEO</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Cloud Migration</li>
+                    <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>AI Integration</li>
+                  </ul>
                 </div>
               </div>
 
