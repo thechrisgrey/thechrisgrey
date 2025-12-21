@@ -31,7 +31,7 @@ const About = () => {
           {/* Opening Statement */}
           <div className="mb-24 md:mb-32 text-center">
             <p className="text-white" style={typography.sectionHeader}>
-              My name is <span className="text-altivum-gold">Christian Perez</span>, and I'm the founder of{' '}
+              My name is <span className="text-altivum-gold">Christian Perez</span>, and I'm the Founder & CEO of{' '}
               <span className="text-altivum-gold">Altivum Inc.</span>
             </p>
           </div>
@@ -40,7 +40,7 @@ const About = () => {
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
               I was born in <span className="text-white">Guatemala City</span> and came to the United States
-              with my family when I was two. <span className="text-white">Boston</span> shaped me—from enjoying
+              with my family when I was two. <span className="text-white">Boston</span> shaped me. From enjoying
               Italian cuisine in the North End to runs along the Charles River, the city's energy became part of who I am.
             </p>
           </div>
@@ -48,7 +48,7 @@ const About = () => {
           {/* Military Service */}
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
-              In <span className="text-white">2012</span>, I joined the Army and earned my{' '}
+              In <span className="text-white">2012</span>, I joined the Army and later earned my{' '}
               <span className="text-altivum-gold">Green Beret</span> as a Special Forces Medic (18D).
               I was then assigned to 1st Special Forces Group and soon thereafter deployed to{' '}
               <span className="text-white">Afghanistan</span> with SFOD-A 1236, where I was awarded a{' '}

@@ -51,7 +51,7 @@ const Altivum = () => {
       content: (
         <div className="space-y-4">
           <p className="text-altivum-silver" style={typography.bodyText}>
-            In February 2025, I made a deliberate choice: Altivum would be a Public Benefit Corporation. This wasn't just a legal designation. It was a commitment that profit would never come before people. Every business decision is measured not just by revenue, but by the veterans employed, the small businesses empowered, and the communities strengthened.
+            In February 2025, I made a deliberate choice: Altivum would be a Public Benefit Corporation because profitability and public benefit are not mutually exclusive.
           </p>
           <h4 className="text-white mt-6" style={typography.cardTitleSmall}>Our Imperatives</h4>
           <ul className="space-y-3">
@@ -128,7 +128,7 @@ const Altivum = () => {
           </ul>
           <div className="mt-6 p-4 bg-altivum-gold/10 rounded-lg border border-altivum-gold/30">
             <p className="text-altivum-silver" style={typography.bodyText}>
-              <span className="font-semibold text-white">My Legacy:</span> I don't want to build just another tech company. I want to create a model that proves business can be a force for good. That serving your community and building a sustainable company aren't mutually exclusive. If Altivum inspires even one other veteran to start a mission-driven company, we've succeeded.
+              <span className="font-semibold text-white">My Legacy:</span> Empowerment. Emblematic of the first SOF Truth, Altivum is built on the principle that humans are more important than hardware. People—not equipment—make the critical difference. The right people, highly trained and working as a team, will accomplish the mission with the equipment available. The best technology in the world cannot compensate for a lack of the right people.
             </p>
           </div>
         </div>
@@ -287,9 +287,6 @@ const Altivum = () => {
             <h2 className="text-white mb-4" style={typography.sectionHeader}>
               My Founder Journey
             </h2>
-            <p className="text-altivum-silver max-w-xl mx-auto" style={typography.subtitle}>
-              Building with purpose, vision, and a commitment to serve
-            </p>
           </div>
 
           {/* Timeline Items */}

@@ -17,7 +17,7 @@ export const SEO = ({
     url = 'https://thechrisgrey.com',
     type = 'website',
     structuredData: customStructuredData
-}: SEOProps & { structuredData?: any }) => {
+}: SEOProps & { structuredData?: Record<string, unknown>[] }) => {
     const siteTitle = 'Christian Perez | thechrisgrey';
     const fullTitle = title === siteTitle ? title : `${title} | Christian Perez`;
 
