@@ -129,8 +129,8 @@ const Blog = () => {
     <div className="min-h-screen bg-altivum-dark">
       <SEO
         title="Blog"
-        description="Insights on AI, Cloud Architecture, Leadership, and the Veteran Experience from Christian Perez. Articles on prompt engineering, AWS, and military-to-tech transition."
-        keywords="Christian Perez blog, AI insights, cloud architecture blog, veteran leadership, tech blog, prompt engineering, AWS"
+        description="Essays and long-form writing from Christian Perez on leadership, technology, philosophy, history, and lessons from a life of service."
+        keywords="Christian Perez blog, essays, leadership, technology, philosophy, history, veteran, long-form writing"
         url="https://thechrisgrey.com/blog"
         type="article"
         faq={blogFAQs}
@@ -144,7 +144,7 @@ const Blog = () => {
             "@id": "https://thechrisgrey.com/blog/#blog",
             "name": "Christian Perez Blog",
             "url": "https://thechrisgrey.com/blog",
-            "description": "Insights on AI, Cloud Architecture, Leadership, and the Veteran Experience",
+            "description": "Essays and long-form writing on leadership, technology, philosophy, history, and lessons from a life of service",
             "inLanguage": "en-US",
             "author": {
               "@id": "https://thechrisgrey.com/#person"
@@ -167,13 +167,13 @@ const Blog = () => {
             </div>
 
             <h1 className="text-white mb-6" style={typography.heroHeader}>
-              Insights & Perspectives
+              Essays & Reflections
             </h1>
             <div className="h-px w-24 bg-altivum-gold mb-8"></div>
 
             <p className="text-altivum-silver" style={typography.subtitle}>
-              Thoughts on leadership, technology, veteran transition, and building organizations
-              that make a difference.
+              Long-form writing on leadership, technology, philosophy, history, and lessons
+              from a life of service.
             </p>
           </div>
         </div>
