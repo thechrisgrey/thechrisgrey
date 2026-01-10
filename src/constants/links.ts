@@ -34,7 +34,11 @@ export const SOCIAL_LINKS = {
 
   // External
   amazonBook: 'https://a.co/d/iC9TEDW',
-  buzzsproutRSS: 'https://feeds.buzzsprout.com/2554153.rss',
+
+  // Podcast Platforms
+  podcastRSS: 'https://api.riverside.fm/hosting/heA0qRHh.rss',
+  podcastSpotify: 'https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX',
+  podcastApple: 'https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071',
 } as const;
 
 export type SocialLinkKey = keyof typeof SOCIAL_LINKS;

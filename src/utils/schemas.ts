@@ -309,7 +309,7 @@ export const buildPodcastSeriesSchema = () => ({
     "name": "The Vector Podcast",
     "url": "https://vector.altivum.ai",
     "description": "The Vector Podcast explores conversations at the intersection of veteran experience, emerging technology, and purposeful entrepreneurship. Hosted by Christian Perez, each episode features leaders navigating the transition from service to innovation.",
-    "webFeed": "https://feeds.buzzsprout.com/2554153.rss",
+    "webFeed": "https://api.riverside.fm/hosting/heA0qRHh.rss",
     "image": `${SITE_URL}/assets/tvp.png`,
     "author": {
         "@id": `${SITE_URL}/#person`
@@ -491,7 +491,15 @@ export const podcastFAQs: FAQItem[] = [
     },
     {
         question: "Where can I listen to The Vector Podcast?",
-        answer: "The Vector Podcast is available on all major podcast platforms including Apple Podcasts, Spotify, and directly at vector.altivum.ai. You can also subscribe via the RSS feed at feeds.buzzsprout.com/2554153.rss."
+        answer: "The Vector Podcast is available on all major podcast platforms including Spotify, Apple Podcasts, YouTube, and directly at vector.altivum.ai. You can also subscribe via the RSS feed."
+    },
+    {
+        question: "How often are new episodes released?",
+        answer: "New episodes of The Vector Podcast are released regularly. Subscribe on your favorite platform to be notified when new episodes are available."
+    },
+    {
+        question: "Can I be a guest on The Vector Podcast?",
+        answer: "We're always looking for inspiring guests with unique perspectives on technology, entrepreneurship, and veteran experience. Contact us through thechrisgrey.com/contact to discuss guest opportunities."
     }
 ];
 
