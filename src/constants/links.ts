@@ -5,7 +5,7 @@
 
 export const SOCIAL_LINKS = {
   // Personal Social Media
-  linkedin: 'https://www.linkedin.com/in/christian-perez-altivum/',
+  linkedin: 'https://www.linkedin.com/in/thechrisgrey/',
   twitter: 'https://x.com/x_thechrisgrey',
   instagram: 'https://www.instagram.com/thechrisgrey/',
   github: 'https://github.com/AltivumInc-Admin',
