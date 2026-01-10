@@ -43,6 +43,7 @@ const About = () => {
       {/* Biography Content */}
       <section className="pb-24 md:pb-32 lg:pb-40">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
+          <h1 className="sr-only">About Christian Perez - Personal Biography</h1>
           {/* Opening Statement */}
           <div className="mb-24 md:mb-32 text-center">
             <p className="text-white" style={typography.sectionHeader}>

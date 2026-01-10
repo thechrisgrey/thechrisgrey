@@ -44,6 +44,18 @@ const Blog = () => {
     fetchPosts();
   }, []);
 
+  // Keyboard escape handler for modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showSuccessModal) {
+        setShowSuccessModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showSuccessModal]);
+
   // Filter helper function
   const setCategory = (category: string) => {
     const params = new URLSearchParams(searchParams);

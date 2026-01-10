@@ -205,6 +205,7 @@ const Altivum = () => {
                 alt="Altivum Inc."
                 className="w-full max-w-3xl mx-auto opacity-90"
               />
+              <h1 className="sr-only">Altivum Inc. - Veteran-Founded AI Technology Company</h1>
             </div>
           </div>
         </div>

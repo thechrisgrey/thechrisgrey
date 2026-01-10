@@ -40,6 +40,7 @@ const Podcast = () => {
                 alt="The Vector Podcast"
                 className="w-full max-w-3xl mx-auto opacity-90"
               />
+              <h1 className="sr-only">The Vector Podcast - Hosted by Christian Perez</h1>
             </div>
 
             {/* Podcast Stats */}

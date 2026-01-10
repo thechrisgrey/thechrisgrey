@@ -1,6 +1,6 @@
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { contactFAQs, buildContactPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 
@@ -17,6 +17,18 @@ const Contact = () => {
     message: string;
   }>({ type: 'idle', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Keyboard escape handler for modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showSuccessModal) {
+        setShowSuccessModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showSuccessModal]);
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 

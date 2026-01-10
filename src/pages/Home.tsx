@@ -80,6 +80,7 @@ const Home = () => {
                 alt="Leadership Forged in Service"
                 className="w-full max-w-3xl mx-auto"
               />
+              <h1 className="sr-only">Christian Perez - Leadership Forged in Service</h1>
             </div>
           </div>
         </div>
