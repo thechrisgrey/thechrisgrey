@@ -13,4 +13,21 @@ export default defineConfig({
       webp: { quality: 80 },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'sanity': ['@sanity/client', '@sanity/image-url', '@portabletext/react'],
+          'router': ['react-router-dom'],
+        }
+      }
+    },
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      }
+    }
+  }
 })
