@@ -1,5 +1,6 @@
 import { PodcastEpisode } from '../types/podcast';
 import { typography } from '../utils/typography';
+import { formatDate } from '../utils/dateFormatter';
 import { SpotifyIcon, ApplePodcastIcon, YouTubeIcon } from './PodcastPlatformIcons';
 
 interface EpisodeCardProps {
@@ -8,14 +9,6 @@ interface EpisodeCardProps {
 }
 
 const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   const isFeatured = variant === 'featured';
 
   return (

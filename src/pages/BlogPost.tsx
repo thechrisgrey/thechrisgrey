@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
+import { formatDate } from '../utils/dateFormatter';
 import { SOCIAL_LINKS } from '../constants/links';
 import {
   client,
@@ -45,15 +46,6 @@ const BlogPost = () => {
 
     fetchPost();
   }, [slug]);
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   // Share functionality
   const shareUrl = `https://thechrisgrey.com/blog/${slug}`;
@@ -354,6 +346,7 @@ const BlogPost = () => {
                       <img
                         src={urlFor(relatedPost.image).width(400).height(225).url()}
                         alt={relatedPost.image.alt || relatedPost.title}
+                        loading="lazy"
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (

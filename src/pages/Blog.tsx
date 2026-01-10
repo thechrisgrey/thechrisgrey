@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
+import { formatDate } from '../utils/dateFormatter';
 import { blogFAQs } from '../utils/schemas';
 import {
   client,
@@ -135,15 +136,6 @@ const Blog = () => {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   const categories = ['All', 'Technology', 'Leadership', 'Veterans', 'Business'];
 
   return (
@@ -219,7 +211,7 @@ const Blog = () => {
                   }
                   setSearchParams(params);
                 }}
-                className="w-full px-4 py-2 pl-10 bg-white/5 border border-white/10 rounded-full text-white placeholder-altivum-silver/50 focus:outline-none focus:border-altivum-gold transition-colors"
+                className="w-full px-4 py-2 pl-10 bg-white/5 border border-white/10 rounded-full text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-colors"
               />
               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-altivum-silver/50 text-lg">
                 search
@@ -232,8 +224,9 @@ const Blog = () => {
                     setSearchParams(params);
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-altivum-silver/50 hover:text-white transition-colors"
+                  aria-label="Clear search"
                 >
-                  <span className="material-icons text-lg">close</span>
+                  <span className="material-icons text-lg" aria-hidden="true">close</span>
                 </button>
               )}
             </div>
@@ -343,6 +336,7 @@ const Blog = () => {
                         <img
                           src={urlFor(post.image).width(600).height(340).url()}
                           alt={post.image.alt || post.title}
+                          loading="lazy"
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
@@ -433,7 +427,7 @@ const Blog = () => {
                 }}
                 required
                 disabled={subscribeStatus.type === 'loading'}
-                className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 text-white placeholder-altivum-silver/50 focus:outline-none focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <button

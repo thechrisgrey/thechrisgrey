@@ -65,6 +65,13 @@ const Navigation = () => {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
         }`}
     >
+      {/* Skip link for keyboard navigation */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-altivum-gold focus:text-altivum-dark focus:font-medium focus:rounded"
+      >
+        Skip to main content
+      </a>
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-20">
           {/* Logo/Name */}
@@ -100,9 +107,12 @@ const Navigation = () => {
                   ? 'text-altivum-gold bg-altivum-blue/30'
                   : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
                   }`}
+                aria-label="About menu"
+                aria-expanded={isAboutDropdownOpen}
+                aria-haspopup="true"
               >
                 About
-                <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -153,8 +163,10 @@ const Navigation = () => {
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-md text-altivum-silver hover:text-white hover:bg-altivum-blue/20"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMobileMenuOpen}
           >
-            <span className="material-icons">
+            <span className="material-icons" aria-hidden="true">
               {isMobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>

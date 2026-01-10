@@ -152,7 +152,7 @@ const Contact = () => {
                     required
                     minLength={2}
                     maxLength={100}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-altivum-silver/40 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="Your name"
                   />
                 </div>
@@ -169,7 +169,7 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     maxLength={255}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-altivum-silver/40 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -185,7 +185,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     maxLength={200}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-altivum-silver/40 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="What's this about?"
                   />
                 </div>
@@ -203,7 +203,7 @@ const Contact = () => {
                     minLength={10}
                     maxLength={5000}
                     rows={6}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-altivum-silver/40 focus:outline-none focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
                     placeholder="Tell me what you're thinking..."
                   ></textarea>
                 </div>

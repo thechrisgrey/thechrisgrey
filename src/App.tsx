@@ -17,6 +17,7 @@ function App() {
     <div className="min-h-screen bg-altivum-dark">
       <ScrollToTop />
       <Navigation />
+      <main id="main-content">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -28,6 +29,7 @@ function App() {
         <Route path="/links" element={<Links />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
+      </main>
       <Footer />
     </div>
   );
