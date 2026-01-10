@@ -7,7 +7,6 @@ import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
-import { SOCIAL_LINKS } from '../constants/links';
 
 const Podcast = () => {
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
@@ -162,19 +161,6 @@ const Podcast = () => {
           </p>
 
           <SubscribePlatforms platforms={PODCAST_PLATFORMS} />
-
-          {/* Direct Website Link */}
-          <div className="mt-12">
-            <a
-              href={SOCIAL_LINKS.vectorPodcast}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-10 py-4 bg-altivum-gold text-altivum-dark font-semibold hover:bg-white transition-all duration-200"
-            >
-              <span className="material-icons mr-3">podcasts</span>
-              Visit Podcast Website
-            </a>
-          </div>
         </div>
       </section>
 

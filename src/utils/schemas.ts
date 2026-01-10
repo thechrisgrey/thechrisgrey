@@ -115,7 +115,6 @@ export const buildPersonSchema = () => ({
         "https://www.facebook.com/thechrisgrey",
         "https://linktr.ee/thechrisgrey",
         "https://search.asu.edu/profile/3714457",
-        "https://vector.altivum.ai",
         "https://logic.altivum.ai"
     ]
 });
@@ -172,8 +171,7 @@ export const buildOrganizationSchema = () => ({
     "sameAs": [
         "https://www.linkedin.com/company/altivum-inc",
         "https://github.com/AltivumInc-Admin",
-        "https://logic.altivum.ai",
-        "https://vector.altivum.ai"
+        "https://logic.altivum.ai"
     ]
 });
 
@@ -305,9 +303,9 @@ export const buildBookSchema = () => ({
  */
 export const buildPodcastSeriesSchema = () => ({
     "@type": "PodcastSeries",
-    "@id": "https://vector.altivum.ai/#podcast",
+    "@id": `${SITE_URL}/podcast#podcast`,
     "name": "The Vector Podcast",
-    "url": "https://vector.altivum.ai",
+    "url": `${SITE_URL}/podcast`,
     "description": "The Vector Podcast explores conversations at the intersection of veteran experience, emerging technology, and purposeful entrepreneurship. Hosted by Christian Perez, each episode features leaders navigating the transition from service to innovation.",
     "webFeed": "https://api.riverside.fm/hosting/heA0qRHh.rss",
     "image": `${SITE_URL}/assets/tvp.png`,

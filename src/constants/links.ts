@@ -30,7 +30,6 @@ export const SOCIAL_LINKS = {
   altivum: 'https://altivum.ai',
   altivumLogic: 'https://logic.altivum.ai',
   vetroi: 'https://vetroi.altivum.ai',
-  vectorPodcast: 'https://vector.altivum.ai',
 
   // External
   amazonBook: 'https://a.co/d/iC9TEDW',
