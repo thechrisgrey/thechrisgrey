@@ -5,6 +5,7 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
 import { SOCIAL_LINKS } from '../constants/links';
+import profileImage from '../assets/profile1.jpeg';
 import {
   client,
   urlFor,
@@ -140,9 +141,13 @@ const BlogPost = () => {
             "headline": post.title,
             "description": post.excerpt,
             "datePublished": post.publishedAt,
-            "dateModified": post.publishedAt,
+            "dateModified": post._updatedAt || post.publishedAt,
             "author": {
-              "@id": "https://thechrisgrey.com/#person"
+              "@type": "Person",
+              "@id": "https://thechrisgrey.com/#person",
+              "name": "Christian Perez",
+              "jobTitle": "Founder & CEO, Altivum Inc.",
+              "knowsAbout": post.tags?.map(t => t.title) || ["AI", "Cloud Architecture", "Leadership"]
             },
             "publisher": {
               "@id": "https://altivum.ai/#organization"
@@ -325,6 +330,39 @@ const BlogPost = () => {
           </div>
         </section>
       )}
+
+      {/* Author Bio Section */}
+      <section className="py-12 border-t border-white/10">
+        <div className="max-w-3xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-start gap-6 p-6 bg-altivum-navy/30 rounded-lg border border-white/5">
+            <img
+              src={profileImage}
+              alt="Christian Perez"
+              className="w-20 h-20 rounded-full object-cover border-2 border-altivum-gold/30 flex-shrink-0"
+            />
+            <div>
+              <h3 className="text-white font-semibold text-lg mb-1">
+                About the Author
+              </h3>
+              <p className="text-altivum-gold text-sm mb-3">
+                Christian Perez - Founder & CEO, Altivum Inc.
+              </p>
+              <p className="text-altivum-silver text-sm leading-relaxed mb-4">
+                Former Green Beret, host of The Vector Podcast, and author of "Beyond the Assessment."
+                Christian writes about AI adoption, veteran entrepreneurship, and lessons learned from
+                a decade in Special Operations.
+              </p>
+              <Link
+                to="/about"
+                className="text-altivum-gold text-sm hover:text-white transition-colors inline-flex items-center gap-1"
+              >
+                Learn more about Christian
+                <span className="material-icons text-sm">arrow_forward</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Related Posts */}
       {post.relatedPosts && post.relatedPosts.length > 0 && (

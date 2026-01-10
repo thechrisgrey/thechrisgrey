@@ -24,6 +24,7 @@ export interface SanitySeries {
 
 export interface SanityPost {
   _id: string
+  _updatedAt?: string
   title: string
   slug: { current: string }
   excerpt: string
