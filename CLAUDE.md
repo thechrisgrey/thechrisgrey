@@ -8,7 +8,9 @@ Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum 
 
 ## Reminder
 
-Check `docs/ideas-to-consider.md` for pending feature ideas (portfolio/projects showcase with device mockups or screenshot grid).
+Check `docs/ideas-to-consider.md` for pending feature ideas:
+- Portfolio/projects showcase (device mockups or screenshot grid with modal preview)
+- Amazon Bedrock Knowledge Base for AI chat RAG (dynamic context retrieval)
 
 ## Development Commands
 
@@ -30,7 +32,8 @@ npm run lint         # Run ESLint on TypeScript files
 ### Routing & Layout
 - React Router v6 with client-side routing
 - Global layout in `App.tsx`: `<ScrollToTop>` → `<Navigation>` → `<Routes>` → `<Footer>`
-- 9 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`
+- 10 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`
+- Footer is conditionally hidden on full-viewport pages (e.g., `/chat`)
 
 ### Design System (Tailwind)
 
@@ -156,6 +159,35 @@ import { client, urlFor, POSTS_QUERY } from '../sanity';
 const posts = await client.fetch(POSTS_QUERY);
 ```
 
+### AI Chat (`/chat`)
+
+Full-viewport conversational AI experience powered by Amazon Bedrock and Claude Haiku 4.5.
+
+**Frontend** (`src/pages/Chat.tsx`):
+- Full-viewport layout (`h-screen overflow-hidden`) - no page scroll, no footer
+- Messages scroll within container, input stays anchored at bottom
+- Real-time streaming responses via fetch + ReadableStream
+- Components in `src/components/chat/`: `ChatMessage`, `ChatInput`, `ChatSuggestions`, `TypingIndicator`
+
+**Backend** (`lambda/chat-stream/`):
+- Lambda function with streaming response via `awslambda.streamifyResponse()`
+- Uses Bedrock ConverseStream API with Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`)
+- System prompt defines AI persona with facts about Christian
+- Function URL: streaming enabled with CORS for thechrisgrey.com
+
+**Files:**
+- `lambda/chat-stream/index.mjs`: Lambda handler with system prompt
+- `lambda/chat-stream/permissions-policy.json`: IAM policy for Bedrock access
+- `lambda/chat-stream/trust-policy.json`: Lambda execution role trust policy
+
+**Deployment:**
+```bash
+cd lambda/chat-stream
+npm install
+zip -r function.zip index.mjs package.json node_modules
+aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-file fileb://function.zip --region us-east-1
+```
+
 ### Dynamic Sitemap
 
 Sitemap is generated at build time via `scripts/generate-sitemap.js`:
@@ -186,16 +218,20 @@ Sitemap is generated at build time via `scripts/generate-sitemap.js`:
 - `src/components/Navigation.tsx`: Fixed nav with scroll-based transparency and dropdown menu
 - `src/components/SEO.tsx`: SEO/metadata management with structured data
 - `src/pages/Home.tsx`: Complex scroll animations and sticky sections
+- `src/pages/Chat.tsx`: Full-viewport AI chat experience
+- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator)
 - `src/sanity/`: Sanity CMS client, queries, types for blog
+- `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
 - `amplify.yml`: AWS Amplify build configuration
 - `index.html`: Material Icons CDN link, favicon, base meta tags
 
 ## Environment Variables
 
-Required for forms (set in AWS Amplify console):
+Required (set in AWS Amplify console):
 - `VITE_CONTACT_ENDPOINT`: AWS Lambda URL for contact form submissions
 - `VITE_NEWSLETTER_ENDPOINT`: AWS Lambda URL for newsletter subscriptions
+- `VITE_CHAT_ENDPOINT`: AWS Lambda Function URL for AI chat streaming
 
 ## Deployment Notes
 
