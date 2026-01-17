@@ -11,6 +11,7 @@ import BlogPost from './pages/BlogPost';
 import Links from './pages/Links';
 import Contact from './pages/Contact';
 import BeyondTheAssessment from './pages/BeyondTheAssessment';
+import Chat from './pages/Chat';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/links" element={<Links />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/chat" element={<Chat />} />
       </Routes>
       </main>
       <Footer />

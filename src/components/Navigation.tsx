@@ -43,6 +43,7 @@ const Navigation = () => {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/blog', label: 'Blog' },
+    { path: '/chat', label: 'AI Chat' },
     { path: '/links', label: 'Links' },
     { path: '/contact', label: 'Contact' },
   ];
