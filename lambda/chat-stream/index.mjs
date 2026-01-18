@@ -253,7 +253,7 @@ export const handler = awslambda.streamifyResponse(
         guardrailConfig: {
           guardrailIdentifier: GUARDRAIL_ID,
           guardrailVersion: GUARDRAIL_VERSION,
-          trace: "enabled"
+          streamProcessingMode: "async"
         }
       });
 
