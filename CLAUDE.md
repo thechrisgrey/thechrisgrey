@@ -10,7 +10,6 @@ Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum 
 
 Check `docs/ideas-to-consider.md` for pending feature ideas:
 - Portfolio/projects showcase (device mockups or screenshot grid with modal preview)
-- Amazon Bedrock Knowledge Base for AI chat RAG (dynamic context retrieval)
 
 ## Development Commands
 
@@ -161,7 +160,7 @@ const posts = await client.fetch(POSTS_QUERY);
 
 ### AI Chat (`/chat`)
 
-Full-viewport conversational AI experience powered by Amazon Bedrock and Claude Haiku 4.5.
+Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Haiku 4.5, and RAG via Bedrock Knowledge Base.
 
 **Frontend** (`src/pages/Chat.tsx`):
 - Full-viewport layout (`h-screen overflow-hidden`) - no page scroll, no footer
@@ -172,13 +171,21 @@ Full-viewport conversational AI experience powered by Amazon Bedrock and Claude 
 **Backend** (`lambda/chat-stream/`):
 - Lambda function with streaming response via `awslambda.streamifyResponse()`
 - Uses Bedrock ConverseStream API with Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`)
-- System prompt defines AI persona with facts about Christian
+- RAG-enhanced via Bedrock Knowledge Base retrieval before each response
 - Function URL: streaming enabled with CORS for thechrisgrey.com
 
+**Knowledge Base (RAG)**:
+- Knowledge Base ID: `ARFYABW8HP`
+- Data Source: `s3://thechrisgrey-kb-source/` (us-east-1)
+- Vector Store: S3 Vectors (`thechrisgrey-vectors` bucket, `autobiography-index`)
+- Embeddings: Amazon Titan Text Embeddings v2 (1024 dimensions)
+- Retrieves 5 most relevant chunks for each user query
+- Context injected into system prompt for accurate, detailed responses
+
 **Files:**
-- `lambda/chat-stream/index.mjs`: Lambda handler with system prompt
-- `lambda/chat-stream/permissions-policy.json`: IAM policy for Bedrock access
-- `lambda/chat-stream/trust-policy.json`: Lambda execution role trust policy
+- `lambda/chat-stream/index.mjs`: Lambda handler with KB retrieval + streaming
+- `lambda/chat-stream/iam-policy.json`: IAM policy for Bedrock + KB access
+- `lambda/chat-stream/package.json`: Dependencies (bedrock-runtime, bedrock-agent-runtime)
 
 **Deployment:**
 ```bash
@@ -186,6 +193,13 @@ cd lambda/chat-stream
 npm install
 zip -r function.zip index.mjs package.json node_modules
 aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-file fileb://function.zip --region us-east-1
+```
+
+**Updating Knowledge Base Content:**
+1. Upload/update documents in `s3://thechrisgrey-kb-source/`
+2. Sync the data source:
+```bash
+aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-source-id TXQTRAJOSD --region us-east-1
 ```
 
 ### Dynamic Sitemap

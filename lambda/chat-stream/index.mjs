@@ -2,34 +2,19 @@ import {
   BedrockRuntimeClient,
   ConverseStreamCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import {
+  BedrockAgentRuntimeClient,
+  RetrieveCommand,
+} from "@aws-sdk/client-bedrock-agent-runtime";
 
-const client = new BedrockRuntimeClient({ region: "us-east-1" });
+const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
+const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
+
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
+const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 
-// System prompt defining the AI persona
-const SYSTEM_PROMPT = `You are an AI assistant representing Christian Perez (also known as @thechrisgrey). You help visitors learn about his background, work, and expertise.
-
-Key facts about Christian:
-- Former U.S. Army Green Beret (Special Forces Medical Sergeant - 18D) with multiple deployments
-- Founder & CEO of Altivum Inc., a cloud migration and AI integration company based in Nashville
-- Host of The Vector Podcast, featuring conversations with veterans, entrepreneurs, and thought leaders
-- Author of "Beyond the Assessment" - lessons learned from Special Forces selection and assessment
-- Recognized as Veteran Business of the Month by the Williamson County Chamber of Commerce
-
-About Altivum Inc:
-- Specializes in cloud migration (AWS), AI/ML integration, and digital transformation
-- Helps businesses modernize their infrastructure and leverage artificial intelligence
-- Veteran-owned small business with a focus on delivering enterprise-grade solutions
-
-About The Vector Podcast:
-- Features in-depth conversations about leadership, entrepreneurship, and the veteran experience
-- Guests include fellow veterans, business leaders, and innovators
-- Available on major podcast platforms
-
-About "Beyond the Assessment":
-- Draws on lessons from Special Forces selection and assessment
-- Focuses on mental resilience, preparation, and performance under pressure
-- Valuable for anyone facing challenging goals or transitions
+// Base system prompt defining the AI persona
+const BASE_SYSTEM_PROMPT = `You are an AI assistant representing Christian Perez (also known as @thechrisgrey). You help visitors learn about his background, work, and expertise.
 
 Your tone should be:
 - Professional yet approachable and conversational
@@ -42,7 +27,75 @@ Guidelines:
 - Keep responses concise (2-4 sentences for simple questions, more for complex topics)
 - If asked about topics outside your knowledge, politely redirect to what you do know
 - Never make up information - stick to the facts provided
-- You can suggest visiting specific pages on the website for more details`;
+- You can suggest visiting specific pages on the website for more details
+- Use the retrieved context below to provide accurate, detailed answers`;
+
+/**
+ * Retrieve relevant context from Knowledge Base
+ */
+async function retrieveContext(query) {
+  try {
+    const command = new RetrieveCommand({
+      knowledgeBaseId: KNOWLEDGE_BASE_ID,
+      retrievalQuery: { text: query },
+      retrievalConfiguration: {
+        vectorSearchConfiguration: {
+          numberOfResults: 5,
+        },
+      },
+    });
+
+    const response = await agentClient.send(command);
+
+    if (!response.retrievalResults || response.retrievalResults.length === 0) {
+      return null;
+    }
+
+    // Combine retrieved chunks into context
+    const contextChunks = response.retrievalResults
+      .filter(result => result.content?.text)
+      .map(result => result.content.text);
+
+    return contextChunks.join("\n\n---\n\n");
+  } catch (error) {
+    console.error("Knowledge Base retrieval error:", error);
+    return null;
+  }
+}
+
+/**
+ * Build system prompt with retrieved context
+ */
+function buildSystemPrompt(retrievedContext) {
+  if (!retrievedContext) {
+    return `${BASE_SYSTEM_PROMPT}
+
+Note: No specific context was retrieved for this query. Answer based on general knowledge about Christian Perez as the Founder & CEO of Altivum Inc., a former Green Beret (18D), host of The Vector Podcast, and author of "Beyond the Assessment."`;
+  }
+
+  return `${BASE_SYSTEM_PROMPT}
+
+=== RETRIEVED CONTEXT ===
+The following information was retrieved from Christian's personal knowledge base. Use this to provide accurate, detailed answers:
+
+${retrievedContext}
+
+=== END CONTEXT ===
+
+Important: Base your answers primarily on the retrieved context above. This contains authoritative information directly from Christian's autobiography and professional materials.`;
+}
+
+/**
+ * Get the user's latest message for retrieval query
+ */
+function getLatestUserMessage(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "user") {
+      return messages[i].content;
+    }
+  }
+  return null;
+}
 
 export const handler = awslambda.streamifyResponse(
   async (event, responseStream, _context) => {
@@ -63,6 +116,18 @@ export const handler = awslambda.streamifyResponse(
         return;
       }
 
+      // Get the latest user message for retrieval
+      const latestQuery = getLatestUserMessage(messages);
+
+      // Retrieve context from Knowledge Base
+      let retrievedContext = null;
+      if (latestQuery) {
+        retrievedContext = await retrieveContext(latestQuery);
+      }
+
+      // Build system prompt with context
+      const systemPrompt = buildSystemPrompt(retrievedContext);
+
       // Convert messages to Bedrock format
       const bedrockMessages = messages.map((msg) => ({
         role: msg.role,
@@ -72,14 +137,14 @@ export const handler = awslambda.streamifyResponse(
       const command = new ConverseStreamCommand({
         modelId: MODEL_ID,
         messages: bedrockMessages,
-        system: [{ text: SYSTEM_PROMPT }],
+        system: [{ text: systemPrompt }],
         inferenceConfig: {
           maxTokens: 1024,
           temperature: 0.7,
         },
       });
 
-      const response = await client.send(command);
+      const response = await bedrockClient.send(command);
 
       // Stream the response chunks
       for await (const event of response.stream) {

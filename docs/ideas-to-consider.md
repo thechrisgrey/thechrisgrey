@@ -66,73 +66,73 @@ Clean card grid with static screenshots. Click opens a modal with the live ifram
 
 ---
 
-## AI Chat: Amazon Bedrock Knowledge Base
+## AI Chat: Amazon Bedrock Knowledge Base - IMPLEMENTED
 
-**Goal:** Upgrade the AI assistant from static system prompt to dynamic RAG (Retrieval-Augmented Generation) so it can answer specific questions about blog posts, podcast episodes, book content, etc.
+**Status:** Implemented on January 17, 2026
 
----
-
-### Current State
-
-The AI chat uses a hardcoded system prompt in `lambda/chat-stream/index.mjs` with general facts about Christian. It works well for broad questions but can't answer specifics like "What did you discuss in episode 12?" or "What's in Chapter 3 of your book?"
+**Goal:** Upgrade the AI assistant from static system prompt to dynamic RAG (Retrieval-Augmented Generation) so it can answer specific questions about Christian's background, career, and content.
 
 ---
 
-### Proposed Architecture
+### Implementation Details
 
+**Architecture:**
 ```
 User question
-    → Query Bedrock Knowledge Base
-    → Retrieve relevant chunks
-    → Inject into prompt
+    → Query Bedrock Knowledge Base (Retrieve API)
+    → Get 5 most relevant chunks
+    → Inject into system prompt
     → Claude generates contextual response
+    → Stream response to user
 ```
 
----
+**AWS Resources:**
+- **Knowledge Base ID:** `ARFYABW8HP`
+- **Data Source ID:** `TXQTRAJOSD`
+- **Source Bucket:** `s3://thechrisgrey-kb-source/` (us-east-1)
+- **Vector Store:** S3 Vectors (cost-effective alternative to OpenSearch Serverless)
+  - Vector Bucket: `thechrisgrey-vectors`
+  - Vector Index: `autobiography-index`
+- **Embeddings Model:** Amazon Titan Text Embeddings v2 (1024 dimensions)
+- **IAM Role:** `TheChrisGreyKnowledgeBaseRole`
 
-### Components
-
-1. **S3 Bucket** - Store source documents:
-   - Blog posts (exported from Sanity or scraped)
-   - Podcast transcripts
-   - Book excerpts / chapter summaries
-   - Website page content
-
-2. **Bedrock Knowledge Base** - Managed RAG service:
-   - Auto-chunks documents
-   - Embeds with Titan Embeddings
-   - Stores vectors in OpenSearch Serverless
-
-3. **Updated Lambda** - Modified chat handler:
-   - Call `RetrieveAndGenerate` or `Retrieve` API
-   - Pass retrieved context to Claude
-   - Maintain conversation flow
+**Current Content:**
+- `Autobiography.docx` - Christian's comprehensive autobiography
 
 ---
 
-### Benefits
+### To Add More Content
 
-- AI can answer specific questions about any indexed content
-- No need to manually update system prompt when content changes
-- Scales with content volume
-- Could index new blog posts automatically via webhook
+1. Upload documents to `s3://thechrisgrey-kb-source/`
+2. Sync the Knowledge Base:
+```bash
+aws bedrock-agent start-ingestion-job \
+  --knowledge-base-id ARFYABW8HP \
+  --data-source-id TXQTRAJOSD \
+  --region us-east-1
+```
+
+**Future content to add:**
+- Blog posts (exported from Sanity)
+- Podcast transcripts
+- Book excerpts / chapter summaries
 
 ---
 
-### Considerations
+### Cost Notes
 
-- **Cost**: OpenSearch Serverless has baseline cost (~$700/mo minimum for production)
-  - Alternative: Use Pinecone free tier for experimentation
-- **Sync**: Need process to keep knowledge base updated when Sanity content changes
-- **Chunking strategy**: May need tuning for optimal retrieval
+Using S3 Vectors instead of OpenSearch Serverless significantly reduces costs:
+- S3 Vectors: Pay-per-use (~$0.0001 per 1000 vectors stored + query costs)
+- OpenSearch Serverless: ~$700/mo minimum baseline
 
 ---
 
-### Implementation Steps
+### Lambda Changes
 
-1. Create S3 bucket for source documents
-2. Export/sync content (blog posts, transcripts, etc.)
-3. Create Bedrock Knowledge Base with OpenSearch Serverless (or Pinecone)
-4. Update Lambda to query knowledge base before calling Claude
-5. Test retrieval quality and tune chunking if needed
-6. Set up sync process for new content
+The Lambda function (`lambda/chat-stream/index.mjs`) now:
+1. Extracts the latest user message
+2. Queries the Knowledge Base for relevant context
+3. Builds a system prompt with retrieved context
+4. Streams the response from Claude
+
+Required IAM permissions added: `bedrock:Retrieve` for the Knowledge Base
