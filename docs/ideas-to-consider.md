@@ -4,18 +4,6 @@
 
 ## High Impact
 
-### RSS Feed for Blog
-**Priority:** High
-**Effort:** Low
-**Why:** Allows readers to subscribe to blog updates via feed readers. Expected standard for content creators and improves discoverability.
-
-**Implementation:**
-- Generate `rss.xml` at build time (similar to sitemap)
-- Add `<link rel="alternate" type="application/rss+xml">` to head
-- Include in footer or blog page
-
----
-
 ### Custom 404 Page Design
 **Priority:** High
 **Effort:** Low
@@ -94,6 +82,18 @@
 ---
 
 ## Completed
+
+### RSS Feed for Blog - IMPLEMENTED
+
+**Status:** Implemented on January 18, 2026
+
+Added RSS feed generation at build time:
+- `scripts/generate-rss.js` fetches posts from Sanity and generates `rss.xml`
+- RSS link added to HTML head for feed reader auto-discovery
+- RSS Feed link added to footer Quick Links section
+- Feed URL: `https://thechrisgrey.com/rss.xml`
+
+---
 
 ### AI Chat Guardrails & Rate Limiting - IMPLEMENTED
 

@@ -47,6 +47,17 @@ const Footer = () => {
                   Blog
                 </Link>
               </li>
+              <li>
+                <a
+                  href="/rss.xml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors"
+                  style={typography.smallText}
+                >
+                  RSS Feed
+                </a>
+              </li>
             </ul>
           </div>
 
