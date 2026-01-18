@@ -29,6 +29,7 @@ const staticPages = [
   { url: '/contact', priority: '0.7', changefreq: 'monthly' },
   { url: '/links', priority: '0.7', changefreq: 'monthly' },
   { url: '/beyond-the-assessment', priority: '0.7', changefreq: 'monthly' },
+  { url: '/chat', priority: '0.7', changefreq: 'weekly' },
 ];
 
 const SITE_URL = 'https://thechrisgrey.com';

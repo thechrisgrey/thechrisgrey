@@ -15,6 +15,31 @@ import {
   type SanityPostPreview
 } from '../sanity';
 
+/**
+ * Extract word count from Portable Text blocks
+ */
+const getWordCount = (body: SanityPost['body']): number => {
+  if (!body) return 0;
+
+  const extractText = (blocks: typeof body): string => {
+    return blocks
+      .filter(block => block._type === 'block')
+      .map(block => {
+        if ('children' in block && Array.isArray(block.children)) {
+          return block.children
+            .filter((child: { _type: string }) => child._type === 'span')
+            .map((span: { text?: string }) => span.text || '')
+            .join('');
+        }
+        return '';
+      })
+      .join(' ');
+  };
+
+  const text = extractText(body);
+  return text.split(/\s+/).filter(word => word.length > 0).length;
+};
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<SanityPost | null>(null);
@@ -98,6 +123,7 @@ const BlogPost = () => {
           title="Article Not Found"
           description="The article you're looking for doesn't exist or has been moved."
           url={`https://thechrisgrey.com/blog/${slug}`}
+          noindex={true}
         />
         <div className="pt-32 pb-24">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
@@ -129,6 +155,8 @@ const BlogPost = () => {
         image={post.image?.asset ? urlFor(post.image).width(1200).height(630).auto('format').quality(85).url() : undefined}
         url={shareUrl}
         type="article"
+        datePublished={post.publishedAt}
+        dateModified={post._updatedAt || post.publishedAt}
         breadcrumbs={[
           { name: "Home", url: "https://thechrisgrey.com" },
           { name: "Blog", url: "https://thechrisgrey.com/blog" },
@@ -142,6 +170,7 @@ const BlogPost = () => {
             "description": post.excerpt,
             "datePublished": post.publishedAt,
             "dateModified": post._updatedAt || post.publishedAt,
+            "wordCount": post.body ? getWordCount(post.body) : undefined,
             "author": {
               "@type": "Person",
               "@id": "https://thechrisgrey.com/#person",
