@@ -144,7 +144,7 @@ export const handler = awslambda.streamifyResponse(
         messages: bedrockMessages,
         system: [{ text: systemPrompt }],
         inferenceConfig: {
-          maxTokens: 512,
+          maxTokens: 350,
           temperature: 0.6,
         },
       });
