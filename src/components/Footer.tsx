@@ -90,6 +90,10 @@ const Footer = () => {
         <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-altivum-slate/30">
           <p className="text-center text-altivum-silver" style={typography.smallText}>
             &copy; {currentYear} Christian Perez. All rights reserved.
+            <span className="mx-2">·</span>
+            <Link to="/privacy" className="hover:text-altivum-gold transition-colors">
+              Privacy Policy
+            </Link>
           </p>
         </div>
       </div>
