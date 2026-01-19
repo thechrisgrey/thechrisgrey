@@ -18,18 +18,6 @@
 
 ## Nice to Have
 
-### Speaking/Media Page
-**Priority:** Medium
-**Effort:** Medium
-**Why:** Event organizers and media look for speaking topics, past engagements, and booking info. Valuable for someone with your profile.
-
-**Implementation:**
-- Create `/speaking` or `/media` route
-- Include: speaking topics, past events, testimonials, booking CTA
-- Add headshot downloads for event promoters
-
----
-
 ### Print Styles for Blog
 **Priority:** Low
 **Effort:** Low
@@ -44,6 +32,19 @@
 ---
 
 ## Completed
+
+### Speaking & Media Section - IMPLEMENTED
+
+**Status:** Implemented on January 19, 2026
+
+Merged speaking/media functionality into the Contact page (`/contact`) instead of creating a separate route:
+- **Speaking Topics**: 4 topic cards (Cloud & AI Strategy, Veteran Transition, Entrepreneurship, Leadership)
+- **Event Types**: Keynotes, panels, podcasts, workshops, media interviews, veteran events
+- **Press Kit Download**: CTA for event organizers to download bio and headshots
+- Updated SEO title to "Contact & Speaking" and meta description for speaking/media keywords
+- Press kit file location: `public/press-kit.zip` (needs to be created with actual materials)
+
+---
 
 ### Reading Progress Bar - IMPLEMENTED
 

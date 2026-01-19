@@ -111,9 +111,9 @@ const Contact = () => {
   return (
     <div className="min-h-screen pt-20">
       <SEO
-        title="Contact Christian Perez"
-        description="Get in touch with Christian Perez and Altivum Inc. for inquiries about cloud services, AI integration, speaking engagements, or collaboration opportunities."
-        keywords="contact Christian Perez, hire Altivum, cloud consulting inquiry, AI integration services, speaking engagements"
+        title="Contact & Speaking"
+        description="Book Christian Perez for speaking engagements, podcast appearances, or media interviews. Topics include cloud & AI strategy, veteran entrepreneurship, and leadership. Contact Altivum Inc. for consulting inquiries."
+        keywords="contact Christian Perez, speaking engagements, keynote speaker, veteran speaker, cloud consulting, AI integration services, podcast guest, media appearances"
         url="https://thechrisgrey.com/contact"
         faq={contactFAQs}
         breadcrumbs={[
@@ -122,7 +122,6 @@ const Contact = () => {
         ]}
         structuredData={[buildContactPageSchema()]}
       />
-      {/* Hero Section */}
       {/* Hero Section */}
       <section className="py-32 bg-altivum-dark">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -133,15 +132,86 @@ const Contact = () => {
             <div className="h-px w-24 bg-altivum-gold mb-8"></div>
 
             <p className="text-altivum-silver" style={typography.subtitle}>
-              Whether you're interested in cloud migration, AI integration, veteran services,
-              or just want to have a conversation, I'd love to hear from you.
+              Whether you're interested in cloud migration, AI integration, speaking engagements,
+              or collaboration opportunities, I'd love to hear from you.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Contact Content */}
-      {/* Contact Content */}
+      {/* Speaking & Media Section */}
+      <section className="py-20 bg-altivum-navy/30 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            {/* Speaking Topics */}
+            <div>
+              <h2 className="text-white mb-6" style={typography.sectionHeader}>
+                Speaking & Media
+              </h2>
+              <p className="text-altivum-silver mb-8" style={typography.bodyText}>
+                Available for keynotes, panels, podcasts, and media appearances on topics including:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { icon: 'cloud', title: 'Cloud & AI Strategy', desc: 'Enterprise transformation and emerging tech' },
+                  { icon: 'military_tech', title: 'Veteran Transition', desc: 'Military to civilian career success' },
+                  { icon: 'rocket_launch', title: 'Entrepreneurship', desc: 'Building veteran-owned businesses' },
+                  { icon: 'psychology', title: 'Leadership', desc: 'Special Operations lessons for business' },
+                ].map((topic) => (
+                  <div key={topic.title} className="p-5 bg-altivum-dark/50 border border-white/5 hover:border-altivum-gold/30 transition-colors">
+                    <span className="material-icons text-altivum-gold mb-3 block">{topic.icon}</span>
+                    <h3 className="text-white text-sm font-medium mb-1">{topic.title}</h3>
+                    <p className="text-altivum-silver text-xs">{topic.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Event Types & Press Kit */}
+            <div className="lg:pt-16">
+              <h3 className="text-white mb-6" style={typography.cardTitleLarge}>
+                Event Types
+              </h3>
+              <ul className="space-y-3 mb-10">
+                {[
+                  'Keynote presentations',
+                  'Panel discussions',
+                  'Podcast guest appearances',
+                  'Corporate workshops',
+                  'Media interviews',
+                  'Veteran organization events',
+                ].map((item) => (
+                  <li key={item} className="flex items-center text-altivum-silver">
+                    <span className="material-icons text-altivum-gold mr-3 text-sm">arrow_forward</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Press Kit Download */}
+              <div className="p-6 bg-altivum-dark border border-altivum-gold/20">
+                <h4 className="text-white mb-2" style={typography.cardTitleSmall}>
+                  For Event Organizers
+                </h4>
+                <p className="text-altivum-silver text-sm mb-4">
+                  Download press materials including bio and headshots for promotional use.
+                </p>
+                <a
+                  href="/press-kit.zip"
+                  download
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-altivum-gold/10 border border-altivum-gold text-altivum-gold text-sm font-medium uppercase tracking-wider hover:bg-altivum-gold hover:text-altivum-dark transition-all duration-300"
+                >
+                  <span className="material-icons text-lg">download</span>
+                  Download Press Kit
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form Section */}
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
