@@ -23,8 +23,14 @@ npm run lint         # Run ESLint on TypeScript files
 
 **Deployment:**
 - Pushing to `main` branch automatically triggers AWS Amplify deployment
+- Amplify App ID: `d3hadhsxdvuyai` (us-east-2)
 - Amplify uses `amplify.yml` configuration (runs `npm ci` then `npm run build`)
 - Build artifacts from `dist/` directory are deployed
+
+**Manual Amplify Rebuild:**
+```bash
+aws amplify start-job --app-id d3hadhsxdvuyai --branch-name main --job-type RELEASE --region us-east-2
+```
 
 ## Architecture
 
@@ -227,7 +233,12 @@ Content syncs automatically when files change in S3:
 2. Delete outdated documents
 3. KB sync triggers automatically via Lambda (`thechrisgrey-kb-sync`)
 
-The S3 bucket has event notifications configured to invoke the Lambda on `ObjectCreated:*` and `ObjectRemoved:*` events. No manual sync needed.
+**Auto-Sync Lambda** (`lambda/kb-sync/`):
+- Function: `thechrisgrey-kb-sync` (us-east-1)
+- Role: `thechrisgrey-kb-sync-role`
+- Triggered by S3 events: `ObjectCreated:*` and `ObjectRemoved:*`
+- Calls `StartIngestionJob` on the Knowledge Base
+- Handles concurrent sync attempts gracefully (conflict errors are expected and harmless)
 
 Manual sync (if needed):
 ```bash
@@ -248,6 +259,27 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Outputs to `dist/rss.xml`
 - Auto-discovery link in `index.html` head
 - Link in footer Quick Links section
+
+### Contact Page & Speaking/Media
+
+The Contact page (`/contact`) combines contact form with speaking/media information:
+
+**Structure:**
+- Hero section with "Let's Connect"
+- Speaking & Media section with speaking topics and event types
+- Contact form (left) and contact info cards (right)
+
+**Speaking Topics:**
+- Cloud & AI Strategy
+- Veteran Transition
+- Entrepreneurship
+- Leadership (Special Operations lessons)
+
+**Press Kit** (`public/press-kit/`):
+- `README.txt`: Guide for what to include
+- `headshots/`: High-res photos for event promoters
+- `logos/`: Brand logos
+- Add bios and materials as needed
 
 ### Blog Features
 
@@ -282,11 +314,13 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator)
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
+- `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
 - `scripts/generate-rss.js`: Build-time RSS feed generator
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
 - `src/pages/NotFound.tsx`: Custom 404 page
 - `public/.well-known/security.txt`: Security vulnerability reporting contact
+- `public/press-kit/`: Press materials for event organizers (headshots, bios, logos)
 - `amplify.yml`: AWS Amplify build configuration
 - `index.html`: Material Icons CDN link, favicon, RSS auto-discovery, base meta tags
 
