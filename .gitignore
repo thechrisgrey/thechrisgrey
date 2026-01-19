@@ -32,3 +32,5 @@ dist-ssr
 amplify/
 .amplify/
 amplify-*
+lambda/kb-sync/node_modules/
+lambda/kb-sync/function.zip

@@ -221,8 +221,15 @@ aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-f
 ```
 
 **Updating Knowledge Base Content:**
-1. Upload/update documents in `s3://thechrisgrey-kb-source/`
-2. Sync the data source:
+
+Content syncs automatically when files change in S3:
+1. Upload new documents to `s3://thechrisgrey-kb-source/`
+2. Delete outdated documents
+3. KB sync triggers automatically via Lambda (`thechrisgrey-kb-sync`)
+
+The S3 bucket has event notifications configured to invoke the Lambda on `ObjectCreated:*` and `ObjectRemoved:*` events. No manual sync needed.
+
+Manual sync (if needed):
 ```bash
 aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-source-id TXQTRAJOSD --region us-east-1
 ```

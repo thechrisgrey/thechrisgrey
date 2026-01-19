@@ -1,0 +1,21 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BedrockKBSync",
+      "Effect": "Allow",
+      "Action": "bedrock:StartIngestionJob",
+      "Resource": "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/ARFYABW8HP"
+    },
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:*:*"
+    }
+  ]
+}

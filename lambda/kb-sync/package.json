@@ -1,0 +1,9 @@
+{
+  "name": "thechrisgrey-kb-sync",
+  "version": "1.0.0",
+  "description": "Triggers Bedrock Knowledge Base sync on S3 changes",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agent": "^3.600.0"
+  }
+}
