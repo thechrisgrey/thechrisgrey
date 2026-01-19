@@ -16,7 +16,7 @@ Check `docs/ideas-to-consider.md` for pending feature ideas:
 **Local Development:**
 ```bash
 npm run dev          # Start dev server at http://localhost:5173
-npm run build        # TypeScript compile + production build + sitemap generation
+npm run build        # TypeScript compile + production build + sitemap + RSS feed generation
 npm run preview      # Preview production build locally
 npm run lint         # Run ESLint on TypeScript files
 ```
@@ -31,7 +31,8 @@ npm run lint         # Run ESLint on TypeScript files
 ### Routing & Layout
 - React Router v6 with client-side routing
 - Global layout in `App.tsx`: `<ScrollToTop>` → `<Navigation>` → `<Routes>` → `<Footer>`
-- 10 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`
+- 11 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`
+- Catch-all `*` route renders custom 404 page (`src/pages/NotFound.tsx`)
 - Footer is conditionally hidden on full-viewport pages (e.g., `/chat`)
 
 ### Design System (Tailwind)
@@ -228,13 +229,25 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 
 **S3 Vectors Note:** When creating the vector index, you MUST configure `AMAZON_BEDROCK_TEXT` and `AMAZON_BEDROCK_METADATA` as non-filterable metadata keys. Without this, ingestion fails with "Filterable metadata must have at most 2048 bytes" because text chunks exceed the 2KB filterable limit.
 
-### Dynamic Sitemap
+### Dynamic Sitemap & RSS Feed
 
-Sitemap is generated at build time via `scripts/generate-sitemap.js`:
+**Sitemap** generated at build time via `scripts/generate-sitemap.js`:
 - Fetches all blog posts from Sanity
 - Combines static pages + dynamic blog post URLs
 - Outputs to `dist/sitemap.xml`
-- Runs automatically during `npm run build`
+
+**RSS Feed** generated at build time via `scripts/generate-rss.js`:
+- Fetches all blog posts from Sanity
+- Outputs to `dist/rss.xml`
+- Auto-discovery link in `index.html` head
+- Link in footer Quick Links section
+
+### Blog Features
+
+**Reading Progress Bar** (`src/components/ReadingProgressBar.tsx`):
+- 3px gold bar fixed at top of blog posts
+- Shows scroll progress (0-100%)
+- Throttled with requestAnimationFrame for performance
 
 ### Component Patterns
 
@@ -263,8 +276,12 @@ Sitemap is generated at build time via `scripts/generate-sitemap.js`:
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
+- `scripts/generate-rss.js`: Build-time RSS feed generator
+- `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
+- `src/pages/NotFound.tsx`: Custom 404 page
+- `public/.well-known/security.txt`: Security vulnerability reporting contact
 - `amplify.yml`: AWS Amplify build configuration
-- `index.html`: Material Icons CDN link, favicon, base meta tags
+- `index.html`: Material Icons CDN link, favicon, RSS auto-discovery, base meta tags
 
 ## Environment Variables
 
