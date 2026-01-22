@@ -1,6 +1,6 @@
 import { PortableTextComponents } from '@portabletext/react'
 import { urlFor } from './client'
-import type { CodeBlock, Callout, YouTube } from './types'
+import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types'
 
 // Extract YouTube video ID from URL
 function getYouTubeId(url: string): string | null {
@@ -127,6 +127,90 @@ export const portableTextComponents: PortableTextComponents = {
           )}
         </figure>
       )
+    },
+
+    // Dividers / horizontal rules
+    divider: ({ value }: { value: Divider }) => {
+      const style = value.style || 'line'
+
+      if (style === 'space') {
+        return <div className="my-12" aria-hidden="true" />
+      }
+
+      if (style === 'dots') {
+        return (
+          <div className="my-10 flex justify-center gap-3" aria-hidden="true">
+            <span className="w-1.5 h-1.5 rounded-full bg-altivum-gold/60" />
+            <span className="w-1.5 h-1.5 rounded-full bg-altivum-gold/60" />
+            <span className="w-1.5 h-1.5 rounded-full bg-altivum-gold/60" />
+          </div>
+        )
+      }
+
+      // Default: line
+      return (
+        <hr className="my-10 border-0 h-px bg-gradient-to-r from-transparent via-altivum-gold/40 to-transparent" />
+      )
+    },
+
+    // Pull quotes - prominent callout for key insights
+    pullQuote: ({ value }: { value: PullQuote }) => {
+      return (
+        <figure className="my-10 px-6 py-8 border-l-4 border-r-4 border-altivum-gold/60 bg-altivum-navy/30 rounded-lg">
+          <blockquote className="text-xl md:text-2xl text-white font-light leading-relaxed text-center italic">
+            "{value.quote}"
+          </blockquote>
+          {value.attribution && (
+            <figcaption className="mt-4 text-center text-altivum-silver text-sm">
+              — {value.attribution}
+            </figcaption>
+          )}
+        </figure>
+      )
+    },
+
+    // Book references - cards for recommended reading
+    bookReference: ({ value }: { value: BookReference }) => {
+      const content = (
+        <div className="my-8 flex gap-5 p-5 bg-altivum-navy/40 border border-altivum-blue/30 rounded-lg hover:border-altivum-gold/40 transition-colors">
+          {value.cover?.asset && (
+            <div className="flex-shrink-0">
+              <img
+                src={urlFor(value.cover).width(120).height(180).auto('format').url()}
+                alt={`Cover of ${value.title}`}
+                className="w-20 md:w-24 rounded shadow-lg"
+              />
+            </div>
+          )}
+          <div className="flex flex-col justify-center">
+            <div className="text-xs uppercase tracking-wider text-altivum-gold mb-1">
+              Recommended Reading
+            </div>
+            <h4 className="text-lg font-semibold text-white mb-1">{value.title}</h4>
+            <p className="text-sm text-altivum-silver mb-2">by {value.author}</p>
+            {value.description && (
+              <p className="text-sm text-altivum-silver/80 leading-relaxed">
+                {value.description}
+              </p>
+            )}
+          </div>
+        </div>
+      )
+
+      if (value.link) {
+        return (
+          <a
+            href={value.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block no-underline"
+          >
+            {content}
+          </a>
+        )
+      }
+
+      return content
     },
   },
 

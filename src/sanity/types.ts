@@ -20,6 +20,7 @@ export interface SanitySeries {
   title: string
   slug: { current: string }
   description?: string
+  image?: SanityImage
 }
 
 export interface SanityPost {
@@ -83,4 +84,27 @@ export interface YouTube {
   _key: string
   url: string
   caption?: string
+}
+
+export interface Divider {
+  _type: 'divider'
+  _key: string
+  style?: 'line' | 'dots' | 'space'
+}
+
+export interface PullQuote {
+  _type: 'pullQuote'
+  _key: string
+  quote: string
+  attribution?: string
+}
+
+export interface BookReference {
+  _type: 'bookReference'
+  _key: string
+  title: string
+  author: string
+  cover?: SanityImage
+  description?: string
+  link?: string
 }
