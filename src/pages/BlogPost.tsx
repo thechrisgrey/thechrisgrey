@@ -5,7 +5,8 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
 import { SOCIAL_LINKS } from '../constants/links';
-import profileImage from '../assets/profile1.jpeg';
+// Profile image served from public/ at full quality (no Vite optimization)
+const profileImage = '/profile1.jpeg';
 import {
   client,
   urlFor,

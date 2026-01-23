@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { typography } from '../utils/typography';
 import { SEO } from '../components/SEO';
 import tvpLogo from '../assets/tvp.png';
-import profileImage from '../assets/profile1.jpeg';
+// Profile image served from public/ at full quality (no Vite optimization)
+const profileImage = '/profile1.jpeg';
 import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';

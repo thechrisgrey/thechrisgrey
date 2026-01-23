@@ -296,10 +296,14 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - Mobile-specific considerations: larger tap targets (min-h-[48px]), adjusted spacing
 
 **Images:**
-- Assets stored in `src/assets/`
-- Import and use: `import heroImage from '../assets/hero2.png'`
-- Large images: profile photos, hero banners, featured content
-- Small images: QR codes, logos
+- **Optimized images** (`src/assets/`): Auto-compressed to 80% quality by `vite-plugin-image-optimizer`
+  - Import: `import heroImage from '../assets/hero2.png'`
+  - Good for: logos, icons, decorative images where compression is acceptable
+- **Full-quality images** (`public/`): Served as-is, no processing
+  - Reference with absolute path: `const profileImage = '/profile1.jpeg'`
+  - Good for: hero photos, profile pictures, images where quality is critical
+  - Root-level images in `public/` are excluded from optimization via `vite.config.ts`
+- The profile image (`profile1.jpeg`) is in `public/` for maximum quality on home page
 
 ## Key Files
 

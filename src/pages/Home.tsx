@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { SEO } from '../components/SEO';
-import profileImage from '../assets/profile1.jpeg';
+// Profile image served from public/ at full quality (no Vite optimization)
+const profileImage = '/profile1.jpeg';
 import heroImage from '../assets/hero2.png';
 import { typography } from '../utils/typography';
 import { homeFAQs, buildWebPageSchema } from '../utils/schemas';

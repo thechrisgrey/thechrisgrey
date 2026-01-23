@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     react(),
     ViteImageOptimizer({
+      // Only optimize images in assets/ (not public/ root files)
+      include: ['**/*.{jpg,jpeg,png,webp}'],
+      exclude: [/^[^/]+\.(jpg|jpeg|png|webp)$/], // Exclude root-level images (from public/)
       jpg: { quality: 80 },
       jpeg: { quality: 80 },
       png: { quality: 80 },
