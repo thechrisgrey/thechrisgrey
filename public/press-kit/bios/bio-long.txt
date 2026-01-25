@@ -1,0 +1,15 @@
+Christian Perez is the founder and CEO of Altivum® Inc., a Tennessee-based public benefit corporation engineering AI systems that empower people and organizations to adapt and excel. Through Altivum's three branches, he serves the veteran community, businesses at every level, and innovators exploring AI.
+
+Altivum Vanguard develops software for veterans and career starters, including VetROI™ (a certification command center for Cloud, AI, and Robotics careers) and Elo™ (an AI-powered communication coach). Altivum Logic provides cloud migration and AI integration services for businesses at every level. Altivum Press produces educational content including The Vector Podcast and Christian's book, Beyond the Assessment: Forging Strength, Overcoming Adversity, and Embracing the Warrior Mindset.
+
+Christian holds seven AWS certifications, including the AWS Generative AI Developer – Professional certification as an early adopter (one of only 5,000 worldwide, earning the "Early Adopter" badge). Altivum is an AWS Validated Partner under the Software Track.
+
+He is currently collaborating with Austin Peay State University to develop VetROI™, AI-powered software that delivers improved career pipelines for veterans. Christian is also actively building Clarksville's cloud community through the "Clarksville on the Cloud" initiative and leads the AWS User Group – Clarksville.
+
+Before founding Altivum, Christian served ten years in the US Army (2012–2022). His career was defined by his time as a Green Beret—serving as an 18D (Special Forces Medical Sergeant) with 1st Special Forces Group. His service included a deployment to Afghanistan in 2019–2020, where he earned the Bronze Star. The decisiveness, adaptability, and mission-first mindset he developed in Special Forces now drives Altivum's approach to building intelligent systems.
+
+Through his work, Christian is positioning veterans as strategic leaders in the evolution toward autonomous systems and robotics—not just as users of technology, but as architects and ethical stewards of the AI-driven future.
+
+Social: @thechrisgrey
+Personal: https://thechrisgrey.com
+Company: https://altivum.ai

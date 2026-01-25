@@ -1,39 +1,62 @@
 CHRISTIAN PEREZ PRESS KIT
 =========================
 
-This folder contains press materials for event organizers and media.
+This press kit contains approved materials for media, event organizers,
+and partners. Please use these assets as provided.
 
 
 FOLDER STRUCTURE
 ----------------
 
-/headshots/
-  - christian-perez-professional.jpg   (formal headshot, 300dpi)
-  - christian-perez-casual.jpg         (lifestyle shot, 300dpi)
-  - christian-perez-web.jpg            (web-optimized, 800x800px)
-
-/logos/
-  - altivum-logo.png                   (Altivum Inc. logo)
-  - vector-podcast-logo.png            (The Vector Podcast logo)
-
-/bios/
-  - bio-short.txt                      (100-150 words)
-  - bio-full.txt                       (300-400 words)
-  - bio-oneliner.txt                   (50 words)
-
-speaker-onesheet.pdf                   (1-page speaker overview)
-
-
-HEADSHOT SPECS
---------------
-- Professional: Clean background, shoulders up, business casual
-- Casual: More personality, can include context (speaking, outdoors)
-- Minimum resolution: 2000x2000px for print, 800x800px for web
-- Format: JPG (photos), PNG (if transparency needed)
+press-kit/
+├── headshots/
+│   ├── christian-perez-formal.jpg      (Professional headshot)
+│   ├── christian-perez-casual.jpg      (Casual/lifestyle photo)
+│   └── christian-perez-speaking.jpg    (Speaking/event photo)
+├── logos/
+│   ├── altivum-logo-dark.png           (For light backgrounds)
+│   ├── altivum-logo-light.png          (For dark backgrounds)
+│   └── tcg-logo.png                    (@thechrisgrey personal brand)
+├── bios/
+│   ├── bio-short.txt                   (3-4 sentences, for intros)
+│   └── bio-long.txt                    (Full bio, for event programs)
+├── christian-perez-fact-sheet.pdf      (One-page overview)
+├── speaking-topics.pdf                 (Available talk topics)
+└── README.txt                          (This file)
 
 
-USAGE RIGHTS
-------------
-These materials are provided for promotional use in connection with
-speaking engagements, podcast appearances, and media coverage featuring
-Christian Perez. For other uses, please contact: christian.perez@altivum.ai
+USAGE GUIDELINES
+----------------
+
+HEADSHOTS
+- Use without cropping or filters
+- Credit not required but appreciated
+
+LOGOS
+- Do not alter colors, proportions, or add effects
+- Maintain clear space around logos
+- Use dark logo on light backgrounds, light logo on dark backgrounds
+
+BIOS
+- Use as provided; do not edit without approval
+- For custom bios, contact christian.perez@altivum.ai
+
+NAME & HANDLE
+- Full name: Christian Perez
+- Social handle: @thechrisgrey (always lowercase, no spaces)
+- Never use "The Chris Grey" spelled out
+
+
+CONTACT
+-------
+
+For media inquiries, speaking requests, or high-resolution assets:
+
+Email:    christian.perez@altivum.ai
+Phone:    (615) 219-9425
+Social:   @thechrisgrey
+Personal: https://thechrisgrey.com
+Company:  https://altivum.ai
+
+
+© 2026 Altivum® Inc.
