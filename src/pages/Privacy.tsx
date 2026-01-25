@@ -2,7 +2,7 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 
 const Privacy = () => {
-  const lastUpdated = 'January 18, 2026';
+  const lastUpdated = 'January 25, 2026';
 
   return (
     <div className="min-h-screen pt-20">
@@ -137,6 +137,10 @@ const Privacy = () => {
                   <span className="text-altivum-gold mr-3">•</span>
                   <span><strong className="text-white">Sanity.io:</strong> Content management system for blog content.</span>
                 </li>
+                <li className="flex items-start">
+                  <span className="text-altivum-gold mr-3">•</span>
+                  <span><strong className="text-white">Cloudflare:</strong> DNS, security, and privacy-friendly web analytics.</span>
+                </li>
               </ul>
               <p className="text-altivum-silver mt-4" style={typography.bodyText}>
                 These services have their own privacy policies governing how they handle data.
@@ -149,10 +153,15 @@ const Privacy = () => {
               <h2 className="text-white mb-4" style={typography.sectionHeader}>
                 Cookies & Tracking
               </h2>
-              <p className="text-altivum-silver" style={typography.bodyText}>
+              <p className="text-altivum-silver mb-4" style={typography.bodyText}>
                 This Site uses minimal cookies necessary for basic functionality. We do not use
-                third-party advertising trackers or sell your data to advertisers. Any cookies
-                used are essential for the Site's operation and your browsing experience.
+                third-party advertising trackers or sell your data to advertisers.
+              </p>
+              <p className="text-altivum-silver" style={typography.bodyText}>
+                We use <strong className="text-white">Cloudflare Web Analytics</strong> to understand how visitors
+                use our Site. This service is privacy-friendly and does not use cookies, does not track
+                individual users across sites, and does not collect personal information. It only provides
+                aggregate data such as page views, visitor counts, and referral sources.
               </p>
             </div>
 
