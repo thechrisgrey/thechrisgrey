@@ -3,6 +3,7 @@ import { typography } from '../utils/typography';
 import { useState, useEffect, FormEvent } from 'react';
 import { contactFAQs, buildContactPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
+import { useFocusTrap } from '../hooks';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const Contact = () => {
     message: string;
   }>({ type: 'idle', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { containerRef: modalRef, handleKeyDown: handleModalKeyDown } = useFocusTrap(showSuccessModal);
 
   // Keyboard escape handler for modal
   useEffect(() => {
@@ -472,7 +474,14 @@ const Contact = () => {
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowSuccessModal(false)}
           ></div>
-          <div className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]">
+          <div
+            ref={modalRef}
+            onKeyDown={handleModalKeyDown}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-title"
+            className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
+          >
             <button
               onClick={() => setShowSuccessModal(false)}
               className="absolute top-4 right-4 text-altivum-silver hover:text-white transition-colors"
@@ -486,7 +495,7 @@ const Contact = () => {
                 <span className="material-icons text-altivum-gold text-4xl">check_circle</span>
               </div>
 
-              <h3 className="text-white mb-4" style={typography.cardTitleLarge}>
+              <h3 id="contact-modal-title" className="text-white mb-4" style={typography.cardTitleLarge}>
                 Thank You!
               </h3>
 

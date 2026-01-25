@@ -158,7 +158,12 @@ const Chat = () => {
         className="flex-1 overflow-y-auto"
       >
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="space-y-6">
+          <div
+            className="space-y-6"
+            role="log"
+            aria-live="polite"
+            aria-label="Chat messages"
+          >
             {messages.map((message) => (
               <ChatMessage
                 key={message.id}

@@ -4,6 +4,7 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
 import { blogFAQs } from '../utils/schemas';
+import { useFocusTrap } from '../hooks';
 import {
   client,
   urlFor,
@@ -26,6 +27,7 @@ const Blog = () => {
     message: string;
   }>({ type: 'idle', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const { containerRef: modalRef, handleKeyDown: handleModalKeyDown } = useFocusTrap(showSuccessModal);
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -489,7 +491,14 @@ const Blog = () => {
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowSuccessModal(false)}
           ></div>
-          <div className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]">
+          <div
+            ref={modalRef}
+            onKeyDown={handleModalKeyDown}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="newsletter-modal-title"
+            className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
+          >
             <button
               onClick={() => setShowSuccessModal(false)}
               className="absolute top-4 right-4 text-altivum-silver hover:text-white transition-colors"
@@ -503,7 +512,7 @@ const Blog = () => {
                 <span className="material-icons text-altivum-gold text-4xl">mark_email_read</span>
               </div>
 
-              <h3 className="text-white mb-4" style={typography.cardTitleLarge}>
+              <h3 id="newsletter-modal-title" className="text-white mb-4" style={typography.cardTitleLarge}>
                 Thank You for Subscribing!
               </h3>
 

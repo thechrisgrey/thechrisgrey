@@ -23,6 +23,26 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Focus-visible styles for keyboard navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #C5A572;
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

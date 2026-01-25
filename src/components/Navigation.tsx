@@ -1,14 +1,31 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
+
+const NAV_ITEMS = [
+  { path: '/', label: 'Home' },
+  { path: '/blog', label: 'Blog' },
+  { path: '/chat', label: 'AI Chat' },
+  { path: '/links', label: 'Links' },
+  { path: '/contact', label: 'Contact' },
+];
+
+const ABOUT_DROPDOWN_ITEMS = [
+  { path: '/about', label: 'Personal Biography' },
+  { path: '/altivum', label: 'Altivum Inc' },
+  { path: '/podcast', label: 'The Vector Podcast' },
+  { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
+];
 
 const Navigation = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
+  const [focusedDropdownIndex, setFocusedDropdownIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,31 +51,56 @@ const Navigation = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsAboutDropdownOpen(false);
+        setFocusedDropdownIndex(-1);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/blog', label: 'Blog' },
-    { path: '/chat', label: 'AI Chat' },
-    { path: '/links', label: 'Links' },
-    { path: '/contact', label: 'Contact' },
-  ];
+  // Focus dropdown item when index changes
+  useEffect(() => {
+    if (focusedDropdownIndex >= 0 && dropdownItemsRef.current[focusedDropdownIndex]) {
+      dropdownItemsRef.current[focusedDropdownIndex]?.focus();
+    }
+  }, [focusedDropdownIndex]);
 
-  const aboutDropdownItems = [
-    { path: '/about', label: 'Personal Biography' },
-    { path: '/altivum', label: 'Altivum Inc' },
-    { path: '/podcast', label: 'The Vector Podcast' },
-    { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
-  ];
+  // Keyboard navigation for dropdown
+  const handleDropdownKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const itemCount = ABOUT_DROPDOWN_ITEMS.length;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!isAboutDropdownOpen) {
+          setIsAboutDropdownOpen(true);
+          setFocusedDropdownIndex(0);
+        } else {
+          setFocusedDropdownIndex((prev) => (prev + 1) % itemCount);
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (isAboutDropdownOpen) {
+          setFocusedDropdownIndex((prev) => (prev - 1 + itemCount) % itemCount);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setIsAboutDropdownOpen(false);
+        setFocusedDropdownIndex(-1);
+        break;
+      case 'Tab':
+        setIsAboutDropdownOpen(false);
+        setFocusedDropdownIndex(-1);
+        break;
+    }
+  }, [isAboutDropdownOpen]);
 
   const isActive = (path: string) => location.pathname === path;
 
   const isAboutActive = () => {
-    return aboutDropdownItems.some(item => item.path && location.pathname === item.path);
+    return ABOUT_DROPDOWN_ITEMS.some(item => item.path && location.pathname === item.path);
   };
 
   return (
@@ -101,9 +143,12 @@ const Navigation = () => {
             </Link>
 
             {/* About Dropdown */}
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative" ref={dropdownRef} onKeyDown={handleDropdownKeyDown}>
               <button
-                onClick={() => setIsAboutDropdownOpen(!isAboutDropdownOpen)}
+                onClick={() => {
+                  setIsAboutDropdownOpen(!isAboutDropdownOpen);
+                  setFocusedDropdownIndex(-1);
+                }}
                 className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 flex items-center ${isAboutActive()
                   ? 'text-altivum-gold bg-altivum-blue/30'
                   : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
@@ -119,17 +164,27 @@ const Navigation = () => {
               </button>
 
               {isAboutDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-altivum-navy/95 backdrop-blur-md rounded-md shadow-lg border border-altivum-slate/30 overflow-hidden">
-                  {aboutDropdownItems.map((item, index) => (
+                <div
+                  className="absolute top-full left-0 mt-2 w-56 bg-altivum-navy/95 backdrop-blur-md rounded-md shadow-lg border border-altivum-slate/30 overflow-hidden"
+                  role="menu"
+                  aria-orientation="vertical"
+                >
+                  {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
                       <Link
                         key={index}
+                        ref={(el) => { dropdownItemsRef.current[index] = el; }}
                         to={item.path}
-                        onClick={() => setIsAboutDropdownOpen(false)}
+                        onClick={() => {
+                          setIsAboutDropdownOpen(false);
+                          setFocusedDropdownIndex(-1);
+                        }}
+                        role="menuitem"
+                        tabIndex={focusedDropdownIndex === index ? 0 : -1}
                         className={`block px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive(item.path)
                           ? 'text-altivum-gold bg-altivum-blue/30'
                           : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                          }`}
+                          } ${focusedDropdownIndex === index ? 'bg-altivum-blue/20' : ''}`}
                       >
                         {item.label}
                       </Link>
@@ -137,6 +192,8 @@ const Navigation = () => {
                       <div
                         key={index}
                         className="px-4 py-3 text-sm font-medium text-altivum-slate cursor-not-allowed"
+                        role="menuitem"
+                        aria-disabled="true"
                       >
                         {item.label}
                       </div>
@@ -146,7 +203,7 @@ const Navigation = () => {
               )}
             </div>
 
-            {navItems.slice(1).map((item) => (
+            {NAV_ITEMS.slice(1).map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -192,7 +249,7 @@ const Navigation = () => {
               <div className="px-4 py-2">
                 <div className="text-xs font-semibold text-altivum-gold uppercase tracking-wider mb-2">About</div>
                 <div className="flex flex-col space-y-1 ml-2">
-                  {aboutDropdownItems.map((item, index) => (
+                  {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
                       <Link
                         key={index}
@@ -217,7 +274,7 @@ const Navigation = () => {
                 </div>
               </div>
 
-              {navItems.slice(1).map((item) => (
+              {NAV_ITEMS.slice(1).map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
