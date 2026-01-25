@@ -335,6 +335,12 @@ Required (set in AWS Amplify console):
 - `VITE_NEWSLETTER_ENDPOINT`: AWS Lambda URL for newsletter subscriptions
 - `VITE_CHAT_ENDPOINT`: AWS Lambda Function URL for AI chat streaming
 
+**Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
+- AWS Console: Amplify > App > Environment variables
+- CLI: `aws amplify update-branch --app-id dv3g3860t7qiz --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
+
+After adding/changing env vars, trigger a rebuild for changes to take effect.
+
 ## Deployment Notes
 
 - **Never commit** `node_modules/` or `dist/` (in `.gitignore`)
