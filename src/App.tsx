@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
 import About from './pages/About';
 import Altivum from './pages/Altivum';
@@ -24,20 +25,22 @@ function App() {
       <ScrollToTop />
       <Navigation />
       <main id="main-content">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/altivum" element={<Altivum />} />
-        <Route path="/podcast" element={<Podcast />} />
-        <Route path="/beyond-the-assessment" element={<BeyondTheAssessment />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/links" element={<Links />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/altivum" element={<Altivum />} />
+            <Route path="/podcast" element={<Podcast />} />
+            <Route path="/beyond-the-assessment" element={<BeyondTheAssessment />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/links" element={<Links />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ErrorBoundary>
       </main>
       {!isFullscreenPage && <Footer />}
     </div>

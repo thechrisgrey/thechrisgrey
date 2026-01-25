@@ -4,6 +4,7 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
 import { blogFAQs } from '../utils/schemas';
+import { isValidEmail } from '../utils/validators';
 import { useFocusTrap } from '../hooks';
 import {
   client,
@@ -28,8 +29,6 @@ const Blog = () => {
   }>({ type: 'idle', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { containerRef: modalRef, handleKeyDown: handleModalKeyDown } = useFocusTrap(showSuccessModal);
-
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   // Fetch all posts on mount
   useEffect(() => {
@@ -106,7 +105,7 @@ const Blog = () => {
   const handleSubscribe = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!emailRegex.test(subscribeEmail.trim())) {
+    if (!isValidEmail(subscribeEmail)) {
       setSubscribeStatus({ type: 'error', message: 'Please enter a valid email address' });
       return;
     }

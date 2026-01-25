@@ -1,5 +1,6 @@
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
+import { isValidEmail } from '../utils/validators';
 import { useState, useEffect, FormEvent } from 'react';
 import { contactFAQs, buildContactPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
@@ -32,13 +33,11 @@ const Contact = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showSuccessModal]);
 
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
   const validateForm = (): string | null => {
     if (formData.name.trim().length < 2 || formData.name.trim().length > 100) {
       return 'Name must be between 2 and 100 characters';
     }
-    if (!emailRegex.test(formData.email.trim())) {
+    if (!isValidEmail(formData.email)) {
       return 'Please enter a valid email address';
     }
     if (formData.message.trim().length < 10 || formData.message.trim().length > 5000) {
