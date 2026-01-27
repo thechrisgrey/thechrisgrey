@@ -1,7 +1,8 @@
 import { PodcastEpisode, PodcastPlatform } from '../types/podcast';
+import generatedData from './generatedEpisodes.json';
 
-// Episode data extracted from Riverside RSS feed
-export const PODCAST_EPISODES: PodcastEpisode[] = [
+// Fallback static episodes (used when YouTube API data isn't available)
+const FALLBACK_EPISODES: PodcastEpisode[] = [
   {
     id: 'ep-003',
     title: 'Leading Through the Cloud',
@@ -57,6 +58,15 @@ export const PODCAST_EPISODES: PodcastEpisode[] = [
     topics: ['Ethics', 'Education', 'Counseling', 'Data Privacy', 'Empathy']
   }
 ];
+
+// Use generated YouTube data if available, otherwise fallback to static
+export const PODCAST_EPISODES: PodcastEpisode[] =
+  generatedData.episodes.length > 0
+    ? (generatedData.episodes as PodcastEpisode[])
+    : FALLBACK_EPISODES;
+
+// Latest video ID for YouTube embed (null if using fallback)
+export const LATEST_VIDEO_ID: string | null = generatedData.latestVideoId || null;
 
 // Podcast platforms for subscription
 export const PODCAST_PLATFORMS: PodcastPlatform[] = [

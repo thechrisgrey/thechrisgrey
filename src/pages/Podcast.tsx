@@ -5,7 +5,7 @@ import tvpLogo from '../assets/tvp.png';
 // Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
 import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
-import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL } from '../data/podcastEpisodes';
+import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
 
@@ -102,7 +102,7 @@ const Podcast = () => {
         </div>
       </section>
 
-      {/* Featured Episode */}
+      {/* Latest Episode - YouTube Embed */}
       <section className="py-24 bg-altivum-dark border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -116,7 +116,41 @@ const Podcast = () => {
             </h2>
           </div>
 
-          <EpisodeCard episode={featuredEpisode} variant="featured" />
+          {LATEST_VIDEO_ID ? (
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-altivum-navy">
+              <iframe
+                src={`https://www.youtube.com/embed/${LATEST_VIDEO_ID}?rel=0&modestbranding=1`}
+                title={featuredEpisode.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <EpisodeCard episode={featuredEpisode} variant="featured" />
+          )}
+
+          {/* Episode Details (shown below video embed) */}
+          {LATEST_VIDEO_ID && featuredEpisode && (
+            <div className="mt-8 p-6 sm:p-8 rounded-lg border border-white/10 bg-white/5">
+              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wider font-medium mb-4">
+                {featuredEpisode.episodeNumber && (
+                  <span className="text-altivum-gold">
+                    {featuredEpisode.seasonNumber ? `S${featuredEpisode.seasonNumber} ` : ''}Episode {featuredEpisode.episodeNumber}
+                  </span>
+                )}
+                <span className="text-altivum-slate">|</span>
+                <span className="text-altivum-silver">{featuredEpisode.duration}</span>
+              </div>
+              <h3 className="text-white mb-4" style={typography.cardTitleLarge}>
+                {featuredEpisode.title}
+              </h3>
+              <p className="text-altivum-silver" style={typography.bodyText}>
+                {featuredEpisode.description}
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

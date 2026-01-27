@@ -19,15 +19,24 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
         transition-all duration-300
         ${isFeatured ? 'lg:flex lg:gap-10' : ''}
       `}>
-        {/* Thumbnail placeholder - can add actual thumbnails later */}
+        {/* Thumbnail */}
         {isFeatured && (
           <div className="relative overflow-hidden rounded-lg mb-6 lg:w-2/5 lg:mb-0 aspect-video bg-gradient-to-br from-altivum-navy to-altivum-dark flex items-center justify-center">
-            <div className="text-center p-6">
-              <span className="material-icons text-6xl text-altivum-gold/50 mb-2">podcasts</span>
-              <div className="text-altivum-gold font-medium">
-                S{episode.seasonNumber} E{episode.episodeNumber}
+            {episode.thumbnail ? (
+              <img
+                src={episode.thumbnail}
+                alt={episode.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="text-center p-6">
+                <span className="material-icons text-6xl text-altivum-gold/50 mb-2">podcasts</span>
+                <div className="text-altivum-gold font-medium">
+                  S{episode.seasonNumber} E{episode.episodeNumber}
+                </div>
               </div>
-            </div>
+            )}
             <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/70 rounded text-sm text-white font-medium">
               {episode.duration}
             </div>

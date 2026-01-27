@@ -272,6 +272,36 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Auto-discovery link in `index.html` head
 - Link in footer Quick Links section
 
+### Podcast Page (`/podcast`)
+
+**Data Source:**
+- Episodes fetched from YouTube channel at build time via `scripts/generate-podcast-episodes.js`
+- Requires `YOUTUBE_API_KEY` environment variable (set in Amplify)
+- Falls back to static episodes in `src/data/podcastEpisodes.ts` if API key unavailable
+- Generated data stored in `src/data/generatedEpisodes.json`
+
+**YouTube Integration:**
+- Fetches all videos from @AltivumPress channel
+- Extracts: title, description, thumbnail, duration, publish date, video ID
+- Parses episode numbers from titles (patterns: "Ep 1", "Episode 1", "#1")
+- Latest episode displayed as embedded YouTube player
+
+**Build Process:**
+1. `generate-podcast-episodes.js` runs first in build
+2. Fetches YouTube Data API v3 (channel → uploads playlist → videos)
+3. Generates `generatedEpisodes.json` with episode data
+4. Vite bundles the JSON into the app
+
+**Setting Up YouTube API Key:**
+1. Go to Google Cloud Console → APIs & Services → Credentials
+2. Create API Key (restrict to YouTube Data API v3)
+3. Add to Amplify: `aws amplify update-branch --app-id dv3g3860t7qiz --branch-name main --environment-variables "YOUTUBE_API_KEY=your-key" --region us-east-2`
+
+**Auto-Update Webhook (Optional):**
+To automatically rebuild when new videos are uploaded:
+- Set up YouTube PubSubHubbub subscription
+- Or use scheduled CloudWatch Events to trigger Amplify rebuild periodically
+
 ### Contact Page & Speaking/Media
 
 The Contact page (`/contact`) combines contact form with speaking/media information:
@@ -390,6 +420,9 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `docs/bedrock-logging-queries.md`: CloudWatch Logs Insights queries for chat analytics
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
 - `scripts/generate-rss.js`: Build-time RSS feed generator
+- `scripts/generate-podcast-episodes.js`: Fetches episodes from YouTube at build time
+- `src/data/podcastEpisodes.ts`: Podcast episode data (uses generated YouTube data or fallback)
+- `src/data/generatedEpisodes.json`: Auto-generated YouTube episode data
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
 - `src/pages/NotFound.tsx`: Custom 404 page
 - `public/.well-known/security.txt`: Security vulnerability reporting contact
@@ -404,6 +437,7 @@ Required (set in AWS Amplify console):
 - `VITE_CONTACT_ENDPOINT`: AWS Lambda URL for contact form submissions
 - `VITE_NEWSLETTER_ENDPOINT`: AWS Lambda URL for newsletter subscriptions
 - `VITE_CHAT_ENDPOINT`: AWS Lambda Function URL for AI chat streaming
+- `YOUTUBE_API_KEY`: YouTube Data API v3 key for podcast episode fetching (build-time only, not VITE_ prefixed)
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables
