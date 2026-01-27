@@ -432,6 +432,6 @@ podcast-episodes → tsc → vite build → sitemap → rss
 
 ## License
 
-Copyright © 2025 Christian Perez. All rights reserved.
+Copyright © 2026 Christian Perez. All rights reserved.
 
 For inquiries, use the [contact form](https://thechrisgrey.com/contact) or email via the website.
