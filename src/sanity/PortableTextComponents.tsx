@@ -60,6 +60,9 @@ export const portableTextComponents: PortableTextComponents = {
 
     // Code blocks with syntax highlighting styling
     codeBlock: ({ value }: { value: CodeBlock }) => {
+      const language = value.code?.language
+      const code = value.code?.code || ''
+
       return (
         <div className="my-6">
           {value.filename && (
@@ -72,13 +75,13 @@ export const portableTextComponents: PortableTextComponents = {
               value.filename ? 'rounded-b-lg' : 'rounded-lg'
             }`}
           >
-            <code className={value.language ? `language-${value.language}` : ''}>
-              {value.code}
+            <code className={language ? `language-${language}` : ''}>
+              {code}
             </code>
           </pre>
-          {value.language && (
+          {language && (
             <div className="text-right text-xs text-altivum-slate mt-1">
-              {value.language}
+              {language}
             </div>
           )}
         </div>

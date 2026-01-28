@@ -67,9 +67,13 @@ export interface SanityBlock {
 export interface CodeBlock {
   _type: 'codeBlock'
   _key: string
-  language?: string
   filename?: string
-  code: string
+  code: {
+    _type: 'code'
+    language?: string
+    code: string
+    highlightedLines?: number[]
+  }
 }
 
 export interface Callout {
