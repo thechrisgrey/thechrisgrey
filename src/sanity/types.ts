@@ -112,3 +112,16 @@ export interface BookReference {
   description?: string
   link?: string
 }
+
+export interface PodcastGuest {
+  _id: string
+  name: string
+  role: string
+  branch?: 'army' | 'navy' | 'marines' | 'air-force' | 'space-force' | 'coast-guard'
+  episodeUrl?: string
+  image?: SanityImage
+  linkedinUrl?: string
+  websiteUrl?: string
+  websiteLabel?: string
+  order: number
+}

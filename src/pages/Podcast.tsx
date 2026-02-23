@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { typography } from '../utils/typography';
 import { SEO } from '../components/SEO';
 import tvpLogo from '../assets/tvp.png';
@@ -8,9 +8,21 @@ import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
+import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
+import type { PodcastGuest } from '../sanity';
+import GuestCard from '../components/GuestCard';
 
 const Podcast = () => {
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
+  const [guests, setGuests] = useState<PodcastGuest[]>([]);
+  const [isLoadingGuests, setIsLoadingGuests] = useState(true);
+
+  useEffect(() => {
+    podcastClient.fetch<PodcastGuest[]>(PODCAST_GUESTS_QUERY)
+      .then(setGuests)
+      .catch(() => setGuests([]))
+      .finally(() => setIsLoadingGuests(false));
+  }, []);
 
   const featuredEpisode = PODCAST_EPISODES[0];
   const otherEpisodes = PODCAST_EPISODES.slice(1);
@@ -181,6 +193,26 @@ const Podcast = () => {
                 </button>
               </div>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* Featured Veterans */}
+      {!isLoadingGuests && guests.length > 0 && (
+        <section className="py-24 bg-altivum-dark border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-white mb-4" style={typography.sectionHeader}>
+                Featured Veterans
+              </h2>
+              <div className="h-px w-24 bg-altivum-gold mx-auto"></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {guests.map((guest) => (
+                <GuestCard key={guest._id} guest={guest} />
+              ))}
+            </div>
           </div>
         </section>
       )}

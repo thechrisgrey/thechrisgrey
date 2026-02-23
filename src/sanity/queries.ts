@@ -112,3 +112,17 @@ export const SERIES_QUERY = `*[_type == "series"] | order(title asc) {
   slug,
   description
 }`
+
+// Fetch all podcast guests
+export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order asc) {
+  _id,
+  name,
+  role,
+  branch,
+  episodeUrl,
+  image { asset->, alt },
+  linkedinUrl,
+  websiteUrl,
+  websiteLabel,
+  order
+}`
