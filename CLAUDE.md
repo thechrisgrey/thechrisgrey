@@ -23,13 +23,13 @@ npm run lint         # Run ESLint on TypeScript files
 
 **Deployment:**
 - Pushing to `main` branch automatically triggers AWS Amplify deployment
-- Amplify App ID: `d3t4ynrml9lyqb` (us-east-2)
+- Amplify App ID: `d3du8eg39a9peo` (us-east-2)
 - Amplify uses `amplify.yml` configuration (runs `npm ci` then `npm run build`)
 - Build artifacts from `dist/` directory are deployed
 
 **Manual Amplify Rebuild:**
 ```bash
-aws amplify start-job --app-id d3t4ynrml9lyqb --branch-name main --job-type RELEASE --region us-east-2
+aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELEASE --region us-east-2
 ```
 
 ## Architecture
@@ -314,7 +314,7 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 **Setting Up YouTube API Key:**
 1. Go to Google Cloud Console → APIs & Services → Credentials
 2. Create API Key (restrict to YouTube Data API v3)
-3. Add to Amplify: `aws amplify update-branch --app-id d3t4ynrml9lyqb --branch-name main --environment-variables "YOUTUBE_API_KEY=your-key" --region us-east-2`
+3. Add to Amplify: `aws amplify update-branch --app-id d3du8eg39a9peo --branch-name main --environment-variables "YOUTUBE_API_KEY=your-key" --region us-east-2`
 
 **Auto-Update Webhook (Optional):**
 To automatically rebuild when new videos are uploaded:
@@ -461,7 +461,7 @@ Required (set in AWS Amplify console):
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables
-- CLI: `aws amplify update-branch --app-id d3t4ynrml9lyqb --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
+- CLI: `aws amplify update-branch --app-id d3du8eg39a9peo --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
 
 After adding/changing env vars, trigger a rebuild for changes to take effect.
 
