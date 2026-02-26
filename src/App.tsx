@@ -16,6 +16,7 @@ import BeyondTheAssessment from './pages/BeyondTheAssessment';
 import Chat from './pages/Chat';
 import Privacy from './pages/Privacy';
 import NotFound from './pages/NotFound';
+import ChatWidget from './components/chat/ChatWidget';
 
 function App() {
   const location = useLocation();
@@ -58,6 +59,7 @@ function App() {
         </ErrorBoundary>
       </main>
       {!isFullscreenPage && <Footer />}
+      {!isFullscreenPage && <ChatWidget />}
     </div>
   );
 }

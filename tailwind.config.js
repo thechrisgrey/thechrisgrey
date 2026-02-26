@@ -45,10 +45,15 @@ export default {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
         },
+        'widget-open': {
+          '0%': { opacity: '0', transform: 'translateY(16px) scale(0.95)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 1.2s ease-out forwards',
         'nav-fade-in': 'nav-fade-in 0.8s ease-out 2s forwards',
+        'widget-open': 'widget-open 250ms ease-out forwards',
       },
     },
   },

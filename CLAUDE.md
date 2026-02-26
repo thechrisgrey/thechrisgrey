@@ -23,13 +23,13 @@ npm run lint         # Run ESLint on TypeScript files
 
 **Deployment:**
 - Pushing to `main` branch automatically triggers AWS Amplify deployment
-- Amplify App ID: `dv3g3860t7qiz` (us-east-2)
+- Amplify App ID: `d3t4ynrml9lyqb` (us-east-2)
 - Amplify uses `amplify.yml` configuration (runs `npm ci` then `npm run build`)
 - Build artifacts from `dist/` directory are deployed
 
 **Manual Amplify Rebuild:**
 ```bash
-aws amplify start-job --app-id dv3g3860t7qiz --branch-name main --job-type RELEASE --region us-east-2
+aws amplify start-job --app-id d3t4ynrml9lyqb --branch-name main --job-type RELEASE --region us-east-2
 ```
 
 ## Architecture
@@ -39,7 +39,7 @@ aws amplify start-job --app-id dv3g3860t7qiz --branch-name main --job-type RELEA
 - Global layout in `App.tsx`: `<ScrollToTop>` → `<Navigation>` → `<Routes>` → `<Footer>`
 - 11 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`
 - Catch-all `*` route renders custom 404 page (`src/pages/NotFound.tsx`)
-- Footer is conditionally hidden on full-viewport pages (e.g., `/chat`)
+- Footer and chat widget are conditionally hidden on full-viewport pages (e.g., `/chat`)
 
 ### Design System (Tailwind)
 
@@ -68,6 +68,7 @@ aws amplify start-job --app-id dv3g3860t7qiz --branch-name main --job-type RELEA
 **Custom Animations:**
 - `animate-fade-in`: Hero section entrance (1.2s)
 - `animate-nav-fade-in`: Navigation delayed entrance (0.8s with 2s delay)
+- `animate-widget-open`: Chat widget panel entrance (250ms slide-up + scale-in)
 - `shimmer`: Background shimmer effect
 - Defined as Tailwind keyframes in `tailwind.config.js`
 
@@ -165,11 +166,29 @@ import { client, urlFor, POSTS_QUERY } from '../sanity';
 const posts = await client.fetch(POSTS_QUERY);
 ```
 
-### AI Chat (`/chat`)
+### AI Chat (`/chat` + Floating Widget)
 
-Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Haiku 4.5, and RAG via Bedrock Knowledge Base.
+Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Haiku 4.5, and RAG via Bedrock Knowledge Base. Also accessible as a compact floating widget on every other page.
 
-**Frontend** (`src/pages/Chat.tsx`):
+**Shared Chat Engine** (`src/hooks/useChatEngine.ts`):
+- All chat state and streaming logic extracted into a reusable `useChatEngine()` hook
+- Manages messages, typing state, streaming fetch, conversation history, and scroll behavior
+- Both the full chat page and the widget consume this hook independently
+- Since the widget hides on `/chat` and the chat page only renders on `/chat`, they never coexist -- `sessionStorage` keeps conversations in sync across navigation
+- Exports: `useChatEngine`, `CHAT_STORAGE_KEY`, `Message` interface, `initialWelcomeMessage`
+
+**Chat Widget** (`src/components/chat/`):
+- `ChatWidget.tsx`: Orchestrator with `isOpen` state, renders button + panel
+- `ChatWidgetButton.tsx`: Gold FAB, `fixed bottom-6 right-6 z-40`, toggles `chat`/`close` icons, `aria-expanded`
+- `ChatWidgetPanel.tsx`: Compact chat panel (`fixed bottom-24 right-6 z-40`)
+  - Header with status dot, clear/expand/close buttons
+  - Reuses existing `ChatMessage`, `ChatInput`, `ChatSuggestions`, `TypingIndicator`
+  - "Expand" button navigates to `/chat` for the full experience
+  - Uses `useFocusTrap` for accessibility, Escape to close
+  - Mobile: `w-[calc(100vw-2rem)] h-[calc(100vh-8rem)]`, Desktop: `sm:w-[400px] sm:h-[560px]`
+- Widget hidden on `/chat` page (controlled in `App.tsx` via `isFullscreenPage`)
+
+**Full Chat Page** (`src/pages/Chat.tsx`):
 - Full-viewport layout (`h-screen overflow-hidden`) - no page scroll, no footer
 - Messages scroll within container, input stays anchored at bottom
 - Real-time streaming responses via fetch + ReadableStream
@@ -295,7 +314,7 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 **Setting Up YouTube API Key:**
 1. Go to Google Cloud Console → APIs & Services → Credentials
 2. Create API Key (restrict to YouTube Data API v3)
-3. Add to Amplify: `aws amplify update-branch --app-id dv3g3860t7qiz --branch-name main --environment-variables "YOUTUBE_API_KEY=your-key" --region us-east-2`
+3. Add to Amplify: `aws amplify update-branch --app-id d3t4ynrml9lyqb --branch-name main --environment-variables "YOUTUBE_API_KEY=your-key" --region us-east-2`
 
 **Auto-Update Webhook (Optional):**
 To automatically rebuild when new videos are uploaded:
@@ -413,7 +432,8 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/hooks/useSessionStorage.ts`: Generic sessionStorage hook with JSON serialization and Date revival
 - `src/pages/Home.tsx`: Complex scroll animations and sticky sections
 - `src/pages/Chat.tsx`: Full-viewport AI chat experience
-- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator)
+- `src/hooks/useChatEngine.ts`: Shared chat state/streaming hook used by both Chat page and widget
+- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, ChatWidgetPanel)
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
@@ -441,7 +461,7 @@ Required (set in AWS Amplify console):
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables
-- CLI: `aws amplify update-branch --app-id dv3g3860t7qiz --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
+- CLI: `aws amplify update-branch --app-id d3t4ynrml9lyqb --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
 
 After adding/changing env vars, trigger a rebuild for changes to take effect.
 
