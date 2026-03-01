@@ -7,7 +7,7 @@ import {
   RetrieveCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createHash } from "crypto";
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
@@ -53,50 +53,49 @@ You can use your general knowledge to explain concepts (like what an AWS User Gr
 async function checkRateLimit(ip) {
   const ipHash = createHash('sha256').update(ip || 'unknown').digest('hex');
   const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - (now % RATE_LIMIT_WINDOW);
 
   try {
-    const result = await docClient.send(new GetCommand({
+    const result = await docClient.send(new UpdateCommand({
       TableName: RATE_LIMIT_TABLE,
-      Key: { pk: ipHash }
+      Key: { pk: ipHash },
+      UpdateExpression: 'ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)',
+      ConditionExpression: 'attribute_not_exists(pk) OR windowStart = :ws',
+      ExpressionAttributeNames: { '#ttl': 'ttl' },
+      ExpressionAttributeValues: {
+        ':inc': 1,
+        ':ws': windowStart,
+        ':ttl': windowStart + RATE_LIMIT_WINDOW + 3600,
+      },
+      ReturnValues: 'ALL_NEW',
     }));
 
-    const item = result.Item;
-
-    if (item && (now - item.windowStart) < RATE_LIMIT_WINDOW) {
-      // Within current window
-      if (item.requestCount >= RATE_LIMIT_MAX) {
-        return { allowed: false, remaining: 0 };
-      }
-
-      // Increment counter
-      await docClient.send(new PutCommand({
-        TableName: RATE_LIMIT_TABLE,
-        Item: {
-          pk: ipHash,
-          requestCount: item.requestCount + 1,
-          windowStart: item.windowStart,
-          ttl: item.windowStart + RATE_LIMIT_WINDOW + 3600 // Extra hour buffer for TTL
-        }
-      }));
-
-      return { allowed: true, remaining: RATE_LIMIT_MAX - item.requestCount - 1 };
+    const count = result.Attributes?.requestCount ?? 1;
+    if (count > RATE_LIMIT_MAX) {
+      return { allowed: false, remaining: 0 };
     }
-
-    // New window - reset counter
-    await docClient.send(new PutCommand({
-      TableName: RATE_LIMIT_TABLE,
-      Item: {
-        pk: ipHash,
-        requestCount: 1,
-        windowStart: now,
-        ttl: now + RATE_LIMIT_WINDOW + 3600
-      }
-    }));
-
-    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+    return { allowed: true, remaining: RATE_LIMIT_MAX - count };
   } catch (error) {
+    // ConditionalCheckFailedException = stale window, safe to reset
+    if (error.name === 'ConditionalCheckFailedException') {
+      try {
+        await docClient.send(new UpdateCommand({
+          TableName: RATE_LIMIT_TABLE,
+          Key: { pk: ipHash },
+          UpdateExpression: 'SET requestCount = :one, windowStart = :ws, #ttl = :ttl',
+          ExpressionAttributeNames: { '#ttl': 'ttl' },
+          ExpressionAttributeValues: {
+            ':one': 1,
+            ':ws': windowStart,
+            ':ttl': windowStart + RATE_LIMIT_WINDOW + 3600,
+          },
+        }));
+        return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+      } catch {
+        return { allowed: true, remaining: -1 };
+      }
+    }
     console.error("Rate limit error:", error);
-    // Fail open - allow request if rate limiting fails
     return { allowed: true, remaining: -1 };
   }
 }
@@ -105,11 +104,17 @@ async function checkRateLimit(ip) {
  * Validate input messages
  * Returns { valid: boolean, error?: string }
  */
+const VALID_ROLES = new Set(['user', 'assistant']);
+const MAX_MESSAGE_LENGTH = 4000;
+const MAX_MESSAGE_COUNT = 50;
+
 function validateInput(messages) {
   if (!Array.isArray(messages) || messages.length === 0) {
     return { valid: false, error: "Please send a message to start our conversation." };
   }
-
+  if (messages.length > MAX_MESSAGE_COUNT) {
+    return { valid: false, error: "Conversation history is too long. Please start a new conversation." };
+  }
   for (const msg of messages) {
     if (!msg || typeof msg.content !== 'string') {
       return { valid: false, error: "Invalid message format." };
@@ -117,8 +122,13 @@ function validateInput(messages) {
     if (msg.content.trim().length === 0) {
       return { valid: false, error: "Please enter a message." };
     }
+    if (msg.content.length > MAX_MESSAGE_LENGTH) {
+      return { valid: false, error: "Your message is too long. Please keep messages under 4000 characters." };
+    }
+    if (!msg.role || !VALID_ROLES.has(msg.role)) {
+      return { valid: false, error: "Invalid message format." };
+    }
   }
-
   return { valid: true };
 }
 
@@ -236,8 +246,18 @@ export const handler = awslambda.streamifyResponse(
       // Build system prompt with context
       const systemPrompt = buildSystemPrompt(retrievedContext);
 
+      // Server-side sliding window: keep last 20 messages for Bedrock
+      const BEDROCK_MAX_MESSAGES = 20;
+      const truncated = messages.length > BEDROCK_MAX_MESSAGES
+        ? messages.slice(messages.length - BEDROCK_MAX_MESSAGES)
+        : messages;
+      // Ensure first message is from 'user' (Bedrock requirement)
+      const windowMessages = truncated[0]?.role === 'assistant'
+        ? truncated.slice(1)
+        : truncated;
+
       // Convert messages to Bedrock format
-      const bedrockMessages = messages.map((msg) => ({
+      const bedrockMessages = windowMessages.map((msg) => ({
         role: msg.role,
         content: [{ text: msg.content }],
       }));

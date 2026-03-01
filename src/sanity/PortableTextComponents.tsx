@@ -1,6 +1,7 @@
 import { PortableTextComponents } from '@portabletext/react'
 import { urlFor } from './client'
 import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types'
+import YouTubeFacade from '../components/YouTubeFacade'
 
 // Extract YouTube video ID from URL
 function getYouTubeId(url: string): string | null {
@@ -114,13 +115,10 @@ export const portableTextComponents: PortableTextComponents = {
       if (!videoId) return null
       return (
         <figure className="my-8">
-          <div className="relative aspect-video rounded-lg overflow-hidden">
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}`}
-              title="YouTube video"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
+          <div className="relative aspect-video rounded-lg overflow-hidden bg-altivum-navy">
+            <YouTubeFacade
+              videoId={videoId}
+              title={value.caption || 'YouTube video'}
             />
           </div>
           {value.caption && (

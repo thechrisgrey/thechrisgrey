@@ -20,6 +20,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
+          'vendor': ['react', 'react-dom'],
           'sanity': ['@sanity/client', '@sanity/image-url', '@portabletext/react'],
           'router': ['react-router-dom'],
         }

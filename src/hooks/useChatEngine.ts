@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 
+const MAX_HISTORY = 20;
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -26,10 +28,18 @@ export function useChatEngine() {
   );
   const [isTyping, setIsTyping] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Clean up stale chat-typing key from sessionStorage (legacy)
   useEffect(() => {
     sessionStorage.removeItem('chat-typing');
+  }, []);
+
+  // Abort in-flight request on unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
   }, []);
 
   const hasUserMessages = messages.some((m) => m.role === 'user');
@@ -56,6 +66,13 @@ export function useChatEngine() {
 
   const handleSend = useCallback(
     async (content: string) => {
+      // Abort any previous in-flight request
+      abortControllerRef.current?.abort();
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 30_000);
+
       const userMessage: Message = {
         id: `user-${Date.now()}`,
         role: 'user',
@@ -66,10 +83,15 @@ export function useChatEngine() {
       setMessages((prev) => [...prev, userMessage]);
       setIsTyping(true);
 
-      const conversationHistory = [
+      // Client-side sliding window (mirrors server-side 20-message limit)
+      const allMessages = [
         ...messages.filter((m) => m.id !== 'welcome'),
         userMessage,
-      ].map((msg) => ({
+      ];
+      const windowed = allMessages.length > MAX_HISTORY
+        ? allMessages.slice(allMessages.length - MAX_HISTORY)
+        : allMessages;
+      const conversationHistory = windowed.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
@@ -91,6 +113,7 @@ export function useChatEngine() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: conversationHistory }),
+          signal: controller.signal,
         });
 
         if (!response.ok) throw new Error('Failed to get response');
@@ -117,18 +140,32 @@ export function useChatEngine() {
           }
         }
       } catch (error) {
-        console.error('Chat error:', error);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantMessageId
-              ? {
-                  ...msg,
-                  content:
-                    'I apologize, but I encountered an error. Please try again.',
-                }
-              : msg
-          )
-        );
+        if (error instanceof Error && error.name === 'AbortError') {
+          // Timeout or navigation — show timeout message only if no content received
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId && msg.content === ''
+                ? { ...msg, content: 'The response timed out. Please try again.' }
+                : msg
+            )
+          );
+        } else {
+          console.error('Chat error:', error);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? {
+                    ...msg,
+                    content:
+                      'I apologize, but I encountered an error. Please try again.',
+                  }
+                : msg
+            )
+          );
+        }
+      } finally {
+        clearTimeout(timeoutId);
+        abortControllerRef.current = null;
       }
     },
     [messages, setMessages]

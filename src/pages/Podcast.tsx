@@ -8,6 +8,7 @@ import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
+import YouTubeFacade from '../components/YouTubeFacade';
 import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
@@ -111,13 +112,10 @@ const Podcast = () => {
 
           {LATEST_VIDEO_ID ? (
             <div className="relative aspect-video rounded-xl overflow-hidden bg-altivum-navy">
-              <iframe
-                src={`https://www.youtube.com/embed/${LATEST_VIDEO_ID}?rel=0&modestbranding=1`}
+              <YouTubeFacade
+                videoId={LATEST_VIDEO_ID}
                 title={featuredEpisode.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-                loading="lazy"
+                embedParams="rel=0&modestbranding=1"
               />
             </div>
           ) : (

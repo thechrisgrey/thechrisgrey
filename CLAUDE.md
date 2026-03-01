@@ -36,7 +36,11 @@ aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELE
 
 ### Routing & Layout
 - React Router v6 with client-side routing
-- Global layout in `App.tsx`: `<ScrollToTop>` → `<Navigation>` → `<Routes>` → `<Footer>`
+- Global layout in `App.tsx`: `<ScrollToTop>` → `<Navigation>` → `<Suspense>` → `<Routes>` → `<Footer>`
+- **Code splitting:** All page routes except Home use `React.lazy()` for on-demand chunk loading
+  - Home stays static (critical first-load path)
+  - `PageLoadingFallback` shows a gold spinner during chunk loads
+  - Each page produces its own JS chunk (e.g., `About-[hash].js`, `Blog-[hash].js`)
 - 11 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`
 - Catch-all `*` route renders custom 404 page (`src/pages/NotFound.tsx`)
 - Footer and chat widget are conditionally hidden on full-viewport pages (e.g., `/chat`)
@@ -145,6 +149,27 @@ The Navigation component (`src/components/Navigation.tsx`) features a dropdown s
 - Pre-defined FAQ content for each page (e.g., `homeFAQs`, `aboutFAQs`, `podcastFAQs`)
 - Organization schema includes Chamber of Commerce "Veteran Business of the Month" award
 
+### Security Headers
+
+HTTP security headers are configured in `amplify.yml` via a `**/*` catch-all pattern:
+- **HSTS**: `max-age=31536000; includeSubDomains`
+- **X-Content-Type-Options**: `nosniff`
+- **X-Frame-Options**: `SAMEORIGIN`
+- **Referrer-Policy**: `strict-origin-when-cross-origin`
+- **Permissions-Policy**: Denies camera, microphone, geolocation
+- **CSP**: Allowlisted origins for scripts (Cloudflare), styles (Material Icons), images (Sanity, YouTube thumbnails), connections (Lambda endpoints, Sanity API, Cloudflare beacon), frames (YouTube, Spotify, Buzzsprout)
+
+When adding new external resources, update the CSP in `amplify.yml` to include the new origin.
+
+### YouTube Facade
+
+`src/components/YouTubeFacade.tsx` replaces raw YouTube iframes with a click-to-play facade:
+- Shows `maxresdefault.jpg` thumbnail with gold play button (falls back to `hqdefault.jpg`)
+- Only loads the YouTube iframe when user clicks play (`autoplay=1`)
+- Includes `sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"` on real iframe
+- Used in `Podcast.tsx` (latest episode) and `PortableTextComponents.tsx` (blog embeds)
+- Props: `videoId`, `title`, optional `embedParams`
+
 ### Sanity CMS (Blog)
 
 The blog is powered by Sanity CMS with content fetched at runtime.
@@ -212,11 +237,21 @@ Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Hai
   - Content filters: PROMPT_ATTACK (HIGH), HATE, INSULTS, SEXUAL (HIGH), VIOLENCE, MISCONDUCT (MEDIUM)
   - Denied topics: Off-topic technical support, illegal activities, professional advice
   - Profanity word filter enabled
-- **Rate Limiting:** DynamoDB-based per-IP tracking
+- **Rate Limiting:** Atomic DynamoDB-based per-IP tracking (race-condition-free)
   - Table: `thechrisgrey-chat-ratelimit`
+  - Uses `UpdateCommand` with `ADD` + `ConditionExpression` for atomic increment
   - Limit: 20 requests/hour per IP (SHA256 hashed)
   - Window: 1 hour, TTL auto-cleanup after 2 hours
+  - Stale window triggers `ConditionalCheckFailedException` → counter resets
+- **Input Validation:** Role whitelist (`user`/`assistant` only — blocks `system` injection), 4000-char per-message limit, 50-message array cap
+- **Server-side Truncation:** Last 20 messages sent to Bedrock (sliding window), ensures first message is `user` role
 - **Cost Monitoring:** CloudWatch alarm `thechrisgrey-bedrock-cost-alarm` triggers at $25/day
+
+**Frontend Streaming Hardening** (`useChatEngine.ts`):
+- `AbortController` with 30s timeout on every fetch
+- Abort-on-resend: sending a new message cancels any in-flight request
+- Client-side 20-message sliding window mirrors server-side limit
+- Graceful `AbortError` handling: preserves partial streamed content, only shows timeout message if nothing received
 
 **Response Guidelines** (enforced in system prompt):
 - Plain text only - NO markdown (no bold, italics, headers, bullet lists)
@@ -303,7 +338,7 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Fetches all videos from @AltivumPress channel
 - Extracts: title, description, thumbnail, duration, publish date, video ID
 - Parses episode numbers from titles (patterns: "Ep 1", "Episode 1", "#1")
-- Latest episode displayed as embedded YouTube player
+- Latest episode displayed via `YouTubeFacade` (click-to-play, no iframe until interaction)
 
 **Build Process:**
 1. `generate-podcast-episodes.js` runs first in build
@@ -443,6 +478,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `scripts/generate-podcast-episodes.js`: Fetches episodes from YouTube at build time
 - `src/data/podcastEpisodes.ts`: Podcast episode data (uses generated YouTube data or fallback)
 - `src/data/generatedEpisodes.json`: Auto-generated YouTube episode data
+- `src/components/YouTubeFacade.tsx`: Click-to-play YouTube facade (thumbnail + play button → iframe on click)
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
 - `src/pages/NotFound.tsx`: Custom 404 page
 - `public/.well-known/security.txt`: Security vulnerability reporting contact
