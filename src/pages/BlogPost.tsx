@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { SEO } from '../components/SEO';
@@ -48,33 +48,38 @@ const BlogPost = () => {
   const [post, setPost] = useState<SanityPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    async function fetchPost() {
-      if (!slug) {
-        setNotFound(true);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
-        if (data) {
-          setPost(data);
-        } else {
-          setNotFound(true);
-        }
-      } catch (error) {
-        console.error('Error fetching post:', error);
-        setNotFound(true);
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchPost = useCallback(async () => {
+    if (!slug) {
+      setNotFound(true);
+      setIsLoading(false);
+      return;
     }
 
-    fetchPost();
+    setIsLoading(true);
+    setFetchError(false);
+    setNotFound(false);
+
+    try {
+      const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
+      if (data) {
+        setPost(data);
+      } else {
+        setNotFound(true);
+      }
+    } catch (error) {
+      console.error('Error fetching post:', error);
+      setFetchError(true);
+    } finally {
+      setIsLoading(false);
+    }
   }, [slug]);
+
+  useEffect(() => {
+    fetchPost();
+  }, [fetchPost]);
 
   // Share functionality
   const shareUrl = `https://thechrisgrey.com/blog/${slug}`;
@@ -113,6 +118,41 @@ const BlogPost = () => {
         <div className="text-center">
           <div className="inline-block w-8 h-8 border-2 border-altivum-gold border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-altivum-silver">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch error state
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-altivum-dark">
+        <div className="pt-32 pb-24">
+          <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+            <span className="material-icons text-6xl text-altivum-slate mb-6">cloud_off</span>
+            <h1 className="text-white mb-4" style={typography.sectionHeader}>
+              Unable to Load Article
+            </h1>
+            <p className="text-altivum-silver mb-8" style={typography.bodyText}>
+              Something went wrong while loading this article. Please try again.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={fetchPost}
+                className="inline-flex items-center px-6 py-3 bg-altivum-gold text-altivum-dark font-medium uppercase tracking-wider text-sm hover:bg-white transition-colors duration-300"
+              >
+                <span className="material-icons mr-2 text-sm">refresh</span>
+                Try Again
+              </button>
+              <Link
+                to="/blog"
+                className="inline-flex items-center px-6 py-3 border border-altivum-gold text-altivum-gold font-medium uppercase tracking-wider text-sm hover:bg-altivum-gold hover:text-altivum-dark transition-colors duration-300"
+              >
+                <span className="material-icons mr-2 text-sm">arrow_back</span>
+                Back to Blog
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );

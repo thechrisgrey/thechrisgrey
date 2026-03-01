@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 
 export interface Message {
@@ -24,8 +24,13 @@ export function useChatEngine() {
     CHAT_STORAGE_KEY,
     [initialWelcomeMessage]
   );
-  const [isTyping, setIsTyping] = useSessionStorage<boolean>('chat-typing', false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Clean up stale chat-typing key from sessionStorage (legacy)
+  useEffect(() => {
+    sessionStorage.removeItem('chat-typing');
+  }, []);
 
   const hasUserMessages = messages.some((m) => m.role === 'user');
   const showSuggestions = !hasUserMessages;
@@ -126,7 +131,7 @@ export function useChatEngine() {
         );
       }
     },
-    [messages, setMessages, setIsTyping]
+    [messages, setMessages]
   );
 
   const handleSuggestionSelect = useCallback(
