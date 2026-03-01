@@ -34,3 +34,5 @@ amplify/
 amplify-*
 lambda/kb-sync/node_modules/
 lambda/kb-sync/function.zip
+lambda/chat-stream/node_modules/
+lambda/chat-stream/function.zip

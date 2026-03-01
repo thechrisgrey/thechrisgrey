@@ -210,9 +210,7 @@ export const handler = awslambda.streamifyResponse(
 
     try {
       // Get client IP for rate limiting
-      const clientIp = event.requestContext?.http?.sourceIp ||
-                       event.headers?.["x-forwarded-for"]?.split(",")[0] ||
-                       "unknown";
+      const clientIp = event.requestContext?.http?.sourceIp || "unknown";
 
       // Check rate limit
       const rateLimit = await checkRateLimit(clientIp);

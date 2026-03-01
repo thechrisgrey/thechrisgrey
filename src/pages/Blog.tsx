@@ -22,6 +22,7 @@ const Blog = () => {
   const activeCategory = searchParams.get('category') || 'All';
   const activeTag = searchParams.get('tag') || null;
   const searchQuery = searchParams.get('q') || '';
+  const activeSeries = searchParams.get('series') || null;
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -61,7 +62,7 @@ const Blog = () => {
 
   // Client-side filtering logic
   const filteredPosts = useMemo(() => {
-    return posts.filter(post => {
+    const filtered = posts.filter(post => {
       // Category filter
       if (activeCategory !== 'All' && post.category !== activeCategory) {
         return false;
@@ -69,6 +70,11 @@ const Blog = () => {
 
       // Tag filter
       if (activeTag && !post.tags?.some(tag => tag.slug.current === activeTag)) {
+        return false;
+      }
+
+      // Series filter
+      if (activeSeries && post.series?.slug.current !== activeSeries) {
         return false;
       }
 
@@ -84,9 +90,19 @@ const Blog = () => {
 
       return true;
     });
-  }, [posts, activeCategory, activeTag, searchQuery]);
 
-  const categories = ['All', 'Technology', 'Leadership', 'Veterans', 'Business'];
+    // Sort by series order when viewing a series
+    if (activeSeries) {
+      filtered.sort((a, b) => (a.seriesOrder ?? 999) - (b.seriesOrder ?? 999));
+    }
+
+    return filtered;
+  }, [posts, activeCategory, activeTag, activeSeries, searchQuery]);
+
+  const categories = useMemo(() => {
+    const unique = [...new Set(posts.map(p => p.category).filter(Boolean))];
+    return ['All', ...unique];
+  }, [posts]);
 
   return (
     <div className="min-h-screen bg-altivum-dark">
@@ -205,7 +221,7 @@ const Blog = () => {
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           {/* Active Filters Display */}
-          {(activeCategory !== 'All' || activeTag || searchQuery) && (
+          {(activeCategory !== 'All' || activeTag || activeSeries || searchQuery) && (
             <div className="flex flex-wrap items-center gap-2 mb-8">
               <span className="text-altivum-silver text-sm">Active filters:</span>
 
@@ -233,6 +249,21 @@ const Blog = () => {
                 </button>
               )}
 
+              {activeSeries && (
+                <button
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams);
+                    params.delete('series');
+                    setSearchParams(params);
+                  }}
+                  className="flex items-center gap-1 px-3 py-1 bg-altivum-gold/20 text-altivum-gold rounded-full text-sm hover:bg-altivum-gold/30 transition-colors"
+                >
+                  <span className="material-icons text-xs">library_books</span>
+                  Series: {activeSeries}
+                  <span className="material-icons text-xs">close</span>
+                </button>
+              )}
+
               {searchQuery && (
                 <button
                   onClick={() => {
@@ -253,6 +284,21 @@ const Blog = () => {
               >
                 Clear all
               </button>
+            </div>
+          )}
+
+          {activeSeries && filteredPosts.length > 0 && filteredPosts[0]?.series && (
+            <div className="mb-10 p-6 bg-altivum-navy/30 rounded-lg border border-white/5">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="material-icons text-altivum-gold">library_books</span>
+                <h2 className="text-white font-semibold text-lg">{filteredPosts[0].series.title}</h2>
+              </div>
+              {filteredPosts[0].series.description && (
+                <p className="text-altivum-silver text-sm ml-9">{filteredPosts[0].series.description}</p>
+              )}
+              <p className="text-altivum-slate text-xs ml-9 mt-2">
+                {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} in this series
+              </p>
             </div>
           )}
 

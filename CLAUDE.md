@@ -16,7 +16,7 @@ Check `docs/ideas-to-consider.md` for pending feature ideas:
 **Local Development:**
 ```bash
 npm run dev          # Start dev server at http://localhost:5173
-npm run build        # TypeScript compile + production build + sitemap + RSS feed generation
+npm run build        # Lint + TypeScript compile + production build + sitemap + RSS feed generation
 npm run preview      # Preview production build locally
 npm run lint         # Run ESLint on TypeScript files
 ```
@@ -243,6 +243,7 @@ Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Hai
   - Limit: 20 requests/hour per IP (SHA256 hashed)
   - Window: 1 hour, TTL auto-cleanup after 2 hours
   - Stale window triggers `ConditionalCheckFailedException` → counter resets
+  - IP extracted from `requestContext.http.sourceIp` only (no `x-forwarded-for` — prevents header spoofing bypass)
 - **Input Validation:** Role whitelist (`user`/`assistant` only — blocks `system` injection), 4000-char per-message limit, 50-message array cap
 - **Server-side Truncation:** Last 20 messages sent to Bedrock (sliding window), ensures first message is `user` role
 - **Cost Monitoring:** CloudWatch alarm `thechrisgrey-bedrock-cost-alarm` triggers at $25/day
@@ -319,12 +320,14 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Fetches all blog posts from Sanity
 - Combines static pages + dynamic blog post URLs
 - Outputs to `dist/sitemap.xml`
+- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails — prevents deploying a sitemap missing blog posts
 
 **RSS Feed** generated at build time via `scripts/generate-rss.js`:
 - Fetches all blog posts from Sanity
 - Outputs to `dist/rss.xml`
 - Auto-discovery link in `index.html` head
 - Link in footer Quick Links section
+- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails
 
 ### Podcast Page (`/podcast`)
 
@@ -380,6 +383,27 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `speaking-topics.pdf`: Speaking topic descriptions
 
 ### Blog Features
+
+**Blog Series & Discovery** (`src/pages/Blog.tsx`):
+- Blog listing supports `?series=<slug>` URL param to filter posts by series
+- Series filter shows a context banner with series title, description, and post count
+- Posts sorted by `seriesOrder` when viewing a series (ascending)
+- Categories derived from actual post data (not hardcoded) — new categories appear automatically
+- Active filter chips include series with removable close button
+- `POSTS_QUERY` includes `series` and `seriesOrder` projections for the listing page
+
+**Syntax Highlighting** (`src/components/HighlightedCodeBlock.tsx`):
+- Shiki (WASM-based) syntax highlighter for blog code blocks
+- Dynamically imported only when a blog post with code blocks is viewed
+- Shows plain monochrome text immediately, swaps in highlighted HTML once Shiki loads
+- `React.memo` optimized (code content is static per render)
+- Graceful fallback: if Shiki fails or language unsupported, shows plain text
+- Uses `github-dark` theme, `not-prose` wrapper to prevent Tailwind Typography conflicts
+
+**Blog Image CLS Fix** (`src/sanity/PortableTextComponents.tsx`):
+- Inline images wrapped in `aspect-ratio: 4/3` container to reserve space and eliminate CLS
+- `loading="lazy"` and `decoding="async"` on blog images for below-fold performance
+- `object-cover` handles non-4:3 images gracefully
 
 **Reading Progress Bar** (`src/components/ReadingProgressBar.tsx`):
 - 3px gold bar fixed at top of blog posts
@@ -479,6 +503,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/data/podcastEpisodes.ts`: Podcast episode data (uses generated YouTube data or fallback)
 - `src/data/generatedEpisodes.json`: Auto-generated YouTube episode data
 - `src/components/YouTubeFacade.tsx`: Click-to-play YouTube facade (thumbnail + play button → iframe on click)
+- `src/components/HighlightedCodeBlock.tsx`: Shiki-powered syntax highlighting for blog code blocks
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
 - `src/pages/NotFound.tsx`: Custom 404 page
 - `public/.well-known/security.txt`: Security vulnerability reporting contact
@@ -503,6 +528,7 @@ After adding/changing env vars, trigger a rebuild for changes to take effect.
 
 ## Deployment Notes
 
+- **Node version pinned** to 20 via `.nvmrc`
 - **Never commit** `node_modules/` or `dist/` (in `.gitignore`)
 - Assets in `public/` are copied to dist root (e.g., `public/tcg.png` → `/tcg.png`)
 - Vite bundles `src/assets/` imports with cache-busting hashes

@@ -61,3 +61,15 @@ customHeaders:
     headers:
       - key: Cache-Control
         value: 'public, max-age=604800'
+  - pattern: '**/*.webp'
+    headers:
+      - key: Cache-Control
+        value: 'public, max-age=604800'
+  - pattern: 'sitemap.xml'
+    headers:
+      - key: Cache-Control
+        value: 'public, max-age=3600'
+  - pattern: 'rss.xml'
+    headers:
+      - key: Cache-Control
+        value: 'public, max-age=3600'

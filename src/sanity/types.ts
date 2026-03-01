@@ -55,6 +55,8 @@ export interface SanityPostPreview {
   isFeatured?: boolean
   image?: SanityImage
   tags?: SanityTag[]
+  series?: SanitySeries
+  seriesOrder?: number
 }
 
 // Portable Text block types

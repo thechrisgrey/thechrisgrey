@@ -43,7 +43,7 @@ async function fetchBlogPosts() {
     return posts;
   } catch (error) {
     console.error('Error fetching posts from Sanity:', error);
-    return [];
+    process.exit(1);
   }
 }
 

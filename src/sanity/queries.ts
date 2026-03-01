@@ -17,7 +17,9 @@ export const POSTS_QUERY = `*[
     asset->,
     alt
   },
-  "tags": tags[]->{ _id, title, slug }
+  "tags": tags[]->{ _id, title, slug },
+  "series": series->{ _id, title, slug, description },
+  seriesOrder
 }`
 
 // Fetch a single post by slug (for post detail view)
