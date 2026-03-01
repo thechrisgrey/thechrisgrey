@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { SEO } from '../components/SEO';
+import NewsletterForm from '../components/NewsletterForm';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
 import { SOCIAL_LINKS } from '../constants/links';
@@ -438,7 +439,7 @@ const BlogPost = () => {
         </section>
       )}
 
-      {/* Author & CTA */}
+      {/* Newsletter & CTA */}
       <section className="py-16 bg-gradient-to-b from-altivum-dark to-altivum-navy/30 border-t border-white/10">
         <div className="max-w-3xl mx-auto px-6 lg:px-8 text-center">
           <h3 className="text-white mb-4" style={typography.cardTitleLarge}>
@@ -447,7 +448,10 @@ const BlogPost = () => {
           <p className="text-altivum-silver mb-8" style={typography.bodyText}>
             Subscribe to get new articles delivered directly to your inbox.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          <NewsletterForm variant="compact" />
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
               to="/blog"
               className="inline-flex items-center justify-center px-6 py-3 bg-white/5 border border-white/10 text-white font-medium hover:border-altivum-gold hover:text-altivum-gold transition-colors"
@@ -459,7 +463,7 @@ const BlogPost = () => {
               href={SOCIAL_LINKS.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 bg-altivum-gold text-altivum-dark font-medium hover:bg-white transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-white/5 border border-white/10 text-white font-medium hover:border-altivum-gold hover:text-altivum-gold transition-colors"
             >
               Connect on LinkedIn
               <span className="material-icons ml-2 text-sm">open_in_new</span>

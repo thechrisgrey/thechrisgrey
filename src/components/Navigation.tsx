@@ -28,21 +28,30 @@ const Navigation = () => {
   const dropdownItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const updateScrollState = () => {
       if (location.pathname === '/') {
-        // Nav becomes solid after hero + summary sections (100vh + 500vh = 600vh)
         const summaryEndPosition = window.innerHeight * 6;
         setIsScrolled(window.scrollY > summaryEndPosition);
       } else {
-        // For other pages, solid as soon as scrolled
         setIsScrolled(window.scrollY > 20);
       }
     };
 
     // Initial check
-    handleScroll();
+    updateScrollState();
 
-    window.addEventListener('scroll', handleScroll);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateScrollState();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
