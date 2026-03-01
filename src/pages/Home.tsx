@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SEO } from '../components/SEO';
 // Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
@@ -10,26 +10,26 @@ import { SOCIAL_LINKS } from '../constants/links';
 
 const Home = () => {
   const [scrollProgress, setScrollProgress] = useState(-1);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobileRef = useRef(window.innerWidth < 768);
+  const [, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Detect mobile/desktop
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      isMobileRef.current = window.innerWidth < 768;
+      setIsMobile(isMobileRef.current);
     };
-    checkMobile();
     window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-    // Throttle scroll handler with requestAnimationFrame for better performance
+  useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollPosition = window.scrollY;
           const windowHeight = window.innerHeight;
-          // Mobile: 450vh section, show tabs every 50vh
-          // Desktop: 500vh section, show tabs every 80vh
-          const scrollInterval = isMobile ? 0.5 : 0.8;
+          const scrollInterval = isMobileRef.current ? 0.5 : 0.8;
           const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 4);
           setScrollProgress(Math.max(-1, progress));
           ticking = false;
@@ -39,11 +39,8 @@ const Home = () => {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, [isMobile]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const keyPoints = [
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
@@ -80,6 +77,7 @@ const Home = () => {
                 src={heroImage}
                 alt="Leadership Forged in Service"
                 className="w-full max-w-3xl mx-auto"
+                fetchPriority="high"
               />
               <h1 className="sr-only">Christian Perez - Leadership Forged in Service</h1>
             </div>

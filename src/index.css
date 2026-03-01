@@ -43,6 +43,19 @@ select:focus:not(:focus-visible) {
   outline: none;
 }
 
+/* Respect motion preferences — prevents content from staying invisible */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-in,
+  .animate-nav-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 10px;

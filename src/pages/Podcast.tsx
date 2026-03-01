@@ -53,6 +53,7 @@ const Podcast = () => {
                 src={tvpLogo}
                 alt="The Vector Podcast"
                 className="w-full max-w-3xl mx-auto opacity-90"
+                fetchPriority="high"
               />
               <h1 className="sr-only">The Vector Podcast - Hosted by Christian Perez</h1>
             </div>

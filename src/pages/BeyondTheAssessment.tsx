@@ -30,6 +30,7 @@ const BeyondTheAssessment = () => {
                 src={btaLogo}
                 alt="Beyond the Assessment"
                 className="w-full max-w-3xl mx-auto opacity-90"
+                fetchPriority="high"
               />
               <h1 className="sr-only">Beyond the Assessment - A Book by Christian Perez</h1>
             </div>

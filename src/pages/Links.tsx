@@ -202,7 +202,6 @@ const Links = () => {
         ]}
       />
       {/* Hero Section */}
-      {/* Hero Section */}
       <section className="py-32 bg-altivum-dark">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
@@ -223,7 +222,6 @@ const Links = () => {
         </div>
       </section>
 
-      {/* AWS Builder Section with QR Code */}
       {/* AWS Builder Section with QR Code */}
       <section className="py-24 bg-altivum-dark border-b border-white/5">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
@@ -269,7 +267,6 @@ const Links = () => {
       </section>
 
       {/* Websites Section */}
-      {/* Websites Section */}
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="mb-12">
@@ -310,7 +307,6 @@ const Links = () => {
       </section>
 
       {/* Personal Social Media Section */}
-      {/* Personal Social Media Section */}
       <section className="py-24 bg-altivum-dark border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="mb-12">
@@ -348,7 +344,6 @@ const Links = () => {
       </section>
 
       {/* Company Social Media Section */}
-      {/* Company Social Media Section */}
       <section className="py-24 bg-altivum-dark border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="mb-12">
@@ -385,7 +380,6 @@ const Links = () => {
         </div>
       </section>
 
-      {/* Contact CTA */}
       {/* Contact CTA */}
       <section className="py-24 bg-altivum-dark border-t border-white/5">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">

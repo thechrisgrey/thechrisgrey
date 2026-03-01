@@ -1,6 +1,6 @@
 const TypingIndicator = () => {
   return (
-    <div className="flex items-start mr-auto max-w-[80%] md:max-w-[80%]">
+    <div className="flex items-start mr-auto max-w-[80%] md:max-w-[80%]" role="status" aria-label="AI is typing">
       <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-sm px-5 py-4">
         <div className="flex items-center gap-1.5">
           <span

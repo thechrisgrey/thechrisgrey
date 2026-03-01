@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-// import { useState } from 'react';
 import { SEO } from '../components/SEO';
 import altivumImage from '../assets/altivum.jpg';
 import awsPartnerLogo from '../assets/aws-partner-dark.png';
@@ -8,11 +7,6 @@ import { typography } from '../utils/typography';
 import { altivumFAQs, buildAltivumServicesSchemas } from '../utils/schemas';
 
 const Altivum = () => {
-  // const [expandedSection, setExpandedSection] = useState<number | null>(null);
-  // const toggleSection = (index: number) => {
-  //   setExpandedSection(expandedSection === index ? null : index);
-  // };
-
   const timelineItems = [
     {
       title: "The Vision",
@@ -210,6 +204,7 @@ const Altivum = () => {
                 src={altivumLogo}
                 alt="Altivum Inc."
                 className="w-full max-w-3xl mx-auto opacity-90"
+                fetchPriority="high"
               />
               <h1 className="sr-only">Altivum Inc. - Veteran-Founded AI Technology Company</h1>
             </div>

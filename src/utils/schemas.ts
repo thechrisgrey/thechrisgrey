@@ -18,16 +18,6 @@ interface BreadcrumbItem {
     url: string;
 }
 
-interface BlogPostData {
-    id: string;
-    title: string;
-    excerpt: string;
-    content: string[];
-    date: string;
-    category: string;
-    image?: string;
-}
-
 interface ServiceData {
     name: string;
     description: string;
@@ -314,7 +304,7 @@ export const buildPodcastSeriesSchema = () => ({
     "url": `${SITE_URL}/podcast`,
     "description": "The Vector Podcast explores conversations at the intersection of veteran experience, emerging technology, and purposeful entrepreneurship. Hosted by Christian Perez, each episode features leaders navigating the transition from service to innovation.",
     "webFeed": "https://api.riverside.fm/hosting/heA0qRHh.rss",
-    "image": `${SITE_URL}/assets/tvp.png`,
+    "image": `${SITE_URL}/tvp.png`,
     "author": {
         "@id": `${SITE_URL}/#person`
     },
@@ -366,57 +356,6 @@ export const buildAltivumServicesSchemas = () => [
         url: "https://press.altivum.ai"
     })
 ];
-
-/**
- * BlogPosting schema
- */
-export const buildBlogPostingSchema = (post: BlogPostData) => {
-    const wordCount = post.content.join(' ').split(/\s+/).length;
-    const articleBody = post.content.slice(0, 3).join(' ').substring(0, 500);
-
-    return {
-        "@type": "BlogPosting",
-        "@id": `${SITE_URL}/blog#${post.id}`,
-        "headline": post.title,
-        "description": post.excerpt,
-        "datePublished": post.date,
-        "dateModified": post.date,
-        "author": {
-            "@id": `${SITE_URL}/#person`
-        },
-        "publisher": {
-            "@id": `${ALTIVUM_URL}/#organization`
-        },
-        "image": post.image ? `${SITE_URL}${post.image}` : `${SITE_URL}/og.png`,
-        "wordCount": wordCount,
-        "articleBody": articleBody,
-        "articleSection": post.category,
-        "inLanguage": "en-US",
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": `${SITE_URL}/blog#${post.id}`
-        }
-    };
-};
-
-/**
- * Blog schema (collection)
- */
-export const buildBlogSchema = (posts: BlogPostData[]) => ({
-    "@type": "Blog",
-    "@id": `${SITE_URL}/blog/#blog`,
-    "name": "Christian Perez Blog",
-    "description": "Insights on AI, Cloud Architecture, Leadership, and the Veteran Experience",
-    "url": `${SITE_URL}/blog`,
-    "author": {
-        "@id": `${SITE_URL}/#person`
-    },
-    "publisher": {
-        "@id": `${ALTIVUM_URL}/#organization`
-    },
-    "blogPost": posts.map(buildBlogPostingSchema),
-    "inLanguage": "en-US"
-});
 
 /**
  * ContactPage schema

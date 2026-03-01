@@ -95,8 +95,8 @@ async function generateRssFeed() {
   console.log(`Found ${posts.length} blog posts`);
 
   if (posts.length === 0) {
-    console.log('No posts found, skipping RSS generation');
-    return;
+    console.error('No posts found — RSS generation failed (expected at least one post)');
+    process.exit(1);
   }
 
   const lastBuildDate = formatRssDate(new Date().toISOString());
@@ -132,4 +132,7 @@ ${items}
 }
 
 // Run the generator
-generateRssFeed().catch(console.error);
+generateRssFeed().catch((err) => {
+  console.error('RSS generation failed:', err);
+  process.exit(1);
+});

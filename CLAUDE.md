@@ -16,7 +16,7 @@ Check `docs/ideas-to-consider.md` for pending feature ideas:
 **Local Development:**
 ```bash
 npm run dev          # Start dev server at http://localhost:5173
-npm run build        # Lint + TypeScript compile + production build + sitemap + RSS feed generation
+npm run build        # Env validation + podcast episodes + lint + TypeScript compile + production build + sitemap + RSS feed generation
 npm run preview      # Preview production build locally
 npm run lint         # Run ESLint on TypeScript files
 ```
@@ -75,6 +75,7 @@ aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELE
 - `animate-widget-open`: Chat widget panel entrance (250ms slide-up + scale-in)
 - `shimmer`: Background shimmer effect
 - Defined as Tailwind keyframes in `tailwind.config.js`
+- **`prefers-reduced-motion: reduce`** override in `src/index.css` forces `opacity: 1` and disables `animate-fade-in`/`animate-nav-fade-in` to prevent invisible content for users with motion preferences
 
 ### Home Page Scroll Experience
 
@@ -91,7 +92,7 @@ The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based anima
   - Mobile: appear every 50vh
   - Desktop: appear every 80vh
   - Points: Personal Biography, Altivum Inc, The Vector Podcast, Beyond the Assessment
-- Scroll progress tracked via `useState` + `useEffect` with throttled scroll listener using `requestAnimationFrame`
+- Scroll progress tracked via `useState` + `useEffect` with throttled scroll listener using `requestAnimationFrame`; mobile detection uses `useRef` to avoid stale closure
 - Key points styled as left-aligned tabs with `border-l-4 border-altivum-gold`
 - Uses `will-change: opacity, transform` for performance optimization
 
@@ -145,9 +146,10 @@ The Navigation component (`src/components/Navigation.tsx`) features a dropdown s
 ```
 
 **Schema Builders** (`src/utils/schemas.ts`):
-- Pre-built schema generators: `buildPersonSchema()`, `buildOrganizationSchema()`, `buildFAQSchema()`, `buildBreadcrumbSchema()`, `buildPodcastSeriesSchema()`, `buildBookSchema()`, etc.
+- Pre-built schema generators: `buildPersonSchema()`, `buildOrganizationSchema()`, `buildFAQSchema()`, `buildBreadcrumbSchema()`, `buildPodcastSeriesSchema()`, `buildBookSchema()`, `buildServiceSchema()`, `buildWebPageSchema()`, `buildProfilePageSchema()`, `buildContactPageSchema()`
 - Pre-defined FAQ content for each page (e.g., `homeFAQs`, `aboutFAQs`, `podcastFAQs`)
 - Organization schema includes Chamber of Commerce "Veteran Business of the Month" award
+- PodcastSeries schema uses `public/tvp.png` for a stable image URL (not Vite-hashed `src/assets/`)
 
 ### Security Headers
 
@@ -320,14 +322,19 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Fetches all blog posts from Sanity
 - Combines static pages + dynamic blog post URLs
 - Outputs to `dist/sitemap.xml`
-- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails — prevents deploying a sitemap missing blog posts
+- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails or file write fails
 
 **RSS Feed** generated at build time via `scripts/generate-rss.js`:
 - Fetches all blog posts from Sanity
 - Outputs to `dist/rss.xml`
 - Auto-discovery link in `index.html` head
 - Link in footer Quick Links section
-- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails
+- **Fail-fast:** Build aborts (`process.exit(1)`) if Sanity fetch fails, zero posts found, or file write fails
+
+**Environment Validation** (`scripts/validate-env.js`):
+- Runs as the first step in the build pipeline
+- Checks required `VITE_*` env vars: `VITE_NEWSLETTER_ENDPOINT`, `VITE_CONTACT_ENDPOINT`, `VITE_CHAT_ENDPOINT`
+- Build fails immediately with clear message if any are missing
 
 ### Podcast Page (`/podcast`)
 
@@ -433,6 +440,11 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `useFocusTrap` hook (`src/hooks/useFocusTrap.ts`) - traps Tab key within modals, returns focus on close
 - Modals use `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
 - Chat messages container has `aria-live="polite"` for screen reader announcements
+- `TypingIndicator` has `role="status"` and `aria-label` for screen reader announcements
+
+**SEO & Indexing:**
+- 404 page (`NotFound.tsx`) and BlogPost fetch-error state use `noindex={true}` to prevent search engine indexing
+- Hero images across all pages use `fetchPriority="high"` for LCP optimization
 
 **Keyboard Navigation:**
 - About dropdown supports Arrow keys (up/down), Escape to close
@@ -470,6 +482,11 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - Script in `index.html` before closing `</body>`
 - Dashboard: Cloudflare → Analytics & Logs → Web Analytics
 
+**Web Vitals** (`src/utils/webVitals.ts`):
+- Captures CLS, INP, FCP, LCP, TTFB via `web-vitals` library
+- Dev: logs to console; Prod: sends via `navigator.sendBeacon('/api/vitals')`
+- `/api/vitals` endpoint is a placeholder — `sendBeacon` silently fails until an endpoint is configured
+
 ### Utilities
 
 **Validators** (`src/utils/validators.ts`):
@@ -489,6 +506,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/components/ErrorFallbacks.tsx`: Page-specific error fallback components
 - `src/hooks/useFocusTrap.ts`: Focus trap hook for modals
 - `src/hooks/useSessionStorage.ts`: Generic sessionStorage hook with JSON serialization and Date revival
+- `scripts/validate-env.js`: Build-time environment variable validation
 - `src/pages/Home.tsx`: Complex scroll animations and sticky sections
 - `src/pages/Chat.tsx`: Full-viewport AI chat experience
 - `src/hooks/useChatEngine.ts`: Shared chat state/streaming hook used by both Chat page and widget

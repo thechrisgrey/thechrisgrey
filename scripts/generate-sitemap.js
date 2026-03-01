@@ -122,4 +122,7 @@ ${allEntries.join('\n')}
 }
 
 // Run the generator
-generateSitemap().catch(console.error);
+generateSitemap().catch((err) => {
+  console.error('Sitemap generation failed:', err);
+  process.exit(1);
+});

@@ -63,43 +63,6 @@ export const POST_BY_SLUG_QUERY = `*[
   }
 }`
 
-// Fetch posts by tag
-export const POSTS_BY_TAG_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-  && $tagSlug in tags[]->slug.current
-] | order(publishedAt desc) {
-  _id,
-  title,
-  slug,
-  excerpt,
-  category,
-  publishedAt,
-  readingTime,
-  image {
-    asset->,
-    alt
-  }
-}`
-
-// Fetch posts in a series
-export const POSTS_BY_SERIES_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-  && series->slug.current == $seriesSlug
-] | order(seriesOrder asc) {
-  _id,
-  title,
-  slug,
-  excerpt,
-  seriesOrder,
-  publishedAt,
-  image {
-    asset->,
-    alt
-  }
-}`
-
 // Fetch all tags
 export const TAGS_QUERY = `*[_type == "tag"] | order(title asc) {
   _id,

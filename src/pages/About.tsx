@@ -34,6 +34,7 @@ const About = () => {
                 src={mpbLogo}
                 alt="My Personal Biography"
                 className="w-full max-w-3xl mx-auto opacity-90"
+                fetchPriority="high"
               />
             </div>
           </div>

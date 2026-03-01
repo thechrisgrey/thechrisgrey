@@ -9,6 +9,7 @@ const NotFound = () => {
         title="Page Not Found"
         description="The page you're looking for doesn't exist."
         url="https://thechrisgrey.com/404"
+        noindex={true}
       />
 
       <div className="max-w-2xl mx-auto px-6 text-center">
