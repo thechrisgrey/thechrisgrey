@@ -49,7 +49,8 @@ select:focus:not(:focus-visible) {
     scroll-behavior: auto;
   }
   .animate-fade-in,
-  .animate-nav-fade-in {
+  .animate-nav-fade-in,
+  .animate-widget-open {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

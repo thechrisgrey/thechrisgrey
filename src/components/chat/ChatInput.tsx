@@ -56,6 +56,7 @@ const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
             placeholder="Ask me anything..."
             disabled={disabled}
             rows={1}
+            maxLength={4000}
             className="w-full pl-4 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-altivum-silver/50 focus:outline-none focus:border-altivum-gold transition-colors duration-200 resize-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             style={{
               minHeight: '48px',
@@ -75,6 +76,17 @@ const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
             <span className="material-icons text-xl">send</span>
           </button>
         </div>
+        {value.length > 0 && (
+          <div className="mt-1 text-right pr-1">
+            <span
+              className={`text-xs tabular-nums transition-colors duration-200 ${
+                value.length > 3600 ? 'text-altivum-gold' : 'text-altivum-slate/50'
+              }`}
+            >
+              {value.length}/4,000
+            </span>
+          </div>
+        )}
       </form>
     </div>
   );

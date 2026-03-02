@@ -54,6 +54,7 @@ export default {
         'fade-in': 'fade-in 1.2s ease-out forwards',
         'nav-fade-in': 'nav-fade-in 0.8s ease-out 2s forwards',
         'widget-open': 'widget-open 250ms ease-out forwards',
+        'shimmer': 'shimmer 2s linear infinite',
       },
     },
   },

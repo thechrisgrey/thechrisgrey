@@ -42,6 +42,20 @@ export interface SanityPost {
   series?: SanitySeries
   seriesOrder?: number
   relatedPosts?: SanityPostPreview[]
+  seriesPosts?: SanitySeriesPost[]
+}
+
+export interface SanitySeriesPost {
+  _id: string
+  title: string
+  slug: { current: string }
+  seriesOrder?: number
+}
+
+export interface BlogListingResult {
+  posts: SanityPostPreview[]
+  tags: SanityTag[]
+  series: SanitySeries[]
 }
 
 export interface SanityPostPreview {

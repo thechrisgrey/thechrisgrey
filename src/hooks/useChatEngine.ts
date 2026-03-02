@@ -27,6 +27,7 @@ export function useChatEngine() {
     [initialWelcomeMessage]
   );
   const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -59,9 +60,7 @@ export function useChatEngine() {
   }, []);
 
   useEffect(() => {
-    if (messages.length > 1) {
-      scrollToBottom();
-    }
+    scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
 
   const handleSend = useCallback(
@@ -97,16 +96,7 @@ export function useChatEngine() {
       }));
 
       const assistantMessageId = `assistant-${Date.now()}`;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: assistantMessageId,
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-        },
-      ]);
-      setIsTyping(false);
+      setIsStreaming(true);
 
       try {
         const response = await fetch(CHAT_ENDPOINT, {
@@ -123,48 +113,87 @@ export function useChatEngine() {
 
         if (reader) {
           let done = false;
+          let firstChunk = true;
           while (!done) {
             const result = await reader.read();
             done = result.done;
 
             if (result.value) {
               const chunk = decoder.decode(result.value, { stream: true });
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: msg.content + chunk }
-                    : msg
-                )
-              );
+
+              if (firstChunk) {
+                firstChunk = false;
+                setIsTyping(false);
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantMessageId,
+                    role: 'assistant' as const,
+                    content: chunk,
+                    timestamp: new Date(),
+                  },
+                ]);
+              } else {
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantMessageId
+                      ? { ...msg, content: msg.content + chunk }
+                      : msg
+                  )
+                );
+              }
             }
+          }
+
+          // Edge case: stream opened but no chunks received
+          if (firstChunk) {
+            setIsTyping(false);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: assistantMessageId,
+                role: 'assistant' as const,
+                content: 'I received an empty response. Please try again.',
+                timestamp: new Date(),
+              },
+            ]);
           }
         }
       } catch (error) {
+        setIsTyping(false);
         if (error instanceof Error && error.name === 'AbortError') {
-          // Timeout or navigation — show timeout message only if no content received
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessageId && msg.content === ''
-                ? { ...msg, content: 'The response timed out. Please try again.' }
-                : msg
-            )
-          );
+          setMessages((prev) => {
+            const hasMessage = prev.some((m) => m.id === assistantMessageId);
+            if (hasMessage) return prev; // partial content visible, keep it
+            return [
+              ...prev,
+              {
+                id: assistantMessageId,
+                role: 'assistant' as const,
+                content: 'The response timed out. Please try again.',
+                timestamp: new Date(),
+              },
+            ];
+          });
         } else {
           console.error('Chat error:', error);
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === assistantMessageId
-                ? {
-                    ...msg,
-                    content:
-                      'I apologize, but I encountered an error. Please try again.',
-                  }
-                : msg
-            )
-          );
+          setMessages((prev) => {
+            const hasMessage = prev.some((m) => m.id === assistantMessageId);
+            if (hasMessage) return prev;
+            return [
+              ...prev,
+              {
+                id: assistantMessageId,
+                role: 'assistant' as const,
+                content: 'I encountered an error. Please try again.',
+                timestamp: new Date(),
+              },
+            ];
+          });
         }
       } finally {
         clearTimeout(timeoutId);
+        setIsStreaming(false);
         abortControllerRef.current = null;
       }
     },
@@ -181,6 +210,7 @@ export function useChatEngine() {
   return {
     messages,
     isTyping,
+    isStreaming,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,

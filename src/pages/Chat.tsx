@@ -12,6 +12,7 @@ const ChatContent = () => {
   const {
     messages,
     isTyping,
+    isStreaming,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,
@@ -89,7 +90,7 @@ const ChatContent = () => {
       </div>
 
       {/* Input Area */}
-      <ChatInput onSend={handleSend} disabled={isTyping} />
+      <ChatInput onSend={handleSend} disabled={isTyping || isStreaming} />
     </div>
   );
 };

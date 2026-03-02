@@ -1,25 +1,26 @@
 // GROQ queries for fetching blog content from Sanity
 
-// Fetch all published posts (for blog listing)
-export const POSTS_QUERY = `*[
-  _type == "post"
-  && defined(slug.current)
-] | order(isFeatured desc, publishedAt desc) {
-  _id,
-  title,
-  slug,
-  excerpt,
-  category,
-  publishedAt,
-  readingTime,
-  isFeatured,
-  image {
-    asset->,
-    alt
+// Combined blog listing query (posts + tags + series in one request)
+export const BLOG_LISTING_QUERY = `{
+  "posts": *[_type == "post" && defined(slug.current)] | order(isFeatured desc, publishedAt desc) {
+    _id,
+    title,
+    slug,
+    excerpt,
+    category,
+    publishedAt,
+    readingTime,
+    isFeatured,
+    image {
+      "asset": asset->{ _id, url },
+      alt
+    },
+    "tags": tags[]->{ _id, title, slug },
+    "series": series->{ _id, title, slug, description },
+    seriesOrder
   },
-  "tags": tags[]->{ _id, title, slug },
-  "series": series->{ _id, title, slug, description },
-  seriesOrder
+  "tags": *[_type == "tag"] | order(title asc) { _id, title, slug },
+  "series": *[_type == "series"] | order(title asc) { _id, title, slug, description }
 }`
 
 // Fetch a single post by slug (for post detail view)
@@ -60,23 +61,15 @@ export const POST_BY_SLUG_QUERY = `*[
     category,
     publishedAt,
     image { asset->, alt }
-  }
+  },
+  "seriesPosts": select(
+    defined(series) => *[_type == "post" && series._ref == ^.series._ref] | order(seriesOrder asc) {
+      _id, title, slug, seriesOrder
+    },
+    null
+  )
 }`
 
-// Fetch all tags
-export const TAGS_QUERY = `*[_type == "tag"] | order(title asc) {
-  _id,
-  title,
-  slug
-}`
-
-// Fetch all series
-export const SERIES_QUERY = `*[_type == "series"] | order(title asc) {
-  _id,
-  title,
-  slug,
-  description
-}`
 
 // Fetch all podcast guests
 export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order asc) {

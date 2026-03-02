@@ -243,11 +243,12 @@ export const portableTextComponents: PortableTextComponents = {
     link: ({ children, value }) => {
       const href = value?.href || ''
       const isExternal = href.startsWith('http')
+      const opensInNewTab = value?.openInNewTab || isExternal
       return (
         <a
           href={href}
-          target={value?.openInNewTab || isExternal ? '_blank' : undefined}
-          rel={isExternal ? 'noopener noreferrer' : undefined}
+          target={opensInNewTab ? '_blank' : undefined}
+          rel={opensInNewTab ? 'noopener noreferrer' : undefined}
           className="text-altivum-gold hover:text-white underline underline-offset-2 transition-colors"
         >
           {children}

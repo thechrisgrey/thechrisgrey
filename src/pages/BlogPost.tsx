@@ -14,7 +14,8 @@ import {
   portableTextComponents,
   POST_BY_SLUG_QUERY,
   type SanityPost,
-  type SanityPostPreview
+  type SanityPostPreview,
+  type SanitySeriesPost,
 } from '../sanity';
 import ReadingProgressBar from '../components/ReadingProgressBar';
 
@@ -42,6 +43,43 @@ const getWordCount = (body: SanityPost['body']): number => {
   const text = extractText(body);
   return text.split(/\s+/).filter(word => word.length > 0).length;
 };
+
+function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySeriesPost[]; currentId: string }) {
+  if (seriesPosts.length <= 1) return null;
+
+  const currentIndex = seriesPosts.findIndex(p => p._id === currentId);
+  const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : null;
+  const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentIndex + 1] : null;
+
+  if (!prevPost && !nextPost) return null;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
+      {prevPost ? (
+        <Link to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
+          <span className="material-icons text-sm flex-shrink-0">arrow_back</span>
+          <div className="min-w-0">
+            <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
+              {prevPost.seriesOrder != null ? `Part ${prevPost.seriesOrder}` : 'Previous'}
+            </div>
+            <div className="truncate">{prevPost.title}</div>
+          </div>
+        </Link>
+      ) : <div />}
+      {nextPost ? (
+        <Link to={`/blog/${nextPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0">
+          <div className="min-w-0">
+            <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
+              {nextPost.seriesOrder != null ? `Part ${nextPost.seriesOrder}` : 'Next'}
+            </div>
+            <div className="truncate">{nextPost.title}</div>
+          </div>
+          <span className="material-icons text-sm flex-shrink-0">arrow_forward</span>
+        </Link>
+      ) : <div />}
+    </div>
+  );
+}
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -400,6 +438,9 @@ const BlogPost = () => {
                 View all posts in this series
                 <span className="material-icons text-sm ml-1">arrow_forward</span>
               </Link>
+              {post.seriesPosts && (
+                <SeriesNavigation seriesPosts={post.seriesPosts} currentId={post._id} />
+              )}
             </div>
           </div>
         </section>

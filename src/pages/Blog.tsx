@@ -8,9 +8,13 @@ import { blogFAQs } from '../utils/schemas';
 import {
   client,
   urlFor,
-  POSTS_QUERY,
-  type SanityPostPreview
+  BLOG_LISTING_QUERY,
+  getBlogListingCache,
+  setBlogListingCache,
+  type SanityPostPreview,
+  type BlogListingResult,
 } from '../sanity';
+import BlogPostSkeleton from '../components/BlogPostSkeleton';
 
 const Blog = () => {
   const [posts, setPosts] = useState<SanityPostPreview[]>([]);
@@ -24,14 +28,22 @@ const Blog = () => {
   const searchQuery = searchParams.get('q') || '';
   const activeSeries = searchParams.get('series') || null;
 
-  const fetchPosts = async () => {
+  const fetchBlogData = async () => {
+    const cached = getBlogListingCache();
+    if (cached) {
+      setPosts(cached.posts);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setFetchError(false);
     try {
-      const data = await client.fetch<SanityPostPreview[]>(POSTS_QUERY);
-      setPosts(data);
+      const result = await client.fetch<BlogListingResult>(BLOG_LISTING_QUERY);
+      setBlogListingCache(result);
+      setPosts(result.posts);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching blog data:', error);
       setFetchError(true);
     } finally {
       setIsLoading(false);
@@ -39,7 +51,7 @@ const Blog = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchBlogData();
   }, []);
 
   // Filter helper function
@@ -303,8 +315,10 @@ const Blog = () => {
           )}
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-altivum-silver">Loading posts...</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <BlogPostSkeleton key={i} />
+              ))}
             </div>
           ) : fetchError ? (
             <div className="text-center py-20">
@@ -316,7 +330,7 @@ const Blog = () => {
                 Something went wrong while loading blog posts. Please try again.
               </p>
               <button
-                onClick={fetchPosts}
+                onClick={fetchBlogData}
                 className="inline-flex items-center px-6 py-3 bg-altivum-gold text-altivum-dark font-medium uppercase tracking-wider text-sm hover:bg-white transition-colors duration-300"
               >
                 <span className="material-icons mr-2 text-sm">refresh</span>

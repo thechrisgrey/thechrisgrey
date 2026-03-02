@@ -17,6 +17,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
   const {
     messages,
     isTyping,
+    isStreaming,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,
@@ -39,6 +40,12 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
   };
 
   return (
+    <>
+    <div
+      className="fixed inset-0 z-30 bg-black/50 sm:hidden"
+      onClick={onClose}
+      aria-hidden="true"
+    />
     <div
       ref={containerRef}
       onKeyDown={handlePanelKeyDown}
@@ -108,8 +115,9 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
       </div>
 
       {/* Input */}
-      <ChatInput onSend={handleSend} disabled={isTyping} />
+      <ChatInput onSend={handleSend} disabled={isTyping || isStreaming} />
     </div>
+    </>
   );
 };
 
