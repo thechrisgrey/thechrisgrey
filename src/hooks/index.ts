@@ -2,3 +2,7 @@ export { useFocusTrap } from './useFocusTrap';
 export { useSessionStorage } from './useSessionStorage';
 export { useChatEngine, CHAT_STORAGE_KEY } from './useChatEngine';
 export type { Message } from './useChatEngine';
+export { useAuth } from './useAuth';
+export { useKbAdmin } from './useKbAdmin';
+export type { KbEntry, KbCategory } from './useKbAdmin';
+export { KB_CATEGORIES } from './useKbAdmin';

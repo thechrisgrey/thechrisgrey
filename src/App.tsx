@@ -21,6 +21,7 @@ const Links = lazy(() => import('./pages/Links'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoadingFallback = () => (
@@ -31,7 +32,7 @@ const PageLoadingFallback = () => (
 
 function App() {
   const location = useLocation();
-  const isFullscreenPage = location.pathname === '/chat';
+  const isFullscreenPage = location.pathname === '/chat' || location.pathname === '/admin';
 
   return (
     <div className="min-h-screen bg-altivum-dark">
@@ -66,6 +67,7 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/privacy" element={<Privacy />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

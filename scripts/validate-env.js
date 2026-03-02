@@ -6,6 +6,9 @@ const required = [
   'VITE_NEWSLETTER_ENDPOINT',
   'VITE_CONTACT_ENDPOINT',
   'VITE_CHAT_ENDPOINT',
+  'VITE_COGNITO_USER_POOL_ID',
+  'VITE_COGNITO_CLIENT_ID',
+  'VITE_KB_BUILDER_ENDPOINT',
 ];
 
 const missing = required.filter(key => !process.env[key]);

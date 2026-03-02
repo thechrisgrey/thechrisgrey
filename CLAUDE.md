@@ -316,6 +316,40 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Token usage captured for cost analysis
 - See `docs/bedrock-logging-queries.md` for CloudWatch Logs Insights queries
 
+### KB Admin (`/admin`)
+
+Protected admin page for managing the AI chat's Knowledge Base content.
+
+**Authentication:**
+- AWS Cognito User Pool: `thechrisgrey-admin-pool` (us-east-1)
+- Single admin user, no self-signup
+- Tokens stored in sessionStorage (1-hour expiry)
+
+**Data Flow:**
+1. Admin creates/edits `kbEntry` documents via kb-builder Lambda → Sanity CMS
+2. "Publish to KB" reads all active entries, assembles structured text document
+3. Uploads `knowledge-base.txt` to `s3://thechrisgrey-kb-source/`
+4. Existing kb-sync Lambda triggers Bedrock re-ingestion automatically
+
+**KB Builder Lambda** (`lambda/kb-builder/`):
+- Function: `thechrisgrey-kb-builder` (us-east-1)
+- Endpoints: GET/POST/PUT/DELETE `/entries`, POST `/publish`
+- Validates Cognito token on every request
+- Holds Sanity write token (env: `SANITY_WRITE_TOKEN`)
+- IAM Role: `thechrisgrey-kb-builder-role`
+
+**Sanity Document Type:** `kbEntry`
+- Fields: title, category, content (plain text), date, sortOrder, isActive
+- Categories: biography, career, military, education, business, philosophy, podcast, book, skills, awards
+
+**Deployment:**
+```bash
+cd lambda/kb-builder
+npm install
+zip -r function.zip index.mjs package.json node_modules
+aws lambda update-function-code --function-name thechrisgrey-kb-builder --zip-file fileb://function.zip --region us-east-1
+```
+
 ### Dynamic Sitemap & RSS Feed
 
 **Sitemap** generated at build time via `scripts/generate-sitemap.js`:
@@ -514,6 +548,10 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
+- `lambda/kb-builder/`: KB admin Lambda (Sanity CRUD + S3 document assembly)
+- `src/pages/Admin.tsx`: KB admin page (login + entry CRUD + publish)
+- `src/hooks/useAuth.ts`: Cognito authentication hook
+- `src/hooks/useKbAdmin.ts`: KB entry CRUD and publish hook
 - `docs/bedrock-logging-queries.md`: CloudWatch Logs Insights queries for chat analytics
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
 - `scripts/generate-rss.js`: Build-time RSS feed generator
@@ -537,6 +575,9 @@ Required (set in AWS Amplify console):
 - `VITE_NEWSLETTER_ENDPOINT`: AWS Lambda URL for newsletter subscriptions
 - `VITE_CHAT_ENDPOINT`: AWS Lambda Function URL for AI chat streaming
 - `YOUTUBE_API_KEY`: YouTube Data API v3 key for podcast episode fetching (build-time only, not VITE_ prefixed)
+- `VITE_COGNITO_USER_POOL_ID`: Cognito User Pool ID for admin auth
+- `VITE_COGNITO_CLIENT_ID`: Cognito App Client ID for admin auth
+- `VITE_KB_BUILDER_ENDPOINT`: Lambda Function URL for KB admin operations
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables
