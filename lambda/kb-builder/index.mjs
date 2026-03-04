@@ -215,6 +215,9 @@ export const handler = async (event) => {
     if (method === "PUT" && path.startsWith("/entries/")) {
       const id = path.split("/entries/")[1];
       if (!id) return respond(400, { error: "Missing entry ID" });
+      if (!/^[a-zA-Z0-9._-]+$/.test(id)) {
+        return respond(400, { error: "Invalid entry ID format" });
+      }
 
       const body = JSON.parse(event.body || "{}");
 
@@ -239,6 +242,16 @@ export const handler = async (event) => {
     if (method === "DELETE" && path.startsWith("/entries/")) {
       const id = path.split("/entries/")[1];
       if (!id) return respond(400, { error: "Missing entry ID" });
+      if (!/^[a-zA-Z0-9._-]+$/.test(id)) {
+        return respond(400, { error: "Invalid entry ID format" });
+      }
+
+      // Verify document is a kbEntry before deleting
+      const doc = await sanityClient.getDocument(id);
+      if (!doc) return respond(404, { error: "Entry not found" });
+      if (doc._type !== "kbEntry") {
+        return respond(403, { error: "Cannot delete non-kbEntry documents" });
+      }
 
       await sanityClient.delete(id);
       return respond(200, { deleted: true });

@@ -152,6 +152,9 @@ function validateInput(messages) {
  */
 async function retrieveContext(query) {
   try {
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 4000);
+
     const command = new RetrieveCommand({
       knowledgeBaseId: KNOWLEDGE_BASE_ID,
       retrievalQuery: { text: query },
@@ -162,7 +165,11 @@ async function retrieveContext(query) {
       },
     });
 
-    const response = await agentClient.send(command);
+    const response = await agentClient.send(command, {
+      abortSignal: abortController.signal,
+    });
+
+    clearTimeout(timeoutId);
 
     if (!response.retrievalResults || response.retrievalResults.length === 0) {
       return null;
@@ -176,7 +183,12 @@ async function retrieveContext(query) {
     emitMetric("KBRetrievalSuccess");
     return contextChunks.join("\n\n---\n\n");
   } catch (error) {
-    console.error("Knowledge Base retrieval error:", error);
+    if (error.name === "AbortError") {
+      console.error("KB retrieval timed out after 4s");
+      emitMetric("KBRetrievalTimeout");
+    } else {
+      console.error("Knowledge Base retrieval error:", error);
+    }
     emitMetric("KBRetrievalFailure");
     return null;
   }

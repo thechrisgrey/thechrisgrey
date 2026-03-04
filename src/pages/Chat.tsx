@@ -13,6 +13,7 @@ const ChatContent = () => {
     messages,
     isTyping,
     isStreaming,
+    streamingMessageId,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,
@@ -75,6 +76,7 @@ const ChatContent = () => {
                 key={message.id}
                 role={message.role}
                 content={message.content}
+                isStreaming={message.id === streamingMessageId}
               />
             ))}
             {isTyping && <TypingIndicator />}

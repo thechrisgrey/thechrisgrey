@@ -54,6 +54,7 @@ const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask me anything..."
+            aria-label="Type a message"
             disabled={disabled}
             rows={1}
             maxLength={4000}

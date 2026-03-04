@@ -104,22 +104,59 @@ export function useAuth() {
     setState({ isAuthenticated: false, isLoading: false, error: null });
   }, []);
 
-  const getAccessToken = useCallback((): string | null => {
+  const refreshSession = useCallback(async (): Promise<string | null> => {
     const stored = sessionStorage.getItem(AUTH_STORAGE_KEY);
     if (!stored) return null;
 
     try {
       const tokens: AuthTokens = JSON.parse(stored);
-      if (tokens.expiresAt <= Date.now()) {
-        sessionStorage.removeItem(AUTH_STORAGE_KEY);
-        setState({ isAuthenticated: false, isLoading: false, error: null });
-        return null;
+      if (!tokens.refreshToken) return null;
+
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        ClientId: CLIENT_ID,
+        AuthParameters: {
+          REFRESH_TOKEN: tokens.refreshToken,
+        },
+      });
+
+      const response = await cognitoClient.send(command);
+      const result = response.AuthenticationResult;
+
+      if (!result?.AccessToken || !result?.IdToken) return null;
+
+      const newTokens: AuthTokens = {
+        accessToken: result.AccessToken,
+        idToken: result.IdToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: Date.now() + (result.ExpiresIn || 3600) * 1000,
+      };
+
+      sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newTokens));
+      setState({ isAuthenticated: true, isLoading: false, error: null });
+      return newTokens.accessToken;
+    } catch {
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+      setState({ isAuthenticated: false, isLoading: false, error: null });
+      return null;
+    }
+  }, []);
+
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    const stored = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    if (!stored) return null;
+
+    try {
+      const tokens: AuthTokens = JSON.parse(stored);
+      // Proactively refresh if within 5 minutes of expiry
+      if (tokens.expiresAt <= Date.now() + 5 * 60 * 1000) {
+        return await refreshSession();
       }
       return tokens.accessToken;
     } catch {
       return null;
     }
-  }, []);
+  }, [refreshSession]);
 
   return {
     isAuthenticated: state.isAuthenticated,

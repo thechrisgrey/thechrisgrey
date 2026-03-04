@@ -36,7 +36,7 @@ interface SiteHealthState {
   error: string | null;
 }
 
-export function useSiteHealth(getAccessToken: () => string | null) {
+export function useSiteHealth(getAccessToken: () => Promise<string | null>) {
   const [state, setState] = useState<SiteHealthState>({
     data: null,
     isLoading: false,
@@ -49,7 +49,7 @@ export function useSiteHealth(getAccessToken: () => string | null) {
       return;
     }
 
-    const token = getAccessToken();
+    const token = await getAccessToken();
     if (!token) return;
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));

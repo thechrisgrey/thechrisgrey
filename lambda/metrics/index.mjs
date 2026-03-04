@@ -3,8 +3,13 @@ import {
   PutMetricDataCommand,
   GetMetricStatisticsCommand,
 } from "@aws-sdk/client-cloudwatch";
+import {
+  CognitoIdentityProviderClient,
+  GetUserCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
+const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
 const NAMESPACE = "TheChrisGrey/SiteMetrics";
 const ALLOWED_ORIGIN = "https://thechrisgrey.com";
 
@@ -107,9 +112,21 @@ async function getMetricSum(metricName, periodHours = 24) {
   return result.Datapoints?.[0]?.Sum ?? 0;
 }
 
+async function validateToken(authHeader) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  try {
+    const command = new GetUserCommand({ AccessToken: authHeader.slice(7) });
+    await cognitoClient.send(command);
+    return true;
+  } catch (error) {
+    console.error("Token validation failed:", error.name);
+    return null;
+  }
+}
+
 async function handleHealth(authHeader) {
-  // Health endpoint requires Cognito auth
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const user = await validateToken(authHeader);
+  if (!user) {
     return respond(401, { error: "Unauthorized" });
   }
 

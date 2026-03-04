@@ -333,7 +333,7 @@ const Blog = () => {
           )}
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12" role="status" aria-label="Loading articles">
               {Array.from({ length: 6 }).map((_, i) => (
                 <BlogPostSkeleton key={i} />
               ))}

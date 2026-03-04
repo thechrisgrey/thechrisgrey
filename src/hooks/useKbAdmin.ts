@@ -46,7 +46,7 @@ interface PublishResult {
   publishedAt: string;
 }
 
-export function useKbAdmin(getAccessToken: () => string | null) {
+export function useKbAdmin(getAccessToken: () => Promise<string | null>) {
   const [entries, setEntries] = useState<KbEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -54,7 +54,7 @@ export function useKbAdmin(getAccessToken: () => string | null) {
 
   const authFetch = useCallback(
     async (path: string, options: RequestInit = {}) => {
-      const token = getAccessToken();
+      const token = await getAccessToken();
       if (!token) throw new Error('Not authenticated');
 
       const response = await fetch(`${KB_BUILDER_ENDPOINT}${path}`, {

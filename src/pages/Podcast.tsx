@@ -9,6 +9,7 @@ import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
 import YouTubeFacade from '../components/YouTubeFacade';
+import SpotifyFacade from '../components/SpotifyFacade';
 import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
@@ -150,16 +151,9 @@ const Podcast = () => {
       <section className="py-16 bg-altivum-dark border-t border-white/5">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <div className="rounded-xl overflow-hidden">
-            <iframe
-              src={SPOTIFY_EMBED_URL}
-              width="100%"
-              height="352"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              title="The Vector Podcast on Spotify"
-              className="rounded-xl"
+            <SpotifyFacade
+              embedUrl={SPOTIFY_EMBED_URL}
+              title="The Vector Podcast"
             />
           </div>
         </div>

@@ -18,6 +18,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
     messages,
     isTyping,
     isStreaming,
+    streamingMessageId,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,
@@ -103,6 +104,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
                 key={message.id}
                 role={message.role}
                 content={message.content}
+                isStreaming={message.id === streamingMessageId}
               />
             ))}
             {isTyping && <TypingIndicator />}

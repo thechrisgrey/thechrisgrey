@@ -25,8 +25,8 @@ const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoadingFallback = () => (
-  <div className="min-h-screen bg-altivum-dark flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin" />
+  <div className="min-h-screen bg-altivum-dark flex items-center justify-center" role="status" aria-label="Loading page">
+    <div className="w-8 h-8 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin" aria-hidden="true" />
   </div>
 );
 

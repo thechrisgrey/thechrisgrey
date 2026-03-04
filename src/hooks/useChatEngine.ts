@@ -30,6 +30,7 @@ export function useChatEngine() {
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const streamingMessageIdRef = useRef<string | null>(null);
 
   // Clean up stale chat-typing key from sessionStorage (legacy)
   useEffect(() => {
@@ -96,6 +97,7 @@ export function useChatEngine() {
       }));
 
       const assistantMessageId = `assistant-${Date.now()}`;
+      streamingMessageIdRef.current = assistantMessageId;
       setIsStreaming(true);
 
       try {
@@ -194,6 +196,7 @@ export function useChatEngine() {
       } finally {
         clearTimeout(timeoutId);
         setIsStreaming(false);
+        streamingMessageIdRef.current = null;
         abortControllerRef.current = null;
       }
     },
@@ -207,10 +210,13 @@ export function useChatEngine() {
     [handleSend]
   );
 
+  const streamingMessageId = isStreaming ? streamingMessageIdRef.current : null;
+
   return {
     messages,
     isTyping,
     isStreaming,
+    streamingMessageId,
     messagesContainerRef,
     hasUserMessages,
     showSuggestions,

@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
+  isStreaming?: boolean;
 }
 
 // Map of keywords to their URLs (ordered by length desc to match longer phrases first)
@@ -68,7 +69,7 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = ({ role, content }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming }: ChatMessageProps) => {
   const isUser = role === 'user';
 
   // Only process links for assistant messages
@@ -90,6 +91,9 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
           style={typography.bodyText}
         >
           {displayContent}
+          {isStreaming && (
+            <span className="inline-block w-[2px] h-[1em] bg-altivum-gold ml-0.5 animate-pulse align-middle" aria-hidden="true" />
+          )}
         </p>
       </div>
     </div>
