@@ -78,6 +78,7 @@ const ChatContent = () => {
                 role={message.role}
                 content={message.content}
                 isStreaming={message.id === streamingMessageId}
+                isSystem={message.isSystem}
               />
             ))}
             {isTyping && <TypingIndicator />}

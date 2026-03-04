@@ -291,6 +291,8 @@ const BlogPost = () => {
               src={urlFor(post.image).width(1920).height(600).auto('format').quality(85).url()}
               alt={post.image.alt || post.title}
               className="w-full h-full object-cover opacity-30"
+              fetchPriority="high"
+              loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-altivum-dark/50 via-altivum-dark/80 to-altivum-dark"></div>
           </div>

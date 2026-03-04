@@ -37,6 +37,12 @@ const GUARDRAIL_VERSION = "1";
 const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
 const RATE_LIMIT_MAX = 20;
 const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
+const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
+
+function writeSystemMessage(responseStream, message) {
+  responseStream.write(SYSTEM_MESSAGE_PREFIX + message);
+  responseStream.end();
+}
 
 // Base system prompt defining the AI persona
 const BASE_SYSTEM_PROMPT = `You are Christian Perez's AI assistant. Help visitors learn about him in a natural, conversational way.
@@ -290,8 +296,7 @@ export const handler = awslambda.streamifyResponse(
       const rateLimit = await checkRateLimit(clientIp);
       if (!rateLimit.allowed) {
         emitMetric("RateLimitRejection");
-        responseStream.write("You've reached the message limit. Please try again in about an hour.");
-        responseStream.end();
+        writeSystemMessage(responseStream, "You've reached the message limit. Please try again in about an hour.");
         return;
       }
 
@@ -303,8 +308,7 @@ export const handler = awslambda.streamifyResponse(
       // Validate input
       const validation = validateInput(messages);
       if (!validation.valid) {
-        responseStream.write(validation.error);
-        responseStream.end();
+        writeSystemMessage(responseStream, validation.error);
         return;
       }
 
@@ -380,22 +384,17 @@ export const handler = awslambda.streamifyResponse(
       // Handle guardrail interventions
       if (error.name === "ValidationException" &&
           error.message?.toLowerCase().includes("guardrail")) {
-        responseStream.write("I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
-        responseStream.end();
+        writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
         return;
       }
 
       // Handle throttling
       if (error.name === "ThrottlingException" || error.name === "ServiceQuotaExceededException") {
-        responseStream.write("The service is currently busy. Please try again in a moment.");
-        responseStream.end();
+        writeSystemMessage(responseStream, "The service is currently busy. Please try again in a moment.");
         return;
       }
 
-      responseStream.write(
-        "I apologize, but I encountered an error processing your request. Please try again."
-      );
-      responseStream.end();
+      writeSystemMessage(responseStream, "I encountered an error processing your request. Please try again.");
     }
   }
 );

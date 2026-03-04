@@ -9,9 +9,11 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  isSystem?: boolean;
 }
 
 const CHAT_ENDPOINT = import.meta.env.VITE_CHAT_ENDPOINT;
+const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 export const CHAT_STORAGE_KEY = 'chat-messages';
 
 export const initialWelcomeMessage: Message = {
@@ -137,13 +139,18 @@ export function useChatEngine(pageContext?: PageContext) {
               if (firstChunk) {
                 firstChunk = false;
                 setIsTyping(false);
+                const isSystemMsg = chunk.startsWith(SYSTEM_MESSAGE_PREFIX);
+                const displayChunk = isSystemMsg
+                  ? chunk.slice(SYSTEM_MESSAGE_PREFIX.length)
+                  : chunk;
                 setMessages((prev) => [
                   ...prev,
                   {
                     id: assistantMessageId,
                     role: 'assistant' as const,
-                    content: chunk,
+                    content: displayChunk,
                     timestamp: new Date(),
+                    ...(isSystemMsg && { isSystem: true }),
                   },
                 ]);
               } else {

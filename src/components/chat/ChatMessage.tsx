@@ -5,6 +5,7 @@ interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   isStreaming?: boolean;
+  isSystem?: boolean;
 }
 
 // Map of keywords to their URLs (ordered by length desc to match longer phrases first)
@@ -69,8 +70,21 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = ({ role, content, isStreaming }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, isSystem }: ChatMessageProps) => {
   const isUser = role === 'user';
+
+  if (isSystem) {
+    return (
+      <div className="flex justify-center animate-fade-in">
+        <div className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-white/10 rounded-xl">
+          <p className="text-altivum-silver flex items-start gap-2" style={typography.bodyText}>
+            <span className="material-icons text-altivum-silver/60 text-lg mt-0.5 shrink-0">info</span>
+            <span>{content}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Only process links for assistant messages
   const displayContent = isUser ? content : processContentWithLinks(content);

@@ -2,6 +2,7 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { isValidEmail } from '../utils/validators';
 import { useState, useEffect, FormEvent } from 'react';
+import { useBlocker } from 'react-router-dom';
 import { contactFAQs, buildContactPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import { useFocusTrap } from '../hooks';
@@ -22,17 +23,45 @@ const Contact = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { containerRef: modalRef, handleKeyDown: handleModalKeyDown } = useFocusTrap(showSuccessModal);
 
-  // Keyboard escape handler for modal
+  // Dirty-form detection
+  const isDirty = !!(
+    formData.name.trim() || formData.email.trim() ||
+    formData.subject.trim() || formData.message.trim()
+  );
+
+  // Block in-app navigation when form is dirty
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      (isDirty || formStatus.type === 'loading') &&
+      currentLocation.pathname !== nextLocation.pathname
+  );
+  const { containerRef: leaveModalRef, handleKeyDown: handleLeaveModalKeyDown } = useFocusTrap(blocker.state === 'blocked');
+
+  // Browser beforeunload guard for tab close/refresh
+  useEffect(() => {
+    if (!isDirty && formStatus.type !== 'loading') return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty, formStatus.type]);
+
+  // Keyboard escape handler for modals
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showSuccessModal) {
-        setShowSuccessModal(false);
+      if (e.key === 'Escape') {
+        if (blocker.state === 'blocked') {
+          blocker.reset?.();
+        } else if (showSuccessModal) {
+          setShowSuccessModal(false);
+        }
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showSuccessModal]);
+  }, [showSuccessModal, blocker]);
 
   const validateForm = (): string | null => {
     if (formData.name.trim().length < 2 || formData.name.trim().length > 100) {
@@ -505,6 +534,53 @@ const Contact = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Page Confirmation Modal */}
+      {blocker.state === 'blocked' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => blocker.reset?.()}
+          ></div>
+          <div
+            ref={leaveModalRef}
+            onKeyDown={handleLeaveModalKeyDown}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="leave-modal-title"
+            className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-white/20 shadow-[0_0_60px_rgba(197,165,114,0.1)]"
+          >
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border-2 border-amber-500/50 mb-6">
+                <span className="material-icons text-amber-400 text-4xl">warning</span>
+              </div>
+
+              <h3 id="leave-modal-title" className="text-white mb-4" style={typography.cardTitleLarge}>
+                Leave this page?
+              </h3>
+
+              <p className="text-altivum-silver mb-8" style={typography.bodyText}>
+                You have unsaved changes in the contact form. Your message will be lost.
+              </p>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => blocker.reset?.()}
+                  className="px-8 py-3 bg-altivum-gold text-altivum-dark font-medium uppercase tracking-wider text-sm hover:bg-white transition-colors duration-300"
+                >
+                  Stay
+                </button>
+                <button
+                  onClick={() => blocker.proceed?.()}
+                  className="px-8 py-3 border border-white/20 text-altivum-silver font-medium uppercase tracking-wider text-sm hover:text-white hover:border-white/40 transition-colors duration-300"
+                >
+                  Leave
+                </button>
+              </div>
             </div>
           </div>
         </div>
