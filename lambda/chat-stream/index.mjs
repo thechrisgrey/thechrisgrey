@@ -195,16 +195,61 @@ async function retrieveContext(query) {
 }
 
 /**
+ * Validate and sanitize page context from the request
+ * Returns sanitized context or null if invalid
+ */
+function validatePageContext(pageContext) {
+  if (!pageContext || typeof pageContext !== 'object') return null;
+
+  const { currentPage, pageTitle, section, visitedPages } = pageContext;
+
+  if (typeof currentPage !== 'string' || currentPage.length > 200) return null;
+  if (typeof section !== 'string' || section.length > 200) return null;
+
+  const sanitizedVisitedPages = Array.isArray(visitedPages)
+    ? visitedPages.filter(p => typeof p === 'string' && p.length <= 200).slice(0, 20)
+    : [];
+
+  return {
+    currentPage,
+    pageTitle: typeof pageTitle === 'string' ? pageTitle.slice(0, 200) : '',
+    section,
+    visitedPages: sanitizedVisitedPages,
+  };
+}
+
+/**
+ * Build visitor context block for the system prompt
+ */
+function buildVisitorContext(pageContext) {
+  if (!pageContext) return '';
+
+  const priorPages = pageContext.visitedPages.filter(p => p !== pageContext.currentPage);
+  const journeyLine = priorPages.length > 0
+    ? `\nThey have also visited: ${priorPages.join(', ')}.`
+    : '';
+
+  return `
+
+=== VISITOR CONTEXT ===
+The visitor is currently on the ${pageContext.section} page (${pageContext.currentPage}).${journeyLine}
+Use this context to make your responses more relevant. If they're on a specific page, reference that content naturally. Don't explicitly say "I see you're on the podcast page" - just tailor your response.
+=== END VISITOR CONTEXT ===`;
+}
+
+/**
  * Build system prompt with retrieved context
  */
-function buildSystemPrompt(retrievedContext) {
+function buildSystemPrompt(retrievedContext, pageContext) {
+  const visitorContext = buildVisitorContext(pageContext);
+
   if (!retrievedContext) {
-    return `${BASE_SYSTEM_PROMPT}
+    return `${BASE_SYSTEM_PROMPT}${visitorContext}
 
 Note: No specific context was retrieved for this query. Answer based on general knowledge about Christian Perez as the Founder & CEO of Altivum Inc., a former Green Beret (18D), host of The Vector Podcast, and author of "Beyond the Assessment."`;
   }
 
-  return `${BASE_SYSTEM_PROMPT}
+  return `${BASE_SYSTEM_PROMPT}${visitorContext}
 
 === RETRIEVED CONTEXT ===
 The following information was retrieved from Christian's personal knowledge base. Use this to provide accurate, detailed answers:
@@ -253,6 +298,7 @@ export const handler = awslambda.streamifyResponse(
       // Parse request body
       const body = JSON.parse(event.body || "{}");
       const messages = body.messages || [];
+      const pageContext = validatePageContext(body.pageContext);
 
       // Validate input
       const validation = validateInput(messages);
@@ -266,13 +312,17 @@ export const handler = awslambda.streamifyResponse(
       const latestQuery = getLatestUserMessage(messages);
 
       // Retrieve context from Knowledge Base
+      // Optionally bias the query with page section for better relevance
       let retrievedContext = null;
       if (latestQuery) {
-        retrievedContext = await retrieveContext(latestQuery);
+        const biasedQuery = pageContext && pageContext.section !== 'AI Chat' && pageContext.section !== 'Home'
+          ? `${pageContext.section}: ${latestQuery}`
+          : latestQuery;
+        retrievedContext = await retrieveContext(biasedQuery);
       }
 
       // Build system prompt with context
-      const systemPrompt = buildSystemPrompt(retrievedContext);
+      const systemPrompt = buildSystemPrompt(retrievedContext, pageContext);
 
       // Server-side sliding window: keep last 20 messages for Bedrock
       const BEDROCK_MAX_MESSAGES = 20;

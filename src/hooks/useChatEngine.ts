@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
+import type { PageContext } from '../utils/pageContext';
 
 const MAX_HISTORY = 20;
 
@@ -21,7 +22,7 @@ export const initialWelcomeMessage: Message = {
   timestamp: new Date(),
 };
 
-export function useChatEngine() {
+export function useChatEngine(pageContext?: PageContext) {
   const [messages, setMessages, clearMessages] = useSessionStorage<Message[]>(
     CHAT_STORAGE_KEY,
     [initialWelcomeMessage]
@@ -104,7 +105,17 @@ export function useChatEngine() {
         const response = await fetch(CHAT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: conversationHistory }),
+          body: JSON.stringify({
+            messages: conversationHistory,
+            ...(pageContext && {
+              pageContext: {
+                currentPage: pageContext.currentPage,
+                pageTitle: pageContext.pageTitle,
+                section: pageContext.section,
+                visitedPages: pageContext.visitedPages,
+              },
+            }),
+          }),
           signal: controller.signal,
         });
 
@@ -200,7 +211,7 @@ export function useChatEngine() {
         abortControllerRef.current = null;
       }
     },
-    [messages, setMessages]
+    [messages, setMessages, pageContext]
   );
 
   const handleSuggestionSelect = useCallback(

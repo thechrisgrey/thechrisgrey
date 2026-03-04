@@ -6,9 +6,10 @@ import ChatSuggestions from '../components/chat/ChatSuggestions';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { ChatErrorFallback } from '../components/ErrorFallbacks';
-import { useChatEngine, CHAT_STORAGE_KEY } from '../hooks';
+import { useChatEngine, usePageContext, CHAT_STORAGE_KEY } from '../hooks';
 
 const ChatContent = () => {
+  const pageContext = usePageContext();
   const {
     messages,
     isTyping,
@@ -20,7 +21,7 @@ const ChatContent = () => {
     handleSend,
     handleClearConversation,
     handleSuggestionSelect,
-  } = useChatEngine();
+  } = useChatEngine(pageContext);
 
   return (
     <div className="h-screen pt-20 flex flex-col bg-altivum-dark overflow-hidden">

@@ -1,18 +1,21 @@
 interface ChatSuggestionsProps {
   onSelect: (suggestion: string) => void;
+  suggestions?: string[];
 }
 
-const suggestions = [
+const DEFAULT_SUGGESTIONS = [
   "How did he go from Green Beret to tech CEO?",
   "What drives Altivum's mission?",
   "Why did he write Beyond the Assessment?",
   "What's his take on AI and veterans?",
 ];
 
-const ChatSuggestions = ({ onSelect }: ChatSuggestionsProps) => {
+const ChatSuggestions = ({ onSelect, suggestions }: ChatSuggestionsProps) => {
+  const items = suggestions || DEFAULT_SUGGESTIONS;
+
   return (
     <div className="flex flex-wrap gap-3 justify-center px-4 py-6">
-      {suggestions.map((suggestion, index) => (
+      {items.map((suggestion, index) => (
         <button
           key={index}
           onClick={() => onSelect(suggestion)}

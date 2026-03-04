@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useFocusTrap, useChatEngine } from '../../hooks';
+import { useFocusTrap, useChatEngine, usePageContext } from '../../hooks';
 import { typography } from '../../utils/typography';
+import { getSuggestionsForPage } from '../../utils/pageContext';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import ChatSuggestions from './ChatSuggestions';
@@ -13,6 +14,8 @@ interface ChatWidgetPanelProps {
 const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
   const navigate = useNavigate();
   const { containerRef, handleKeyDown } = useFocusTrap(true);
+  const pageContext = usePageContext();
+  const contextualSuggestions = getSuggestionsForPage(pageContext.currentPage);
 
   const {
     messages,
@@ -25,7 +28,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
     handleSend,
     handleClearConversation,
     handleSuggestionSelect,
-  } = useChatEngine();
+  } = useChatEngine(pageContext);
 
   const handleExpand = () => {
     onClose();
@@ -112,7 +115,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
         </div>
 
         {showSuggestions && (
-          <ChatSuggestions onSelect={handleSuggestionSelect} />
+          <ChatSuggestions onSelect={handleSuggestionSelect} suggestions={contextualSuggestions} />
         )}
       </div>
 
