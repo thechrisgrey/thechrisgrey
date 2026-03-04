@@ -1,6 +1,415 @@
 {
-  "episodes": [],
-  "channelId": null,
-  "latestVideoId": null,
-  "generatedAt": null
+  "episodes": [
+    {
+      "id": "yt-ndX9SkIY7Mc",
+      "videoId": "ndX9SkIY7Mc",
+      "title": "Service Beyond the Military: Brittinie Wick on Women Veterans, AI in Defense & the Power of Purpose",
+      "description": "In this episode of The Vector Podcast, Christian Perez sits down with Brittinie Wick — US Air Force veteran, Doctor of Physical Therapy, and founder of the @WomenServeToo podcast. Brittinie shares how her childhood sparked her path to military service, what the transition to civilian life really looks like when your identity has been built around the mission, and why mental health remains one of the most critical and underserved issues facing veterans today. The conversation covers the growing role of AI in military operations, the unique challenges women veterans face in gaining recognition for their service, and why Brittinie believes standards should never be lowered regardless of gender. They also dig into how social media is driving polarization, why open and honest conversations are more important than ever, and what it means to find purpose after the uniform comes off.",
+      "publishedAt": "2026-02-20",
+      "duration": "40:12",
+      "episodeNumber": 24,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/ndX9SkIY7Mc/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=ndX9SkIY7Mc",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-tOYIm61Ewl4",
+      "videoId": "tOYIm61Ewl4",
+      "title": "What If This Could Be Better? – A Veteran's Approach to Innovation with A'Yana Leonard",
+      "description": "In this episode of The Vector Podcast, host Christian Perez sits down with A'Yana Leonard—U.S. Army veteran, former Director of Marketing and Digital Strategy, and self-taught technologist exploring AI, cloud systems, and even FPGA hardware.",
+      "publishedAt": "2026-01-16",
+      "duration": "35:29",
+      "episodeNumber": 23,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/tOYIm61Ewl4/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=tOYIm61Ewl4",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-XCIkaWBbkno",
+      "videoId": "XCIkaWBbkno",
+      "title": "Leading Through the Cloud: Daniel Gaina on AI & the Human Domain in the era of Autonomous Agents",
+      "description": "In this episode of the Vector Podcast, host Christian Perez engages in an in-depth conversation with Daniel Gaina, Senior Cloud Engineer and AWS Community Builder, to explore the intersection of technical expertise, leadership, and the evolving role of artificial intelligence in modern cloud engineering. Daniel shares his compelling journey from a non-technical background to earning AWS's prestigious Golden Jacket certification; a distinction requiring mastery across 12+ AWS specializations. The discussion examines the critical importance of certifications as foundational knowledge tools, the irreplaceable value of community engagement, and the human-centered leadership skills that distinguish exceptional technologists from merely competent ones. As AI and agentic systems reshape the technology landscape, Perez and Gaina emphasize that sustained success in tech demands not just technical proficiency, but emotional intelligence, accountability, and the capacity for meaningful human connection.",
+      "publishedAt": "2025-12-23",
+      "duration": "40:22",
+      "episodeNumber": 22,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/XCIkaWBbkno/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=XCIkaWBbkno",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-WRqF36FRSgk",
+      "videoId": "WRqF36FRSgk",
+      "title": "Empowering Minds: AI, Neurodiversity & The Future of Mental Healthcare with Jay Getten",
+      "description": "On this episode of The Vector Podcast I sat down with Jay Getten, a mental health innovator, author, and creator of open-source clinical decision support software. In this profound conversation, Jay shares his transformative journey from special education teacher to developing precision mental healthcare software.",
+      "publishedAt": "2025-11-08",
+      "duration": "55:34",
+      "episodeNumber": 21,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/WRqF36FRSgk/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=WRqF36FRSgk",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-VAca4Y2SywA",
+      "videoId": "VAca4Y2SywA",
+      "title": "Ethics and AI  #ethics #ai #education",
+      "description": "Look at everything through an ethical lens first. This is a point of view we should apply to every aspect of our lives. Subscribe to @thevectorpodcast for more.",
+      "publishedAt": "2025-11-02",
+      "duration": "0:46",
+      "episodeNumber": 20,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/VAca4Y2SywA/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=VAca4Y2SywA",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-Khql4OoR2wY",
+      "videoId": "Khql4OoR2wY",
+      "title": "Ethics, Education, and Empathy in the Age of AI with Dr. Sarah Mendoza",
+      "description": "In this episode of The Vector Podcast, Dr. Sarah Mendoza of Austin Peay State University joins Christian Perez to explore how artificial intelligence is transforming human-centered work. Drawing from her background in counseling and higher education, Dr. Mendoza reflects on the realities of clinical practice, the ethics of data and privacy, and the role of empathy in a world increasingly shaped by technology.",
+      "publishedAt": "2025-10-21",
+      "duration": "33:36",
+      "episodeNumber": 19,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/Khql4OoR2wY/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=Khql4OoR2wY",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-PRHHlxlxSTE",
+      "videoId": "PRHHlxlxSTE",
+      "title": "Part 3: AI Leadership - The Frontlines of of Human-AI Collaboration",
+      "description": "In this episode of The Vector Podcast, we mark a major milestone—crossing 500 subscribers—and conclude our AI Leadership series. The discussion centers on how artificial intelligence is redefining leadership in modern organizations. We emphasize that true AI leadership transcends automation and efficiency; it is about envisioning systems that expand human potential while ensuring accountability and ethical governance.",
+      "publishedAt": "2025-10-12",
+      "duration": "8:52",
+      "episodeNumber": 18,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/PRHHlxlxSTE/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=PRHHlxlxSTE",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-OlQQlIFXaMk",
+      "videoId": "OlQQlIFXaMk",
+      "title": "3 AI Questions You Must Be Able To Answer #artificialintelligence #career #jobinterview #jobsearch",
+      "description": "Unlock the secrets to acing AI questions in job interviews! Discover strategic insights on using AI effectively, knowing its limits, and staying ahead in the AI game. Perfect your answers and stand out in 2025. Like and subscribe for more career tips!",
+      "publishedAt": "2025-10-06",
+      "duration": "2:05",
+      "episodeNumber": 17,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/OlQQlIFXaMk/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=OlQQlIFXaMk",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-yWwuvLhWWGs",
+      "videoId": "yWwuvLhWWGs",
+      "title": "Part 2: AI Integration - From Concept to Competitive Edge",
+      "description": "In this episode of the Vector Podcast, we dive deep into the world of AI Integration, the second pillar in our three-part series on AI competency. Join us as we explore how to effectively weave AI tools into your business operations to create real, measurable value. Discover a clear three-step system for integrating AI, learn how to avoid common pitfalls, and understand the importance of process mapping and human-AI collaboration. With insights from leading research and real-world examples, this episode is packed with actionable strategies to help you transform AI from an expensive calculator into a strategic advantage. Whether you're just starting or looking to scale your AI initiatives, this episode offers valuable guidance to ensure your AI integration is successful and sustainable. Don't miss out on the opportunity to enhance productivity, drive revenue growth, and build a culture of innovation. Tune in now and take the next step in your AI journey!",
+      "publishedAt": "2025-10-06",
+      "duration": "13:37",
+      "episodeNumber": 16,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/yWwuvLhWWGs/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=yWwuvLhWWGs",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-T59rmjswSAA",
+      "videoId": "T59rmjswSAA",
+      "title": "Are you ready for your next job interviews?  #artificialintelligence #career #learning",
+      "description": "The prerequisites to thrive in today's market economy are changing rapidly. Are you prepared?",
+      "publishedAt": "2025-10-04",
+      "duration": "0:19",
+      "episodeNumber": 15,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/T59rmjswSAA/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=T59rmjswSAA",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-TG6iY_FO_D0",
+      "videoId": "TG6iY_FO_D0",
+      "title": "Part 1: AI Literacy - The First Step to Future-Proofing Your Career",
+      "description": "In this engaging episode of the Vector Podcast, we dive into the essential skills needed to thrive in today's AI-driven world. Christian introduces the first part of a three-part series, \"The 3 Pillars of AI Competency,\" focusing on AI literacy. Discover why AI literacy is not just a buzzword but a critical skill for employability, as two-thirds of hiring managers prioritize candidates with AI skills. Learn about the three modes of AI literacy—understanding, evaluating, and using AI ethically—and how they align with career readiness competencies like critical thinking and communication.",
+      "publishedAt": "2025-10-03",
+      "duration": "10:34",
+      "episodeNumber": 14,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/TG6iY_FO_D0/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=TG6iY_FO_D0",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-E3xNABP9S7g",
+      "videoId": "E3xNABP9S7g",
+      "title": "Sora 2 just took me back to Miami. Like & Sub for Sora invite! #sora #create #miami #ferrari",
+      "description": "",
+      "publishedAt": "2025-10-02",
+      "duration": "0:10",
+      "episodeNumber": 13,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/E3xNABP9S7g/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=E3xNABP9S7g",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-_rCe0UHOcJw",
+      "videoId": "_rCe0UHOcJw",
+      "title": "@OpenAI has reshaped the creative domain in ways comparable to the invention of the pencil 🤯",
+      "description": "",
+      "publishedAt": "2025-10-02",
+      "duration": "0:10",
+      "episodeNumber": 12,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/_rCe0UHOcJw/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=_rCe0UHOcJw",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-9bfrepcP1mM",
+      "videoId": "9bfrepcP1mM",
+      "title": "Anthropic Launched Ephemeral Software—And I'm Here For It",
+      "description": "In this conversation, Christian discusses Anthropic's latest AI model, Sonnet 4.5, highlighting its impressive capabilities in coding and software development. He introduces the concept of ephemeral software, which can generate applications on demand, adapting to user needs in real-time. This new paradigm challenges traditional software development and raises questions about the future of user experience and software reliability.",
+      "publishedAt": "2025-09-30",
+      "duration": "7:20",
+      "episodeNumber": 11,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/9bfrepcP1mM/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=9bfrepcP1mM",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-JqBahKW1zCA",
+      "videoId": "JqBahKW1zCA",
+      "title": "Ephemeral Software—SaaS Redefined #claude #artificialintelligence #learning #coding",
+      "description": "Anthropic just quietly released \"Imagine with Claude\" available now for Max subscribers—for ONLY 5 days!",
+      "publishedAt": "2025-09-30",
+      "duration": "0:57",
+      "episodeNumber": 10,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/JqBahKW1zCA/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=JqBahKW1zCA",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt--0ROozZRMTo",
+      "videoId": "-0ROozZRMTo",
+      "title": "3 Things You Need to Know About the History of AI",
+      "description": "From the Turing Test to ChatGPT Pulse, here's a brief history of AI in less than five minutes.",
+      "publishedAt": "2025-09-28",
+      "duration": "4:17",
+      "episodeNumber": 9,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/-0ROozZRMTo/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=-0ROozZRMTo",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-scfolVUz15o",
+      "videoId": "scfolVUz15o",
+      "title": "Translate Ideas to Code - Start Here!",
+      "description": "Make your ideas real! Start coding with AI. ",
+      "publishedAt": "2025-09-27",
+      "duration": "0:30",
+      "episodeNumber": 8,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/scfolVUz15o/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=scfolVUz15o",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-GD80QOsE0p0",
+      "videoId": "GD80QOsE0p0",
+      "title": "Top AI Tools Everyone Should Know",
+      "description": "In this episode, Christian discusses the overwhelming number of AI tools available and shares his top five tools that he uses daily. He emphasizes the importance of these tools in enhancing productivity, creativity, and technological innovation. Each tool is explored in detail, highlighting its unique features and applications, from coding assistance to creative rendering and workflow optimization.",
+      "publishedAt": "2025-09-26",
+      "duration": "8:15",
+      "episodeNumber": 7,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/GD80QOsE0p0/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=GD80QOsE0p0",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt--UqnHnHiQU8",
+      "videoId": "-UqnHnHiQU8",
+      "title": "Navigating AI in Today's Job Market",
+      "description": "In this video, Christian discusses the significance of recommendation letters in job applications and the evolving role of artificial intelligence (AI) in the hiring process. He outlines three essential skills: AI literacy, AI integration, and AI leadership, each with basic, intermediate, and advanced levels. The discussion emphasizes the need for applicants and hiring managers to understand and leverage AI effectively to stand out in a competitive job market.",
+      "publishedAt": "2025-09-23",
+      "duration": "7:24",
+      "episodeNumber": 6,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/-UqnHnHiQU8/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=-UqnHnHiQU8",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-ZdUQtZYEJok",
+      "videoId": "ZdUQtZYEJok",
+      "title": "Special Edition - VA Rating Assistant with Christopher Lassiter",
+      "description": "Join us as we delve into the inspiring journey of Chris Lassiter, a Navy Chief and seasoned web developer, who has embraced the world of AI and AWS. Discover how Chris leveraged his expertise to create the VA Rating Assistant, a groundbreaking tool designed to streamline the VA claims process for veterans. From participating in AWS hackathons to mastering cloud technologies, Chris shares his insights on the transformative power of AI and his vision for the future. Tune in to learn how AI is reshaping industries and empowering individuals to turn their innovative ideas into reality.",
+      "publishedAt": "2025-08-30",
+      "duration": "27:10",
+      "episodeNumber": 5,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/ZdUQtZYEJok/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=ZdUQtZYEJok",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-ZpHiBiDH5Ng",
+      "videoId": "ZpHiBiDH5Ng",
+      "title": "Co-Intelligence: Living and Working with AI #artificialintelligence #deeplearning #bookclub",
+      "description": "",
+      "publishedAt": "2025-08-23",
+      "duration": "0:12",
+      "episodeNumber": 4,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/ZpHiBiDH5Ng/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=ZpHiBiDH5Ng",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-o-2XBKbKI60",
+      "videoId": "o-2XBKbKI60",
+      "title": "Ep. 2 - The Convergence: How Three Breakthroughs Made Modern AI Possible",
+      "description": "AI is the result of decades of breakthroughs converging at the right time. In this episode of The Vector Podcast™, I break down the three core technologies that made modern AI possible:",
+      "publishedAt": "2025-08-23",
+      "duration": "8:25",
+      "episodeNumber": 2,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/o-2XBKbKI60/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=o-2XBKbKI60",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-hE9XVhfYBmM",
+      "videoId": "hE9XVhfYBmM",
+      "title": "Altivum Book Club - Co-Intelligence: Living & Working with AI by Ethan Mollick",
+      "description": "In this video, I introduce the very first book that I have added to the Altivum Book Club and that is \"Co-Intelligence: Living and Working with AI\" by Ethan Mollick.",
+      "publishedAt": "2025-08-20",
+      "duration": "3:24",
+      "episodeNumber": 2,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/hE9XVhfYBmM/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=hE9XVhfYBmM",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    },
+    {
+      "id": "yt-MpyalTgsILs",
+      "videoId": "MpyalTgsILs",
+      "title": "Ep. 1 - Welcome to The Vector Podcast",
+      "description": "Hosted by Christian Perez—Founder & CEO of Altivum Inc., creator of VetROI, and author of Beyond the Assessment.",
+      "publishedAt": "2025-08-18",
+      "duration": "15:44",
+      "episodeNumber": 1,
+      "seasonNumber": 1,
+      "thumbnail": "https://i.ytimg.com/vi/MpyalTgsILs/maxresdefault.jpg",
+      "links": {
+        "youtube": "https://www.youtube.com/watch?v=MpyalTgsILs",
+        "spotify": "https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX",
+        "apple": "https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071"
+      },
+      "topics": []
+    }
+  ],
+  "channelId": "UCtrm2Fj-6FTO4OyGHZWw8Iw",
+  "latestVideoId": "ndX9SkIY7Mc",
+  "generatedAt": "2026-03-04T12:18:25.153Z"
 }

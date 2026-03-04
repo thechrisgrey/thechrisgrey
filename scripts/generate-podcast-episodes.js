@@ -14,7 +14,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // YouTube channel configuration
-const YOUTUBE_CHANNEL_HANDLE = '@AltivumPress';
+const YOUTUBE_CHANNEL_HANDLE = '@thevectorpodcast';
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
 // Podcast platform links (static, won't change)
@@ -149,6 +149,28 @@ function extractEpisodeNumber(title) {
 }
 
 /**
+ * Extract the first meaningful description paragraph, skipping social link blocks
+ */
+function extractDescription(description) {
+  const paragraphs = description.split('\n\n');
+  for (const paragraph of paragraphs) {
+    const trimmed = paragraph.trim();
+    if (!trimmed) continue;
+    // Skip paragraphs that are mostly social links
+    const lines = trimmed.split('\n');
+    const urlLines = lines.filter(l => /https?:\/\//.test(l) || /^(LinkedIn|Instagram|Facebook|YouTube|Twitter|X|TikTok|Website):/.test(l.trim()));
+    if (urlLines.length > lines.length / 2) continue;
+    // Skip "Connect with [name]" lines (with or without URLs)
+    if (/^connect with\b/i.test(trimmed)) continue;
+    // Skip short header-like lines (e.g., "EPISODE SUMMARY", "ABOUT")
+    if (trimmed.length < 30 && !/[.!?]/.test(trimmed)) continue;
+    // Found a real description paragraph
+    return trimmed.split('\n')[0]; // First sentence/line of the paragraph
+  }
+  return paragraphs[0]?.trim() || '';
+}
+
+/**
  * Main function to fetch and generate episode data
  */
 async function generateEpisodes() {
@@ -195,7 +217,7 @@ async function generateEpisodes() {
           id: `yt-${videoId}`,
           videoId: videoId,
           title: snippet.title,
-          description: snippet.description?.split('\n\n')[0] || '', // First paragraph
+          description: extractDescription(snippet.description || ''),
           publishedAt: snippet.publishedAt.split('T')[0], // YYYY-MM-DD
           duration: parseDuration(details.duration || 'PT0S'),
           episodeNumber: episodeNum || (videos.length - index), // Fallback to reverse index

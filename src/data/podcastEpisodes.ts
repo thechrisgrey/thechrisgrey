@@ -82,7 +82,7 @@ export const PODCAST_PLATFORMS: PodcastPlatform[] = [
   },
   {
     name: 'YouTube',
-    url: 'https://www.youtube.com/@AltivumPress',
+    url: 'https://www.youtube.com/@thevectorpodcast',
     icon: 'youtube'
   },
   {

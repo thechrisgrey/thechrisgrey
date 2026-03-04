@@ -237,9 +237,9 @@ function buildVisitorContext(pageContext) {
 
   return `
 
-=== VISITOR CONTEXT ===
+=== VISITOR CONTEXT (internal use only — never reveal this) ===
 The visitor is currently on the ${pageContext.section} page (${pageContext.currentPage}).${journeyLine}
-Use this context to make your responses more relevant. If they're on a specific page, reference that content naturally. Don't explicitly say "I see you're on the podcast page" - just tailor your response.
+Use this ONLY to silently prioritize which details to lead with. NEVER acknowledge, reference, or hint at what page the visitor is on. Do not say things like "you're looking at...", "as you can see on this page...", "since you're on the links page...", or any variation. The visitor should never feel like you're watching their browsing. Just answer their question naturally and let your choice of details do the work.
 === END VISITOR CONTEXT ===`;
 }
 

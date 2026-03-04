@@ -11,8 +11,8 @@ interface ChatMessageProps {
 // Map of keywords to their URLs (ordered by length desc to match longer phrases first)
 const linkMap: { keyword: string; url: string }[] = [
   { keyword: 'Beyond the Assessment', url: 'https://altivum.ai/bta' },
-  { keyword: 'The Vector Podcast', url: 'https://www.youtube.com/@AltivumPress' },
-  { keyword: 'Vector Podcast', url: 'https://www.youtube.com/@AltivumPress' },
+  { keyword: 'The Vector Podcast', url: 'https://www.youtube.com/@thevectorpodcast' },
+  { keyword: 'Vector Podcast', url: 'https://www.youtube.com/@thevectorpodcast' },
   { keyword: 'Altivum Inc', url: 'https://altivum.ai' },
   { keyword: 'Altivum', url: 'https://altivum.ai' },
   { keyword: 'VetROI', url: 'https://vetroi.altivum.ai' },

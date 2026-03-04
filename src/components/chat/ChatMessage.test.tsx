@@ -124,7 +124,7 @@ describe('ChatMessage', () => {
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute(
         'href',
-        'https://www.youtube.com/@AltivumPress'
+        'https://www.youtube.com/@thevectorpodcast'
       );
     });
 
