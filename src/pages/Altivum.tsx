@@ -136,7 +136,7 @@ const Altivum = () => {
       <SEO
         title="Altivum Inc."
         description="Altivum Inc. is a veteran-founded public benefit corporation building intelligent, cloud-native architectures. Three divisions: Vanguard (veteran services), Logic (web & AI), Press (media)."
-        keywords="Altivum Inc, Altivum Logic, Altivum Vanguard, Altivum Press, VetROI, Cloud Architecture, AI Integration, Christian Perez, veteran entrepreneur"
+        keywords="Altivum Inc, Altivum Logic, Altivum Vanguard, Altivum Press, VetROI, Elo, Cloud Architecture, AI Integration, Christian Perez, veteran entrepreneur"
         url="https://thechrisgrey.com/altivum"
         faq={altivumFAQs}
         breadcrumbs={[
@@ -271,6 +271,10 @@ const Altivum = () => {
                     <li className="flex items-center">
                       <span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>
                       <a href="https://vetroi.altivum.ai" target="_blank" rel="noopener noreferrer" className="hover:text-altivum-gold transition-colors">VetROI™</a>
+                    </li>
+                    <li className="flex items-center">
+                      <span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>
+                      <a href="https://elo.altivum.ai" target="_blank" rel="noopener noreferrer" className="hover:text-altivum-gold transition-colors">Elo™</a>
                     </li>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>NextMission.ai on Amazon PartyRock</li>
                   </ul>

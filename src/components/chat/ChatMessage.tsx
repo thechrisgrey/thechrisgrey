@@ -16,6 +16,7 @@ const linkMap: { keyword: string; url: string }[] = [
   { keyword: 'Altivum Inc', url: 'https://altivum.ai' },
   { keyword: 'Altivum', url: 'https://altivum.ai' },
   { keyword: 'VetROI', url: 'https://vetroi.altivum.ai' },
+  { keyword: 'Elo', url: 'https://elo.altivum.ai' },
 ];
 
 /**

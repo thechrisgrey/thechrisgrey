@@ -25,6 +25,12 @@ const Links = () => {
       description: 'AI-powered veteran career transition tool',
       category: 'Product',
     },
+    {
+      name: 'Elo\u2122',
+      url: 'https://elo.altivum.ai',
+      description: 'Eloquence & articulation coach for career transition',
+      category: 'Product',
+    },
   ];
 
   const personalSocials = [
