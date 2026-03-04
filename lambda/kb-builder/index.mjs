@@ -45,6 +45,33 @@ const CATEGORY_LABELS = {
   book: "BEYOND THE ASSESSMENT",
 };
 
+const MAX_TITLE_LENGTH = 200;
+const MAX_CONTENT_LENGTH = 50000;
+const MAX_DATE_LENGTH = 20;
+const MAX_SORT_ORDER = 1000;
+
+function validateEntryFields({ title, category, content, date, sortOrder }, requireAll = false) {
+  if (requireAll && (!title || !category || !content)) {
+    return "title, category, and content are required";
+  }
+  if (title !== undefined && (typeof title !== "string" || title.length > MAX_TITLE_LENGTH)) {
+    return `title must be a string of at most ${MAX_TITLE_LENGTH} characters`;
+  }
+  if (category !== undefined && !CATEGORY_ORDER.includes(category)) {
+    return `category must be one of: ${CATEGORY_ORDER.join(", ")}`;
+  }
+  if (content !== undefined && (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH)) {
+    return `content must be a string of at most ${MAX_CONTENT_LENGTH} characters`;
+  }
+  if (date !== undefined && date !== null && (typeof date !== "string" || date.length > MAX_DATE_LENGTH || isNaN(Date.parse(date)))) {
+    return "date must be a valid date string";
+  }
+  if (sortOrder !== undefined && sortOrder !== null && (typeof sortOrder !== "number" || sortOrder < 0 || sortOrder > MAX_SORT_ORDER)) {
+    return `sortOrder must be a number between 0 and ${MAX_SORT_ORDER}`;
+  }
+  return null;
+}
+
 async function validateToken(authHeader) {
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
@@ -166,8 +193,9 @@ export const handler = async (event) => {
       const body = JSON.parse(event.body || "{}");
       const { title, category, content, date, sortOrder, isActive } = body;
 
-      if (!title || !category || !content) {
-        return respond(400, { error: "title, category, and content are required" });
+      const validationError = validateEntryFields({ title, category, content, date, sortOrder }, true);
+      if (validationError) {
+        return respond(400, { error: validationError });
       }
 
       const doc = {
@@ -189,6 +217,12 @@ export const handler = async (event) => {
       if (!id) return respond(400, { error: "Missing entry ID" });
 
       const body = JSON.parse(event.body || "{}");
+
+      const validationError = validateEntryFields(body, false);
+      if (validationError) {
+        return respond(400, { error: validationError });
+      }
+
       const patch = sanityClient.patch(id);
 
       if (body.title !== undefined) patch.set({ title: body.title });

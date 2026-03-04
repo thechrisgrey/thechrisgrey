@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { typography } from '../utils/typography';
-import { useAuth, useKbAdmin, KB_CATEGORIES } from '../hooks';
+import { useAuth, useKbAdmin, KB_CATEGORIES, useSiteHealth } from '../hooks';
 import type { KbEntry, KbCategory } from '../hooks';
 
 // Login form component
@@ -276,6 +276,8 @@ function AdminDashboard() {
     publish,
   } = useKbAdmin(getAccessToken);
 
+  const { data: healthData, isLoading: healthLoading } = useSiteHealth(getAccessToken);
+  const [healthExpanded, setHealthExpanded] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KbEntry | null>(null);
   const [publishResult, setPublishResult] = useState<string | null>(null);
@@ -392,6 +394,91 @@ function AdminDashboard() {
             <div className="text-2xl text-altivum-slate font-semibold">{inactiveCount}</div>
             <div className="text-xs text-altivum-slate uppercase tracking-wider">Inactive</div>
           </div>
+        </div>
+
+        {/* Site Health */}
+        <div className="mb-8 border border-white/5 rounded overflow-hidden">
+          <button
+            onClick={() => setHealthExpanded(!healthExpanded)}
+            className="w-full flex items-center justify-between p-4 bg-altivum-navy/30 hover:bg-altivum-navy/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-icons text-altivum-gold text-lg" aria-hidden="true">monitoring</span>
+              <span className="text-sm font-medium text-white uppercase tracking-wider">Site Health</span>
+              <span className="text-xs text-altivum-slate">(24h)</span>
+            </div>
+            <span className={`material-icons text-altivum-slate text-sm transition-transform duration-200 ${healthExpanded ? 'rotate-180' : ''}`} aria-hidden="true">
+              expand_more
+            </span>
+          </button>
+          {healthExpanded && (
+            <div className="p-4 bg-altivum-navy/10">
+              {healthLoading && !healthData ? (
+                <p className="text-altivum-slate text-sm">Loading metrics...</p>
+              ) : !healthData ? (
+                <p className="text-altivum-slate text-sm">No health data available. Metrics endpoint may not be configured.</p>
+              ) : (
+                <div className="space-y-4">
+                  {/* Web Vitals */}
+                  <div>
+                    <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Core Web Vitals</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {(['lcp', 'cls', 'inp', 'fcp', 'ttfb'] as const).map((key) => {
+                        const vital = healthData.vitals[key];
+                        const label = key.toUpperCase();
+                        const value = vital.average !== null
+                          ? key === 'cls' ? vital.average.toFixed(3) : `${Math.round(vital.average)}ms`
+                          : '--';
+                        return (
+                          <div key={key} className="p-3 bg-white/5 rounded">
+                            <div className="text-lg text-white font-semibold">{value}</div>
+                            <div className="text-xs text-altivum-slate uppercase tracking-wider">{label}</div>
+                            <div className="text-xs text-altivum-slate mt-1">{vital.count} samples</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Chat Pipeline */}
+                  <div>
+                    <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Chat Pipeline</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-3 bg-white/5 rounded">
+                        <div className={`text-lg font-semibold ${healthData.chat.kbSuccessRate !== null && parseFloat(healthData.chat.kbSuccessRate) >= 95 ? 'text-green-400' : healthData.chat.kbSuccessRate !== null ? 'text-amber-400' : 'text-altivum-slate'}`}>
+                          {healthData.chat.kbSuccessRate !== null ? `${healthData.chat.kbSuccessRate}%` : '--'}
+                        </div>
+                        <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Success</div>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded">
+                        <div className={`text-lg font-semibold ${healthData.chat.kbFailures > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                          {healthData.chat.kbFailures}
+                        </div>
+                        <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Failures</div>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded">
+                        <div className="text-lg text-white font-semibold">{healthData.chat.guardrailInterventions}</div>
+                        <div className="text-xs text-altivum-slate uppercase tracking-wider">Guardrails</div>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded">
+                        <div className="text-lg text-white font-semibold">{healthData.chat.rateLimitRejections}</div>
+                        <div className="text-xs text-altivum-slate uppercase tracking-wider">Rate Limits</div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Security */}
+                  <div className="flex items-center gap-4">
+                    <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider">Security</h4>
+                    <span className={`text-sm ${healthData.security.cspViolations > 0 ? 'text-amber-400' : 'text-green-400'}`}>
+                      {healthData.security.cspViolations} CSP violations
+                    </span>
+                    <span className="text-xs text-altivum-slate">
+                      Updated {new Date(healthData.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Add entry button / form */}

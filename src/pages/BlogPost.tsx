@@ -13,11 +13,14 @@ import {
   urlFor,
   portableTextComponents,
   POST_BY_SLUG_QUERY,
+  getPostCache,
+  setPostCache,
   type SanityPost,
   type SanityPostPreview,
   type SanitySeriesPost,
 } from '../sanity';
 import ReadingProgressBar from '../components/ReadingProgressBar';
+import BlogPostArticleSkeleton from '../components/BlogPostArticleSkeleton';
 
 /**
  * Extract word count from Portable Text blocks
@@ -96,6 +99,14 @@ const BlogPost = () => {
       return;
     }
 
+    // Check in-memory cache first (instant back-navigation)
+    const cached = getPostCache(slug);
+    if (cached) {
+      setPost(cached);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setFetchError(false);
     setNotFound(false);
@@ -104,6 +115,7 @@ const BlogPost = () => {
       const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
       if (data) {
         setPost(data);
+        setPostCache(slug, data);
       } else {
         setNotFound(true);
       }
@@ -151,14 +163,7 @@ const BlogPost = () => {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-altivum-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block w-8 h-8 border-2 border-altivum-gold border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-altivum-silver">Loading article...</p>
-        </div>
-      </div>
-    );
+    return <BlogPostArticleSkeleton />;
   }
 
   // Fetch error state

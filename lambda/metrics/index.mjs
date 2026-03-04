@@ -1,0 +1,179 @@
+import {
+  CloudWatchClient,
+  PutMetricDataCommand,
+  GetMetricStatisticsCommand,
+} from "@aws-sdk/client-cloudwatch";
+
+const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
+const NAMESPACE = "TheChrisGrey/SiteMetrics";
+const ALLOWED_ORIGIN = "https://thechrisgrey.com";
+
+const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
+const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
+
+function respond(statusCode, body) {
+  return {
+    statusCode,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    },
+    body: JSON.stringify(body),
+  };
+}
+
+async function putMetric(metricName, value, dimensions = []) {
+  const command = new PutMetricDataCommand({
+    Namespace: NAMESPACE,
+    MetricData: [
+      {
+        MetricName: metricName,
+        Value: value,
+        Unit: "None",
+        Timestamp: new Date(),
+        Dimensions: dimensions,
+      },
+    ],
+  });
+  await cloudwatch.send(command);
+}
+
+async function handleVitals(body) {
+  const { name, value, rating } = body;
+
+  if (!name || typeof value !== "number") {
+    return respond(400, { error: "name and numeric value are required" });
+  }
+  if (!VALID_VITALS.has(name)) {
+    return respond(400, { error: `Invalid metric name. Must be one of: ${[...VALID_VITALS].join(", ")}` });
+  }
+
+  const dimensions = [];
+  if (rating && VALID_RATINGS.has(rating)) {
+    dimensions.push({ Name: "Rating", Value: rating });
+  }
+
+  await putMetric(name, value, dimensions);
+  return respond(200, { received: true });
+}
+
+async function handleCspReport(body) {
+  const report = body["csp-report"] || body;
+  const blockedUri = report["blocked-uri"] || report.blockedURL || "unknown";
+
+  await putMetric("CSPViolation", 1, [
+    { Name: "BlockedURI", Value: blockedUri.substring(0, 256) },
+  ]);
+  return respond(200, { received: true });
+}
+
+async function getMetricAverage(metricName, periodHours = 24) {
+  const now = new Date();
+  const start = new Date(now.getTime() - periodHours * 60 * 60 * 1000);
+
+  const command = new GetMetricStatisticsCommand({
+    Namespace: NAMESPACE,
+    MetricName: metricName,
+    StartTime: start,
+    EndTime: now,
+    Period: periodHours * 3600,
+    Statistics: ["Average", "SampleCount"],
+  });
+
+  const result = await cloudwatch.send(command);
+  const datapoint = result.Datapoints?.[0];
+  return {
+    average: datapoint?.Average ?? null,
+    count: datapoint?.SampleCount ?? 0,
+  };
+}
+
+async function getMetricSum(metricName, periodHours = 24) {
+  const now = new Date();
+  const start = new Date(now.getTime() - periodHours * 60 * 60 * 1000);
+
+  const command = new GetMetricStatisticsCommand({
+    Namespace: NAMESPACE,
+    MetricName: metricName,
+    StartTime: start,
+    EndTime: now,
+    Period: periodHours * 3600,
+    Statistics: ["Sum"],
+  });
+
+  const result = await cloudwatch.send(command);
+  return result.Datapoints?.[0]?.Sum ?? 0;
+}
+
+async function handleHealth(authHeader) {
+  // Health endpoint requires Cognito auth
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return respond(401, { error: "Unauthorized" });
+  }
+
+  const [lcp, cls, inp, fcp, ttfb] = await Promise.all([
+    getMetricAverage("LCP"),
+    getMetricAverage("CLS"),
+    getMetricAverage("INP"),
+    getMetricAverage("FCP"),
+    getMetricAverage("TTFB"),
+  ]);
+
+  const [cspViolations, kbFailures, kbSuccesses, guardrails, rateLimits] = await Promise.all([
+    getMetricSum("CSPViolation"),
+    getMetricSum("KBRetrievalFailure"),
+    getMetricSum("KBRetrievalSuccess"),
+    getMetricSum("GuardrailIntervention"),
+    getMetricSum("RateLimitRejection"),
+  ]);
+
+  const kbTotal = kbSuccesses + kbFailures;
+  const kbSuccessRate = kbTotal > 0 ? ((kbSuccesses / kbTotal) * 100).toFixed(1) : null;
+
+  return respond(200, {
+    vitals: { lcp, cls, inp, fcp, ttfb },
+    chat: {
+      kbSuccessRate,
+      kbFailures,
+      kbSuccesses,
+      guardrailInterventions: guardrails,
+      rateLimitRejections: rateLimits,
+    },
+    security: { cspViolations },
+    periodHours: 24,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export const handler = async (event) => {
+  if (event.requestContext?.http?.method === "OPTIONS") {
+    return respond(200, { ok: true });
+  }
+
+  const method = event.requestContext?.http?.method;
+  const path = event.rawPath || "";
+
+  try {
+    if (method === "POST" && path === "/vitals") {
+      const body = JSON.parse(event.body || "{}");
+      return await handleVitals(body);
+    }
+
+    if (method === "POST" && path === "/csp-report") {
+      const body = JSON.parse(event.body || "{}");
+      return await handleCspReport(body);
+    }
+
+    if (method === "GET" && path === "/health") {
+      const authHeader = event.headers?.authorization || event.headers?.Authorization;
+      return await handleHealth(authHeader);
+    }
+
+    return respond(404, { error: "Not found" });
+  } catch (error) {
+    console.error("Metrics handler error:", error);
+    return respond(500, { error: "Internal server error" });
+  }
+};

@@ -53,6 +53,14 @@
         "logs:PutLogEvents"
       ],
       "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-chat-stream:*"
+    },
+    {
+      "Sid": "CloudWatchMetrics",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricData"
+      ],
+      "Resource": "*"
     }
   ]
 }

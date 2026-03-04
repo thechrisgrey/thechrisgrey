@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
+import PrefetchLink from './PrefetchLink';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
@@ -180,7 +181,7 @@ const Navigation = () => {
                 >
                   {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
-                      <Link
+                      <PrefetchLink
                         key={index}
                         ref={(el) => { dropdownItemsRef.current[index] = el; }}
                         to={item.path}
@@ -196,7 +197,7 @@ const Navigation = () => {
                           } ${focusedDropdownIndex === index ? 'bg-altivum-blue/20' : ''}`}
                       >
                         {item.label}
-                      </Link>
+                      </PrefetchLink>
                     ) : (
                       <div
                         key={index}
@@ -213,7 +214,7 @@ const Navigation = () => {
             </div>
 
             {NAV_ITEMS.slice(1).map((item) => (
-              <Link
+              <PrefetchLink
                 key={item.path}
                 to={item.path}
                 className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive(item.path)
@@ -222,7 +223,7 @@ const Navigation = () => {
                   }`}
               >
                 {item.label}
-              </Link>
+              </PrefetchLink>
             ))}
           </div>
 
@@ -260,7 +261,7 @@ const Navigation = () => {
                 <div className="flex flex-col space-y-1 ml-2">
                   {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
-                      <Link
+                      <PrefetchLink
                         key={index}
                         to={item.path}
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -270,7 +271,7 @@ const Navigation = () => {
                           }`}
                       >
                         {item.label}
-                      </Link>
+                      </PrefetchLink>
                     ) : (
                       <div
                         key={index}
@@ -284,7 +285,7 @@ const Navigation = () => {
               </div>
 
               {NAV_ITEMS.slice(1).map((item) => (
-                <Link
+                <PrefetchLink
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -294,7 +295,7 @@ const Navigation = () => {
                     }`}
                 >
                   {item.label}
-                </Link>
+                </PrefetchLink>
               ))}
             </div>
           </div>

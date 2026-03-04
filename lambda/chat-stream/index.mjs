@@ -8,12 +8,27 @@ import {
 } from "@aws-sdk/client-bedrock-agent-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { createHash } from "crypto";
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const cloudwatchClient = new CloudWatchClient({ region: "us-east-1" });
+
+function emitMetric(metricName, value = 1) {
+  // Fire-and-forget — do not await, do not block the response
+  cloudwatchClient.send(new PutMetricDataCommand({
+    Namespace: "TheChrisGrey/SiteMetrics",
+    MetricData: [{
+      MetricName: metricName,
+      Value: value,
+      Unit: "Count",
+      Timestamp: new Date(),
+    }],
+  })).catch(() => {});
+}
 
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
@@ -158,9 +173,11 @@ async function retrieveContext(query) {
       .filter(result => result.content?.text)
       .map(result => result.content.text);
 
+    emitMetric("KBRetrievalSuccess");
     return contextChunks.join("\n\n---\n\n");
   } catch (error) {
     console.error("Knowledge Base retrieval error:", error);
+    emitMetric("KBRetrievalFailure");
     return null;
   }
 }
@@ -215,6 +232,7 @@ export const handler = awslambda.streamifyResponse(
       // Check rate limit
       const rateLimit = await checkRateLimit(clientIp);
       if (!rateLimit.allowed) {
+        emitMetric("RateLimitRejection");
         responseStream.write("You've reached the message limit. Please try again in about an hour.");
         responseStream.end();
         return;
@@ -289,6 +307,7 @@ export const handler = awslambda.streamifyResponse(
         // Check for guardrail intervention
         if (event.metadata?.trace?.guardrail?.action === "INTERVENED") {
           console.log("Guardrail intervened:", JSON.stringify(event.metadata.trace.guardrail));
+          emitMetric("GuardrailIntervention");
         }
       }
 

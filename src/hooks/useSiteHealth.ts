@@ -1,0 +1,80 @@
+import { useState, useEffect, useCallback } from 'react';
+
+const METRICS_ENDPOINT = import.meta.env.VITE_METRICS_ENDPOINT;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+interface VitalStat {
+  average: number | null;
+  count: number;
+}
+
+interface HealthData {
+  vitals: {
+    lcp: VitalStat;
+    cls: VitalStat;
+    inp: VitalStat;
+    fcp: VitalStat;
+    ttfb: VitalStat;
+  };
+  chat: {
+    kbSuccessRate: string | null;
+    kbFailures: number;
+    kbSuccesses: number;
+    guardrailInterventions: number;
+    rateLimitRejections: number;
+  };
+  security: {
+    cspViolations: number;
+  };
+  periodHours: number;
+  timestamp: string;
+}
+
+interface SiteHealthState {
+  data: HealthData | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export function useSiteHealth(getAccessToken: () => string | null) {
+  const [state, setState] = useState<SiteHealthState>({
+    data: null,
+    isLoading: false,
+    error: null,
+  });
+
+  const fetchHealth = useCallback(async () => {
+    if (!METRICS_ENDPOINT) {
+      setState({ data: null, isLoading: false, error: 'Metrics endpoint not configured' });
+      return;
+    }
+
+    const token = getAccessToken();
+    if (!token) return;
+
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const response = await fetch(`${METRICS_ENDPOINT}/health`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data: HealthData = await response.json();
+      setState({ data, isLoading: false, error: null });
+    } catch {
+      setState((prev) => ({ ...prev, isLoading: false, error: 'Failed to load health data' }));
+    }
+  }, [getAccessToken]);
+
+  useEffect(() => {
+    fetchHealth();
+    const interval = setInterval(fetchHealth, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [fetchHealth]);
+
+  return { ...state, refresh: fetchHealth };
+}

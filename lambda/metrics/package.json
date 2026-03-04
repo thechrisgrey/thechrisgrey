@@ -1,0 +1,8 @@
+{
+  "name": "thechrisgrey-metrics",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.700.0"
+  }
+}

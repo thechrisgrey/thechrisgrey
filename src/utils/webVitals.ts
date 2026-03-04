@@ -1,12 +1,15 @@
 import { onCLS, onINP, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
+const METRICS_ENDPOINT = import.meta.env.VITE_METRICS_ENDPOINT;
+
 const reportMetric = (metric: Metric) => {
   if (import.meta.env.DEV) {
     console.log(`[Web Vitals] ${metric.name}: ${metric.value.toFixed(2)}`);
     return;
   }
 
-  // Send to analytics endpoint in production
+  if (!METRICS_ENDPOINT) return;
+
   const body = JSON.stringify({
     name: metric.name,
     value: metric.value,
@@ -18,7 +21,7 @@ const reportMetric = (metric: Metric) => {
 
   // Use sendBeacon for reliable delivery (survives page unload)
   if (navigator.sendBeacon) {
-    navigator.sendBeacon('/api/vitals', body);
+    navigator.sendBeacon(`${METRICS_ENDPOINT}/vitals`, body);
   }
 };
 

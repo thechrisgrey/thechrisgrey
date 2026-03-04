@@ -518,8 +518,30 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 
 **Web Vitals** (`src/utils/webVitals.ts`):
 - Captures CLS, INP, FCP, LCP, TTFB via `web-vitals` library
-- Dev: logs to console; Prod: sends via `navigator.sendBeacon('/api/vitals')`
-- `/api/vitals` endpoint is a placeholder — `sendBeacon` silently fails until an endpoint is configured
+- Dev: logs to console; Prod: sends via `navigator.sendBeacon` to metrics Lambda
+- Requires `VITE_METRICS_ENDPOINT` env var; silently no-ops if not set
+
+**Metrics Lambda** (`lambda/metrics/`):
+- Function: `thechrisgrey-metrics` (us-east-1)
+- Function URL: `https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws`
+- IAM Role: `thechrisgrey-metrics-role`
+- Endpoints:
+  - POST `/vitals`: Receives Web Vitals data → CloudWatch custom metrics
+  - POST `/csp-report`: Receives CSP violation reports → CloudWatch
+  - GET `/health`: Returns 24h metric averages (requires Cognito Bearer token)
+- CloudWatch Namespace: `TheChrisGrey/SiteMetrics`
+
+**CloudWatch Alarms** (us-east-1):
+- `thechrisgrey-high-cls`: CLS average > 0.25 over 1 hour
+- `thechrisgrey-kb-failures`: KB retrieval failures > 5/hour
+- `thechrisgrey-rate-limit-surge`: Rate limit rejections > 50/hour
+- `thechrisgrey-csp-violations`: CSP violations > 20/hour
+- SNS Topic: `thechrisgrey-site-alerts` → chris@altivum.ai
+
+**Site Health Dashboard** (`src/hooks/useSiteHealth.ts`):
+- Admin-only panel on `/admin` page showing Core Web Vitals, Chat Pipeline metrics, and Security data
+- Fetches from metrics Lambda GET `/health` endpoint using Cognito token
+- Auto-refreshes every 5 minutes
 
 ### Utilities
 
@@ -548,10 +570,16 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
-- `lambda/kb-builder/`: KB admin Lambda (Sanity CRUD + S3 document assembly)
+- `lambda/kb-builder/`: KB admin Lambda (Sanity CRUD + S3 document assembly + input validation)
+- `lambda/metrics/`: Metrics Lambda (Web Vitals, CSP reports, health dashboard)
 - `src/pages/Admin.tsx`: KB admin page (login + entry CRUD + publish)
 - `src/hooks/useAuth.ts`: Cognito authentication hook
 - `src/hooks/useKbAdmin.ts`: KB entry CRUD and publish hook
+- `src/hooks/useSiteHealth.ts`: Metrics dashboard hook for admin page
+- `src/utils/routeManifest.ts`: Route-to-import mapping for chunk prefetching
+- `src/components/PrefetchLink.tsx`: Link wrapper that prefetches route chunks on hover/focus
+- `src/components/BlogPostArticleSkeleton.tsx`: Layout-matching loading skeleton for blog posts
+- `src/sanity/postCache.ts`: Per-slug blog post in-memory cache (10-min TTL)
 - `docs/bedrock-logging-queries.md`: CloudWatch Logs Insights queries for chat analytics
 - `scripts/generate-sitemap.js`: Build-time sitemap generator
 - `scripts/generate-rss.js`: Build-time RSS feed generator
@@ -578,6 +606,7 @@ Required (set in AWS Amplify console):
 - `VITE_COGNITO_USER_POOL_ID`: Cognito User Pool ID for admin auth
 - `VITE_COGNITO_CLIENT_ID`: Cognito App Client ID for admin auth
 - `VITE_KB_BUILDER_ENDPOINT`: Lambda Function URL for KB admin operations
+- `VITE_METRICS_ENDPOINT`: Lambda Function URL for Web Vitals and metrics collection
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import NewsletterForm from '../components/NewsletterForm';
@@ -9,12 +9,17 @@ import {
   client,
   urlFor,
   BLOG_LISTING_QUERY,
+  POST_BY_SLUG_QUERY,
   getBlogListingCache,
   setBlogListingCache,
+  getPostCache,
+  setPostCache,
   type SanityPostPreview,
+  type SanityPost,
   type BlogListingResult,
 } from '../sanity';
 import BlogPostSkeleton from '../components/BlogPostSkeleton';
+import { prefetchBlogPostChunk } from '../utils/routeManifest';
 
 const Blog = () => {
   const [posts, setPosts] = useState<SanityPostPreview[]>([]);
@@ -110,6 +115,19 @@ const Blog = () => {
 
     return filtered;
   }, [posts, activeCategory, activeTag, activeSeries, searchQuery]);
+
+  // Prefetch blog post chunk + data on card hover
+  const prefetchedSlugs = useRef<Set<string>>(new Set());
+  const handleCardHover = useCallback((slug: string) => {
+    if (prefetchedSlugs.current.has(slug)) return;
+    prefetchedSlugs.current.add(slug);
+    prefetchBlogPostChunk();
+    if (!getPostCache(slug)) {
+      client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug }).then(
+        (data) => { if (data) setPostCache(slug, data); }
+      ).catch(() => {});
+    }
+  }, []);
 
   const categories = useMemo(() => {
     const unique = [...new Set(posts.map(p => p.category).filter(Boolean))];
@@ -355,7 +373,7 @@ const Blog = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {filteredPosts.map((post) => (
-                <article key={post._id} className="group">
+                <article key={post._id} className="group" onMouseEnter={() => handleCardHover(post.slug.current)}>
                   <Link to={`/blog/${post.slug.current}`} className="block">
                     <div className="relative overflow-hidden rounded-lg mb-6 aspect-video">
                       <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
