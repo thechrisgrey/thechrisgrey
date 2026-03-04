@@ -16,6 +16,10 @@ const ALLOWED_ORIGIN = "https://thechrisgrey.com";
 const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
 const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
 
+// Standard CSP blocked-uri values reported by browsers
+const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
+const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+/;
+
 function respond(statusCode, body) {
   return {
     statusCode,
@@ -66,10 +70,16 @@ async function handleVitals(body) {
 
 async function handleCspReport(body) {
   const report = body["csp-report"] || body;
-  const blockedUri = report["blocked-uri"] || report.blockedURL || "unknown";
+  const rawUri = (report["blocked-uri"] || report.blockedURL || "unknown").toString();
+  const blockedUri = rawUri.substring(0, 256);
+
+  // Validate blocked-uri is a legitimate CSP value
+  if (!VALID_CSP_KEYWORDS.has(blockedUri) && !CSP_URI_PATTERN.test(blockedUri)) {
+    return respond(400, { error: "Invalid blocked-uri format" });
+  }
 
   await putMetric("CSPViolation", 1, [
-    { Name: "BlockedURI", Value: blockedUri.substring(0, 256) },
+    { Name: "BlockedURI", Value: blockedUri },
   ]);
   return respond(200, { received: true });
 }
@@ -138,12 +148,30 @@ async function handleHealth(authHeader) {
     getMetricAverage("TTFB"),
   ]);
 
-  const [cspViolations, kbFailures, kbSuccesses, guardrails, rateLimits] = await Promise.all([
+  const [
+    cspViolations,
+    kbFailures,
+    kbSuccesses,
+    guardrails,
+    rateLimits,
+    inputTokens,
+    outputTokens,
+    malformedRequests,
+    kbLatency,
+    bedrockLatency,
+    totalLatency,
+  ] = await Promise.all([
     getMetricSum("CSPViolation"),
     getMetricSum("KBRetrievalFailure"),
     getMetricSum("KBRetrievalSuccess"),
     getMetricSum("GuardrailIntervention"),
     getMetricSum("RateLimitRejection"),
+    getMetricSum("BedrockInputTokens"),
+    getMetricSum("BedrockOutputTokens"),
+    getMetricSum("MalformedRequest"),
+    getMetricAverage("KBRetrievalLatency"),
+    getMetricAverage("BedrockInvocationLatency"),
+    getMetricAverage("TotalRequestLatency"),
   ]);
 
   const kbTotal = kbSuccesses + kbFailures;
@@ -157,6 +185,16 @@ async function handleHealth(authHeader) {
       kbSuccesses,
       guardrailInterventions: guardrails,
       rateLimitRejections: rateLimits,
+    },
+    performance: {
+      kbRetrievalLatency: kbLatency,
+      bedrockInvocationLatency: bedrockLatency,
+      totalRequestLatency: totalLatency,
+    },
+    costs: {
+      bedrockInputTokens: inputTokens,
+      bedrockOutputTokens: outputTokens,
+      malformedRequests,
     },
     security: { cspViolations },
     periodHours: 24,
@@ -179,7 +217,12 @@ export const handler = async (event) => {
     }
 
     if (method === "POST" && path === "/csp-report") {
-      const body = JSON.parse(event.body || "{}");
+      let body;
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch {
+        return respond(400, { error: "Invalid JSON" });
+      }
       return await handleCspReport(body);
     }
 

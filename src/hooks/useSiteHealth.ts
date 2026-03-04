@@ -23,6 +23,16 @@ interface HealthData {
     guardrailInterventions: number;
     rateLimitRejections: number;
   };
+  performance?: {
+    kbRetrievalLatency: VitalStat;
+    bedrockInvocationLatency: VitalStat;
+    totalRequestLatency: VitalStat;
+  };
+  costs?: {
+    bedrockInputTokens: number;
+    bedrockOutputTokens: number;
+    malformedRequests: number;
+  };
   security: {
     cspViolations: number;
   };

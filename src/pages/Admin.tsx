@@ -465,6 +465,68 @@ function AdminDashboard() {
                       </div>
                     </div>
                   </div>
+                  {/* Performance */}
+                  {healthData.performance && (
+                    <div>
+                      <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Performance (avg)</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className="text-lg text-white font-semibold">
+                            {healthData.performance.kbRetrievalLatency.average !== null
+                              ? `${Math.round(healthData.performance.kbRetrievalLatency.average)}ms`
+                              : '--'}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Retrieval</div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className="text-lg text-white font-semibold">
+                            {healthData.performance.bedrockInvocationLatency.average !== null
+                              ? `${Math.round(healthData.performance.bedrockInvocationLatency.average)}ms`
+                              : '--'}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">Bedrock Invoke</div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className="text-lg text-white font-semibold">
+                            {healthData.performance.totalRequestLatency.average !== null
+                              ? `${Math.round(healthData.performance.totalRequestLatency.average)}ms`
+                              : '--'}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">Total Request</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Costs */}
+                  {healthData.costs && (
+                    <div>
+                      <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Token Usage (24h)</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className="text-lg text-white font-semibold">
+                            {healthData.costs.bedrockInputTokens > 0
+                              ? healthData.costs.bedrockInputTokens.toLocaleString()
+                              : '--'}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">Input Tokens</div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className="text-lg text-white font-semibold">
+                            {healthData.costs.bedrockOutputTokens > 0
+                              ? healthData.costs.bedrockOutputTokens.toLocaleString()
+                              : '--'}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">Output Tokens</div>
+                        </div>
+                        <div className="p-3 bg-white/5 rounded">
+                          <div className={`text-lg font-semibold ${healthData.costs.malformedRequests > 0 ? 'text-amber-400' : 'text-green-400'}`}>
+                            {healthData.costs.malformedRequests}
+                          </div>
+                          <div className="text-xs text-altivum-slate uppercase tracking-wider">Malformed Req</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {/* Security */}
                   <div className="flex items-center gap-4">
                     <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider">Security</h4>

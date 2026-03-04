@@ -9,7 +9,7 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
@@ -17,17 +17,43 @@ const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const cloudwatchClient = new CloudWatchClient({ region: "us-east-1" });
 
-function emitMetric(metricName, value = 1) {
-  // Fire-and-forget — do not await, do not block the response
-  cloudwatchClient.send(new PutMetricDataCommand({
-    Namespace: "TheChrisGrey/SiteMetrics",
-    MetricData: [{
+const NAMESPACE = "TheChrisGrey/SiteMetrics";
+const MAX_METRICS_PER_CALL = 20;
+
+/**
+ * Batched metrics collector — accumulates metrics during a request
+ * and flushes them in a single PutMetricDataCommand call at the end.
+ */
+class MetricsCollector {
+  constructor() {
+    this.buffer = [];
+  }
+
+  record(metricName, value = 1, unit = "Count") {
+    this.buffer.push({
       MetricName: metricName,
       Value: value,
-      Unit: "Count",
+      Unit: unit,
       Timestamp: new Date(),
-    }],
-  })).catch(() => {});
+    });
+  }
+
+  async flush() {
+    if (this.buffer.length === 0) return;
+
+    const batches = [];
+    for (let i = 0; i < this.buffer.length; i += MAX_METRICS_PER_CALL) {
+      batches.push(this.buffer.slice(i, i + MAX_METRICS_PER_CALL));
+    }
+
+    await Promise.all(
+      batches.map((batch) =>
+        cloudwatchClient
+          .send(new PutMetricDataCommand({ Namespace: NAMESPACE, MetricData: batch }))
+          .catch(() => {})
+      )
+    );
+  }
 }
 
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
@@ -71,7 +97,7 @@ You can use your general knowledge to explain concepts (like what an AWS User Gr
  * Check rate limit for an IP address
  * Returns { allowed: boolean, remaining: number }
  */
-async function checkRateLimit(ip) {
+async function checkRateLimit(ip, requestId) {
   const ipHash = createHash('sha256').update(ip || 'unknown').digest('hex');
   const now = Math.floor(Date.now() / 1000);
   const windowStart = now - (now % RATE_LIMIT_WINDOW);
@@ -116,7 +142,7 @@ async function checkRateLimit(ip) {
         return { allowed: true, remaining: -1 };
       }
     }
-    console.error("Rate limit error:", error);
+    console.error(JSON.stringify({ requestId, event: "rate_limit_error", error: error.name }));
     return { allowed: true, remaining: -1 };
   }
 }
@@ -156,7 +182,8 @@ function validateInput(messages) {
 /**
  * Retrieve relevant context from Knowledge Base
  */
-async function retrieveContext(query) {
+async function retrieveContext(query, requestId, metrics) {
+  const start = Date.now();
   try {
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 4000);
@@ -176,8 +203,11 @@ async function retrieveContext(query) {
     });
 
     clearTimeout(timeoutId);
+    const elapsed = Date.now() - start;
+    metrics.record("KBRetrievalLatency", elapsed, "Milliseconds");
 
     if (!response.retrievalResults || response.retrievalResults.length === 0) {
+      console.log(JSON.stringify({ requestId, event: "kb_retrieval_empty", latencyMs: elapsed }));
       return null;
     }
 
@@ -186,16 +216,20 @@ async function retrieveContext(query) {
       .filter(result => result.content?.text)
       .map(result => result.content.text);
 
-    emitMetric("KBRetrievalSuccess");
+    metrics.record("KBRetrievalSuccess");
+    console.log(JSON.stringify({ requestId, event: "kb_retrieval_success", chunks: contextChunks.length, latencyMs: elapsed }));
     return contextChunks.join("\n\n---\n\n");
   } catch (error) {
+    const elapsed = Date.now() - start;
+    metrics.record("KBRetrievalLatency", elapsed, "Milliseconds");
+
     if (error.name === "AbortError") {
-      console.error("KB retrieval timed out after 4s");
-      emitMetric("KBRetrievalTimeout");
+      console.error(JSON.stringify({ requestId, event: "kb_retrieval_timeout", latencyMs: elapsed }));
+      metrics.record("KBRetrievalTimeout");
     } else {
-      console.error("Knowledge Base retrieval error:", error);
+      console.error(JSON.stringify({ requestId, event: "kb_retrieval_error", error: error.name, message: error.message, latencyMs: elapsed }));
     }
-    emitMetric("KBRetrievalFailure");
+    metrics.record("KBRetrievalFailure");
     return null;
   }
 }
@@ -288,20 +322,38 @@ export const handler = awslambda.streamifyResponse(
       return;
     }
 
+    const requestId = randomUUID();
+    const metrics = new MetricsCollector();
+    const requestStart = Date.now();
+
     try {
       // Get client IP for rate limiting
       const clientIp = event.requestContext?.http?.sourceIp || "unknown";
+      console.log(JSON.stringify({ requestId, event: "request_start", ip: clientIp.substring(0, 8) + "..." }));
 
       // Check rate limit
-      const rateLimit = await checkRateLimit(clientIp);
+      const rateLimitStart = Date.now();
+      const rateLimit = await checkRateLimit(clientIp, requestId);
+      metrics.record("RateLimitLatency", Date.now() - rateLimitStart, "Milliseconds");
+
       if (!rateLimit.allowed) {
-        emitMetric("RateLimitRejection");
+        metrics.record("RateLimitRejection");
         writeSystemMessage(responseStream, "You've reached the message limit. Please try again in about an hour.");
+        await metrics.flush();
         return;
       }
 
-      // Parse request body
-      const body = JSON.parse(event.body || "{}");
+      // Parse request body (hardened against malformed JSON)
+      let body;
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch {
+        metrics.record("MalformedRequest");
+        console.error(JSON.stringify({ requestId, event: "malformed_json" }));
+        writeSystemMessage(responseStream, "Invalid request format.");
+        await metrics.flush();
+        return;
+      }
       const messages = body.messages || [];
       const pageContext = validatePageContext(body.pageContext);
 
@@ -309,6 +361,7 @@ export const handler = awslambda.streamifyResponse(
       const validation = validateInput(messages);
       if (!validation.valid) {
         writeSystemMessage(responseStream, validation.error);
+        await metrics.flush();
         return;
       }
 
@@ -322,7 +375,7 @@ export const handler = awslambda.streamifyResponse(
         const biasedQuery = pageContext && pageContext.section !== 'AI Chat' && pageContext.section !== 'Home'
           ? `${pageContext.section}: ${latestQuery}`
           : latestQuery;
-        retrievedContext = await retrieveContext(biasedQuery);
+        retrievedContext = await retrieveContext(biasedQuery, requestId, metrics);
       }
 
       // Build system prompt with context
@@ -359,42 +412,63 @@ export const handler = awslambda.streamifyResponse(
         }
       });
 
+      const bedrockStart = Date.now();
       const response = await bedrockClient.send(command);
 
       // Stream the response chunks
-      for await (const event of response.stream) {
-        if (event.contentBlockDelta) {
-          const text = event.contentBlockDelta.delta?.text;
+      for await (const streamEvent of response.stream) {
+        if (streamEvent.contentBlockDelta) {
+          const text = streamEvent.contentBlockDelta.delta?.text;
           if (text) {
             responseStream.write(text);
           }
         }
 
         // Check for guardrail intervention
-        if (event.metadata?.trace?.guardrail?.action === "INTERVENED") {
-          console.log("Guardrail intervened:", JSON.stringify(event.metadata.trace.guardrail));
-          emitMetric("GuardrailIntervention");
+        if (streamEvent.metadata?.trace?.guardrail?.action === "INTERVENED") {
+          console.log(JSON.stringify({ requestId, event: "guardrail_intervened" }));
+          metrics.record("GuardrailIntervention");
+        }
+
+        // Capture token usage from stream metadata
+        if (streamEvent.metadata?.usage) {
+          const { inputTokens, outputTokens } = streamEvent.metadata.usage;
+          if (inputTokens != null) metrics.record("BedrockInputTokens", inputTokens);
+          if (outputTokens != null) metrics.record("BedrockOutputTokens", outputTokens);
+          console.log(JSON.stringify({ requestId, event: "token_usage", inputTokens, outputTokens }));
         }
       }
 
+      metrics.record("BedrockInvocationLatency", Date.now() - bedrockStart, "Milliseconds");
+      metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
+      console.log(JSON.stringify({ requestId, event: "request_complete", totalMs: Date.now() - requestStart }));
+
       responseStream.end();
+      await metrics.flush();
     } catch (error) {
-      console.error("Error:", error);
+      console.error(JSON.stringify({ requestId, event: "request_error", error: error.name, message: error.message }));
 
       // Handle guardrail interventions
       if (error.name === "ValidationException" &&
           error.message?.toLowerCase().includes("guardrail")) {
+        metrics.record("GuardrailIntervention");
         writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
+        await metrics.flush();
         return;
       }
 
       // Handle throttling
       if (error.name === "ThrottlingException" || error.name === "ServiceQuotaExceededException") {
+        metrics.record("BedrockThrottled");
         writeSystemMessage(responseStream, "The service is currently busy. Please try again in a moment.");
+        await metrics.flush();
         return;
       }
 
+      metrics.record("UnhandledError");
+      metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
       writeSystemMessage(responseStream, "I encountered an error processing your request. Please try again.");
+      await metrics.flush();
     }
   }
 );
