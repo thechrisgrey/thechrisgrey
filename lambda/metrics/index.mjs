@@ -18,7 +18,26 @@ const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
 
 // Standard CSP blocked-uri values reported by browsers
 const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
-const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+/;
+const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
+
+// In-memory rate limiter (persists across warm invocations, resets on cold start)
+const RATE_LIMIT = { vitals: 0, csp: 0, windowStart: Date.now() };
+const RATE_WINDOW_MS = 60_000;
+const MAX_VITALS_PER_WINDOW = 200;
+const MAX_CSP_PER_WINDOW = 100;
+
+function checkRateLimit(type) {
+  const now = Date.now();
+  if (now - RATE_LIMIT.windowStart > RATE_WINDOW_MS) {
+    RATE_LIMIT.vitals = 0;
+    RATE_LIMIT.csp = 0;
+    RATE_LIMIT.windowStart = now;
+  }
+  RATE_LIMIT[type]++;
+  if (type === "vitals" && RATE_LIMIT.vitals > MAX_VITALS_PER_WINDOW) return false;
+  if (type === "csp" && RATE_LIMIT.csp > MAX_CSP_PER_WINDOW) return false;
+  return true;
+}
 
 function respond(statusCode, body) {
   return {
@@ -55,6 +74,9 @@ async function handleVitals(body) {
   if (!name || typeof value !== "number") {
     return respond(400, { error: "name and numeric value are required" });
   }
+  if (!Number.isFinite(value) || value < 0 || value > 60000) {
+    return respond(400, { error: "value must be a finite number between 0 and 60000" });
+  }
   if (!VALID_VITALS.has(name)) {
     return respond(400, { error: `Invalid metric name. Must be one of: ${[...VALID_VITALS].join(", ")}` });
   }
@@ -64,7 +86,11 @@ async function handleVitals(body) {
     dimensions.push({ Name: "Rating", Value: rating });
   }
 
-  await putMetric(name, value, dimensions);
+  try {
+    await putMetric(name, value, dimensions);
+  } catch {
+    return respond(202, { received: true, note: "metric accepted but write deferred" });
+  }
   return respond(200, { received: true });
 }
 
@@ -134,33 +160,30 @@ async function validateToken(authHeader) {
   }
 }
 
+function settledValue(result, fallback = null) {
+  if (result.status === "fulfilled") return result.value;
+  console.error("Metric fetch failed:", result.reason?.message || result.reason);
+  return fallback;
+}
+
 async function handleHealth(authHeader) {
   const user = await validateToken(authHeader);
   if (!user) {
     return respond(401, { error: "Unauthorized" });
   }
 
-  const [lcp, cls, inp, fcp, ttfb] = await Promise.all([
+  const vitalsResults = await Promise.allSettled([
     getMetricAverage("LCP"),
     getMetricAverage("CLS"),
     getMetricAverage("INP"),
     getMetricAverage("FCP"),
     getMetricAverage("TTFB"),
   ]);
+  const [lcp, cls, inp, fcp, ttfb] = vitalsResults.map((r) =>
+    settledValue(r, { average: null, count: 0 })
+  );
 
-  const [
-    cspViolations,
-    kbFailures,
-    kbSuccesses,
-    guardrails,
-    rateLimits,
-    inputTokens,
-    outputTokens,
-    malformedRequests,
-    kbLatency,
-    bedrockLatency,
-    totalLatency,
-  ] = await Promise.all([
+  const metricResults = await Promise.allSettled([
     getMetricSum("CSPViolation"),
     getMetricSum("KBRetrievalFailure"),
     getMetricSum("KBRetrievalSuccess"),
@@ -173,6 +196,21 @@ async function handleHealth(authHeader) {
     getMetricAverage("BedrockInvocationLatency"),
     getMetricAverage("TotalRequestLatency"),
   ]);
+  const [
+    cspViolations,
+    kbFailures,
+    kbSuccesses,
+    guardrails,
+    rateLimits,
+    inputTokens,
+    outputTokens,
+    malformedRequests,
+    kbLatency,
+    bedrockLatency,
+    totalLatency,
+  ] = metricResults.map((r, i) =>
+    settledValue(r, i >= 8 ? { average: null, count: 0 } : 0)
+  );
 
   const kbTotal = kbSuccesses + kbFailures;
   const kbSuccessRate = kbTotal > 0 ? ((kbSuccesses / kbTotal) * 100).toFixed(1) : null;
@@ -212,11 +250,22 @@ export const handler = async (event) => {
 
   try {
     if (method === "POST" && path === "/vitals") {
-      const body = JSON.parse(event.body || "{}");
+      if (!checkRateLimit("vitals")) {
+        return respond(429, { error: "Too many requests" });
+      }
+      let body;
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch {
+        return respond(400, { error: "Invalid JSON" });
+      }
       return await handleVitals(body);
     }
 
     if (method === "POST" && path === "/csp-report") {
+      if (!checkRateLimit("csp")) {
+        return respond(429, { error: "Too many requests" });
+      }
       let body;
       try {
         body = JSON.parse(event.body || "{}");

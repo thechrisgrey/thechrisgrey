@@ -46,7 +46,10 @@ interface SiteHealthState {
   error: string | null;
 }
 
-export function useSiteHealth(getAccessToken: () => Promise<string | null>) {
+export function useSiteHealth(
+  getAccessToken: () => Promise<string | null>,
+  enabled = true
+) {
   const [state, setState] = useState<SiteHealthState>({
     data: null,
     isLoading: false,
@@ -81,10 +84,11 @@ export function useSiteHealth(getAccessToken: () => Promise<string | null>) {
   }, [getAccessToken]);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchHealth();
     const interval = setInterval(fetchHealth, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchHealth]);
+  }, [fetchHealth, enabled]);
 
   return { ...state, refresh: fetchHealth };
 }

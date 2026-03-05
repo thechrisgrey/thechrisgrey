@@ -276,8 +276,8 @@ function AdminDashboard() {
     publish,
   } = useKbAdmin(getAccessToken);
 
-  const { data: healthData, isLoading: healthLoading } = useSiteHealth(getAccessToken);
   const [healthExpanded, setHealthExpanded] = useState(false);
+  const { data: healthData, isLoading: healthLoading } = useSiteHealth(getAccessToken, healthExpanded);
   const [showForm, setShowForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KbEntry | null>(null);
   const [publishResult, setPublishResult] = useState<string | null>(null);
