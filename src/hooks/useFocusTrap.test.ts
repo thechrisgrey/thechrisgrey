@@ -22,7 +22,7 @@ describe('useFocusTrap', () => {
     document.body.appendChild(button);
     button.focus();
 
-    const { result, rerender } = renderHook(
+    const { rerender } = renderHook(
       ({ isActive }) => useFocusTrap(isActive),
       { initialProps: { isActive: false } }
     );

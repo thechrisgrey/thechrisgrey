@@ -45,7 +45,6 @@ describe('webVitals', () => {
     });
 
     it('should log to console in dev mode when a metric callback is invoked', async () => {
-      vi.stubEnv('DEV', 'true');
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       const { initWebVitals } = await import('./webVitals');
@@ -67,7 +66,6 @@ describe('webVitals', () => {
       );
 
       consoleSpy.mockRestore();
-      vi.unstubAllEnvs();
     });
   });
 });

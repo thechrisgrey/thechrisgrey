@@ -1,15 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { prefetchRoute, prefetchBlogPostChunk } from './routeManifest';
 
 // We cannot fully mock the dynamic imports since they are captured at module level,
 // but we can test the prefetchRoute deduplication and error handling logic.
 
 describe('routeManifest', () => {
-  beforeEach(() => {
-    // Reset the prefetched Set by calling prefetchRoute for an unknown path
-    // (the Set is module-scoped, so we test observable behavior)
-  });
-
   describe('prefetchRoute', () => {
     it('should not throw for unknown routes', () => {
       expect(() => prefetchRoute('/nonexistent')).not.toThrow();

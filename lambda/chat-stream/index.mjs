@@ -424,10 +424,13 @@ export const handler = awslambda.streamifyResponse(
           }
         }
 
-        // Check for guardrail intervention
+        // Check for guardrail intervention — stop streaming immediately
         if (streamEvent.metadata?.trace?.guardrail?.action === "INTERVENED") {
           console.log(JSON.stringify({ requestId, event: "guardrail_intervened" }));
           metrics.record("GuardrailIntervention");
+          writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
+          await metrics.flush();
+          return;
         }
 
         // Capture token usage from stream metadata

@@ -9,6 +9,7 @@ const required = [
   'VITE_COGNITO_USER_POOL_ID',
   'VITE_COGNITO_CLIENT_ID',
   'VITE_KB_BUILDER_ENDPOINT',
+  'VITE_METRICS_ENDPOINT',
 ];
 
 const missing = required.filter(key => !process.env[key]);

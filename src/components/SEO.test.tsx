@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from 'react-helmet-async';
 import { SEO } from './SEO';
 
 // react-helmet-async with HelmetProvider context works in server mode.
@@ -62,10 +62,8 @@ describe('SEO', () => {
     await waitFor(() => {
       expect(document.title).toBe('Test | Christian Perez');
     });
-    // keywords meta should not exist (or at least not from our component)
-    const meta = document.querySelector('meta[name="keywords"]');
-    // May be null or leftover from a previous test - just check no keywords for this render
-    // Since Helmet manages the head, we verify title is set correctly (above) as a proxy
+    // Verify no keywords meta is rendered for this component
+    expect(document.querySelector('meta[name="keywords"]')).toBeNull();
   });
 
   it('should add noindex meta when noindex is true', async () => {
