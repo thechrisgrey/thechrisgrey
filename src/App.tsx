@@ -21,6 +21,7 @@ const Links = lazy(() => import('./pages/Links'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Chat = lazy(() => import('./pages/Chat'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const AWS = lazy(() => import('./pages/AWS'));
 const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -66,6 +67,7 @@ function App() {
               <Route path="/links" element={<Links />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/aws" element={<AWS />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />

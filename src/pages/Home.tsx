@@ -31,7 +31,7 @@ const Home = () => {
           const scrollPosition = window.scrollY;
           const windowHeight = window.innerHeight;
           const scrollInterval = isMobileRef.current ? 0.5 : 0.8;
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 4);
+          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 5);
           setScrollProgress(Math.max(-1, progress));
           ticking = false;
         });
@@ -47,7 +47,8 @@ const Home = () => {
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
     { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
     { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" }
+    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
+    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" }
   ];
 
   return (
@@ -87,7 +88,7 @@ const Home = () => {
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
-      <section className="relative h-[450vh] md:h-[500vh]">
+      <section className="relative h-[525vh] md:h-[600vh]">
         <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img

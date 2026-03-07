@@ -41,7 +41,7 @@ aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELE
   - Home stays static (critical first-load path)
   - `PageLoadingFallback` shows a gold spinner during chunk loads
   - Each page produces its own JS chunk (e.g., `About-[hash].js`, `Blog-[hash].js`)
-- 11 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`
+- 14 routes: `/` (Home), `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/aws`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`, `/admin`
 - Catch-all `*` route renders custom 404 page (`src/pages/NotFound.tsx`)
 - Footer and chat widget are conditionally hidden on full-viewport pages (e.g., `/chat`)
 
@@ -83,23 +83,23 @@ The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based anima
 
 **Structure:**
 1. **Hero Section (100vh)**: Static hero image with fade-in animation
-2. **Summary Section (450vh mobile / 500vh desktop)**: Sticky profile image with scroll-triggered key points
+2. **Summary Section (525vh mobile / 600vh desktop)**: Sticky profile image with scroll-triggered key points
 3. **CTA Section**: Standard content with social links
 
 **Summary Section Mechanics:**
-- Profile image is `position: sticky` inside a tall container (450vh mobile, 500vh desktop)
-- 4 key points fade in from left as user scrolls:
+- Profile image is `position: sticky` inside a tall container (525vh mobile, 600vh desktop)
+- 5 key points fade in from left as user scrolls:
   - Mobile: appear every 50vh
   - Desktop: appear every 80vh
-  - Points: Personal Biography, Altivum Inc, The Vector Podcast, Beyond the Assessment
+  - Points: Personal Biography, Altivum Inc, The Vector Podcast, Beyond the Assessment, Amazon Web Services
 - Scroll progress tracked via `useState` + `useEffect` with throttled scroll listener using `requestAnimationFrame`; mobile detection uses `useRef` to avoid stale closure
 - Key points styled as left-aligned tabs with `border-l-4 border-altivum-gold`
 - Uses `will-change: opacity, transform` for performance optimization
 
 **Navigation Transparency:**
-- Nav bar stays transparent through hero + summary sections (600vh total on home page)
+- Nav bar stays transparent through hero + summary sections (700vh total on home page)
 - Becomes solid (`bg-altivum-navy/95 backdrop-blur-md`) after scrolling past summary
-- Threshold: `window.innerHeight * 6` in `Navigation.tsx`
+- Threshold: `window.innerHeight * 7` in `Navigation.tsx`
 - On other pages, nav becomes solid after 20px scroll
 
 ### Navigation Structure
@@ -107,11 +107,12 @@ The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based anima
 The Navigation component (`src/components/Navigation.tsx`) features a dropdown system:
 
 **Desktop Navigation:**
-- "About" is a dropdown button with 4 sub-items:
+- "About" is a dropdown button with 5 sub-items:
   - Personal Biography (`/about`)
   - Altivum Inc (`/altivum`)
   - The Vector Podcast (`/podcast`)
   - Beyond the Assessment (`/beyond-the-assessment`)
+  - Amazon Web Services (`/aws`)
 - Dropdown closes when clicking outside (using `useRef` and `mousedown` event listener)
 - Other nav items: Home, Blog, Links, Contact
 
@@ -589,6 +590,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/components/YouTubeFacade.tsx`: Click-to-play YouTube facade (thumbnail + play button → iframe on click)
 - `src/components/HighlightedCodeBlock.tsx`: Shiki-powered syntax highlighting for blog code blocks
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
+- `src/pages/AWS.tsx`: AWS Community Builder page (AI Engineering track, focus areas, program details)
 - `src/pages/NotFound.tsx`: Custom 404 page
 - `public/.well-known/security.txt`: Security vulnerability reporting contact
 - `public/press-kit/`: Press materials for event organizers (headshots, bios, logos)
