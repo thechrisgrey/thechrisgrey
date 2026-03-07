@@ -51,7 +51,7 @@ const AWS = () => {
               <img
                 src={awsHero}
                 alt="AWS - AI Engineering"
-                className="w-full max-w-3xl mx-auto opacity-90"
+                className="w-full max-w-6xl mx-auto opacity-90"
                 fetchPriority="high"
               />
               <h1 className="sr-only">Amazon Web Services - AWS Community Builder in AI Engineering</h1>
