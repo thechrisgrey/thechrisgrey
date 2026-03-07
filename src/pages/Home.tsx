@@ -94,8 +94,8 @@ const Home = () => {
             <img
               src={profileImage}
               alt="Christian Perez"
-              className="w-full h-full object-cover object-left md:object-center"
-              style={{ transform: 'translate3d(0,0,0)' }}
+              className="w-full h-full object-cover object-[left_30%] md:object-[center_30%]"
+              style={{ transform: 'translate3d(0,0,0)', filter: 'brightness(1.05) contrast(1.1) saturate(1.1)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
           </div>
