@@ -158,7 +158,8 @@ const Contact = () => {
       </section>
 
       {/* Speaking & Media Section */}
-      <section className="py-20 bg-altivum-navy/30 border-y border-white/5">
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <section className="py-20 bg-altivum-navy/30">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             {/* Speaking Topics */}
@@ -177,7 +178,7 @@ const Contact = () => {
                   { icon: 'rocket_launch', title: 'Entrepreneurship', desc: 'Building veteran-owned businesses' },
                   { icon: 'psychology', title: 'Leadership', desc: 'Special Operations lessons for business' },
                 ].map((topic) => (
-                  <div key={topic.title} className="p-5 bg-altivum-dark/50 border border-white/5 hover:border-altivum-gold/30 transition-colors">
+                  <div key={topic.title} className="p-5 bg-altivum-dark/50 border border-white/5 hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300">
                     <span className="material-icons text-altivum-gold mb-3 block">{topic.icon}</span>
                     <h3 className="text-white text-sm font-medium mb-1">{topic.title}</h3>
                     <p className="text-altivum-silver text-xs">{topic.desc}</p>
@@ -228,6 +229,7 @@ const Contact = () => {
           </div>
         </div>
       </section>
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
       {/* Contact Form Section */}
       <section className="py-24 bg-altivum-dark">
@@ -451,7 +453,7 @@ const Contact = () => {
               </div>
 
               {/* Location & Availability */}
-              <div className="pt-8 border-t border-white/5">
+              <div className="pt-8 border-t border-white/[0.03]" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
                 <h3 className="text-white mb-4" style={typography.cardTitleSmall}>
                   Availability
                 </h3>

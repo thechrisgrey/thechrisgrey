@@ -99,7 +99,8 @@ const Podcast = () => {
       </section>
 
       {/* Latest Episode - YouTube Embed */}
-      <section className="py-24 bg-altivum-dark border-t border-white/5">
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <section className="py-24 bg-altivum-dark">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-2 bg-altivum-gold/10 rounded-md mb-4">
@@ -148,7 +149,8 @@ const Podcast = () => {
       </section>
 
       {/* Spotify Embed Section */}
-      <section className="py-16 bg-altivum-dark border-t border-white/5">
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <section className="py-16 bg-altivum-dark">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <div className="rounded-xl overflow-hidden">
             <SpotifyFacade
@@ -161,38 +163,43 @@ const Podcast = () => {
 
       {/* All Episodes */}
       {otherEpisodes.length > 0 && (
-        <section className="py-24 bg-altivum-dark border-t border-white/5">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-white mb-4" style={typography.sectionHeader}>
-                All Episodes
-              </h2>
-              <div className="h-px w-24 bg-altivum-gold mx-auto"></div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {displayedEpisodes.map((episode) => (
-                <EpisodeCard key={episode.id} episode={episode} variant="compact" />
-              ))}
-            </div>
-
-            {otherEpisodes.length > 4 && !showAllEpisodes && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={() => setShowAllEpisodes(true)}
-                  className="inline-flex items-center px-6 py-2 text-sm bg-transparent border border-white/20 text-altivum-silver font-medium hover:border-altivum-gold hover:text-altivum-gold transition-all duration-200 rounded"
-                >
-                  Show All {otherEpisodes.length} Episodes
-                </button>
+        <>
+          <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+          <section className="py-24 bg-altivum-dark">
+            <div className="max-w-4xl mx-auto px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-white mb-4" style={typography.sectionHeader}>
+                  All Episodes
+                </h2>
+                <div className="h-px w-24 bg-altivum-gold mx-auto"></div>
               </div>
-            )}
-          </div>
-        </section>
+
+              <div className="flex flex-col gap-2">
+                {displayedEpisodes.map((episode) => (
+                  <EpisodeCard key={episode.id} episode={episode} variant="compact" />
+                ))}
+              </div>
+
+              {otherEpisodes.length > 4 && !showAllEpisodes && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={() => setShowAllEpisodes(true)}
+                    className="inline-flex items-center px-6 py-2 text-sm bg-transparent border border-white/20 text-altivum-silver font-medium hover:border-altivum-gold hover:text-altivum-gold transition-all duration-200 rounded"
+                  >
+                    Show All {otherEpisodes.length} Episodes
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
       )}
 
       {/* Featured Veterans */}
       {!isLoadingGuests && guests.length > 0 && (
-        <section className="py-24 bg-altivum-dark border-t border-white/5">
+        <>
+          <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+          <section className="py-24 bg-altivum-dark">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-white mb-4" style={typography.sectionHeader}>
@@ -208,10 +215,12 @@ const Podcast = () => {
             </div>
           </div>
         </section>
+        </>
       )}
 
       {/* Subscribe Section */}
-      <section className="py-24 bg-gradient-to-b from-altivum-dark to-altivum-navy border-t border-white/5">
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <section className="py-24 bg-gradient-to-b from-altivum-dark to-altivum-navy">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-white mb-6" style={typography.sectionHeader}>
             Listen & Subscribe
@@ -225,7 +234,8 @@ const Podcast = () => {
       </section>
 
       {/* Host Section */}
-      <section className="py-24 bg-altivum-navy border-t border-white/5">
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <section className="py-24 bg-altivum-navy">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-altivum-gold/30 flex-shrink-0">

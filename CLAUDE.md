@@ -77,6 +77,17 @@ aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELE
 - Defined as Tailwind keyframes in `tailwind.config.js`
 - **`prefers-reduced-motion: reduce`** override in `src/index.css` forces `opacity: 1` and disables `animate-fade-in`/`animate-nav-fade-in` to prevent invisible content for users with motion preferences
 
+**Micro-Interactions (UI Polish):**
+- **Card hover lift:** All interactive cards use `hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300` for subtle elevation on hover
+- **Button press:** All buttons via `Button.tsx` use `active:scale-[0.98]` for tactile click feedback
+- **Gold glow on CTAs:** Primary buttons use `hover:shadow-[0_0_20px_rgba(197,165,114,0.3)]` for warm glow
+- **Arrow nudge:** Arrow icons next to links use `group-hover:translate-x-1 transition-transform` (or `-translate-x-1` for back arrows)
+- **Animated underlines:** Footer links and text links use `.link-underline` CSS class (defined in `index.css`) — a `::after` pseudo-element that scales from 0 to 100% width on hover
+- **Gradient section dividers:** Sections separated by `<div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />` instead of flat `border-white/5` — used across Podcast, Blog, Links, Contact pages
+
+**Gotcha — Gradient Dividers in Conditional Blocks:**
+- When a gradient `<div>` + `<section>` are inside a conditional (`{condition && (...)}`), they must be wrapped in a `<>` fragment since JSX requires a single parent element
+
 ### Home Page Scroll Experience
 
 The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based animation system:

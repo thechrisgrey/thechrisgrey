@@ -25,7 +25,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
         >
           <div className={`
             px-5 py-4 border border-white/10 bg-white/5
-            hover:border-altivum-gold/30 hover:bg-white/10
+            hover:border-altivum-gold/30 hover:bg-white/10 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5
             transition-all duration-300
             ${isExpanded ? 'rounded-t-lg border-b-0' : 'rounded-lg'}
           `}>
@@ -138,7 +138,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
     <article className={`group ${isFeatured ? 'col-span-full' : ''}`}>
       <div className={`
         p-6 sm:p-8 rounded-lg border border-white/10 bg-white/5
-        hover:border-altivum-gold/30 hover:bg-white/10
+        hover:border-altivum-gold/30 hover:bg-white/10 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5
         transition-all duration-300
         ${isFeatured ? 'lg:flex lg:gap-10' : ''}
       `}>

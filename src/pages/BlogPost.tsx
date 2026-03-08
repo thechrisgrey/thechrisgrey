@@ -61,7 +61,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
       {prevPost ? (
         <Link to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
-          <span className="material-icons text-sm flex-shrink-0">arrow_back</span>
+          <span className="material-icons text-sm flex-shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <div className="min-w-0">
             <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
               {prevPost.seriesOrder != null ? `Part ${prevPost.seriesOrder}` : 'Previous'}
@@ -78,7 +78,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
             </div>
             <div className="truncate">{nextPost.title}</div>
           </div>
-          <span className="material-icons text-sm flex-shrink-0">arrow_forward</span>
+          <span className="material-icons text-sm flex-shrink-0 group-hover:translate-x-1 transition-transform">arrow_forward</span>
         </Link>
       ) : <div />}
     </div>

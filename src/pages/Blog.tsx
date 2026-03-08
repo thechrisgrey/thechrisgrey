@@ -189,7 +189,7 @@ const Blog = () => {
       </section>
 
       {/* Search and Categories */}
-      <section className="py-8 bg-altivum-dark border-b border-white/5">
+      <section className="py-8 bg-altivum-dark">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             {/* Search Input */}
@@ -246,6 +246,7 @@ const Blog = () => {
           </div>
         </div>
       </section>
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
       {/* Blog Posts */}
       <section className="py-24 bg-altivum-dark">
@@ -373,7 +374,7 @@ const Blog = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {filteredPosts.map((post) => (
-                <article key={post._id} className="group" onMouseEnter={() => handleCardHover(post.slug.current)}>
+                <article key={post._id} className="group hover:-translate-y-0.5 transition-transform duration-300" onMouseEnter={() => handleCardHover(post.slug.current)}>
                   <Link to={`/blog/${post.slug.current}`} className="block">
                     <div className="relative overflow-hidden rounded-lg mb-6 aspect-video">
                       <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
@@ -433,7 +434,7 @@ const Blog = () => {
                     to={`/blog/${post.slug.current}`}
                     className="inline-flex items-center text-altivum-gold text-sm font-medium mt-3 group-hover:translate-x-2 transition-transform"
                   >
-                    Read Article <span className="material-icons text-sm ml-1">arrow_forward</span>
+                    Read Article <span className="material-icons text-sm ml-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
                   </Link>
                 </article>
               ))}

@@ -135,7 +135,7 @@ const AWS = () => {
                 className="opacity-0 animate-fade-in"
                 style={{ animationDelay: `${0.2 + index * 0.2}s` }}
               >
-                <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-8 rounded-lg hover:border-altivum-gold/30 transition-colors duration-300 group h-full flex flex-col">
+                <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-8 rounded-lg hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group h-full flex flex-col">
                   <h3
                     className="text-white mb-4 group-hover:text-altivum-gold transition-colors duration-300"
                     style={typography.cardTitleLarge}
