@@ -17,6 +17,7 @@ const ROUTE_CONTEXT_MAP: Record<string, RouteMetadata> = {
   '/podcast': { pageTitle: 'The Vector Podcast', section: 'The Vector Podcast' },
   '/beyond-the-assessment': { pageTitle: 'Beyond the Assessment', section: 'Beyond the Assessment' },
   '/aws': { pageTitle: 'Amazon Web Services', section: 'Amazon Web Services' },
+  '/claude': { pageTitle: 'Claude', section: 'Claude' },
   '/blog': { pageTitle: 'Blog', section: 'Blog' },
   '/contact': { pageTitle: 'Contact & Speaking', section: 'Contact & Speaking' },
   '/links': { pageTitle: 'Links', section: 'Links' },
@@ -68,6 +69,12 @@ export const PAGE_SUGGESTIONS: Record<string, string[]> = {
     "What AWS services does he work with?",
     "How does he use AI on AWS?",
     "What is the Community Builder program?",
+  ],
+  '/claude': [
+    "How does he use Claude in production?",
+    "What Anthropic Academy certifications does he have?",
+    "How does he combine Claude with AWS?",
+    "What AI systems has he built with Claude?",
   ],
   '/blog': [
     "What does he write about?",
