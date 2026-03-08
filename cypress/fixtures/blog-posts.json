@@ -1,0 +1,80 @@
+{
+  "posts": [
+    {
+      "_id": "post-1",
+      "title": "Leadership Lessons from Special Operations",
+      "slug": { "current": "leadership-lessons-special-operations" },
+      "excerpt": "What years of Special Forces service taught me about leading teams in high-stakes environments, and how those principles apply to building a technology company.",
+      "category": "Leadership",
+      "publishedAt": "2025-01-15T12:00:00Z",
+      "readingTime": 8,
+      "isFeatured": true,
+      "image": null,
+      "tags": [
+        { "_id": "tag-1", "title": "Leadership", "slug": { "current": "leadership" } },
+        { "_id": "tag-2", "title": "Military", "slug": { "current": "military" } }
+      ],
+      "series": null,
+      "seriesOrder": null
+    },
+    {
+      "_id": "post-2",
+      "title": "Building AI Systems That Serve Veterans",
+      "slug": { "current": "ai-systems-serve-veterans" },
+      "excerpt": "How Altivum Inc. is leveraging artificial intelligence to create tools that help veterans transition to civilian careers and build successful businesses.",
+      "category": "Technology",
+      "publishedAt": "2025-02-01T12:00:00Z",
+      "readingTime": 12,
+      "isFeatured": false,
+      "image": null,
+      "tags": [
+        { "_id": "tag-3", "title": "AI", "slug": { "current": "ai" } },
+        { "_id": "tag-4", "title": "Veterans", "slug": { "current": "veterans" } }
+      ],
+      "series": null,
+      "seriesOrder": null
+    },
+    {
+      "_id": "post-3",
+      "title": "The Philosophy of Purposeful Service",
+      "slug": { "current": "philosophy-purposeful-service" },
+      "excerpt": "An exploration of how stoic philosophy and military service shaped my approach to entrepreneurship and building meaningful technology.",
+      "category": "Philosophy",
+      "publishedAt": "2025-03-01T12:00:00Z",
+      "readingTime": 6,
+      "isFeatured": false,
+      "image": null,
+      "tags": [
+        { "_id": "tag-5", "title": "Philosophy", "slug": { "current": "philosophy" } }
+      ],
+      "series": null,
+      "seriesOrder": null
+    },
+    {
+      "_id": "post-4",
+      "title": "Cloud Architecture for Startups",
+      "slug": { "current": "cloud-architecture-startups" },
+      "excerpt": "A practical guide to designing serverless architectures on AWS that scale with your business, without burning through your runway.",
+      "category": "Technology",
+      "publishedAt": "2024-12-10T12:00:00Z",
+      "readingTime": 15,
+      "isFeatured": false,
+      "image": null,
+      "tags": [
+        { "_id": "tag-3", "title": "AI", "slug": { "current": "ai" } },
+        { "_id": "tag-6", "title": "AWS", "slug": { "current": "aws" } }
+      ],
+      "series": null,
+      "seriesOrder": null
+    }
+  ],
+  "tags": [
+    { "_id": "tag-1", "title": "Leadership", "slug": { "current": "leadership" } },
+    { "_id": "tag-2", "title": "Military", "slug": { "current": "military" } },
+    { "_id": "tag-3", "title": "AI", "slug": { "current": "ai" } },
+    { "_id": "tag-4", "title": "Veterans", "slug": { "current": "veterans" } },
+    { "_id": "tag-5", "title": "Philosophy", "slug": { "current": "philosophy" } },
+    { "_id": "tag-6", "title": "AWS", "slug": { "current": "aws" } }
+  ],
+  "series": []
+}

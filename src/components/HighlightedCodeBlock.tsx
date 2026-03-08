@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from 'react'
+import { getHighlighter, isSupportedLanguage } from '../utils/shikiHighlighter'
 
 interface HighlightedCodeBlockProps {
   code: string
@@ -14,9 +15,10 @@ const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCode
 
     async function highlight() {
       try {
-        const { codeToHtml } = await import('shiki')
-        const html = await codeToHtml(code, {
-          lang: language || 'text',
+        const lang = language && isSupportedLanguage(language) ? language : 'text'
+        const highlighter = await getHighlighter()
+        const html = highlighter.codeToHtml(code, {
+          lang,
           theme: 'github-dark',
         })
         if (!cancelled) {
@@ -44,7 +46,7 @@ const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCode
         </div>
       )}
       {highlightedHtml ? (
-        // Safe: Shiki generates HTML from its own WASM tokenizer on CMS-authored code strings.
+        // Safe: Shiki generates HTML from its own tokenizer on CMS-authored code strings.
         // No user-supplied content flows through this path.
         <div
           className={`not-prose [&>pre]:bg-altivum-navy/50 [&>pre]:p-4 [&>pre]:overflow-x-auto [&>pre]:text-sm [&>pre]:font-mono ${

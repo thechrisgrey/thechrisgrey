@@ -1,0 +1,11 @@
+{
+  "mockStreamText": "Christian Perez is the Founder and CEO of Altivum Inc., a veteran-founded technology firm. He served as a Green Beret (18D) in the U.S. Army Special Forces, earning a Bronze Star. Today, he builds intelligent, cloud-native architectures that integrate AI at their core.",
+  "errorResponse": {
+    "statusCode": 500,
+    "body": "Internal Server Error"
+  },
+  "rateLimitResponse": {
+    "statusCode": 429,
+    "body": "Too many requests. Please try again later."
+  }
+}

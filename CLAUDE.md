@@ -435,12 +435,14 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `POSTS_QUERY` includes `series` and `seriesOrder` projections for the listing page
 
 **Syntax Highlighting** (`src/components/HighlightedCodeBlock.tsx`):
-- Shiki (WASM-based) syntax highlighter for blog code blocks
-- Dynamically imported only when a blog post with code blocks is viewed
+- Shiki syntax highlighter for blog code blocks using JavaScript regex engine (no WASM)
+- Singleton highlighter pattern in `src/utils/shikiHighlighter.ts` — created once, reused across all code blocks
+- Only 15 language grammars bundled (typescript, javascript, python, bash, json, html, css, yaml, markdown, sql, go, rust, java, tsx, jsx) via individual `@shikijs/langs/*` imports
+- Each language grammar is a lazy chunk loaded on demand — unsupported languages fall back to plain text
 - Shows plain monochrome text immediately, swaps in highlighted HTML once Shiki loads
 - `React.memo` optimized (code content is static per render)
-- Graceful fallback: if Shiki fails or language unsupported, shows plain text
 - Uses `github-dark` theme, `not-prose` wrapper to prevent Tailwind Typography conflicts
+- **Do NOT use bare `import('shiki')`** — this bundles ALL 306+ language grammars (~9MB). Always use the singleton from `shikiHighlighter.ts`
 
 **Blog Image CLS Fix** (`src/sanity/PortableTextComponents.tsx`):
 - Inline images wrapped in `aspect-ratio: 4/3` container to reserve space and eliminate CLS
@@ -589,6 +591,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/data/generatedEpisodes.json`: Auto-generated YouTube episode data
 - `src/components/YouTubeFacade.tsx`: Click-to-play YouTube facade (thumbnail + play button → iframe on click)
 - `src/components/HighlightedCodeBlock.tsx`: Shiki-powered syntax highlighting for blog code blocks
+- `src/utils/shikiHighlighter.ts`: Singleton Shiki highlighter with explicit language imports (15 langs, JS regex engine)
 - `src/components/ReadingProgressBar.tsx`: Scroll progress indicator for blog posts
 - `src/pages/AWS.tsx`: AWS Community Builder page (AI Engineering track, focus areas, program details)
 - `src/pages/NotFound.tsx`: Custom 404 page

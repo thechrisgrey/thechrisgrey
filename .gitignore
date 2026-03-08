@@ -28,6 +28,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Cypress
+cypress/videos
+cypress/screenshots
+cypress/downloads
+
 # Amplify
 amplify/
 .amplify/
