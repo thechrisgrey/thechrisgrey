@@ -6,6 +6,7 @@ const routeImports = new Map<string, LazyImport>([
   ['/podcast', () => import('../pages/Podcast')],
   ['/beyond-the-assessment', () => import('../pages/BeyondTheAssessment')],
   ['/aws', () => import('../pages/AWS')],
+  ['/claude', () => import('../pages/Claude')],
   ['/blog', () => import('../pages/Blog')],
   ['/links', () => import('../pages/Links')],
   ['/contact', () => import('../pages/Contact')],

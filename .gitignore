@@ -44,3 +44,6 @@ lambda/chat-stream/function.zip
 lambda/kb-builder/node_modules/
 lambda/kb-builder/function.zip
 lambda/kb-builder/package-lock.json
+
+# Reference materials (not deployed)
+Anthropic Academy/

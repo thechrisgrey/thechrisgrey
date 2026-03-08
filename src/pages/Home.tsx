@@ -48,7 +48,8 @@ const Home = () => {
     { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
     { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
     { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" }
+    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
+    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" }
   ];
 
   return (
@@ -88,7 +89,7 @@ const Home = () => {
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
-      <section className="relative h-[525vh] md:h-[600vh]">
+      <section className="relative h-[575vh] md:h-[680vh]">
         <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img

@@ -18,6 +18,7 @@ const ABOUT_DROPDOWN_ITEMS = [
   { path: '/podcast', label: 'The Vector Podcast' },
   { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
   { path: '/aws', label: 'Amazon Web Services' },
+  { path: '/claude', label: 'Claude' },
 ];
 
 const Navigation = () => {
@@ -32,7 +33,7 @@ const Navigation = () => {
   useEffect(() => {
     const updateScrollState = () => {
       if (location.pathname === '/') {
-        const summaryEndPosition = window.innerHeight * 7;
+        const summaryEndPosition = window.innerHeight * 8;
         setIsScrolled(window.scrollY > summaryEndPosition);
       } else {
         setIsScrolled(window.scrollY > 20);
