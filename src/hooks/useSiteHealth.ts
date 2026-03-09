@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 const METRICS_ENDPOINT = import.meta.env.VITE_METRICS_ENDPOINT;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-interface VitalStat {
+export interface VitalStat {
   average: number | null;
   count: number;
 }
 
-interface HealthData {
+export interface HealthData {
   vitals: {
     lcp: VitalStat;
     cls: VitalStat;
