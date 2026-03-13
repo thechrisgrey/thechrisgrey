@@ -93,7 +93,7 @@ describe('Navigation Integration', () => {
       });
     });
 
-    it('shows all 5 sub-items in the dropdown', async () => {
+    it('shows all 6 sub-items in the dropdown', async () => {
       const user = userEvent.setup();
       renderNavigation();
 
@@ -101,7 +101,7 @@ describe('Navigation Integration', () => {
 
       await waitFor(() => {
         const menuItems = screen.getAllByRole('menuitem');
-        expect(menuItems).toHaveLength(5);
+        expect(menuItems).toHaveLength(6);
       });
 
       // Check the labels
@@ -110,6 +110,7 @@ describe('Navigation Integration', () => {
       expect(screen.getByRole('menuitem', { name: 'The Vector Podcast' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Beyond the Assessment' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Amazon Web Services' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'Claude' })).toBeInTheDocument();
     });
 
     it('dropdown sub-items link to correct routes', async () => {
@@ -137,6 +138,9 @@ describe('Navigation Integration', () => {
         expect(
           screen.getByRole('menuitem', { name: 'Amazon Web Services' })
         ).toHaveAttribute('href', '/aws');
+        expect(
+          screen.getByRole('menuitem', { name: 'Claude' })
+        ).toHaveAttribute('href', '/claude');
       });
     });
 
