@@ -1,0 +1,13 @@
+{
+  "name": "lambda-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Shared utilities for thechrisgrey Lambda functions",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./rateLimit": "./rateLimit.mjs",
+    "./auth": "./auth.mjs",
+    "./response": "./response.mjs"
+  }
+}
