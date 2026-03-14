@@ -6,65 +6,16 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createClient } from "@sanity/client";
-import { createHash } from "crypto";
+import { checkRateLimit } from "lambda-shared/rateLimit";
+import { validateCognitoToken } from "lambda-shared/auth";
+import { respond } from "lambda-shared/response";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
-// Rate limiting
-const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
-const RATE_LIMIT_WINDOW = 60; // 1 minute in seconds
-const MAX_REQUESTS_PER_WINDOW = 30;
-
-async function checkRateLimit(clientIp) {
-  const ipHash = createHash("sha256").update(clientIp || "unknown").digest("hex");
-  const pk = `kb-builder-${ipHash}`;
-  const now = Math.floor(Date.now() / 1000);
-  const windowStart = now - (now % RATE_LIMIT_WINDOW);
-
-  try {
-    const result = await docClient.send(new UpdateCommand({
-      TableName: RATE_LIMIT_TABLE,
-      Key: { pk },
-      UpdateExpression: "ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)",
-      ConditionExpression: "attribute_not_exists(pk) OR windowStart = :ws",
-      ExpressionAttributeNames: { "#ttl": "ttl" },
-      ExpressionAttributeValues: {
-        ":inc": 1,
-        ":ws": windowStart,
-        ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
-      },
-      ReturnValues: "ALL_NEW",
-    }));
-
-    const count = result.Attributes?.requestCount ?? 1;
-    return count <= MAX_REQUESTS_PER_WINDOW;
-  } catch (error) {
-    if (error.name === "ConditionalCheckFailedException") {
-      // Stale window — reset counter
-      try {
-        await docClient.send(new UpdateCommand({
-          TableName: RATE_LIMIT_TABLE,
-          Key: { pk },
-          UpdateExpression: "SET requestCount = :one, windowStart = :ws, #ttl = :ttl",
-          ExpressionAttributeNames: { "#ttl": "ttl" },
-          ExpressionAttributeValues: {
-            ":one": 1,
-            ":ws": windowStart,
-            ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
-          },
-        }));
-        return true;
-      } catch {
-        return true; // Fail open
-      }
-    }
-    console.error("Rate limit error:", error.name);
-    return true; // Fail open on DynamoDB errors
-  }
-}
+const CORS_ORIGIN = "https://thechrisgrey.com";
 
 const S3_BUCKET = "thechrisgrey-kb-source";
 const S3_KEY = "knowledge-base.txt";
@@ -128,23 +79,6 @@ function validateEntryFields({ title, category, content, date, sortOrder }, requ
     return `sortOrder must be a number between 0 and ${MAX_SORT_ORDER}`;
   }
   return null;
-}
-
-async function validateToken(authHeader) {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.slice(7);
-
-  try {
-    const command = new GetUserCommand({ AccessToken: token });
-    const response = await cognitoClient.send(command);
-    return response;
-  } catch (error) {
-    console.error("Token validation failed:", error.name);
-    return null;
-  }
 }
 
 async function fetchEntries(activeOnly = false) {
@@ -214,33 +148,28 @@ async function uploadToS3(document) {
   return s3Client.send(command);
 }
 
-function respond(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://thechrisgrey.com",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    },
-    body: JSON.stringify(body),
-  };
-}
-
 export const handler = async (event) => {
   if (event.requestContext?.http?.method === "OPTIONS") {
-    return respond(200, { ok: true });
+    return respond(200, { ok: true }, CORS_ORIGIN);
   }
 
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
-  const user = await validateToken(authHeader);
+  const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
   if (!user) {
-    return respond(401, { error: "Unauthorized" });
+    return respond(401, { error: "Unauthorized" }, CORS_ORIGIN);
   }
 
   const clientIp = event.requestContext?.http?.sourceIp || "unknown";
-  if (!(await checkRateLimit(clientIp))) {
-    return respond(429, { error: "Too many requests" });
+  const { allowed } = await checkRateLimit(docClient, UpdateCommand, {
+    table: "thechrisgrey-chat-ratelimit",
+    ip: clientIp,
+    prefix: "kb-builder-",
+    maxRequests: 30,
+    windowSeconds: 60,
+    ttlBuffer: 300,
+  });
+  if (!allowed) {
+    return respond(429, { error: "Too many requests" }, CORS_ORIGIN);
   }
 
   const method = event.requestContext?.http?.method;
@@ -249,7 +178,7 @@ export const handler = async (event) => {
   try {
     if (method === "GET" && path === "/entries") {
       const entries = await fetchEntries(false);
-      return respond(200, { entries });
+      return respond(200, { entries }, CORS_ORIGIN);
     }
 
     if (method === "POST" && path === "/entries") {
@@ -257,13 +186,13 @@ export const handler = async (event) => {
       try {
         body = JSON.parse(event.body || "{}");
       } catch {
-        return respond(400, { error: "Invalid JSON in request body" });
+        return respond(400, { error: "Invalid JSON in request body" }, CORS_ORIGIN);
       }
       const { title, category, content, date, sortOrder, isActive } = body;
 
       const validationError = validateEntryFields({ title, category, content, date, sortOrder }, true);
       if (validationError) {
-        return respond(400, { error: validationError });
+        return respond(400, { error: validationError }, CORS_ORIGIN);
       }
 
       const doc = {
@@ -277,26 +206,26 @@ export const handler = async (event) => {
       };
 
       const result = await sanityClient.create(doc);
-      return respond(201, { entry: result });
+      return respond(201, { entry: result }, CORS_ORIGIN);
     }
 
     if (method === "PUT" && path.startsWith("/entries/")) {
       const id = path.split("/entries/")[1];
-      if (!id) return respond(400, { error: "Missing entry ID" });
+      if (!id) return respond(400, { error: "Missing entry ID" }, CORS_ORIGIN);
       if (!/^[a-zA-Z0-9._-]+$/.test(id)) {
-        return respond(400, { error: "Invalid entry ID format" });
+        return respond(400, { error: "Invalid entry ID format" }, CORS_ORIGIN);
       }
 
       let body;
       try {
         body = JSON.parse(event.body || "{}");
       } catch {
-        return respond(400, { error: "Invalid JSON in request body" });
+        return respond(400, { error: "Invalid JSON in request body" }, CORS_ORIGIN);
       }
 
       const validationError = validateEntryFields(body, false);
       if (validationError) {
-        return respond(400, { error: validationError });
+        return respond(400, { error: validationError }, CORS_ORIGIN);
       }
 
       const patch = sanityClient.patch(id);
@@ -309,32 +238,32 @@ export const handler = async (event) => {
       if (body.isActive !== undefined) patch.set({ isActive: body.isActive });
 
       const result = await patch.commit();
-      return respond(200, { entry: result });
+      return respond(200, { entry: result }, CORS_ORIGIN);
     }
 
     if (method === "DELETE" && path.startsWith("/entries/")) {
       const id = path.split("/entries/")[1];
-      if (!id) return respond(400, { error: "Missing entry ID" });
+      if (!id) return respond(400, { error: "Missing entry ID" }, CORS_ORIGIN);
       if (!/^[a-zA-Z0-9._-]+$/.test(id)) {
-        return respond(400, { error: "Invalid entry ID format" });
+        return respond(400, { error: "Invalid entry ID format" }, CORS_ORIGIN);
       }
 
       // Verify document is a kbEntry before deleting
       const doc = await sanityClient.getDocument(id);
-      if (!doc) return respond(404, { error: "Entry not found" });
+      if (!doc) return respond(404, { error: "Entry not found" }, CORS_ORIGIN);
       if (doc._type !== "kbEntry") {
-        return respond(403, { error: "Cannot delete non-kbEntry documents" });
+        return respond(403, { error: "Cannot delete non-kbEntry documents" }, CORS_ORIGIN);
       }
 
       await sanityClient.delete(id);
-      return respond(200, { deleted: true });
+      return respond(200, { deleted: true }, CORS_ORIGIN);
     }
 
     if (method === "POST" && path === "/publish") {
       const entries = await fetchEntries(true);
 
       if (entries.length === 0) {
-        return respond(400, { error: "No active entries to publish" });
+        return respond(400, { error: "No active entries to publish" }, CORS_ORIGIN);
       }
 
       const document = assembleDocument(entries);
@@ -345,12 +274,12 @@ export const handler = async (event) => {
         entryCount: entries.length,
         documentSize: document.length,
         publishedAt: new Date().toISOString(),
-      });
+      }, CORS_ORIGIN);
     }
 
-    return respond(404, { error: "Not found" });
+    return respond(404, { error: "Not found" }, CORS_ORIGIN);
   } catch (error) {
     console.error("Handler error:", error);
-    return respond(500, { error: "Internal server error" });
+    return respond(500, { error: "Internal server error" }, CORS_ORIGIN);
   }
 };
