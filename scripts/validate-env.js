@@ -10,6 +10,7 @@ const required = [
   'VITE_COGNITO_CLIENT_ID',
   'VITE_KB_BUILDER_ENDPOINT',
   'VITE_METRICS_ENDPOINT',
+  'VITE_CHAT_SIGNING_KEY',
 ];
 
 const missing = required.filter(key => !process.env[key]);

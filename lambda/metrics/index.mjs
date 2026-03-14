@@ -7,12 +7,16 @@ import {
   CognitoIdentityProviderClient,
   GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { createHash } from "crypto";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
-const NAMESPACE = "TheChrisGrey/SiteMetrics";
-const ALLOWED_ORIGIN = "https://thechrisgrey.com";
+const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
+const NAMESPACE = "TheChrisGrey/SiteMetrics";
 const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
 const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
 
@@ -20,23 +24,64 @@ const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
 const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
 const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
-// In-memory rate limiter (persists across warm invocations, resets on cold start)
-const RATE_LIMIT = { vitals: 0, csp: 0, windowStart: Date.now() };
-const RATE_WINDOW_MS = 60_000;
+// DynamoDB-based rate limiting (survives cold starts)
+const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
+const RATE_LIMIT_WINDOW = 60; // 1 minute in seconds
 const MAX_VITALS_PER_WINDOW = 200;
 const MAX_CSP_PER_WINDOW = 100;
 
-function checkRateLimit(type) {
-  const now = Date.now();
-  if (now - RATE_LIMIT.windowStart > RATE_WINDOW_MS) {
-    RATE_LIMIT.vitals = 0;
-    RATE_LIMIT.csp = 0;
-    RATE_LIMIT.windowStart = now;
+const RATE_LIMITS = {
+  vitals: MAX_VITALS_PER_WINDOW,
+  csp: MAX_CSP_PER_WINDOW,
+};
+
+async function checkRateLimit(type, clientIp) {
+  const ipHash = createHash("sha256").update(clientIp || "unknown").digest("hex");
+  const pk = `metrics-${type}-${ipHash}`;
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - (now % RATE_LIMIT_WINDOW);
+  const max = RATE_LIMITS[type] || 100;
+
+  try {
+    const result = await docClient.send(new UpdateCommand({
+      TableName: RATE_LIMIT_TABLE,
+      Key: { pk },
+      UpdateExpression: "ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)",
+      ConditionExpression: "attribute_not_exists(pk) OR windowStart = :ws",
+      ExpressionAttributeNames: { "#ttl": "ttl" },
+      ExpressionAttributeValues: {
+        ":inc": 1,
+        ":ws": windowStart,
+        ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
+      },
+      ReturnValues: "ALL_NEW",
+    }));
+
+    const count = result.Attributes?.requestCount ?? 1;
+    return count <= max;
+  } catch (error) {
+    if (error.name === "ConditionalCheckFailedException") {
+      // Stale window — reset counter
+      try {
+        await docClient.send(new UpdateCommand({
+          TableName: RATE_LIMIT_TABLE,
+          Key: { pk },
+          UpdateExpression: "SET requestCount = :one, windowStart = :ws, #ttl = :ttl",
+          ExpressionAttributeNames: { "#ttl": "ttl" },
+          ExpressionAttributeValues: {
+            ":one": 1,
+            ":ws": windowStart,
+            ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
+          },
+        }));
+        return true;
+      } catch {
+        return true; // Fail open
+      }
+    }
+    console.error("Rate limit error:", error.name);
+    return true; // Fail open on DynamoDB errors
   }
-  RATE_LIMIT[type]++;
-  if (type === "vitals" && RATE_LIMIT.vitals > MAX_VITALS_PER_WINDOW) return false;
-  if (type === "csp" && RATE_LIMIT.csp > MAX_CSP_PER_WINDOW) return false;
-  return true;
 }
 
 function respond(statusCode, body) {
@@ -44,9 +89,6 @@ function respond(statusCode, body) {
     statusCode,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     },
     body: JSON.stringify(body),
   };
@@ -241,16 +283,13 @@ async function handleHealth(authHeader) {
 }
 
 export const handler = async (event) => {
-  if (event.requestContext?.http?.method === "OPTIONS") {
-    return respond(200, { ok: true });
-  }
-
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
+  const clientIp = event.requestContext?.http?.sourceIp || "unknown";
 
   try {
     if (method === "POST" && path === "/vitals") {
-      if (!checkRateLimit("vitals")) {
+      if (!(await checkRateLimit("vitals", clientIp))) {
         return respond(429, { error: "Too many requests" });
       }
       let body;
@@ -263,7 +302,7 @@ export const handler = async (event) => {
     }
 
     if (method === "POST" && path === "/csp-report") {
-      if (!checkRateLimit("csp")) {
+      if (!(await checkRateLimit("csp", clientIp))) {
         return respond(429, { error: "Too many requests" });
       }
       let body;

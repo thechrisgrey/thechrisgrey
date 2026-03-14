@@ -1,18 +1,32 @@
 /**
  * Lambda function triggered by S3 events (PUT/DELETE) on thechrisgrey-kb-source bucket.
  * Automatically syncs the Bedrock Knowledge Base when content changes.
+ * Publishes CloudWatch metrics for observability.
  */
 
 import { BedrockAgentClient, StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
+import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 const DATA_SOURCE_ID = "TXQTRAJOSD";
+const NAMESPACE = "TheChrisGrey/SiteMetrics";
 
 const client = new BedrockAgentClient({ region: "us-east-1" });
+const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
+
+async function publishMetric(metricName, value = 1) {
+  await cloudwatch.send(new PutMetricDataCommand({
+    Namespace: NAMESPACE,
+    MetricData: [{
+      MetricName: metricName,
+      Value: value,
+      Unit: "Count",
+      Timestamp: new Date(),
+    }],
+  })).catch(err => console.error("Metric publish failed:", err.name));
+}
 
 export const handler = async (event) => {
-  console.log("S3 Event received:", JSON.stringify(event, null, 2));
-
   // Extract event details for logging
   const records = event.Records || [];
   const eventSummary = records.map(r => ({
@@ -21,7 +35,7 @@ export const handler = async (event) => {
     bucket: r.s3?.bucket?.name
   }));
 
-  console.log("Processing changes:", JSON.stringify(eventSummary, null, 2));
+  console.log(JSON.stringify({ event: "s3_trigger", changes: eventSummary }));
 
   try {
     const command = new StartIngestionJobCommand({
@@ -31,11 +45,13 @@ export const handler = async (event) => {
 
     const response = await client.send(command);
 
-    console.log("Ingestion job started:", JSON.stringify({
+    console.log(JSON.stringify({
+      event: "kb_sync_started",
       ingestionJobId: response.ingestionJob?.ingestionJobId,
       status: response.ingestionJob?.status,
-      startedAt: response.ingestionJob?.startedAt
-    }, null, 2));
+    }));
+
+    await publishMetric("KBSyncTriggered");
 
     return {
       statusCode: 200,
@@ -46,7 +62,13 @@ export const handler = async (event) => {
       })
     };
   } catch (error) {
-    console.error("Error starting ingestion job:", error);
+    console.error(JSON.stringify({
+      event: "kb_sync_failure",
+      error: error.name,
+      message: error.message,
+    }));
+
+    await publishMetric("KBSyncFailure");
 
     // Don't throw - we don't want S3 to retry on transient errors
     return {

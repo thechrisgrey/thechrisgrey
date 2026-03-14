@@ -190,7 +190,12 @@ export const handler = async (event) => {
     }
 
     if (method === "POST" && path === "/entries") {
-      const body = JSON.parse(event.body || "{}");
+      let body;
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch {
+        return respond(400, { error: "Invalid JSON in request body" });
+      }
       const { title, category, content, date, sortOrder, isActive } = body;
 
       const validationError = validateEntryFields({ title, category, content, date, sortOrder }, true);
@@ -219,7 +224,12 @@ export const handler = async (event) => {
         return respond(400, { error: "Invalid entry ID format" });
       }
 
-      const body = JSON.parse(event.body || "{}");
+      let body;
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch {
+        return respond(400, { error: "Invalid JSON in request body" });
+      }
 
       const validationError = validateEntryFields(body, false);
       if (validationError) {

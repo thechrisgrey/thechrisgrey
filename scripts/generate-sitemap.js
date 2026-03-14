@@ -17,6 +17,7 @@ const client = createClient({
   dataset: 'production',
   apiVersion: '2024-01-01',
   useCdn: false, // We want fresh data at build time
+  timeout: 15000, // 15s — fail fast if Sanity is unreachable
 });
 
 // Static pages with their priorities and change frequencies

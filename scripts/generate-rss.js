@@ -17,6 +17,7 @@ const client = createClient({
   dataset: 'production',
   apiVersion: '2024-01-01',
   useCdn: false,
+  timeout: 15000,
 });
 
 const SITE_URL = 'https://thechrisgrey.com';

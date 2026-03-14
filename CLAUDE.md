@@ -247,6 +247,23 @@ Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Hai
 - Function URL: streaming enabled with CORS for thechrisgrey.com
 - Lambda execution role: `thechrisgrey-chat-stream-role`
 
+**Request Signing (HMAC):**
+- Frontend generates HMAC-SHA256 signature using `VITE_CHAT_SIGNING_KEY` (`src/utils/chatSigning.ts`)
+- Signature format: `HMAC(key, "${timestamp}.${body}")` sent via `X-Chat-Timestamp` + `X-Chat-Signature` headers
+- Lambda verifies signature using `CHAT_SIGNING_KEY` env var before any processing
+- 5-minute timestamp window prevents replay attacks; `crypto.timingSafeEqual` prevents timing attacks
+- Unsigned/invalid requests are rejected with a generic error message and `SignatureRejection` metric
+
+**PageContext Hardening:**
+- `validatePageContext()` whitelists valid paths against known routes (VALID_PATHS set)
+- Blog slugs validated via regex: `/^\/blog\/[a-z0-9][a-z0-9-]*$/`
+- Section and pageTitle values validated against `SAFE_TEXT_PATTERN` (alphanumeric + safe chars only)
+- Invalid pageContext is nullified (not injected into system prompt)
+
+**Bedrock Invocation Timeout:**
+- 10-second `AbortController` timeout wraps `bedrockClient.send()`
+- On timeout, returns graceful "taking too long" message and records `BedrockTimeout` metric
+
 **Guardrails & Rate Limiting:**
 - **Bedrock Guardrail ID:** `5kofhp46ssob` (version 1)
   - Content filters: PROMPT_ATTACK (HIGH), HATE, INSULTS, SEXUAL (HIGH), VIOLENCE, MISCONDUCT (MEDIUM)
@@ -313,6 +330,8 @@ Content syncs automatically when files change in S3:
 - Role: `thechrisgrey-kb-sync-role`
 - Triggered by S3 events: `ObjectCreated:*` and `ObjectRemoved:*`
 - Calls `StartIngestionJob` on the Knowledge Base
+- Publishes `KBSyncTriggered` / `KBSyncFailure` CloudWatch metrics for observability
+- CloudWatch alarm `thechrisgrey-kb-sync-failure` fires if sync fails (SNS → `thechrisgrey-site-alerts`)
 - Handles concurrent sync attempts gracefully (conflict errors are expected and harmless)
 
 Manual sync (if needed):
@@ -380,8 +399,12 @@ aws lambda update-function-code --function-name thechrisgrey-kb-builder --zip-fi
 
 **Environment Validation** (`scripts/validate-env.js`):
 - Runs as the first step in the build pipeline
-- Checks required `VITE_*` env vars: `VITE_NEWSLETTER_ENDPOINT`, `VITE_CONTACT_ENDPOINT`, `VITE_CHAT_ENDPOINT`
+- Checks required `VITE_*` env vars: `VITE_NEWSLETTER_ENDPOINT`, `VITE_CONTACT_ENDPOINT`, `VITE_CHAT_ENDPOINT`, `VITE_CHAT_SIGNING_KEY`
 - Build fails immediately with clear message if any are missing
+
+**Sanity Client Timeouts:**
+- Frontend clients (`src/sanity/client.ts`): 10s timeout — prevents hanging page loads if Sanity is down
+- Build scripts (`generate-sitemap.js`, `generate-rss.js`): 15s timeout — fails build fast if Sanity unreachable
 
 ### Podcast Page (`/podcast`)
 
@@ -545,12 +568,16 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
   - POST `/csp-report`: Receives CSP violation reports → CloudWatch
   - GET `/health`: Returns 24h metric averages (requires Cognito Bearer token)
 - CloudWatch Namespace: `TheChrisGrey/SiteMetrics`
+- **Rate Limiting:** DynamoDB-based per-IP tracking (survives cold starts)
+  - Table: `thechrisgrey-chat-ratelimit` (shared with chat, prefixed keys: `metrics-vitals-{hash}`, `metrics-csp-{hash}`)
+  - Limits: 200 vitals/min, 100 CSP reports/min per IP
 
 **CloudWatch Alarms** (us-east-1):
 - `thechrisgrey-high-cls`: CLS average > 0.25 over 1 hour
 - `thechrisgrey-kb-failures`: KB retrieval failures > 5/hour
 - `thechrisgrey-rate-limit-surge`: Rate limit rejections > 50/hour
 - `thechrisgrey-csp-violations`: CSP violations > 20/hour
+- `thechrisgrey-kb-sync-failure`: KB sync job failed to start
 - SNS Topic: `thechrisgrey-site-alerts` → chris@altivum.ai
 
 **Site Health Dashboard** (`src/hooks/useSiteHealth.ts`):

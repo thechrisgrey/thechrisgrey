@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 import type { PageContext } from '../utils/pageContext';
+import { getSignedHeaders } from '../utils/chatSigning';
 
 const MAX_HISTORY = 20;
 
@@ -104,20 +105,23 @@ export function useChatEngine(pageContext?: PageContext) {
       setIsStreaming(true);
 
       try {
+        const requestBody = JSON.stringify({
+          messages: conversationHistory,
+          ...(pageContext && {
+            pageContext: {
+              currentPage: pageContext.currentPage,
+              pageTitle: pageContext.pageTitle,
+              section: pageContext.section,
+              visitedPages: pageContext.visitedPages,
+            },
+          }),
+        });
+        const signedHeaders = await getSignedHeaders(requestBody);
+
         const response = await fetch(CHAT_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: conversationHistory,
-            ...(pageContext && {
-              pageContext: {
-                currentPage: pageContext.currentPage,
-                pageTitle: pageContext.pageTitle,
-                section: pageContext.section,
-                visitedPages: pageContext.visitedPages,
-              },
-            }),
-          }),
+          headers: { 'Content-Type': 'application/json', ...signedHeaders },
+          body: requestBody,
           signal: controller.signal,
         });
 

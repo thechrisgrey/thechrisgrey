@@ -9,7 +9,7 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
-import { createHash, randomUUID } from "crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "crypto";
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
@@ -50,7 +50,11 @@ class MetricsCollector {
       batches.map((batch) =>
         cloudwatchClient
           .send(new PutMetricDataCommand({ Namespace: NAMESPACE, MetricData: batch }))
-          .catch(() => {})
+          .catch((err) => console.error(JSON.stringify({
+            event: "metrics_flush_error",
+            error: err.name,
+            message: err.message,
+          })))
       )
     );
   }
@@ -64,6 +68,52 @@ const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
 const RATE_LIMIT_MAX = 20;
 const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
+const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
+const SIGNATURE_MAX_AGE_SECONDS = 300; // 5 minutes
+
+/**
+ * Verify HMAC signature on incoming request.
+ * Returns { valid: true } or { valid: false, error: string }.
+ */
+function verifySignature(event) {
+  if (!SIGNING_KEY) {
+    // If no key configured, skip validation (development mode)
+    return { valid: true };
+  }
+
+  const timestamp = event.headers?.["x-chat-timestamp"];
+  const signature = event.headers?.["x-chat-signature"];
+
+  if (!timestamp || !signature) {
+    return { valid: false, error: "missing_headers" };
+  }
+
+  const ts = parseInt(timestamp, 10);
+  if (isNaN(ts)) {
+    return { valid: false, error: "invalid_timestamp" };
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - ts) > SIGNATURE_MAX_AGE_SECONDS) {
+    return { valid: false, error: "expired_timestamp" };
+  }
+
+  const expected = createHmac("sha256", SIGNING_KEY)
+    .update(`${timestamp}.${event.body || ""}`)
+    .digest("hex");
+
+  try {
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expected, "hex");
+    if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+      return { valid: false, error: "invalid_signature" };
+    }
+  } catch {
+    return { valid: false, error: "invalid_signature" };
+  }
+
+  return { valid: true };
+}
 
 function writeSystemMessage(responseStream, message) {
   responseStream.write(SYSTEM_MESSAGE_PREFIX + message);
@@ -235,24 +285,39 @@ async function retrieveContext(query, requestId, metrics) {
 }
 
 /**
- * Validate and sanitize page context from the request
- * Returns sanitized context or null if invalid
+ * Validate and sanitize page context from the request.
+ * Returns sanitized context or null if invalid.
+ * Whitelists valid paths and rejects injection attempts.
  */
+const VALID_PATHS = new Set([
+  '/', '/about', '/altivum', '/podcast', '/beyond-the-assessment',
+  '/aws', '/claude', '/blog', '/contact', '/links', '/chat',
+  '/privacy', '/admin'
+]);
+const BLOG_SLUG_PATTERN = /^\/blog\/[a-z0-9][a-z0-9-]*$/;
+const SAFE_TEXT_PATTERN = /^[a-zA-Z0-9 ()/:,&'-]+$/;
+
+function isValidPath(path) {
+  return VALID_PATHS.has(path) || BLOG_SLUG_PATTERN.test(path);
+}
+
 function validatePageContext(pageContext) {
   if (!pageContext || typeof pageContext !== 'object') return null;
 
   const { currentPage, pageTitle, section, visitedPages } = pageContext;
 
-  if (typeof currentPage !== 'string' || currentPage.length > 200) return null;
-  if (typeof section !== 'string' || section.length > 200) return null;
+  if (typeof currentPage !== 'string' || !isValidPath(currentPage)) return null;
+  if (typeof section !== 'string' || section.length > 100 || !SAFE_TEXT_PATTERN.test(section)) return null;
 
   const sanitizedVisitedPages = Array.isArray(visitedPages)
-    ? visitedPages.filter(p => typeof p === 'string' && p.length <= 200).slice(0, 20)
+    ? visitedPages.filter(p => typeof p === 'string' && isValidPath(p)).slice(0, 20)
     : [];
 
   return {
     currentPage,
-    pageTitle: typeof pageTitle === 'string' ? pageTitle.slice(0, 200) : '',
+    pageTitle: typeof pageTitle === 'string' && SAFE_TEXT_PATTERN.test(pageTitle.slice(0, 100))
+      ? pageTitle.slice(0, 100)
+      : '',
     section,
     visitedPages: sanitizedVisitedPages,
   };
@@ -325,6 +390,16 @@ export const handler = awslambda.streamifyResponse(
     const requestId = randomUUID();
     const metrics = new MetricsCollector();
     const requestStart = Date.now();
+
+    // Verify request signature before any processing
+    const sigResult = verifySignature(event);
+    if (!sigResult.valid) {
+      metrics.record("SignatureRejection");
+      console.log(JSON.stringify({ requestId, event: "signature_rejected", reason: sigResult.error }));
+      writeSystemMessage(responseStream, "Unable to process request.");
+      await metrics.flush();
+      return;
+    }
 
     try {
       // Get client IP for rate limiting
@@ -413,7 +488,11 @@ export const handler = awslambda.streamifyResponse(
       });
 
       const bedrockStart = Date.now();
-      const response = await bedrockClient.send(command);
+      const bedrockAbort = new AbortController();
+      const bedrockTimeout = setTimeout(() => bedrockAbort.abort(), 10_000);
+      const response = await bedrockClient.send(command, {
+        abortSignal: bedrockAbort.signal,
+      });
 
       // Stream the response chunks
       for await (const streamEvent of response.stream) {
@@ -442,6 +521,7 @@ export const handler = awslambda.streamifyResponse(
         }
       }
 
+      clearTimeout(bedrockTimeout);
       metrics.record("BedrockInvocationLatency", Date.now() - bedrockStart, "Milliseconds");
       metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
       console.log(JSON.stringify({ requestId, event: "request_complete", totalMs: Date.now() - requestStart }));
@@ -450,6 +530,14 @@ export const handler = awslambda.streamifyResponse(
       await metrics.flush();
     } catch (error) {
       console.error(JSON.stringify({ requestId, event: "request_error", error: error.name, message: error.message }));
+
+      // Handle Bedrock invocation timeout
+      if (error.name === "AbortError") {
+        metrics.record("BedrockTimeout");
+        writeSystemMessage(responseStream, "The response is taking too long. Please try again.");
+        await metrics.flush();
+        return;
+      }
 
       // Handle guardrail interventions
       if (error.name === "ValidationException" &&

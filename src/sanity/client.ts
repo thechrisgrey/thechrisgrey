@@ -6,6 +6,7 @@ export const client = createClient({
   dataset: 'production',
   apiVersion: '2024-01-01',
   useCdn: true, // Enable CDN for faster reads in production
+  timeout: 10000, // 10s — fail fast if Sanity is down
 })
 
 // Image URL builder
@@ -22,6 +23,7 @@ export const podcastClient = createClient({
   dataset: 'production',
   apiVersion: '2024-01-01',
   useCdn: true,
+  timeout: 10000,
 })
 
 const podcastBuilder = createImageUrlBuilder({ projectId: 'uaxzdsfa', dataset: 'production' })
