@@ -10,6 +10,9 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createHash } from "crypto";
+import { checkRateLimit } from "lambda-shared/rateLimit";
+import { validateCognitoToken } from "lambda-shared/auth";
+import { respond } from "lambda-shared/response";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
@@ -23,76 +26,6 @@ const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
 // Standard CSP blocked-uri values reported by browsers
 const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
 const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
-
-// DynamoDB-based rate limiting (survives cold starts)
-const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
-const RATE_LIMIT_WINDOW = 60; // 1 minute in seconds
-const MAX_VITALS_PER_WINDOW = 200;
-const MAX_CSP_PER_WINDOW = 100;
-
-const RATE_LIMITS = {
-  vitals: MAX_VITALS_PER_WINDOW,
-  csp: MAX_CSP_PER_WINDOW,
-};
-
-async function checkRateLimit(type, clientIp) {
-  const ipHash = createHash("sha256").update(clientIp || "unknown").digest("hex");
-  const pk = `metrics-${type}-${ipHash}`;
-  const now = Math.floor(Date.now() / 1000);
-  const windowStart = now - (now % RATE_LIMIT_WINDOW);
-  const max = RATE_LIMITS[type] || 100;
-
-  try {
-    const result = await docClient.send(new UpdateCommand({
-      TableName: RATE_LIMIT_TABLE,
-      Key: { pk },
-      UpdateExpression: "ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)",
-      ConditionExpression: "attribute_not_exists(pk) OR windowStart = :ws",
-      ExpressionAttributeNames: { "#ttl": "ttl" },
-      ExpressionAttributeValues: {
-        ":inc": 1,
-        ":ws": windowStart,
-        ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
-      },
-      ReturnValues: "ALL_NEW",
-    }));
-
-    const count = result.Attributes?.requestCount ?? 1;
-    return count <= max;
-  } catch (error) {
-    if (error.name === "ConditionalCheckFailedException") {
-      // Stale window — reset counter
-      try {
-        await docClient.send(new UpdateCommand({
-          TableName: RATE_LIMIT_TABLE,
-          Key: { pk },
-          UpdateExpression: "SET requestCount = :one, windowStart = :ws, #ttl = :ttl",
-          ExpressionAttributeNames: { "#ttl": "ttl" },
-          ExpressionAttributeValues: {
-            ":one": 1,
-            ":ws": windowStart,
-            ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
-          },
-        }));
-        return true;
-      } catch {
-        return true; // Fail open
-      }
-    }
-    console.error("Rate limit error:", error.name);
-    return true; // Fail open on DynamoDB errors
-  }
-}
-
-function respond(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  };
-}
 
 async function putMetric(metricName, value, dimensions = []) {
   const command = new PutMetricDataCommand({
@@ -201,18 +134,6 @@ async function getMetricSum(metricName, periodHours = 24) {
   return result.Datapoints?.[0]?.Sum ?? 0;
 }
 
-async function validateToken(authHeader) {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
-  try {
-    const command = new GetUserCommand({ AccessToken: authHeader.slice(7) });
-    await cognitoClient.send(command);
-    return true;
-  } catch (error) {
-    console.error("Token validation failed:", error.name);
-    return null;
-  }
-}
-
 function settledValue(result, fallback = null) {
   if (result.status === "fulfilled") return result.value;
   console.error("Metric fetch failed:", result.reason?.message || result.reason);
@@ -220,7 +141,7 @@ function settledValue(result, fallback = null) {
 }
 
 async function handleHealth(authHeader) {
-  const user = await validateToken(authHeader);
+  const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
   if (!user) {
     return respond(401, { error: "Unauthorized" });
   }
@@ -300,7 +221,14 @@ export const handler = async (event) => {
 
   try {
     if (method === "POST" && path === "/vitals") {
-      if (!(await checkRateLimit("vitals", clientIp))) {
+      const { allowed: vitalsAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+        table: "thechrisgrey-chat-ratelimit",
+        ip: clientIp,
+        prefix: "metrics-vitals-",
+        maxRequests: 200,
+        windowSeconds: 60,
+      });
+      if (!vitalsAllowed) {
         return respond(429, { error: "Too many requests" });
       }
       let body;
@@ -313,7 +241,14 @@ export const handler = async (event) => {
     }
 
     if (method === "POST" && path === "/csp-report") {
-      if (!(await checkRateLimit("csp", clientIp))) {
+      const { allowed: cspAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+        table: "thechrisgrey-chat-ratelimit",
+        ip: clientIp,
+        prefix: "metrics-csp-",
+        maxRequests: 100,
+        windowSeconds: 60,
+      });
+      if (!cspAllowed) {
         return respond(429, { error: "Too many requests" });
       }
       let body;

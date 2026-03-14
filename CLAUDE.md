@@ -585,6 +585,26 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - Fetches from metrics Lambda GET `/health` endpoint using Cognito token
 - Auto-refreshes every 5 minutes
 
+### Shared Lambda Utilities (`lambda/shared/`)
+
+Common infrastructure used by chat-stream, metrics, and kb-builder Lambdas:
+
+- `checkRateLimit(docClient, UpdateCommand, opts)`: Atomic DynamoDB rate limiting
+- `validateCognitoToken(cognitoClient, GetUserCommand, authHeader)`: Cognito token validation
+- `respond(statusCode, body, corsOrigin?)`: JSON response builder with optional CORS
+
+**Usage:** Each Lambda lists `"lambda-shared": "file:../shared"` in its package.json. The shared code is copied into `node_modules/` on `npm install` and included in deployment zips automatically.
+
+**Design:** AWS SDK clients are injected as parameters (not imported by the shared module) to avoid version conflicts and keep the module dependency-free.
+
+**Deployment Note:** Always run `npm install` before zipping a Lambda for deployment to ensure the shared module is included:
+```bash
+cd lambda/<function-name>
+npm install
+zip -r function.zip index.mjs package.json node_modules
+aws lambda update-function-code --function-name thechrisgrey-<function-name> --zip-file fileb://function.zip --region us-east-1
+```
+
 ### Utilities
 
 **Validators** (`src/utils/validators.ts`):
@@ -610,6 +630,7 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - `src/hooks/useChatEngine.ts`: Shared chat state/streaming hook used by both Chat page and widget
 - `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, ChatWidgetPanel)
 - `src/sanity/`: Sanity CMS client, queries, types for blog
+- `lambda/shared/`: Shared utilities (rate limiting, auth, response) used by all Lambda functions
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
 - `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
 - `lambda/kb-builder/`: KB admin Lambda (Sanity CRUD + S3 document assembly + input validation)
