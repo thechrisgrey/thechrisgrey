@@ -9,7 +9,8 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
-import { createHash, createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { checkRateLimit } from "lambda-shared/rateLimit";
 
 const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
@@ -64,9 +65,6 @@ const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 const GUARDRAIL_ID = "5kofhp46ssob";
 const GUARDRAIL_VERSION = "1";
-const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
-const RATE_LIMIT_MAX = 20;
-const RATE_LIMIT_WINDOW = 3600; // 1 hour in seconds
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
 const SIGNATURE_MAX_AGE_SECONDS = 300; // 5 minutes
@@ -142,60 +140,6 @@ WHAT TO AVOID:
 - Never fabricate specifics about Christian
 
 You can use your general knowledge to explain concepts (like what an AWS User Group is) while keeping Christian-specific details accurate to the context provided.`;
-
-/**
- * Check rate limit for an IP address
- * Returns { allowed: boolean, remaining: number }
- */
-async function checkRateLimit(ip, requestId) {
-  const ipHash = createHash('sha256').update(ip || 'unknown').digest('hex');
-  const now = Math.floor(Date.now() / 1000);
-  const windowStart = now - (now % RATE_LIMIT_WINDOW);
-
-  try {
-    const result = await docClient.send(new UpdateCommand({
-      TableName: RATE_LIMIT_TABLE,
-      Key: { pk: ipHash },
-      UpdateExpression: 'ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)',
-      ConditionExpression: 'attribute_not_exists(pk) OR windowStart = :ws',
-      ExpressionAttributeNames: { '#ttl': 'ttl' },
-      ExpressionAttributeValues: {
-        ':inc': 1,
-        ':ws': windowStart,
-        ':ttl': windowStart + RATE_LIMIT_WINDOW + 3600,
-      },
-      ReturnValues: 'ALL_NEW',
-    }));
-
-    const count = result.Attributes?.requestCount ?? 1;
-    if (count > RATE_LIMIT_MAX) {
-      return { allowed: false, remaining: 0 };
-    }
-    return { allowed: true, remaining: RATE_LIMIT_MAX - count };
-  } catch (error) {
-    // ConditionalCheckFailedException = stale window, safe to reset
-    if (error.name === 'ConditionalCheckFailedException') {
-      try {
-        await docClient.send(new UpdateCommand({
-          TableName: RATE_LIMIT_TABLE,
-          Key: { pk: ipHash },
-          UpdateExpression: 'SET requestCount = :one, windowStart = :ws, #ttl = :ttl',
-          ExpressionAttributeNames: { '#ttl': 'ttl' },
-          ExpressionAttributeValues: {
-            ':one': 1,
-            ':ws': windowStart,
-            ':ttl': windowStart + RATE_LIMIT_WINDOW + 3600,
-          },
-        }));
-        return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
-      } catch {
-        return { allowed: true, remaining: -1 };
-      }
-    }
-    console.error(JSON.stringify({ requestId, event: "rate_limit_error", error: error.name }));
-    return { allowed: true, remaining: -1 };
-  }
-}
 
 /**
  * Validate input messages
@@ -408,7 +352,14 @@ export const handler = awslambda.streamifyResponse(
 
       // Check rate limit
       const rateLimitStart = Date.now();
-      const rateLimit = await checkRateLimit(clientIp, requestId);
+      const rateLimit = await checkRateLimit(docClient, UpdateCommand, {
+        table: "thechrisgrey-chat-ratelimit",
+        ip: clientIp,
+        maxRequests: 20,
+        windowSeconds: 3600,
+        ttlBuffer: 3600,
+        requestId,
+      });
       metrics.record("RateLimitLatency", Date.now() - rateLimitStart, "Milliseconds");
 
       if (!rateLimit.allowed) {
