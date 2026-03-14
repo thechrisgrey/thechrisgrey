@@ -374,6 +374,48 @@ export const buildContactPageSchema = () => ({
     }
 });
 
+/**
+ * VideoObject schema for YouTube embeds (enables Google video carousel)
+ */
+export const buildVideoObjectSchema = (options: {
+    videoId: string;
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    uploadDate?: string;
+}) => ({
+    "@type": "VideoObject",
+    "name": options.title,
+    "description": options.description || options.title,
+    "thumbnailUrl": options.thumbnailUrl || `https://img.youtube.com/vi/${options.videoId}/maxresdefault.jpg`,
+    ...(options.uploadDate ? { "uploadDate": options.uploadDate } : {}),
+    "contentUrl": `https://www.youtube.com/watch?v=${options.videoId}`,
+    "embedUrl": `https://www.youtube.com/embed/${options.videoId}`,
+    "publisher": {
+        "@id": `${SITE_URL}/#person`
+    }
+});
+
+/**
+ * ItemList schema for blog series (structured collection of posts)
+ */
+export const buildItemListSchema = (options: {
+    name: string;
+    description?: string;
+    items: { name: string; url: string }[];
+}) => ({
+    "@type": "ItemList",
+    "name": options.name,
+    ...(options.description ? { "description": options.description } : {}),
+    "numberOfItems": options.items.length,
+    "itemListElement": options.items.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "url": item.url
+    }))
+});
+
 // ============================================
 // Pre-built FAQ content for each page
 // ============================================

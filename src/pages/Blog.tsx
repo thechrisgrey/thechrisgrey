@@ -4,10 +4,9 @@ import { SEO } from '../components/SEO';
 import NewsletterForm from '../components/NewsletterForm';
 import { typography } from '../utils/typography';
 import { formatDate } from '../utils/dateFormatter';
-import { blogFAQs } from '../utils/schemas';
+import { blogFAQs, buildItemListSchema } from '../utils/schemas';
 import {
   client,
-  urlFor,
   BLOG_LISTING_QUERY,
   POST_BY_SLUG_QUERY,
   getBlogListingCache,
@@ -19,6 +18,7 @@ import {
   type BlogListingResult,
 } from '../sanity';
 import BlogPostSkeleton from '../components/BlogPostSkeleton';
+import SanityResponsiveImage from '../components/SanityResponsiveImage';
 import { prefetchBlogPostChunk } from '../utils/routeManifest';
 
 const Blog = () => {
@@ -161,7 +161,17 @@ const Blog = () => {
             "publisher": {
               "@id": "https://altivum.ai/#organization"
             }
-          }
+          },
+          ...(activeSeries && filteredPosts.length > 0 && filteredPosts[0]?.series
+            ? [buildItemListSchema({
+                name: filteredPosts[0].series.title,
+                description: filteredPosts[0].series.description,
+                items: filteredPosts.map(p => ({
+                  name: p.title,
+                  url: `https://thechrisgrey.com/blog/${p.slug.current}`
+                }))
+              })]
+            : [])
         ]}
       />
 
@@ -379,10 +389,12 @@ const Blog = () => {
                     <div className="relative overflow-hidden rounded-lg mb-6 aspect-video">
                       <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
                       {post.image?.asset ? (
-                        <img
-                          src={urlFor(post.image).width(600).height(340).auto('format').quality(80).url()}
+                        <SanityResponsiveImage
+                          source={post.image}
                           alt={post.image.alt || post.title}
-                          loading="lazy"
+                          aspectRatio={16 / 9}
+                          widths={[320, 480, 640]}
+                          sizes="(max-width: 768px) 100vw, 50vw"
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (

@@ -136,6 +136,12 @@ async function handleVitals(body) {
   return respond(200, { received: true });
 }
 
+// Hash a URI into one of 10 buckets to cap CloudWatch metric dimension cardinality.
+// Raw URIs are logged for forensic investigation without creating unbounded dimensions.
+function hashBucket(uri) {
+  return parseInt(createHash("sha256").update(uri).digest("hex").slice(0, 8), 16) % 10;
+}
+
 async function handleCspReport(body) {
   const report = body["csp-report"] || body;
   const rawUri = (report["blocked-uri"] || report.blockedURL || "unknown").toString();
@@ -146,8 +152,13 @@ async function handleCspReport(body) {
     return respond(400, { error: "Invalid blocked-uri format" });
   }
 
+  // Log full URI for forensic investigation
+  console.log("CSP violation:", JSON.stringify({ blockedUri }));
+
+  // Use bucketed dimension to prevent CloudWatch cardinality explosion
+  const bucket = `csp-bucket-${hashBucket(blockedUri)}`;
   await putMetric("CSPViolation", 1, [
-    { Name: "BlockedURI", Value: blockedUri },
+    { Name: "BlockedBucket", Value: bucket },
   ]);
   return respond(200, { received: true });
 }

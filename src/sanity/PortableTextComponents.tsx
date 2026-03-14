@@ -1,15 +1,9 @@
 import { PortableTextComponents } from '@portabletext/react'
-import { urlFor } from './client'
 import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types'
 import YouTubeFacade from '../components/YouTubeFacade'
 import HighlightedCodeBlock from '../components/HighlightedCodeBlock'
-
-// Extract YouTube video ID from URL
-function getYouTubeId(url: string): string | null {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-  const match = url.match(regExp)
-  return match && match[2].length === 11 ? match[2] : null
-}
+import SanityResponsiveImage from '../components/SanityResponsiveImage'
+import { getYouTubeId } from '../utils/youtube'
 
 // Callout icons and styles based on type
 const calloutStyles = {
@@ -41,17 +35,18 @@ const calloutStyles = {
 
 export const portableTextComponents: PortableTextComponents = {
   types: {
-    // Inline images with CLS fix
+    // Inline images with CLS fix and responsive srcset
     image: ({ value }) => {
       if (!value?.asset) return null
       return (
         <figure className="my-8">
-          <div className="relative w-full overflow-hidden rounded-lg" style={{ aspectRatio: '4 / 3' }}>
-            <img
-              src={urlFor(value).width(800).auto('format').quality(80).url()}
+          <div className="relative w-full rounded-lg" style={{ aspectRatio: '4 / 3' }}>
+            <SanityResponsiveImage
+              source={value}
               alt={value.alt || ''}
-              loading="lazy"
-              decoding="async"
+              aspectRatio={4 / 3}
+              widths={[480, 640, 800]}
+              sizes="(max-width: 768px) 100vw, 800px"
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
@@ -160,9 +155,12 @@ export const portableTextComponents: PortableTextComponents = {
         <div className="my-8 flex gap-5 p-5 bg-altivum-navy/40 border border-altivum-blue/30 rounded-lg hover:border-altivum-gold/40 transition-colors">
           {value.cover?.asset && (
             <div className="flex-shrink-0">
-              <img
-                src={urlFor(value.cover).width(120).height(180).auto('format').url()}
+              <SanityResponsiveImage
+                source={value.cover}
                 alt={`Cover of ${value.title}`}
+                aspectRatio={2 / 3}
+                widths={[80, 120, 160]}
+                sizes="(max-width: 768px) 80px, 96px"
                 className="w-20 md:w-24 rounded shadow-lg"
               />
             </div>

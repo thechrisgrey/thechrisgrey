@@ -14,6 +14,12 @@
         "logs:PutLogEvents"
       ],
       "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-kb-builder:*"
+    },
+    {
+      "Sid": "RateLimitDynamoDB",
+      "Effect": "Allow",
+      "Action": "dynamodb:UpdateItem",
+      "Resource": "arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-ratelimit"
     }
   ]
 }

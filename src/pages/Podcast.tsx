@@ -4,7 +4,7 @@ import { SEO } from '../components/SEO';
 import tvpLogo from '../assets/tvp.png';
 // Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
-import { podcastFAQs, buildPodcastSeriesSchema } from '../utils/schemas';
+import { podcastFAQs, buildPodcastSeriesSchema, buildVideoObjectSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import SubscribePlatforms from '../components/SubscribePlatforms';
@@ -42,7 +42,14 @@ const Podcast = () => {
           { name: "Home", url: "https://thechrisgrey.com" },
           { name: "Podcast", url: "https://thechrisgrey.com/podcast" }
         ]}
-        structuredData={[buildPodcastSeriesSchema()]}
+        structuredData={[
+          buildPodcastSeriesSchema(),
+          ...(LATEST_VIDEO_ID ? [buildVideoObjectSchema({
+            videoId: LATEST_VIDEO_ID,
+            title: featuredEpisode?.title || 'The Vector Podcast',
+            description: featuredEpisode?.description,
+          })] : [])
+        ]}
       />
 
       {/* Hero Section */}

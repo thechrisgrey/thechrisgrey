@@ -22,6 +22,9 @@ import {
 } from '../sanity';
 import ReadingProgressBar from '../components/ReadingProgressBar';
 import BlogPostArticleSkeleton from '../components/BlogPostArticleSkeleton';
+import SanityResponsiveImage from '../components/SanityResponsiveImage';
+import { getYouTubeId } from '../utils/youtube';
+import { buildVideoObjectSchema } from '../utils/schemas';
 
 /**
  * Extract word count from Portable Text blocks
@@ -46,6 +49,22 @@ const getWordCount = (body: SanityPost['body']): number => {
 
   const text = extractText(body);
   return text.split(/\s+/).filter(word => word.length > 0).length;
+};
+
+/**
+ * Extract YouTube video data from Portable Text body blocks
+ */
+const extractYouTubeVideos = (body: SanityPost['body']): { videoId: string; title: string }[] => {
+  if (!body) return [];
+  return body
+    .filter(block => block._type === 'youtube')
+    .map(block => {
+      const url = (block as { url?: string }).url || '';
+      const caption = (block as { caption?: string }).caption;
+      const videoId = getYouTubeId(url);
+      return videoId ? { videoId, title: caption || 'Video' } : null;
+    })
+    .filter((v): v is { videoId: string; title: string } => v !== null);
 };
 
 function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySeriesPost[]; currentId: string }) {
@@ -278,7 +297,12 @@ const BlogPost = () => {
               "@id": shareUrl
             },
             "inLanguage": "en-US"
-          }
+          },
+          ...extractYouTubeVideos(post.body).map(v => buildVideoObjectSchema({
+            videoId: v.videoId,
+            title: v.title,
+            uploadDate: post.publishedAt,
+          }))
         ]}
       />
 
@@ -287,12 +311,15 @@ const BlogPost = () => {
         {/* Background Image */}
         {post.image?.asset && (
           <div className="absolute inset-0 h-[50vh] overflow-hidden">
-            <img
-              src={urlFor(post.image).width(1920).height(600).auto('format').quality(85).url()}
+            <SanityResponsiveImage
+              source={post.image}
               alt={post.image.alt || post.title}
+              aspectRatio={16 / 5}
+              widths={[640, 960, 1280, 1920]}
+              sizes="100vw"
+              quality={85}
+              priority
               className="w-full h-full object-cover opacity-30"
-              fetchPriority="high"
-              loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-altivum-dark/50 via-altivum-dark/80 to-altivum-dark"></div>
           </div>
@@ -500,10 +527,13 @@ const BlogPost = () => {
                   <div className="relative overflow-hidden rounded-lg mb-4 aspect-video">
                     <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
                     {relatedPost.image?.asset ? (
-                      <img
-                        src={urlFor(relatedPost.image).width(400).height(225).auto('format').quality(75).url()}
+                      <SanityResponsiveImage
+                        source={relatedPost.image}
                         alt={relatedPost.image.alt || relatedPost.title}
-                        loading="lazy"
+                        aspectRatio={16 / 9}
+                        widths={[320, 400, 640]}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        quality={75}
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (

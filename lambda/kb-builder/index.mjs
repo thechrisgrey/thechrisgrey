@@ -3,10 +3,68 @@ import {
   CognitoIdentityProviderClient,
   GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createClient } from "@sanity/client";
+import { createHash } from "crypto";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
+const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+
+// Rate limiting
+const RATE_LIMIT_TABLE = "thechrisgrey-chat-ratelimit";
+const RATE_LIMIT_WINDOW = 60; // 1 minute in seconds
+const MAX_REQUESTS_PER_WINDOW = 30;
+
+async function checkRateLimit(clientIp) {
+  const ipHash = createHash("sha256").update(clientIp || "unknown").digest("hex");
+  const pk = `kb-builder-${ipHash}`;
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - (now % RATE_LIMIT_WINDOW);
+
+  try {
+    const result = await docClient.send(new UpdateCommand({
+      TableName: RATE_LIMIT_TABLE,
+      Key: { pk },
+      UpdateExpression: "ADD requestCount :inc SET #ttl = :ttl, windowStart = if_not_exists(windowStart, :ws)",
+      ConditionExpression: "attribute_not_exists(pk) OR windowStart = :ws",
+      ExpressionAttributeNames: { "#ttl": "ttl" },
+      ExpressionAttributeValues: {
+        ":inc": 1,
+        ":ws": windowStart,
+        ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
+      },
+      ReturnValues: "ALL_NEW",
+    }));
+
+    const count = result.Attributes?.requestCount ?? 1;
+    return count <= MAX_REQUESTS_PER_WINDOW;
+  } catch (error) {
+    if (error.name === "ConditionalCheckFailedException") {
+      // Stale window — reset counter
+      try {
+        await docClient.send(new UpdateCommand({
+          TableName: RATE_LIMIT_TABLE,
+          Key: { pk },
+          UpdateExpression: "SET requestCount = :one, windowStart = :ws, #ttl = :ttl",
+          ExpressionAttributeNames: { "#ttl": "ttl" },
+          ExpressionAttributeValues: {
+            ":one": 1,
+            ":ws": windowStart,
+            ":ttl": windowStart + RATE_LIMIT_WINDOW + 300,
+          },
+        }));
+        return true;
+      } catch {
+        return true; // Fail open
+      }
+    }
+    console.error("Rate limit error:", error.name);
+    return true; // Fail open on DynamoDB errors
+  }
+}
 
 const S3_BUCKET = "thechrisgrey-kb-source";
 const S3_KEY = "knowledge-base.txt";
@@ -178,6 +236,11 @@ export const handler = async (event) => {
   const user = await validateToken(authHeader);
   if (!user) {
     return respond(401, { error: "Unauthorized" });
+  }
+
+  const clientIp = event.requestContext?.http?.sourceIp || "unknown";
+  if (!(await checkRateLimit(clientIp))) {
+    return respond(429, { error: "Too many requests" });
   }
 
   const method = event.requestContext?.http?.method;
