@@ -44,6 +44,8 @@ lambda/chat-stream/function.zip
 lambda/kb-builder/node_modules/
 lambda/kb-builder/function.zip
 lambda/kb-builder/package-lock.json
+lambda/metrics/node_modules/
+lambda/metrics/function.zip
 
 # Reference materials (not deployed)
 Anthropic Academy/
