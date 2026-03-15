@@ -25,6 +25,13 @@ vi.mock('../../sanity', () => ({
   setPostCache: vi.fn(),
 }));
 
+// Mock SanityResponsiveImage to avoid @sanity/image-url parsing real asset refs
+vi.mock('../../components/SanityResponsiveImage', () => ({
+  default: ({ alt, className }: { alt: string; className?: string }) => (
+    <img src="https://mock-image.jpg" alt={alt} className={className} />
+  ),
+}));
+
 // Mock the routeManifest used by Blog page
 vi.mock('../../utils/routeManifest', () => ({
   prefetchBlogPostChunk: vi.fn(),
