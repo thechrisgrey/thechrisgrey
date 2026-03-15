@@ -1,43 +1,46 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  test-and-build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run linter
-      run: npm run lint
-      continue-on-error: true
+      - name: Run linter
+        run: npm run lint
 
-    - name: Build project
-      run: npm run build
+      - name: Run tests
+        run: npx vitest run --reporter=verbose
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      if: matrix.node-version == '20.x'
-      with:
-        name: dist
-        path: dist/
-        retention-days: 7
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_CONTACT_ENDPOINT: https://placeholder.example.com
+          VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+          VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
+          VITE_COGNITO_CLIENT_ID: placeholder
+          VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
+          VITE_METRICS_ENDPOINT: https://placeholder.example.com
