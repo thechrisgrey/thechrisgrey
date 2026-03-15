@@ -23,7 +23,7 @@
     "@sanity/image-url": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-helmet-async": "^2.0.5",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^6.21.0",
     "shiki": "^4.0.0"
   },
