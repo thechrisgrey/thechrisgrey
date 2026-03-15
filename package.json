@@ -19,7 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1000.0",
     "@portabletext/react": "^6.0.2",
-    "@sanity/client": "^7.14.0",
+    "@sanity/client": "^7.17.0",
     "@sanity/image-url": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
