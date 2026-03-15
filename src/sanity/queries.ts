@@ -40,14 +40,14 @@ export const POST_BY_SLUG_QUERY = `*[
   seoTitle,
   seoDescription,
   image {
-    asset->,
+    "asset": asset->{ _id, url },
     alt
   },
   body[] {
     ...,
     _type == "image" => {
       ...,
-      asset->
+      "asset": asset->{ _id, url }
     }
   },
   "tags": tags[]->{ _id, title, slug },
@@ -60,7 +60,7 @@ export const POST_BY_SLUG_QUERY = `*[
     excerpt,
     category,
     publishedAt,
-    image { asset->, alt }
+    image { "asset": asset->{ _id, url }, alt }
   },
   "seriesPosts": select(
     defined(series) => *[_type == "post" && series._ref == ^.series._ref] | order(seriesOrder asc) {
@@ -78,7 +78,7 @@ export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order as
   role,
   branch,
   episodeUrl,
-  image { asset->, alt },
+  image { "asset": asset->{ _id, url }, alt },
   linkedinUrl,
   websiteUrl,
   websiteLabel,

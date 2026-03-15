@@ -6,6 +6,7 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createClient } from "@sanity/client";
+import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
@@ -20,12 +21,18 @@ const CORS_ORIGIN = "https://thechrisgrey.com";
 const S3_BUCKET = "thechrisgrey-kb-source";
 const S3_KEY = "knowledge-base.txt";
 
+// Startup validation — fail fast if critical env vars are missing
+if (!process.env.SANITY_WRITE_TOKEN) {
+  throw new Error("SANITY_WRITE_TOKEN is required — kb-builder cannot start without it");
+}
+
 const sanityClient = createClient({
   projectId: "k5950b3w",
   dataset: "production",
   apiVersion: "2024-01-01",
   token: process.env.SANITY_WRITE_TOKEN,
   useCdn: false,
+  timeout: 10000, // 10s — prevent hanging on Sanity API issues
 });
 
 const CATEGORY_ORDER = [
@@ -153,6 +160,11 @@ export const handler = async (event) => {
     return respond(200, { ok: true }, CORS_ORIGIN);
   }
 
+  const requestId = randomUUID();
+  const method = event.requestContext?.http?.method;
+  const path = event.rawPath || "";
+  console.log(JSON.stringify({ requestId, event: "request_start", method, path }));
+
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
   const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
   if (!user) {
@@ -171,9 +183,6 @@ export const handler = async (event) => {
   if (!allowed) {
     return respond(429, { error: "Too many requests" }, CORS_ORIGIN);
   }
-
-  const method = event.requestContext?.http?.method;
-  const path = event.rawPath || "";
 
   try {
     if (method === "GET" && path === "/entries") {
@@ -279,7 +288,7 @@ export const handler = async (event) => {
 
     return respond(404, { error: "Not found" }, CORS_ORIGIN);
   } catch (error) {
-    console.error("Handler error:", error);
+    console.error(JSON.stringify({ requestId, event: "handler_error", error: error.name, message: error.message }));
     return respond(500, { error: "Internal server error" }, CORS_ORIGIN);
   }
 };

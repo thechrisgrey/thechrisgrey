@@ -35,6 +35,8 @@ export function useChatEngine(pageContext?: PageContext) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingMessageIdRef = useRef<string | null>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   // Clean up stale chat-typing key from sessionStorage (legacy)
   useEffect(() => {
@@ -89,7 +91,7 @@ export function useChatEngine(pageContext?: PageContext) {
 
       // Client-side sliding window (mirrors server-side 20-message limit)
       const allMessages = [
-        ...messages.filter((m) => m.id !== 'welcome'),
+        ...messagesRef.current.filter((m) => m.id !== 'welcome'),
         userMessage,
       ];
       const windowed = allMessages.length > MAX_HISTORY
@@ -222,7 +224,7 @@ export function useChatEngine(pageContext?: PageContext) {
         abortControllerRef.current = null;
       }
     },
-    [messages, setMessages, pageContext]
+    [setMessages, pageContext]
   );
 
   const handleSuggestionSelect = useCallback(

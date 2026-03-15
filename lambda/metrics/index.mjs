@@ -9,7 +9,7 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
@@ -161,7 +161,8 @@ async function handleHealth(authHeader) {
     getMetricSum("CSPViolation"),
     getMetricSum("KBRetrievalFailure"),
     getMetricSum("KBRetrievalSuccess"),
-    getMetricSum("GuardrailIntervention"),
+    getMetricSum("GuardrailInterventionStream"),
+    getMetricSum("GuardrailInterventionPreStream"),
     getMetricSum("RateLimitRejection"),
     getMetricSum("BedrockInputTokens"),
     getMetricSum("BedrockOutputTokens"),
@@ -174,7 +175,8 @@ async function handleHealth(authHeader) {
     cspViolations,
     kbFailures,
     kbSuccesses,
-    guardrails,
+    guardrailStream,
+    guardrailPreStream,
     rateLimits,
     inputTokens,
     outputTokens,
@@ -183,8 +185,9 @@ async function handleHealth(authHeader) {
     bedrockLatency,
     totalLatency,
   ] = metricResults.map((r, i) =>
-    settledValue(r, i >= 8 ? { average: null, count: 0 } : 0)
+    settledValue(r, i >= 9 ? { average: null, count: 0 } : 0)
   );
+  const guardrails = guardrailStream + guardrailPreStream;
 
   const kbTotal = kbSuccesses + kbFailures;
   const kbSuccessRate = kbTotal > 0 ? ((kbSuccesses / kbTotal) * 100).toFixed(1) : null;
@@ -215,6 +218,7 @@ async function handleHealth(authHeader) {
 }
 
 export const handler = async (event) => {
+  const requestId = randomUUID();
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
   const clientIp = event.requestContext?.http?.sourceIp || "unknown";
@@ -267,7 +271,7 @@ export const handler = async (event) => {
 
     return respond(404, { error: "Not found" });
   } catch (error) {
-    console.error("Metrics handler error:", error);
+    console.error(JSON.stringify({ requestId, event: "handler_error", error: error.name, message: error.message }));
     return respond(500, { error: "Internal server error" });
   }
 };

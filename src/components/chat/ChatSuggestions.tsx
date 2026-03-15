@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 interface ChatSuggestionsProps {
   onSelect: (suggestion: string) => void;
   suggestions?: string[];
@@ -10,14 +12,14 @@ const DEFAULT_SUGGESTIONS = [
   "What's his take on AI and veterans?",
 ];
 
-const ChatSuggestions = ({ onSelect, suggestions }: ChatSuggestionsProps) => {
+const ChatSuggestions = memo(({ onSelect, suggestions }: ChatSuggestionsProps) => {
   const items = suggestions || DEFAULT_SUGGESTIONS;
 
   return (
     <div className="flex flex-wrap gap-3 justify-center px-4 py-6">
-      {items.map((suggestion, index) => (
+      {items.map((suggestion) => (
         <button
-          key={index}
+          key={suggestion}
           onClick={() => onSelect(suggestion)}
           className="px-4 py-2 border border-white/10 rounded-full text-altivum-silver hover:text-white hover:bg-white/5 transition-all duration-200 text-sm touch-manipulation"
         >
@@ -26,6 +28,8 @@ const ChatSuggestions = ({ onSelect, suggestions }: ChatSuggestionsProps) => {
       ))}
     </div>
   );
-};
+});
+
+ChatSuggestions.displayName = 'ChatSuggestions';
 
 export default ChatSuggestions;

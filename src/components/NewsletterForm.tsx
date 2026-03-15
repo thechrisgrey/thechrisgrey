@@ -37,6 +37,9 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
 
     setSubscribeStatus({ type: 'loading', message: 'Subscribing...' });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
     try {
       const response = await fetch(import.meta.env.VITE_NEWSLETTER_ENDPOINT, {
         method: 'POST',
@@ -45,7 +48,8 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
         },
         body: JSON.stringify({
           email: subscribeEmail.trim()
-        })
+        }),
+        signal: controller.signal,
       });
 
       const result = await response.json();
@@ -67,10 +71,19 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
       }
     } catch (error) {
       console.error('Error:', error);
-      setSubscribeStatus({
-        type: 'error',
-        message: 'Network error. Please check your connection and try again.'
-      });
+      if (error instanceof Error && error.name === 'AbortError') {
+        setSubscribeStatus({
+          type: 'error',
+          message: 'Request timed out. Please try again.'
+        });
+      } else {
+        setSubscribeStatus({
+          type: 'error',
+          message: 'Network error. Please check your connection and try again.'
+        });
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   };
 

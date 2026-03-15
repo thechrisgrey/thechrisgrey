@@ -1,5 +1,5 @@
 import { typography } from '../../utils/typography';
-import { ReactNode } from 'react';
+import { memo, useMemo, ReactNode } from 'react';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -71,8 +71,14 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = ({ role, content, isStreaming, isSystem }: ChatMessageProps) => {
+const ChatMessage = memo(({ role, content, isStreaming, isSystem }: ChatMessageProps) => {
   const isUser = role === 'user';
+
+  // Memoize link processing — only recomputes when content changes
+  const displayContent = useMemo(
+    () => (isUser || isSystem) ? content : processContentWithLinks(content),
+    [content, isUser, isSystem]
+  );
 
   if (isSystem) {
     return (
@@ -86,9 +92,6 @@ const ChatMessage = ({ role, content, isStreaming, isSystem }: ChatMessageProps)
       </div>
     );
   }
-
-  // Only process links for assistant messages
-  const displayContent = isUser ? content : processContentWithLinks(content);
 
   return (
     <div
@@ -113,6 +116,8 @@ const ChatMessage = ({ role, content, isStreaming, isSystem }: ChatMessageProps)
       </div>
     </div>
   );
-};
+});
+
+ChatMessage.displayName = 'ChatMessage';
 
 export default ChatMessage;

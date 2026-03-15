@@ -69,6 +69,14 @@ const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
 const SIGNATURE_MAX_AGE_SECONDS = 300; // 5 minutes
 
+// Startup validation — log warning if HMAC signing is disabled
+if (!SIGNING_KEY) {
+  console.warn(JSON.stringify({
+    event: "startup_warning",
+    message: "CHAT_SIGNING_KEY not set — HMAC signature verification is DISABLED",
+  }));
+}
+
 /**
  * Verify HMAC signature on incoming request.
  * Returns { valid: true } or { valid: false, error: string }.
@@ -456,8 +464,8 @@ export const handler = awslambda.streamifyResponse(
 
         // Check for guardrail intervention — stop streaming immediately
         if (streamEvent.metadata?.trace?.guardrail?.action === "INTERVENED") {
-          console.log(JSON.stringify({ requestId, event: "guardrail_intervened" }));
-          metrics.record("GuardrailIntervention");
+          console.log(JSON.stringify({ requestId, event: "guardrail_intervened_stream" }));
+          metrics.record("GuardrailInterventionStream");
           writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
           await metrics.flush();
           return;
@@ -490,10 +498,11 @@ export const handler = awslambda.streamifyResponse(
         return;
       }
 
-      // Handle guardrail interventions
+      // Handle guardrail interventions (pre-stream validation errors)
       if (error.name === "ValidationException" &&
           error.message?.toLowerCase().includes("guardrail")) {
-        metrics.record("GuardrailIntervention");
+        console.log(JSON.stringify({ requestId, event: "guardrail_intervened_prestream" }));
+        metrics.record("GuardrailInterventionPreStream");
         writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
         await metrics.flush();
         return;

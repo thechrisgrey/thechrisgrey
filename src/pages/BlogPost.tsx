@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PortableText } from '@portabletext/react';
 import { SEO } from '../components/SEO';
@@ -111,6 +111,7 @@ const BlogPost = () => {
   const [notFound, setNotFound] = useState(false);
   const [fetchError, setFetchError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchPost = useCallback(async () => {
     if (!slug) {
@@ -127,12 +128,17 @@ const BlogPost = () => {
       return;
     }
 
+    // Abort any previous in-flight fetch
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsLoading(true);
     setFetchError(false);
     setNotFound(false);
 
     try {
-      const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug });
+      const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug }, { signal: controller.signal });
       if (data) {
         setPost(data);
         setPostCache(slug, data);
@@ -140,6 +146,8 @@ const BlogPost = () => {
         setNotFound(true);
       }
     } catch (error) {
+      // Ignore abort errors (expected on unmount or slug change)
+      if (error instanceof Error && error.name === 'AbortError') return;
       console.error('Error fetching post:', error);
       setFetchError(true);
     } finally {
@@ -149,6 +157,7 @@ const BlogPost = () => {
 
   useEffect(() => {
     fetchPost();
+    return () => { abortControllerRef.current?.abort(); };
   }, [fetchPost]);
 
   // Share functionality

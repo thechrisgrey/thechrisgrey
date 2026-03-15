@@ -75,6 +75,9 @@ const Contact = () => {
 
     setFormStatus({ type: 'loading', message: 'Sending...' });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
     try {
       const response = await fetch(import.meta.env.VITE_CONTACT_ENDPOINT, {
         method: 'POST',
@@ -86,7 +89,8 @@ const Contact = () => {
           email: formData.email.trim(),
           message: `Subject: ${formData.subject.trim() || 'No subject'}\n\n${formData.message.trim()}`,
           website: formData.website // honeypot
-        })
+        }),
+        signal: controller.signal,
       });
 
       const result = await response.json();
@@ -108,10 +112,19 @@ const Contact = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      setFormStatus({
-        type: 'error',
-        message: 'Network error. Please check your connection and try again.'
-      });
+      if (error instanceof Error && error.name === 'AbortError') {
+        setFormStatus({
+          type: 'error',
+          message: 'Request timed out. Please try again.'
+        });
+      } else {
+        setFormStatus({
+          type: 'error',
+          message: 'Network error. Please check your connection and try again.'
+        });
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   };
 

@@ -1,4 +1,6 @@
-const TypingIndicator = () => {
+import { memo } from 'react';
+
+const TypingIndicator = memo(() => {
   return (
     <div className="flex items-start mr-auto max-w-[80%] md:max-w-[80%]" role="status" aria-label="AI is typing">
       <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-sm px-5 py-4">
@@ -19,6 +21,8 @@ const TypingIndicator = () => {
       </div>
     </div>
   );
-};
+});
+
+TypingIndicator.displayName = 'TypingIndicator';
 
 export default TypingIndicator;
