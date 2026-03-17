@@ -3,6 +3,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ChatWidgetButton from './ChatWidgetButton';
 
+// Mock AltiMascot since Three.js Canvas doesn't work in jsdom
+vi.mock('./AltiMascot', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) => (
+    <div data-testid="alti-mascot" data-is-open={isOpen} />
+  ),
+}));
+
 describe('ChatWidgetButton', () => {
   it('should render with "Open chat" label when closed', () => {
     render(<ChatWidgetButton isOpen={false} onClick={vi.fn()} />);
@@ -18,16 +25,17 @@ describe('ChatWidgetButton', () => {
     expect(button).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('should show "chat" icon when closed', () => {
+  it('should render AltiMascot with isOpen prop', async () => {
     render(<ChatWidgetButton isOpen={false} onClick={vi.fn()} />);
-    const icon = screen.getByText('chat');
-    expect(icon).toBeInTheDocument();
+    const mascot = await screen.findByTestId('alti-mascot');
+    expect(mascot).toBeInTheDocument();
+    expect(mascot).toHaveAttribute('data-is-open', 'false');
   });
 
-  it('should show "close" icon when open', () => {
+  it('should pass isOpen=true to AltiMascot when open', async () => {
     render(<ChatWidgetButton isOpen={true} onClick={vi.fn()} />);
-    const icon = screen.getByText('close');
-    expect(icon).toBeInTheDocument();
+    const mascot = await screen.findByTestId('alti-mascot');
+    expect(mascot).toHaveAttribute('data-is-open', 'true');
   });
 
   it('should call onClick when clicked', async () => {

@@ -4,6 +4,15 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ChatWidget from '../../components/chat/ChatWidget';
 
+// Mock AltiMascot since Three.js Canvas doesn't work in jsdom
+vi.mock('../../components/chat/AltiMascot', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) => (
+    <div data-testid="alti-mascot" data-is-open={isOpen}>
+      {isOpen && <span>close</span>}
+    </div>
+  ),
+}));
+
 // jsdom does not implement scrollTo on elements; polyfill for these tests
 beforeEach(() => {
   Element.prototype.scrollTo = vi.fn();

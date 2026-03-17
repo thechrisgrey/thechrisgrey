@@ -66,6 +66,10 @@ customHeaders:
     headers:
       - key: Cache-Control
         value: 'public, max-age=604800'
+  - pattern: '**/*.glb'
+    headers:
+      - key: Cache-Control
+        value: 'public, max-age=604800'
   - pattern: 'sitemap.xml'
     headers:
       - key: Cache-Control

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum Inc., former Green Beret (18D), host of The Vector Podcast, and author of "Beyond the Assessment". Built with React + TypeScript + Vite, styled with Tailwind CSS, deployed on AWS Amplify.
+Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum Inc., former Green Beret (18D), host of The Vector Podcast, and author of "Beyond the Assessment". Built with React 19 + TypeScript + Vite, styled with Tailwind CSS, deployed on AWS Amplify.
 
 ## Reminder
 
@@ -219,7 +219,15 @@ Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Hai
 
 **Chat Widget** (`src/components/chat/`):
 - `ChatWidget.tsx`: Orchestrator with `isOpen` state, renders button + panel
-- `ChatWidgetButton.tsx`: Gold FAB, `fixed bottom-6 right-6 z-40`, toggles `chat`/`close` icons, `aria-expanded`
+- `ChatWidgetButton.tsx`: `fixed bottom-6 right-6 z-40`, lazy-loads `AltiMascot` 3D component, preserves `<button>` for a11y
+- `AltiMascot.tsx`: 3D mascot (Alti) rendered via React Three Fiber in a 64x64 Canvas
+  - Model: `public/alti.glb` (meshopt + WebP compressed from 13MB → 1.15MB via `@gltf-transform/cli`)
+  - Idle animation: gentle sine-wave float (`Math.sin(clock.elapsedTime * 1.5) * 0.05`)
+  - Hover: model lifts up (lerp to +0.15 Y), gold glow platform intensifies
+  - Platform: HTML div with radial gold gradient (`altivum-gold`) that brightens on hover
+  - `frameloop="always"` for continuous idle animation (tiny canvas, negligible GPU cost)
+  - `useGLTF.preload('/alti.glb')` at module scope for early fetch
+  - Three.js mocked in all jsdom tests (Canvas requires WebGL)
 - `ChatWidgetPanel.tsx`: Compact chat panel (`fixed bottom-24 right-6 z-40`)
   - Header with status dot, clear/expand/close buttons
   - Reuses existing `ChatMessage`, `ChatInput`, `ChatSuggestions`, `TypingIndicator`
@@ -628,7 +636,7 @@ aws lambda update-function-code --function-name thechrisgrey-<function-name> --z
 - `src/pages/Home.tsx`: Complex scroll animations and sticky sections
 - `src/pages/Chat.tsx`: Full-viewport AI chat experience
 - `src/hooks/useChatEngine.ts`: Shared chat state/streaming hook used by both Chat page and widget
-- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, ChatWidgetPanel)
+- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, AltiMascot, ChatWidgetPanel)
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/shared/`: Shared utilities (rate limiting, auth, response) used by all Lambda functions
 - `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
@@ -679,6 +687,31 @@ Required (set in AWS Amplify console):
 - CLI: `aws amplify update-branch --app-id d3du8eg39a9peo --branch-name main --environment-variables "VITE_NEW_VAR=value" --region us-east-2`
 
 After adding/changing env vars, trigger a rebuild for changes to take effect.
+
+## 3D Mascot (Alti)
+
+The chat widget FAB is a 3D model rendered via React Three Fiber.
+
+**Dependencies:** `three`, `@react-three/fiber`, `@react-three/drei`
+- `three` is isolated in a `three-vendor` manual chunk in `vite.config.ts`
+- R3F and drei are left to Rollup's natural code splitting
+
+**Model Compression:**
+- Original: `alti.glb` (13MB, project root — not committed)
+- Compressed: `public/alti.glb` (1.15MB, meshopt geometry + WebP textures)
+- Compressed via: `npx @gltf-transform/cli optimize alti.glb public/alti.glb --compress meshopt --texture-compress webp`
+- No CSP changes needed — meshopt has no Web Worker or CDN dependencies (unlike Draco)
+
+**Testing:** Three.js Canvas requires WebGL which jsdom doesn't provide. All tests that render components containing `AltiMascot` must mock it:
+```tsx
+vi.mock('./AltiMascot', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) => (
+    <div data-testid="alti-mascot" data-is-open={isOpen} />
+  ),
+}));
+```
+
+**React 19 + react-helmet-async:** The SEO integration test uses an explicit `cleanup()` wrapped in try-catch because React 19's stricter unmount can race with Helmet's direct DOM manipulation in jsdom. This is a test-only issue — browsers are unaffected.
 
 ## Deployment Notes
 

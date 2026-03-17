@@ -24,6 +24,7 @@ export default defineConfig({
           'sanity': ['@sanity/client', '@sanity/image-url', '@portabletext/react'],
           'router': ['react-router-dom'],
           'cognito': ['@aws-sdk/client-cognito-identity-provider'],
+          'three-vendor': ['three'],
         }
       }
     },
