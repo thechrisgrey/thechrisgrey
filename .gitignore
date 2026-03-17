@@ -47,5 +47,8 @@ lambda/kb-builder/package-lock.json
 lambda/metrics/node_modules/
 lambda/metrics/function.zip
 
+# Superpowers brainstorming sessions
+.superpowers/
+
 # Reference materials (not deployed)
 Anthropic Academy/
