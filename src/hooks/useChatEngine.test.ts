@@ -10,6 +10,11 @@ import type { Message } from './useChatEngine';
 // Mock import.meta.env
 vi.stubEnv('VITE_CHAT_ENDPOINT', 'https://test-chat-endpoint.example.com');
 
+// Mock signing so tests don't depend on crypto.subtle or VITE_CHAT_SIGNING_KEY
+vi.mock('../utils/chatSigning', () => ({
+  getSignedHeaders: vi.fn().mockResolvedValue({}),
+}));
+
 describe('useChatEngine', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
