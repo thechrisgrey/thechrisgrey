@@ -12,15 +12,29 @@ function AltiModel({ onHoverChange }: { onHoverChange: (h: boolean) => void }) {
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
+    const t = clock.elapsedTime;
 
-    // Gentle idle float — slow sine wave, small amplitude
-    const float = Math.sin(clock.elapsedTime * 1.5) * 0.05;
+    // Gentle idle float — slow sine wave
+    const float = Math.sin(t * 1.5) * 0.05;
 
     // Hover lift lerp — elevates on hover
     const liftTarget = hoveredRef.current ? 0.15 : 0;
     liftRef.current = THREE.MathUtils.lerp(liftRef.current, liftTarget, 0.08);
 
     groupRef.current.position.y = baseY.current + float + liftRef.current;
+
+    // Subtle side-to-side sway — offset frequency so it doesn't sync with the bob
+    groupRef.current.position.x = Math.sin(t * 0.8) * 0.02;
+
+    // Gentle rocking tilt — like breathing or shifting weight
+    groupRef.current.rotation.z = Math.sin(t * 1.2) * 0.03;
+    groupRef.current.rotation.x = Math.sin(t * 0.9) * 0.02;
+
+    // Slow idle turn — looks around subtly
+    const idleTurn = Math.sin(t * 0.4) * 0.08;
+    // On hover, turn slightly toward viewer
+    const hoverTurn = hoveredRef.current ? 0 : idleTurn;
+    groupRef.current.rotation.y = hoverTurn;
   });
 
   return (

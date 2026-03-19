@@ -53,7 +53,7 @@ describe('Chat Page Integration', () => {
       renderChat();
 
       expect(
-        screen.getByText(/I'm Christian's Personal AI Assistant/i)
+        screen.getByText(/I'm Alti/i)
       ).toBeInTheDocument();
     });
 
@@ -61,11 +61,11 @@ describe('Chat Page Integration', () => {
       renderChat();
 
       expect(
-        screen.getByRole('heading', { level: 1, name: /ai chat/i })
+        screen.getByRole('heading', { level: 1, name: /alti/i })
       ).toBeInTheDocument();
       expect(
         screen.getByText(
-          /Ask me anything about Christian's background/i
+          /Ask me anything about Christian/i
         )
       ).toBeInTheDocument();
     });
@@ -289,7 +289,7 @@ describe('Chat Page Integration', () => {
       await waitFor(() => {
         // Welcome message should reappear
         expect(
-          screen.getByText(/I'm Christian's Personal AI Assistant/i)
+          screen.getByText(/I'm Alti/i)
         ).toBeInTheDocument();
         // User message should be gone
         expect(screen.queryByText('Hello')).not.toBeInTheDocument();
@@ -365,7 +365,7 @@ describe('Chat Page Integration', () => {
         {
           id: 'welcome',
           role: 'assistant',
-          content: "Hey there! I'm Christian's Personal AI Assistant.",
+          content: "Hey there! I'm Alti.",
           timestamp: new Date().toISOString(),
         },
         {
@@ -388,7 +388,7 @@ describe('Chat Page Integration', () => {
       renderChat();
 
       await vi.waitFor(() => {
-        expect(document.title).toBe('AI Chat | Christian Perez');
+        expect(document.title).toBe('Alti - Altivum\'s AI Agent | Christian Perez');
       });
     });
   });

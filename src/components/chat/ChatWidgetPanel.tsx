@@ -55,7 +55,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
       onKeyDown={handlePanelKeyDown}
       role="dialog"
       aria-modal="true"
-      aria-label="AI Chat"
+      aria-label="Alti - Altivum's AI Agent"
       className="fixed bottom-24 right-6 z-40 w-[calc(100vw-2rem)] h-[calc(100vh-8rem)] sm:w-[400px] sm:h-[560px] bg-altivum-navy border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-widget-open"
     >
       {/* Header */}
@@ -63,7 +63,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
           <span className="text-white text-sm" style={typography.smallText}>
-            AI Chat
+            Alti<sup className="text-[8px]">TM</sup>
           </span>
         </div>
         <div className="flex items-center gap-1">

@@ -7,7 +7,7 @@ import PrefetchLink from './PrefetchLink';
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
   { path: '/blog', label: 'Blog' },
-  { path: '/chat', label: 'AI Chat' },
+  { path: '/chat', label: 'Alti' },
   { path: '/links', label: 'Links' },
   { path: '/contact', label: 'Contact' },
 ];

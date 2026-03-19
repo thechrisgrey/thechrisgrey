@@ -206,9 +206,9 @@ import { client, urlFor, POSTS_QUERY } from '../sanity';
 const posts = await client.fetch(POSTS_QUERY);
 ```
 
-### AI Chat (`/chat` + Floating Widget)
+### Alti — AI Agent (`/chat` + Floating Widget)
 
-Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Haiku 4.5, and RAG via Bedrock Knowledge Base. Also accessible as a compact floating widget on every other page.
+"Alti" is Altivum's official AI Agent — branded as "a friend of Christian's" to feel approachable rather than corporate. Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Haiku 4.5, and RAG via Bedrock Knowledge Base. Also accessible as a compact floating 3D mascot widget on every other page. Nav link shows "Alti", chat page title is "Alti^TM".
 
 **Shared Chat Engine** (`src/hooks/useChatEngine.ts`):
 - All chat state and streaming logic extracted into a reusable `useChatEngine()` hook
@@ -222,14 +222,14 @@ Full-viewport conversational AI experience powered by Amazon Bedrock, Claude Hai
 - `ChatWidgetButton.tsx`: `fixed bottom-6 right-6 z-40`, lazy-loads `AltiMascot` 3D component, preserves `<button>` for a11y
 - `AltiMascot.tsx`: 3D mascot (Alti) rendered via React Three Fiber in a 64x64 Canvas
   - Model: `public/alti.glb` (meshopt + WebP compressed from 13MB → 1.15MB via `@gltf-transform/cli`)
-  - Idle animation: gentle sine-wave float (`Math.sin(clock.elapsedTime * 1.5) * 0.05`)
-  - Hover: model lifts up (lerp to +0.15 Y), gold glow platform intensifies
+  - Idle animation: gentle float, side-to-side sway, rocking tilt, slow idle turn (all desynced frequencies for organic feel)
+  - Hover: model lifts up (lerp to +0.15 Y), gold glow platform intensifies, idle turn stops (faces viewer)
   - Platform: HTML div with radial gold gradient (`altivum-gold`) that brightens on hover
   - `frameloop="always"` for continuous idle animation (tiny canvas, negligible GPU cost)
   - `useGLTF.preload('/alti.glb')` at module scope for early fetch
   - Three.js mocked in all jsdom tests (Canvas requires WebGL)
 - `ChatWidgetPanel.tsx`: Compact chat panel (`fixed bottom-24 right-6 z-40`)
-  - Header with status dot, clear/expand/close buttons
+  - Header shows "Alti^TM" with status dot, clear/expand/close buttons
   - Reuses existing `ChatMessage`, `ChatInput`, `ChatSuggestions`, `TypingIndicator`
   - "Expand" button navigates to `/chat` for the full experience
   - Uses `useFocusTrap` for accessibility, Escape to close

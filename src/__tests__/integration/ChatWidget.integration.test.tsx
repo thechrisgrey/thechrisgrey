@@ -67,7 +67,7 @@ describe('Chat Widget Integration', () => {
       await user.click(screen.getByRole('button', { name: /open chat/i }));
 
       await waitFor(() => {
-        const dialog = screen.getByRole('dialog', { name: /ai chat/i });
+        const dialog = screen.getByRole('dialog', { name: /alti/i });
         expect(dialog).toBeInTheDocument();
       });
     });
@@ -81,7 +81,7 @@ describe('Chat Widget Integration', () => {
       await waitFor(() => {
         // Should show the welcome message
         expect(
-          screen.getByText(/I'm Christian's Personal AI Assistant/i)
+          screen.getByText(/I'm Alti/i)
         ).toBeInTheDocument();
 
         // Should show the input
@@ -213,7 +213,7 @@ describe('Chat Widget Integration', () => {
       await waitFor(() => {
         const dialog = screen.getByRole('dialog');
         expect(dialog).toHaveAttribute('aria-modal', 'true');
-        expect(dialog).toHaveAttribute('aria-label', 'AI Chat');
+        expect(dialog).toHaveAttribute('aria-label', 'Alti - Altivum\'s AI Agent');
       });
     });
 

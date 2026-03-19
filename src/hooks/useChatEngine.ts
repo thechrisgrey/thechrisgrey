@@ -21,7 +21,7 @@ export const initialWelcomeMessage: Message = {
   id: 'welcome',
   role: 'assistant',
   content:
-    "Hey there! I'm Christian's Personal AI Assistant here to help you learn more about him. Feel free to ask about his background, Altivum\u00AE Inc, The Vector Podcast, or his book \"Beyond the Assessment.\" What would you like to know?",
+    "Hey there, I'm Alti\u2122, Altivum's official AI Agent and friend of Christian's. Feel free to ask about his background, Altivum\u00AE Inc, The Vector Podcast, or his book \"Beyond the Assessment.\" What would you like to know?",
   timestamp: new Date(),
 };
 

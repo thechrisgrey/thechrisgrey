@@ -63,10 +63,10 @@ describe('Navigation Integration', () => {
       expect(aboutButton).toBeInTheDocument();
     });
 
-    it('renders Blog, AI Chat, Links, and Contact nav items', () => {
+    it('renders Blog, Alti, Links, and Contact nav items', () => {
       renderNavigation();
       expect(screen.getAllByText('Blog').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('AI Chat').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Alti').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Links').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Contact').length).toBeGreaterThanOrEqual(1);
     });
