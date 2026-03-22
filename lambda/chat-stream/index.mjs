@@ -64,7 +64,7 @@ class MetricsCollector {
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 const GUARDRAIL_ID = "5kofhp46ssob";
-const GUARDRAIL_VERSION = "1";
+const GUARDRAIL_VERSION = "2";
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
 const SIGNATURE_MAX_AGE_SECONDS = 300; // 5 minutes
