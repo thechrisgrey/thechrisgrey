@@ -116,7 +116,7 @@ WHAT TO AVOID:
 | Denied Topic | Definition |
 |---|---|
 | **Programming and code assistance** | Requests to write, debug, review, or explain code in any programming language |
-| **General knowledge and trivia** | Questions about science, history, geography, math, or academic subjects unrelated to the site owner |
+| **General knowledge and trivia** | Questions about science, history, geography, math, or academic subjects with no connection to Christian Perez's background, career, or areas of expertise |
 | **Creative content generation** | Requests to write poems, stories, essays, emails, resumes, cover letters, or other documents |
 | **Other public figures** | Questions about celebrities, politicians, business leaders, or public figures other than Christian Perez |
 
@@ -135,6 +135,10 @@ WHAT TO AVOID:
 ### Why these categories are safe to hard-block
 
 These four topics have zero overlap with legitimate conversations about Christian Perez. There is no scenario where "Write me a Python sort function" or "Who is Elon Musk?" is a natural follow-up in a conversation about Christian's background. Grey areas (like general AWS concepts in context) are handled by the system prompt, not the guardrails.
+
+## Rollback
+
+If the new guardrails are too aggressive in production, rollback requires only reverting `GUARDRAIL_VERSION` to `"1"` and restoring the previous `BASE_SYSTEM_PROMPT` in `index.mjs`, then redeploying the Lambda. Guardrail version 1 remains in Bedrock and does not need to be recreated.
 
 ## Deployment
 
@@ -155,6 +159,14 @@ aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-f
 - Suggested prompts in `ChatSuggestions.tsx` are already on-topic
 - The guardrail intervention message in the Lambda already has a good redirect
 - No UI changes needed
+- No existing tests are affected by these changes (frontend `useChatEngine.test.ts` is unrelated; Lambda has no unit tests)
+
+## Post-Deployment Documentation
+
+Update `CLAUDE.md` to reflect:
+- New guardrail version (`2` instead of `1`)
+- Revised denied topics list (remove "Off-topic technical support", add the four new categories)
+- The contextual leash behavior in the system prompt description
 
 ## Testing
 
@@ -172,3 +184,4 @@ Manual validation against the live Lambda after deployment:
 | "How did Christian go from Green Beret to tech CEO?" | Normal answer | Both allow |
 | "What drives Altivum's mission?" | Normal answer | Both allow |
 | "What's his take on AI and veterans?" | Normal answer | Both allow |
+| "What happened during the Global War on Terror?" (standalone) | Warm redirect | System prompt (guardrail should not over-trigger on military history adjacent to Christian's service) |
