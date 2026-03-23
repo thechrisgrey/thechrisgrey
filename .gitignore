@@ -50,5 +50,8 @@ lambda/metrics/function.zip
 # Superpowers brainstorming sessions
 .superpowers/
 
+# Git worktrees
+.worktrees/
+
 # Reference materials (not deployed)
 Anthropic Academy/
