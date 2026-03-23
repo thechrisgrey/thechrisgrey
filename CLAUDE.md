@@ -273,9 +273,9 @@ const posts = await client.fetch(POSTS_QUERY);
 - On timeout, returns graceful "taking too long" message and records `BedrockTimeout` metric
 
 **Guardrails & Rate Limiting:**
-- **Bedrock Guardrail ID:** `5kofhp46ssob` (version 1)
+- **Bedrock Guardrail ID:** `5kofhp46ssob` (version 2)
   - Content filters: PROMPT_ATTACK (HIGH), HATE, INSULTS, SEXUAL (HIGH), VIOLENCE, MISCONDUCT (MEDIUM)
-  - Denied topics: Off-topic technical support, illegal activities, professional advice
+  - Denied topics: Programming and code assistance, general knowledge and trivia, creative content generation, other public figures, illegal activities, professional advice
   - Profanity word filter enabled
 - **Rate Limiting:** Atomic DynamoDB-based per-IP tracking (race-condition-free)
   - Table: `thechrisgrey-chat-ratelimit`
@@ -299,6 +299,7 @@ const posts = await client.fetch(POSTS_QUERY);
 - Conversational flowing paragraphs, not document-style
 - Concise: 2-3 sentences for simple questions, 4-6 max for complex
 - Synthesize information naturally, don't list every detail
+- Topic boundaries: Alti answers questions about Christian Perez only; general concepts allowed in conversational context, standalone off-topic questions get a warm redirect
 - `maxTokens: 350`, `temperature: 0.6`
 
 **Knowledge Base (RAG)**:
