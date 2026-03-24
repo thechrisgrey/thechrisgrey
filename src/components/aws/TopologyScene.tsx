@@ -177,9 +177,20 @@ function SceneContent({
 // Public component
 // ------------------------------------------------------------------
 
-export function TopologyScene() {
-  const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
+interface TopologySceneProps {
+  /** Externally-controlled selected cluster (lifted state). Falls back to internal state when omitted. */
+  selectedClusterId?: string | null;
+  /** Callback when a cluster is selected or deselected. */
+  onSelectCluster?: (id: string | null) => void;
+}
+
+export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect }: TopologySceneProps = {}) {
+  const [internalId, setInternalId] = useState<string | null>(null);
   const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand'>('always');
+
+  // Use external state when provided, otherwise fall back to internal state
+  const selectedClusterId = externalId !== undefined ? externalId : internalId;
+  const onSelectCluster = externalOnSelect ?? setInternalId;
 
   return (
     <Canvas
@@ -189,7 +200,7 @@ export function TopologyScene() {
       <Suspense fallback={null}>
         <SceneContent
           selectedClusterId={selectedClusterId}
-          onSelectCluster={setSelectedClusterId}
+          onSelectCluster={onSelectCluster}
           frameloopMode={frameloopMode}
           setFrameloopMode={setFrameloopMode}
         />
