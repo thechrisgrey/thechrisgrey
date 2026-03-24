@@ -189,10 +189,19 @@ export function ArchitectureXRay() {
     // Simulate streaming the cached response
     const fullText = cachedTrace.current.response;
     const isSys = cachedTrace.current.isSystem;
-    const chunkSize = 8;
-    let pos = 0;
 
     setIsSystemMessage(isSys);
+
+    // Under reduced motion, show the full response instantly — no streaming interval
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setResponseContent(fullText);
+      setTraceState('complete');
+      return;
+    }
+
+    const chunkSize = 8;
+    let pos = 0;
     setResponseContent('');
 
     const interval = setInterval(() => {

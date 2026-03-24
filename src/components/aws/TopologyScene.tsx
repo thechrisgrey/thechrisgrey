@@ -54,8 +54,10 @@ function SceneContent({
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera, invalidate } = useThree();
 
-  // Track whether auto-rotate should be active
-  const autoRotate = selectedClusterId === null;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Track whether auto-rotate should be active (disabled under reduced motion)
+  const autoRotate = !reducedMotion && selectedClusterId === null;
 
   // Pause auto-rotation when tab is hidden
   useFrame(() => {
@@ -80,32 +82,44 @@ function SceneContent({
       // Keep a minimum distance from the cluster so it remains visible
       dest.z = Math.max(dest.z, target.z + 2);
 
-      gsap.to(camera.position, {
-        x: dest.x,
-        y: dest.y,
-        z: dest.z,
-        duration: 0.8,
-        ease: 'power2.out',
-        onUpdate: () => invalidate(),
-        onComplete: () => invalidate(),
-      });
+      if (reducedMotion) {
+        // Instant camera jump — no tween
+        camera.position.set(dest.x, dest.y, dest.z);
+        invalidate();
+      } else {
+        gsap.to(camera.position, {
+          x: dest.x,
+          y: dest.y,
+          z: dest.z,
+          duration: 0.8,
+          ease: 'power2.out',
+          onUpdate: () => invalidate(),
+          onComplete: () => invalidate(),
+        });
+      }
     },
-    [camera.position, onSelectCluster, setFrameloopMode, invalidate],
+    [camera.position, onSelectCluster, setFrameloopMode, invalidate, reducedMotion],
   );
 
   const handleDeselect = useCallback(() => {
     onSelectCluster(null);
     setFrameloopMode('always');
 
-    gsap.to(camera.position, {
-      x: DEFAULT_CAMERA_POS.x,
-      y: DEFAULT_CAMERA_POS.y,
-      z: DEFAULT_CAMERA_POS.z,
-      duration: 0.8,
-      ease: 'power2.out',
-      onUpdate: () => invalidate(),
-    });
-  }, [camera.position, onSelectCluster, setFrameloopMode, invalidate]);
+    if (reducedMotion) {
+      // Instant camera return — no tween
+      camera.position.set(DEFAULT_CAMERA_POS.x, DEFAULT_CAMERA_POS.y, DEFAULT_CAMERA_POS.z);
+      invalidate();
+    } else {
+      gsap.to(camera.position, {
+        x: DEFAULT_CAMERA_POS.x,
+        y: DEFAULT_CAMERA_POS.y,
+        z: DEFAULT_CAMERA_POS.z,
+        duration: 0.8,
+        ease: 'power2.out',
+        onUpdate: () => invalidate(),
+      });
+    }
+  }, [camera.position, onSelectCluster, setFrameloopMode, invalidate, reducedMotion]);
 
   // Escape key to deselect
   useEffect(() => {

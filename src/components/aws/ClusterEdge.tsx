@@ -12,6 +12,7 @@ const PARTICLE_COUNT = 10;
 
 export function ClusterEdge({ start, end }: ClusterEdgeProps) {
   const pointsRef = useRef<THREE.Points>(null);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Each particle gets a phase offset so they spread along the line
   const phases = useMemo(
@@ -19,7 +20,7 @@ export function ClusterEdge({ start, end }: ClusterEdgeProps) {
     [],
   );
 
-  // Initial positions buffer
+  // Initial positions buffer — used as static positions under reduced motion
   const positions = useMemo(() => {
     const arr = new Float32Array(PARTICLE_COUNT * 3);
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -32,6 +33,8 @@ export function ClusterEdge({ start, end }: ClusterEdgeProps) {
   }, [start, end, phases]);
 
   useFrame(({ clock }) => {
+    // No animation under reduced motion — particles stay at evenly-spaced static positions
+    if (reducedMotion) return;
     // Skip updates when tab is not visible
     if (document.hidden) return;
     if (!pointsRef.current) return;
