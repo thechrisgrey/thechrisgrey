@@ -267,9 +267,12 @@ export function ArchitectureXRay() {
       let isSys = false;
       let firstChunk = true;
 
-      while (true) {
-        const { done, value } = await reader.read();
+      let done = false;
+      while (!done) {
+        const result = await reader.read();
+        done = result.done;
         if (done) break;
+        const value = result.value;
 
         const chunk = decoder.decode(value, { stream: true });
 
