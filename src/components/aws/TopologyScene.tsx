@@ -43,6 +43,7 @@ interface SceneContentProps {
   onSelectCluster: (id: string | null) => void;
   frameloopMode: 'always' | 'demand';
   setFrameloopMode: (mode: 'always' | 'demand') => void;
+  controlRef?: React.MutableRefObject<TopologyControlHandle | null>;
 }
 
 function SceneContent({
@@ -50,11 +51,70 @@ function SceneContent({
   onSelectCluster,
   frameloopMode,
   setFrameloopMode,
+  controlRef,
 }: SceneContentProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera, invalidate } = useThree();
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Expose control handle for external rotate/reset buttons
+  useEffect(() => {
+    if (!controlRef) return;
+    controlRef.current = {
+      rotateBy: (angleDeg: number) => {
+        if (!controlsRef.current) return;
+        const angleRad = (angleDeg * Math.PI) / 180;
+        const controls = controlsRef.current;
+        const currentAngle = controls.getAzimuthalAngle();
+        const targetAngle = currentAngle + angleRad;
+        if (reducedMotion) {
+          controls.minAzimuthAngle = -Infinity;
+          controls.maxAzimuthAngle = Infinity;
+          // Rotate camera around target
+          const offset = camera.position.clone().sub(controls.target);
+          offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angleRad);
+          camera.position.copy(controls.target).add(offset);
+          controls.update();
+          invalidate();
+        } else {
+          const dummy = { angle: currentAngle };
+          controls.minAzimuthAngle = -Infinity;
+          controls.maxAzimuthAngle = Infinity;
+          gsap.to(dummy, {
+            angle: targetAngle,
+            duration: 0.6,
+            ease: 'power2.out',
+            onUpdate: () => {
+              const delta = dummy.angle - controls.getAzimuthalAngle();
+              const offset = camera.position.clone().sub(controls.target);
+              offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), delta);
+              camera.position.copy(controls.target).add(offset);
+              controls.update();
+              invalidate();
+            },
+          });
+        }
+      },
+      reset: () => {
+        onSelectCluster(null);
+        setFrameloopMode('always');
+        if (reducedMotion) {
+          camera.position.set(DEFAULT_CAMERA_POS.x, DEFAULT_CAMERA_POS.y, DEFAULT_CAMERA_POS.z);
+          invalidate();
+        } else {
+          gsap.to(camera.position, {
+            x: DEFAULT_CAMERA_POS.x,
+            y: DEFAULT_CAMERA_POS.y,
+            z: DEFAULT_CAMERA_POS.z,
+            duration: 0.8,
+            ease: 'power2.out',
+            onUpdate: () => invalidate(),
+          });
+        }
+      },
+    };
+  }, [controlRef, camera, invalidate, reducedMotion, onSelectCluster, setFrameloopMode]);
 
   // Track whether auto-rotate should be active (disabled under reduced motion)
   const autoRotate = !reducedMotion && selectedClusterId === null;
@@ -196,9 +256,16 @@ interface TopologySceneProps {
   selectedClusterId?: string | null;
   /** Callback when a cluster is selected or deselected. */
   onSelectCluster?: (id: string | null) => void;
+  /** Ref for external control (rotate, reset) */
+  controlRef?: React.MutableRefObject<TopologyControlHandle | null>;
 }
 
-export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect }: TopologySceneProps = {}) {
+export interface TopologyControlHandle {
+  rotateBy: (angleDeg: number) => void;
+  reset: () => void;
+}
+
+export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect, controlRef }: TopologySceneProps = {}) {
   const [internalId, setInternalId] = useState<string | null>(null);
   const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand'>('always');
 
@@ -209,7 +276,7 @@ export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: 
   return (
     <Canvas
       frameloop={frameloopMode}
-      style={{ width: '100%', height: '500px', background: '#0A0F1C' }}
+      style={{ width: '100%', height: '70vh', background: '#0A0F1C' }}
     >
       <Suspense fallback={null}>
         <SceneContent
@@ -217,6 +284,7 @@ export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: 
           onSelectCluster={onSelectCluster}
           frameloopMode={frameloopMode}
           setFrameloopMode={setFrameloopMode}
+          controlRef={controlRef}
         />
       </Suspense>
     </Canvas>

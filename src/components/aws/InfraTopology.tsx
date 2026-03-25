@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { typography } from '../../utils/typography';
 import { checkWebGLSupport } from '../../utils/checkWebGL';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { clusters } from '../../data/infrastructureTopology';
 import ErrorBoundary from '../ErrorBoundary';
 import { TopologyScene } from './TopologyScene';
+import type { TopologyControlHandle } from './TopologyScene';
 import { TopologyFallback2D } from './TopologyFallback2D';
+import { TopologyControls } from './TopologyControls';
 
 /**
  * Map a cluster's 3D position to approximate 2D percentages for the
@@ -27,6 +29,7 @@ export function InfraTopology() {
   const use3D = isDesktop && webglOk;
 
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
+  const controlRef = useRef<TopologyControlHandle | null>(null);
 
   const overlayButtons = useMemo(
     () =>
@@ -53,47 +56,53 @@ export function InfraTopology() {
         >
           Infrastructure powering thechrisgrey.com
         </p>
-
-        {use3D ? (
-          <ErrorBoundary fallback={<TopologyFallback2D />}>
-            <div className="relative">
-              <TopologyScene
-                selectedClusterId={selectedClusterId}
-                onSelectCluster={setSelectedClusterId}
-              />
-
-              {/* Keyboard-accessible overlay: real HTML buttons over the Canvas */}
-              <div
-                className="absolute inset-0 pointer-events-none overflow-hidden"
-                aria-hidden="true"
-              >
-                {overlayButtons.map((btn) => (
-                  <button
-                    key={btn.id}
-                    type="button"
-                    aria-label={`${btn.label} cluster`}
-                    aria-hidden="false"
-                    className="pointer-events-auto w-8 h-8 rounded-full bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
-                    style={{
-                      position: 'absolute',
-                      left: btn.left,
-                      top: btn.top,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    onClick={() =>
-                      setSelectedClusterId((prev) =>
-                        prev === btn.id ? null : btn.id,
-                      )
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          </ErrorBoundary>
-        ) : (
-          <TopologyFallback2D />
-        )}
       </div>
+
+      {use3D ? (
+        <ErrorBoundary fallback={<TopologyFallback2D />}>
+          <div className="relative">
+            <TopologyScene
+              selectedClusterId={selectedClusterId}
+              onSelectCluster={setSelectedClusterId}
+              controlRef={controlRef}
+            />
+
+            {/* Manual controls */}
+            <TopologyControls controlRef={controlRef} />
+
+            {/* Keyboard-accessible overlay: real HTML buttons over the Canvas */}
+            <div
+              className="absolute inset-0 pointer-events-none overflow-hidden"
+              aria-hidden="true"
+            >
+              {overlayButtons.map((btn) => (
+                <button
+                  key={btn.id}
+                  type="button"
+                  aria-label={`${btn.label} cluster`}
+                  aria-hidden="false"
+                  className="pointer-events-auto w-8 h-8 rounded-full bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
+                  style={{
+                    position: 'absolute',
+                    left: btn.left,
+                    top: btn.top,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                  onClick={() =>
+                    setSelectedClusterId((prev) =>
+                      prev === btn.id ? null : btn.id,
+                    )
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </ErrorBoundary>
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <TopologyFallback2D />
+        </div>
+      )}
     </section>
   );
 }
