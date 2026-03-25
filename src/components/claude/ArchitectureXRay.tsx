@@ -217,17 +217,19 @@ export function ArchitectureXRay() {
   }, [runPipelineAnimation]);
 
   const handleTrace = useCallback(async (message: string) => {
-    // If already traced in this session and we have a cached response, replay
-    const alreadyTraced = sessionStorage.getItem('xray-traced');
-    if (alreadyTraced && cachedTrace.current) {
-      replayWithCache();
-      return;
-    }
+    // Always make a live API call -- the Lambda's 20/hour rate limit is the real protection
+    // Kill any in-flight request or animation
+    abortControllerRef.current?.abort();
+    timelineRef.current?.kill();
 
+    // Reset all state for a fresh trace
     setTraceState('tracing');
     setResponseContent('');
     setIsSystemMessage(false);
     setExpandedNodeId(null);
+    setNodeStates(
+      Object.fromEntries(pipelineNodes.map((n) => [n.id, 'dim' as const]))
+    );
 
     // Start the pipeline animation
     runPipelineAnimation();
@@ -320,9 +322,8 @@ export function ArchitectureXRay() {
           }, 2000);
         }
       } else {
-        // Success: cache the response
+        // Cache the successful response (used for error-recovery replay)
         cachedTrace.current = { response: accumulated, isSystem: false };
-        sessionStorage.setItem('xray-traced', 'true');
         setTraceState('complete');
       }
     } catch (error) {
