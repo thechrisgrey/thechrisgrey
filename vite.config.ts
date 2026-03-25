@@ -25,6 +25,7 @@ export default defineConfig({
           'router': ['react-router-dom'],
           'cognito': ['@aws-sdk/client-cognito-identity-provider'],
           'three-vendor': ['three'],
+          'gsap-vendor': ['gsap'],
         }
       }
     },

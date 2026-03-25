@@ -3,6 +3,7 @@ import { typography } from '../utils/typography';
 import { buildWebPageSchema } from '../utils/schemas';
 import claudeHero from '../assets/claude-hero.png';
 import claudeBedrockCert from '../assets/claude-bedrock-cert.png';
+import { ArchitectureXRay } from '../components/claude/ArchitectureXRay';
 
 const Claude = () => {
   const featuredCert = {
@@ -125,6 +126,10 @@ const Claude = () => {
           </div>
         </div>
       </section>
+
+      {/* Architecture X-Ray */}
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <ArchitectureXRay />
 
       {/* Focus Areas */}
       <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />

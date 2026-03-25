@@ -10,6 +10,21 @@ vi.mock('../../assets/aws-community-builder.png', () => ({
   default: '/mock-aws-community-builder.png',
 }));
 
+// Mock WebGL check (jsdom has no WebGL) -- returns false so 2D fallback renders
+vi.mock('../../utils/checkWebGL', () => ({
+  checkWebGLSupport: () => false,
+}));
+
+// Mock GSAP for FallbackDetail height animations
+vi.mock('gsap', () => ({
+  default: { from: vi.fn(), to: vi.fn() },
+}));
+
+// Mock useFocusTrap for FallbackDetail
+vi.mock('../../hooks/useFocusTrap', () => ({
+  useFocusTrap: () => ({ current: null }),
+}));
+
 const renderAWS = () => {
   return render(
     <HelmetProvider>
@@ -50,8 +65,6 @@ describe('AWS Page Integration', () => {
   describe('Introduction section', () => {
     it('renders the AWS Community Builder title text', () => {
       renderAWS();
-      // The title is split across spans: "AWS " + "<span>Community Builder</span>"
-      // Use a custom text matcher to find text spread across elements
       expect(
         screen.getByText((_content, element) => {
           return element?.tagName === 'P' && element.textContent === 'AWS Community Builder';
@@ -61,7 +74,6 @@ describe('AWS Page Integration', () => {
 
     it('renders the AI Engineering subtitle', () => {
       renderAWS();
-      // This text is in its own <p> element
       expect(
         screen.getByText((_content, element) => {
           return element?.tagName === 'P' && element.textContent?.trim() === 'AI Engineering';
@@ -71,7 +83,6 @@ describe('AWS Page Integration', () => {
 
     it('describes the AWS Community Builders program', () => {
       renderAWS();
-      // Text is split with inline <span> elements; use a custom matcher
       expect(
         screen.getByText((_content, element) => {
           if (element?.tagName !== 'P') return false;
@@ -82,84 +93,22 @@ describe('AWS Page Integration', () => {
     });
   });
 
-  describe('Focus Areas section', () => {
-    it('renders the "Focus Areas" section heading', () => {
+  describe('Infrastructure Topology section', () => {
+    it('renders "The Stack" section heading', () => {
       renderAWS();
       expect(
-        screen.getByRole('heading', { name: /focus areas/i })
+        screen.getByRole('heading', { name: /the stack/i })
       ).toBeInTheDocument();
     });
 
-    it('renders all 3 focus area cards with correct titles', () => {
+    it('renders all 6 cluster labels in the 2D fallback', () => {
       renderAWS();
-      expect(screen.getByText('AI & Machine Learning')).toBeInTheDocument();
-      expect(screen.getByText('Cloud Architecture')).toBeInTheDocument();
-      expect(screen.getByText('Community & Content')).toBeInTheDocument();
-    });
-
-    it('renders service tags for the AI & Machine Learning card', () => {
-      renderAWS();
-      expect(screen.getByText('Amazon Bedrock')).toBeInTheDocument();
-      expect(screen.getByText('SageMaker')).toBeInTheDocument();
-      expect(screen.getByText('Titan Embeddings')).toBeInTheDocument();
-      expect(screen.getByText('Knowledge Bases')).toBeInTheDocument();
-    });
-
-    it('renders service tags for the Cloud Architecture card', () => {
-      renderAWS();
-      expect(screen.getByText('Lambda')).toBeInTheDocument();
-      expect(screen.getByText('API Gateway')).toBeInTheDocument();
-      expect(screen.getByText('DynamoDB')).toBeInTheDocument();
-      expect(screen.getByText('CloudFormation')).toBeInTheDocument();
-    });
-
-    it('renders service tags for the Community & Content card', () => {
-      renderAWS();
-      expect(screen.getByText('Technical Blogs')).toBeInTheDocument();
-      expect(screen.getByText('Architecture Patterns')).toBeInTheDocument();
-      expect(screen.getByText('Best Practices')).toBeInTheDocument();
-    });
-
-    it('renders descriptions for each focus area', () => {
-      renderAWS();
-      expect(
-        screen.getByText(/Building intelligent systems with Amazon Bedrock/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/Designing serverless, event-driven systems/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/Sharing knowledge through technical writing/i)
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe('What This Means section', () => {
-    it('renders the "What This Means" section heading', () => {
-      renderAWS();
-      expect(
-        screen.getByRole('heading', { name: /what this means/i })
-      ).toBeInTheDocument();
-    });
-
-    it('renders all 3 items with correct titles', () => {
-      renderAWS();
-      expect(screen.getByText('Direct Access')).toBeInTheDocument();
-      expect(screen.getByText('Knowledge Sharing')).toBeInTheDocument();
-      expect(screen.getByText('Builder Network')).toBeInTheDocument();
-    });
-
-    it('renders descriptions for each item', () => {
-      renderAWS();
-      expect(
-        screen.getByText(/Early access to AWS services/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/A commitment to sharing what I learn/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/Connection to a global network of builders/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText('CDN / Edge')).toBeInTheDocument();
+      expect(screen.getByText('Compute')).toBeInTheDocument();
+      expect(screen.getByText('AI / ML')).toBeInTheDocument();
+      expect(screen.getByText('Data')).toBeInTheDocument();
+      expect(screen.getByText('Auth')).toBeInTheDocument();
+      expect(screen.getByText('Observability')).toBeInTheDocument();
     });
   });
 
