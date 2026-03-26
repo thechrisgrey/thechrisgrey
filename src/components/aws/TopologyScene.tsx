@@ -310,7 +310,7 @@ export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: 
   return (
     <Canvas
       frameloop={frameloopMode}
-      style={{ width: '100%', height: '70vh', background: '#0A0F1C' }}
+      style={{ width: '100%', height: '100%', background: '#0A0F1C' }}
     >
       <Suspense fallback={null}>
         <SceneContent

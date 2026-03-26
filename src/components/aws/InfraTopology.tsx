@@ -56,17 +56,17 @@ export function InfraTopology() {
   );
 
   return (
-    <section className="py-24 md:py-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="h-screen flex flex-col">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 shrink-0">
         <h2
           style={typography.sectionHeader}
-          className="text-white mb-4 text-center"
+          className="text-white mb-2 text-center"
         >
           The Stack
         </h2>
         <p
           style={typography.subtitle}
-          className="text-altivum-silver text-center mb-20"
+          className="text-altivum-silver text-center"
         >
           Infrastructure powering thechrisgrey.com
         </p>
@@ -74,7 +74,7 @@ export function InfraTopology() {
 
       {use3D ? (
         <ErrorBoundary fallback={<TopologyFallback2D />}>
-          <div className="relative" onPointerDown={() => setHintVisible(false)}>
+          <div className="relative flex-1 min-h-0" onPointerDown={() => setHintVisible(false)}>
             <TopologyScene
               selectedClusterId={selectedClusterId}
               onSelectCluster={handleSelectCluster}
@@ -121,7 +121,7 @@ export function InfraTopology() {
 
           {/* Detail card -- rendered as regular HTML below the canvas so it's never clipped */}
           {selectedClusterId && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 shrink-0 max-h-[35vh] overflow-y-auto">
               <FallbackDetail
                 cluster={clusters.find((c) => c.id === selectedClusterId) ?? null}
                 allClusters={clusters}
@@ -131,7 +131,7 @@ export function InfraTopology() {
           )}
 
           {/* Cluster navigation bar */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 shrink-0">
             <div className="flex flex-wrap justify-center gap-2">
               {clusters.map((cluster) => (
                 <button
