@@ -8,6 +8,7 @@ import { TopologyScene } from './TopologyScene';
 import type { TopologyControlHandle } from './TopologyScene';
 import { TopologyFallback2D } from './TopologyFallback2D';
 import { TopologyControls } from './TopologyControls';
+import { FallbackDetail } from './FallbackDetail';
 
 /**
  * Map a cluster's 3D position to approximate 2D percentages for the
@@ -83,7 +84,7 @@ export function InfraTopology() {
             {/* Interaction hint -- fades out after first interaction or 5s */}
             {hintVisible && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-altivum-navy/70 backdrop-blur-sm border border-altivum-slate/20 rounded-full px-4 py-2 text-altivum-silver text-sm transition-opacity duration-500 pointer-events-none">
-                Drag to rotate. Scroll to zoom. Click a cluster to explore.
+                Drag to rotate. Click a cluster to explore.
               </div>
             )}
 
@@ -117,6 +118,17 @@ export function InfraTopology() {
               ))}
             </div>
           </div>
+
+          {/* Detail card -- rendered as regular HTML below the canvas so it's never clipped */}
+          {selectedClusterId && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+              <FallbackDetail
+                cluster={clusters.find((c) => c.id === selectedClusterId) ?? null}
+                allClusters={clusters}
+                onClose={() => controlRef.current?.reset()}
+              />
+            </div>
+          )}
 
           {/* Cluster navigation bar */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">

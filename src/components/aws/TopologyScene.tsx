@@ -6,7 +6,6 @@ import * as THREE from 'three';
 import { clusters } from '../../data/infrastructureTopology';
 import { ServiceCluster } from './ServiceCluster';
 import { ClusterEdge } from './ClusterEdge';
-import { ClusterDetail } from './ClusterDetail';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 const DEFAULT_CAMERA_POS = new THREE.Vector3(0, 2, 8);
@@ -241,8 +240,6 @@ function SceneContent({
     if (frameloopMode === 'demand') invalidate();
   }, [frameloopMode, selectedClusterId, invalidate]);
 
-  const selectedCluster = clusters.find((c) => c.id === selectedClusterId) ?? null;
-
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 2, 8]} fov={50} />
@@ -253,9 +250,7 @@ function SceneContent({
         ref={controlsRef}
         autoRotate={autoRotate}
         autoRotateSpeed={0.2}
-        enableZoom
-        minDistance={4}
-        maxDistance={14}
+        enableZoom={false}
         enablePan={false}
       />
 
@@ -280,14 +275,6 @@ function SceneContent({
         />
       ))}
 
-      {/* Detail overlay for selected cluster */}
-      {selectedCluster && (
-        <ClusterDetail
-          cluster={selectedCluster}
-          allClusters={clusters}
-          onClose={handleDeselect}
-        />
-      )}
     </>
   );
 }
