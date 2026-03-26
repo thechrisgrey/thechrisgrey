@@ -141,7 +141,7 @@ function SceneContent({
         onSelectCluster(clusterId);
         setFrameloopMode('demand');
         const target = new THREE.Vector3(...cluster.position);
-        const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.6);
+        const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.25);
         dest.z = Math.max(dest.z, target.z + 2);
         if (reducedMotion) {
           camera.position.set(dest.x, dest.y, dest.z);
@@ -181,7 +181,7 @@ function SceneContent({
 
       // Animate camera toward the selected cluster (60% lerp toward it)
       const target = new THREE.Vector3(...cluster.position);
-      const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.6);
+      const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.25);
       // Keep a minimum distance from the cluster so it remains visible
       dest.z = Math.max(dest.z, target.z + 2);
 
