@@ -96,6 +96,28 @@ function SceneContent({
           });
         }
       },
+      zoomBy: (delta: number) => {
+        // Move camera along its forward direction
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        const dest = camera.position.clone().addScaledVector(direction, delta);
+        // Clamp distance from origin to stay within OrbitControls bounds
+        const dist = dest.length();
+        if (dist < 4 || dist > 14) return;
+        if (reducedMotion) {
+          camera.position.copy(dest);
+          invalidate();
+        } else {
+          gsap.to(camera.position, {
+            x: dest.x,
+            y: dest.y,
+            z: dest.z,
+            duration: 0.4,
+            ease: 'power2.out',
+            onUpdate: () => invalidate(),
+          });
+        }
+      },
       reset: () => {
         onSelectCluster(null);
         setFrameloopMode('always');
@@ -110,6 +132,27 @@ function SceneContent({
             duration: 0.8,
             ease: 'power2.out',
             onUpdate: () => invalidate(),
+          });
+        }
+      },
+      flyTo: (clusterId: string) => {
+        const cluster = clusters.find((c) => c.id === clusterId);
+        if (!cluster) return;
+        onSelectCluster(clusterId);
+        setFrameloopMode('demand');
+        const target = new THREE.Vector3(...cluster.position);
+        const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.6);
+        dest.z = Math.max(dest.z, target.z + 2);
+        if (reducedMotion) {
+          camera.position.set(dest.x, dest.y, dest.z);
+          invalidate();
+        } else {
+          gsap.to(camera.position, {
+            x: dest.x, y: dest.y, z: dest.z,
+            duration: 0.8,
+            ease: 'power2.out',
+            onUpdate: () => invalidate(),
+            onComplete: () => invalidate(),
           });
         }
       },
@@ -210,7 +253,9 @@ function SceneContent({
         ref={controlsRef}
         autoRotate={autoRotate}
         autoRotateSpeed={0.2}
-        enableZoom={false}
+        enableZoom
+        minDistance={4}
+        maxDistance={14}
         enablePan={false}
       />
 
@@ -262,7 +307,9 @@ interface TopologySceneProps {
 
 export interface TopologyControlHandle {
   rotateBy: (angleDeg: number) => void;
+  zoomBy: (delta: number) => void;
   reset: () => void;
+  flyTo: (clusterId: string) => void;
 }
 
 export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect, controlRef }: TopologySceneProps = {}) {

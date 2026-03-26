@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { typography } from '../../utils/typography';
 import { checkWebGLSupport } from '../../utils/checkWebGL';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -30,6 +30,19 @@ export function InfraTopology() {
 
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const controlRef = useRef<TopologyControlHandle | null>(null);
+  const [hintVisible, setHintVisible] = useState(true);
+
+  // Hide hint after first interaction or after 5 seconds
+  useEffect(() => {
+    if (!hintVisible) return;
+    const timer = setTimeout(() => setHintVisible(false), 5000);
+    return () => clearTimeout(timer);
+  }, [hintVisible]);
+
+  const handleSelectCluster = (id: string | null) => {
+    setSelectedClusterId(id);
+    setHintVisible(false);
+  };
 
   const overlayButtons = useMemo(
     () =>
@@ -60,12 +73,19 @@ export function InfraTopology() {
 
       {use3D ? (
         <ErrorBoundary fallback={<TopologyFallback2D />}>
-          <div className="relative">
+          <div className="relative" onPointerDown={() => setHintVisible(false)}>
             <TopologyScene
               selectedClusterId={selectedClusterId}
-              onSelectCluster={setSelectedClusterId}
+              onSelectCluster={handleSelectCluster}
               controlRef={controlRef}
             />
+
+            {/* Interaction hint -- fades out after first interaction or 5s */}
+            {hintVisible && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-altivum-navy/70 backdrop-blur-sm border border-altivum-slate/20 rounded-full px-4 py-2 text-altivum-silver text-sm transition-opacity duration-500 pointer-events-none">
+                Drag to rotate. Scroll to zoom. Click a cluster to explore.
+              </div>
+            )}
 
             {/* Manual controls */}
             <TopologyControls controlRef={controlRef} />
@@ -89,11 +109,38 @@ export function InfraTopology() {
                     transform: 'translate(-50%, -50%)',
                   }}
                   onClick={() =>
-                    setSelectedClusterId((prev) =>
-                      prev === btn.id ? null : btn.id,
+                    handleSelectCluster(
+                      selectedClusterId === btn.id ? null : btn.id,
                     )
                   }
                 />
+              ))}
+            </div>
+          </div>
+
+          {/* Cluster navigation bar */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+            <div className="flex flex-wrap justify-center gap-2">
+              {clusters.map((cluster) => (
+                <button
+                  key={cluster.id}
+                  type="button"
+                  className={`px-4 py-2 text-sm rounded-full border transition-all duration-200 ${
+                    selectedClusterId === cluster.id
+                      ? 'bg-altivum-gold/15 border-altivum-gold/50 text-altivum-gold'
+                      : 'bg-altivum-navy/30 border-altivum-slate/20 text-altivum-silver hover:border-altivum-gold/30 hover:text-altivum-gold'
+                  }`}
+                  onClick={() => {
+                    if (selectedClusterId === cluster.id) {
+                      controlRef.current?.reset();
+                    } else {
+                      controlRef.current?.flyTo(cluster.id);
+                    }
+                  }}
+                >
+                  {cluster.label}
+                  <span className="ml-1.5 text-xs opacity-50">{cluster.services.length}</span>
+                </button>
               ))}
             </div>
           </div>
