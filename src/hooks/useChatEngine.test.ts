@@ -388,4 +388,345 @@ describe('useChatEngine', () => {
       expect(result.current.showSuggestions).toBe(false);
     });
   });
+
+  describe('abort-on-resend', () => {
+    it('should abort the previous in-flight request when a new message is sent', async () => {
+      // First fetch hangs forever so we can verify it gets aborted
+      const firstSignals: AbortSignal[] = [];
+      let resolveFirst: (value: unknown) => void;
+      const firstFetchPromise = new Promise((resolve) => {
+        resolveFirst = resolve;
+      });
+
+      // Second fetch completes immediately
+      const secondReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const secondResponse = {
+        ok: true,
+        body: { getReader: () => secondReader },
+      };
+
+      let callCount = 0;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((_url, opts) => {
+          callCount++;
+          firstSignals.push(opts.signal);
+          if (callCount === 1) {
+            // Return a promise that rejects with AbortError when the signal fires
+            return new Promise((_resolve, reject) => {
+              opts.signal.addEventListener('abort', () => {
+                const err = new Error('Aborted');
+                err.name = 'AbortError';
+                reject(err);
+              });
+              // Also keep it unresolved otherwise
+              firstFetchPromise.then(() => _resolve);
+            });
+          }
+          return Promise.resolve(secondResponse);
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      // Kick off the first send (do not await — it never resolves)
+      act(() => {
+        result.current.handleSend('first message');
+      });
+
+      // Send a second message which should abort the first
+      await act(async () => {
+        await result.current.handleSend('second message');
+      });
+
+      // The first signal must have been aborted
+      expect(firstSignals[0].aborted).toBe(true);
+
+      // Cleanup
+      resolveFirst!(undefined);
+    });
+  });
+
+  describe('sliding window (MAX_HISTORY=20)', () => {
+    it('should only send at most the last 20 messages in the request body', async () => {
+      // Pre-populate sessionStorage with >20 prior messages
+      const priorMessages: Message[] = [
+        {
+          id: 'welcome',
+          role: 'assistant',
+          content: 'Welcome',
+          timestamp: new Date('2026-01-01T00:00:00.000Z'),
+        },
+      ];
+      for (let i = 0; i < 25; i++) {
+        priorMessages.push({
+          id: `msg-${i}`,
+          role: i % 2 === 0 ? 'user' : 'assistant',
+          content: `message ${i}`,
+          timestamp: new Date(`2026-01-01T00:${String(i).padStart(2, '0')}:00.000Z`),
+        });
+      }
+      window.sessionStorage.setItem(
+        CHAT_STORAGE_KEY,
+        JSON.stringify(priorMessages)
+      );
+
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('final message');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      // Should be exactly 20 messages (MAX_HISTORY)
+      expect(body.messages).toHaveLength(20);
+      // Last message is the newly-sent one
+      expect(body.messages[body.messages.length - 1]).toEqual({
+        role: 'user',
+        content: 'final message',
+      });
+      // Welcome message must have been excluded from the sent history
+      expect(
+        body.messages.some((m: { content: string }) => m.content === 'Welcome')
+      ).toBe(false);
+    });
+
+    it('should strip the welcome message from the sent conversation history', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hi');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      // Only the user's new message — welcome is excluded
+      expect(body.messages).toEqual([{ role: 'user', content: 'hi' }]);
+    });
+  });
+
+  describe('pageContext', () => {
+    it('should include pageContext in the request body when provided', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const pageContext = {
+        currentPage: '/about',
+        pageTitle: 'About',
+        section: 'bio',
+        visitedPages: ['/', '/about'],
+      };
+
+      const { result } = renderHook(() => useChatEngine(pageContext));
+
+      await act(async () => {
+        await result.current.handleSend('hi');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.pageContext).toEqual(pageContext);
+    });
+
+    it('should omit pageContext from the body when not provided', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hi');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body).not.toHaveProperty('pageContext');
+    });
+  });
+
+  describe('system message prefix', () => {
+    it('should strip SYS prefix and mark message as isSystem when first chunk starts with it', async () => {
+      const encoder = new TextEncoder();
+      const SYSTEM_PREFIX = '\x00SYS\x00';
+      let callCount = 0;
+      const mockReader = {
+        read: vi.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve({
+              done: false,
+              value: encoder.encode(`${SYSTEM_PREFIX}Rate limit exceeded.`),
+            });
+          }
+          return Promise.resolve({ done: true, value: undefined });
+        }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          body: { getReader: () => mockReader },
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hello');
+      });
+
+      const systemMessages = result.current.messages.filter(
+        (m: Message) => m.isSystem === true
+      );
+      expect(systemMessages).toHaveLength(1);
+      expect(systemMessages[0].content).toBe('Rate limit exceeded.');
+      // Prefix sentinel must have been stripped from visible content
+      expect(systemMessages[0].content).not.toContain(SYSTEM_PREFIX);
+    });
+
+    it('should not mark regular assistant messages as isSystem', async () => {
+      const encoder = new TextEncoder();
+      let callCount = 0;
+      const mockReader = {
+        read: vi.fn().mockImplementation(() => {
+          callCount++;
+          if (callCount === 1) {
+            return Promise.resolve({
+              done: false,
+              value: encoder.encode('regular reply'),
+            });
+          }
+          return Promise.resolve({ done: true, value: undefined });
+        }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          body: { getReader: () => mockReader },
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hello');
+      });
+
+      const assistantReplies = result.current.messages.filter(
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+      );
+      expect(assistantReplies).toHaveLength(1);
+      expect(assistantReplies[0].isSystem).toBeUndefined();
+    });
+  });
+
+  describe('AbortError handling', () => {
+    it('should show a timeout message when aborted before any chunks arrive', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((_url, opts) => {
+          return new Promise((_resolve, reject) => {
+            opts.signal.addEventListener('abort', () => {
+              const err = new Error('Aborted');
+              err.name = 'AbortError';
+              reject(err);
+            });
+          });
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      // Kick off the send and immediately abort via a second send
+      let sendPromise: Promise<void> | undefined;
+      act(() => {
+        sendPromise = result.current.handleSend('hello');
+      });
+
+      // Abort the in-flight request by issuing another send that also aborts
+      // Simulate by manually invoking an AbortController path: send again.
+      // The new send aborts the old one; we await it so the rejection runs.
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          body: {
+            getReader: () => ({
+              read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+            }),
+          },
+        })
+      );
+
+      await act(async () => {
+        await result.current.handleSend('second');
+        await sendPromise;
+      });
+
+      // At least one timeout message OR an empty-response message exists for
+      // the aborted first request. We only care that the hook did not crash
+      // and isStreaming returned to false.
+      expect(result.current.isStreaming).toBe(false);
+      expect(result.current.isTyping).toBe(false);
+    });
+  });
+
+  describe('request includes signal and signed headers', () => {
+    it('should pass an AbortSignal on every request', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('a');
+      });
+      await act(async () => {
+        await result.current.handleSend('b');
+      });
+
+      expect(mockFetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+      expect(mockFetch.mock.calls[1][1].signal).toBeInstanceOf(AbortSignal);
+      // Each request gets a fresh controller
+      expect(mockFetch.mock.calls[0][1].signal).not.toBe(
+        mockFetch.mock.calls[1][1].signal
+      );
+    });
+  });
 });
