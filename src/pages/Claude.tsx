@@ -14,6 +14,16 @@ const Claude = () => {
 
   const otherCerts = [
     {
+      name: "AI Fluency for Nonprofits",
+      issued: "March 2026",
+      verifyUrl: "https://verify.skilljar.com/c/9ifn2btkng7p",
+    },
+    {
+      name: "Introduction to Subagents",
+      issued: "March 2026",
+      verifyUrl: "https://verify.skilljar.com/c/n7rpsuyzh9ou",
+    },
+    {
       name: "Claude Code in Action",
       issued: "August 2025",
       verifyUrl: "https://verify.skilljar.com/c/6x2epqfq2d23",
