@@ -563,6 +563,12 @@ The Contact page (`/contact`) combines contact form with speaking/media informat
 - Script in `index.html` before closing `</body>`
 - Dashboard: Cloudflare → Analytics & Logs → Web Analytics
 
+**Plausible Analytics:**
+- Privacy-friendly (no cookies, no personal data), runs alongside Cloudflare
+- External script from `https://plausible.io/js/pa-bQzxzh5KzDB8jWsj-fPb8.js`
+- Init code extracted to `public/plausible-init.js` to keep strict CSP (no `'unsafe-inline'` for scripts)
+- `plausible.io` allowlisted in `script-src` and `connect-src` in `amplify.yml`
+
 **Web Vitals** (`src/utils/webVitals.ts`):
 - Captures CLS, INP, FCP, LCP, TTFB via `web-vitals` library
 - Dev: logs to console; Prod: sends via `navigator.sendBeacon` to metrics Lambda
@@ -669,7 +675,8 @@ aws lambda update-function-code --function-name thechrisgrey-<function-name> --z
 - `public/press-kit/`: Press materials for event organizers (headshots, bios, logos)
 - `public/press-kit.zip`: Downloadable press kit (linked from Contact page)
 - `amplify.yml`: AWS Amplify build configuration
-- `index.html`: Material Icons CDN, Cloudflare Analytics, favicon, RSS auto-discovery
+- `index.html`: Material Icons CDN, Cloudflare Analytics, Plausible Analytics, favicon, RSS auto-discovery
+- `public/plausible-init.js`: Plausible init snippet (separate file to keep strict CSP)
 
 ## Environment Variables
 
