@@ -19,6 +19,11 @@ const Claude = () => {
       verifyUrl: "https://verify.skilljar.com/c/6zjd4w9o9wut",
     },
     {
+      name: "Claude 101",
+      issued: "March 2026",
+      verifyUrl: "https://verify.skilljar.com/c/3cda366afju7",
+    },
+    {
       name: "AI Fluency for Nonprofits",
       issued: "March 2026",
       verifyUrl: "https://verify.skilljar.com/c/9ifn2btkng7p",
