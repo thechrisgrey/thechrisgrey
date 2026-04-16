@@ -14,6 +14,11 @@ const Claude = () => {
 
   const otherCerts = [
     {
+      name: "Introduction to Claude Cowork",
+      issued: "March 2026",
+      verifyUrl: "https://verify.skilljar.com/c/6zjd4w9o9wut",
+    },
+    {
       name: "AI Fluency for Nonprofits",
       issued: "March 2026",
       verifyUrl: "https://verify.skilljar.com/c/9ifn2btkng7p",
