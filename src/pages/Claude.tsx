@@ -14,6 +14,11 @@ const Claude = () => {
 
   const otherCerts = [
     {
+      name: "Claude Code 101",
+      issued: "April 2026",
+      verifyUrl: "https://verify.skilljar.com/c/okegg2vghmqi",
+    },
+    {
       name: "Claude with the Anthropic API",
       issued: "April 2026",
       verifyUrl: "https://verify.skilljar.com/c/op29b22ona53",
