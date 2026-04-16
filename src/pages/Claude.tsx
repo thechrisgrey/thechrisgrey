@@ -22,11 +22,6 @@ const Claude = () => {
           verifyUrl: "https://verify.skilljar.com/c/op29b22ona53",
         },
         {
-          name: "Claude Code 101",
-          issued: "April 2026",
-          verifyUrl: "https://verify.skilljar.com/c/okegg2vghmqi",
-        },
-        {
           name: "Introduction to Subagents",
           issued: "March 2026",
           verifyUrl: "https://verify.skilljar.com/c/n7rpsuyzh9ou",
@@ -46,6 +41,11 @@ const Claude = () => {
     {
       label: "Claude Foundations",
       certs: [
+        {
+          name: "Claude Code 101",
+          issued: "April 2026",
+          verifyUrl: "https://verify.skilljar.com/c/okegg2vghmqi",
+        },
         {
           name: "Claude 101",
           issued: "March 2026",
