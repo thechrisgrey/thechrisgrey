@@ -200,18 +200,15 @@ describe('Claude Page Integration', () => {
       });
       expect(certHeading).toBeInTheDocument();
 
-      // The issued-date text and Verify anchor sit inside the card wrapper,
-      // alongside the heading. Traverse up to the card container to scope queries.
-      const card = certHeading.closest('div');
-      expect(card).not.toBeNull();
+      // Compact row layout: the entire <li> wraps the title, date, and the
+      // whole-row <a> anchor. Scope all assertions to the row container.
+      const row = certHeading.closest('li');
+      expect(row).not.toBeNull();
 
-      expect(card!.textContent).toContain('Issued April 2026');
+      expect(row!.textContent).toContain('Issued April 2026');
 
-      const verifyLink = Array.from(
-        card!.querySelectorAll('a')
-      ).find((a) => a.textContent?.toLowerCase().includes('verify'));
-
-      expect(verifyLink).toBeDefined();
+      const verifyLink = row!.querySelector('a');
+      expect(verifyLink).not.toBeNull();
       expect(verifyLink).toHaveAttribute(
         'href',
         'https://verify.skilljar.com/c/op29b22ona53'

@@ -12,61 +12,76 @@ const Claude = () => {
     verifyUrl: "https://verify.skilljar.com/c/chryt9ap866c",
   };
 
-  const otherCerts = [
+  const certGroups = [
     {
-      name: "Claude Code 101",
-      issued: "April 2026",
-      verifyUrl: "https://verify.skilljar.com/c/okegg2vghmqi",
+      label: "Building with Claude",
+      certs: [
+        {
+          name: "Claude with the Anthropic API",
+          issued: "April 2026",
+          verifyUrl: "https://verify.skilljar.com/c/op29b22ona53",
+        },
+        {
+          name: "Claude Code 101",
+          issued: "April 2026",
+          verifyUrl: "https://verify.skilljar.com/c/okegg2vghmqi",
+        },
+        {
+          name: "Introduction to Subagents",
+          issued: "March 2026",
+          verifyUrl: "https://verify.skilljar.com/c/n7rpsuyzh9ou",
+        },
+        {
+          name: "Claude Code in Action",
+          issued: "August 2025",
+          verifyUrl: "https://verify.skilljar.com/c/6x2epqfq2d23",
+        },
+        {
+          name: "Introduction to Model Context Protocol",
+          issued: "August 2025",
+          verifyUrl: "https://verify.skilljar.com/c/tpb2c5g4xf8n",
+        },
+      ],
     },
     {
-      name: "Claude with the Anthropic API",
-      issued: "April 2026",
-      verifyUrl: "https://verify.skilljar.com/c/op29b22ona53",
+      label: "Claude Foundations",
+      certs: [
+        {
+          name: "Claude 101",
+          issued: "March 2026",
+          verifyUrl: "https://verify.skilljar.com/c/3cda366afju7",
+        },
+        {
+          name: "Introduction to Claude Cowork",
+          issued: "March 2026",
+          verifyUrl: "https://verify.skilljar.com/c/6zjd4w9o9wut",
+        },
+      ],
     },
     {
-      name: "Introduction to Claude Cowork",
-      issued: "March 2026",
-      verifyUrl: "https://verify.skilljar.com/c/6zjd4w9o9wut",
-    },
-    {
-      name: "Claude 101",
-      issued: "March 2026",
-      verifyUrl: "https://verify.skilljar.com/c/3cda366afju7",
-    },
-    {
-      name: "AI Fluency for Nonprofits",
-      issued: "March 2026",
-      verifyUrl: "https://verify.skilljar.com/c/9ifn2btkng7p",
-    },
-    {
-      name: "Introduction to Subagents",
-      issued: "March 2026",
-      verifyUrl: "https://verify.skilljar.com/c/n7rpsuyzh9ou",
-    },
-    {
-      name: "Claude Code in Action",
-      issued: "August 2025",
-      verifyUrl: "https://verify.skilljar.com/c/6x2epqfq2d23",
-    },
-    {
-      name: "Introduction to Model Context Protocol",
-      issued: "August 2025",
-      verifyUrl: "https://verify.skilljar.com/c/tpb2c5g4xf8n",
-    },
-    {
-      name: "AI Fluency: Framework & Foundations",
-      issued: "August 2025",
-      verifyUrl: "https://verify.skilljar.com/c/migozd8amwfu",
-    },
-    {
-      name: "AI Fluency for Educators",
-      issued: "August 2025",
-      verifyUrl: "https://verify.skilljar.com/c/bo34q6bzx5ip",
-    },
-    {
-      name: "Teaching the AI Fluency Framework",
-      issued: "August 2025",
-      verifyUrl: "https://verify.skilljar.com/c/n526wya3fa69",
+      label: "AI Fluency",
+      certs: [
+        {
+          name: "AI Fluency for Nonprofits",
+          issued: "March 2026",
+          verifyUrl: "https://verify.skilljar.com/c/9ifn2btkng7p",
+        },
+        {
+          name: "AI Fluency: Framework & Foundations",
+          issued: "August 2025",
+          verifyUrl: "https://verify.skilljar.com/c/migozd8amwfu",
+        },
+        {
+          name: "AI Fluency for Educators",
+          issued: "August 2025",
+          verifyUrl: "https://verify.skilljar.com/c/bo34q6bzx5ip",
+        },
+        {
+          name: "Teaching the AI Fluency Framework",
+          issued: "August 2025",
+          verifyUrl: "https://verify.skilljar.com/c/n526wya3fa69",
+        },
+      ],
     },
   ];
 
@@ -317,33 +332,46 @@ const Claude = () => {
             </div>
           </div>
 
-          {/* Other Certifications */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {otherCerts.map((cert) => (
-              <div
-                key={cert.name}
-                className="p-5 rounded-lg border border-altivum-slate/20 hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group"
-              >
-                <h4
-                  className="text-white mb-1 group-hover:text-altivum-gold transition-colors duration-300"
-                  style={typography.cardTitleSmall}
-                >
-                  {cert.name}
-                </h4>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-altivum-silver/50 text-xs">
-                    Issued {cert.issued}
+          {/* Other Certifications — grouped by theme */}
+          <div className="space-y-14">
+            {certGroups.map((group) => (
+              <div key={group.label}>
+                <div className="flex items-center gap-4 mb-3">
+                  <span className="text-altivum-gold/70 text-[11px] uppercase tracking-[0.25em]">
+                    {group.label}
                   </span>
-                  <a
-                    href={cert.verifyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-altivum-gold/50 hover:text-altivum-gold transition-colors duration-200"
-                  >
-                    Verify
-                    <span className="material-icons" style={{ fontSize: '12px' }}>open_in_new</span>
-                  </a>
+                  <div className="flex-1 h-px bg-altivum-slate/15" />
                 </div>
+
+                <ul>
+                  {group.certs.map((cert) => (
+                    <li key={cert.name}>
+                      <a
+                        href={cert.verifyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Verify ${cert.name} certification`}
+                        className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-6 py-3.5 px-4 -mx-4 rounded-md group hover:bg-altivum-gold/[0.04] transition-colors duration-200"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4 min-w-0">
+                          <h4
+                            className="text-white/90 group-hover:text-altivum-gold transition-colors duration-200"
+                            style={typography.cardTitleSmall}
+                          >
+                            {cert.name}
+                          </h4>
+                          <span className="text-altivum-silver/40 text-xs flex-shrink-0">
+                            Issued {cert.issued}
+                          </span>
+                        </div>
+                        <span className="text-altivum-gold/50 group-hover:text-altivum-gold transition-colors duration-200 inline-flex items-center gap-1 text-xs flex-shrink-0">
+                          Verify
+                          <span className="material-icons" style={{ fontSize: '12px' }}>open_in_new</span>
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
