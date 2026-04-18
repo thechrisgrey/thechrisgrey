@@ -273,9 +273,9 @@ const posts = await client.fetch(POSTS_QUERY);
 - On timeout, returns graceful "taking too long" message and records `BedrockTimeout` metric
 
 **Guardrails & Rate Limiting:**
-- **Bedrock Guardrail ID:** `5kofhp46ssob` (version 2)
+- **Bedrock Guardrail ID:** `5kofhp46ssob` (version 5)
   - Content filters: PROMPT_ATTACK (HIGH), HATE, INSULTS, SEXUAL (HIGH), VIOLENCE, MISCONDUCT (MEDIUM)
-  - Denied topics: Programming and code assistance, general knowledge and trivia, creative content generation, other public figures, illegal activities, professional advice
+  - Denied topics: Programming and code assistance, general knowledge and trivia, creative content generation, illegal activities, professional advice
   - Profanity word filter enabled
 - **Rate Limiting:** Atomic DynamoDB-based per-IP tracking (race-condition-free)
   - Table: `thechrisgrey-chat-ratelimit`
