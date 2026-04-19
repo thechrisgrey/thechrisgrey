@@ -13,6 +13,7 @@ import Home from './pages/Home';
 // Lazy-loaded page chunks
 const About = lazy(() => import('./pages/About'));
 const Altivum = lazy(() => import('./pages/Altivum'));
+const Foundation = lazy(() => import('./pages/Foundation'));
 const Podcast = lazy(() => import('./pages/Podcast'));
 const BeyondTheAssessment = lazy(() => import('./pages/BeyondTheAssessment'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -47,6 +48,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/altivum" element={<Altivum />} />
+              <Route path="/foundation" element={<Foundation />} />
               <Route path="/podcast" element={<Podcast />} />
               <Route path="/beyond-the-assessment" element={<BeyondTheAssessment />} />
               <Route

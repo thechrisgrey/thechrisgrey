@@ -31,7 +31,7 @@ const Home = () => {
           const scrollPosition = window.scrollY;
           const windowHeight = window.innerHeight;
           const scrollInterval = isMobileRef.current ? 0.5 : 0.8;
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 5);
+          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 6);
           setScrollProgress(Math.max(-1, progress));
           ticking = false;
         });
@@ -46,11 +46,54 @@ const Home = () => {
   const keyPoints = [
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
     { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
+    { title: "The Altivum Foundation", subtitle: "Founder & President", link: "/foundation" },
     { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
     { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
     { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
     { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" }
   ];
+
+  const renderTab = (point: typeof keyPoints[number], index: number, mirrored = false) => {
+    const hiddenTransform = mirrored
+      ? 'opacity-0 transform -translate-x-10 md:translate-x-10'
+      : 'opacity-0 transform -translate-x-10';
+    const cardClass = mirrored
+      ? 'border-l-4 md:border-l-0 md:border-r-4 border-altivum-gold pl-4 sm:pl-6 md:pl-0 md:pr-6 py-3 sm:py-4 md:text-right transition-all duration-300'
+      : 'border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 transition-all duration-300';
+    const linkHover = mirrored
+      ? 'block cursor-pointer group md:hover:pr-8 active:pl-6 sm:active:pl-8 touch-manipulation'
+      : 'block cursor-pointer group md:hover:pl-8 active:pl-6 sm:active:pl-8 touch-manipulation';
+    return (
+      <div
+        key={index}
+        style={{ willChange: 'opacity, transform' }}
+        className={`pointer-events-auto transition-all duration-700 ${index <= scrollProgress
+          ? 'opacity-100 transform translate-x-0'
+          : hiddenTransform
+          }`}
+      >
+        {point.link ? (
+          <Link to={point.link} className={`${cardClass} ${linkHover}`}>
+            <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
+              {point.title}
+            </h3>
+            <p className="text-altivum-gold italic" style={typography.subtitle}>
+              {point.subtitle}
+            </p>
+          </Link>
+        ) : (
+          <div className={cardClass}>
+            <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
+              {point.title}
+            </h3>
+            <p className="text-altivum-gold italic" style={typography.subtitle}>
+              {point.subtitle}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen">
@@ -89,7 +132,7 @@ const Home = () => {
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
-      <section className="relative h-[575vh] md:h-[680vh]">
+      <section className="relative h-[625vh] md:h-[760vh]">
         <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img
@@ -101,41 +144,16 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
           </div>
 
-          {/* Left-side Summary Tabs */}
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 px-4 sm:px-6 lg:px-12 space-y-4 sm:space-y-6 md:space-y-8 w-full max-w-xl md:max-w-none">
-            {keyPoints.map((point, index) => (
-              <div
-                key={index}
-                style={{ willChange: 'opacity, transform' }}
-                className={`transition-all duration-700 ${index <= scrollProgress
-                  ? 'opacity-100 transform translate-x-0'
-                  : 'opacity-0 transform -translate-x-10'
-                  }`}
-              >
-                {point.link ? (
-                  <Link
-                    to={point.link}
-                    className="block border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 md:hover:pl-8 transition-all duration-300 cursor-pointer group active:pl-6 sm:active:pl-8 touch-manipulation"
-                  >
-                    <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
-                      {point.title}
-                    </h3>
-                    <p className="text-altivum-gold italic" style={typography.subtitle}>
-                      {point.subtitle}
-                    </p>
-                  </Link>
-                ) : (
-                  <div className="border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4">
-                    <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
-                      {point.title}
-                    </h3>
-                    <p className="text-altivum-gold italic" style={typography.subtitle}>
-                      {point.subtitle}
-                    </p>
-                  </div>
-                )}
+          {/* Summary Tabs — 4 on left, 3 on right (desktop); stacked (mobile) */}
+          <div className="absolute inset-0 flex items-center pointer-events-none">
+            <div className="w-full max-w-xl md:max-w-none px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-16">
+              <div className="space-y-3 sm:space-y-4 md:space-y-5">
+                {keyPoints.slice(0, 4).map((point, i) => renderTab(point, i))}
               </div>
-            ))}
+              <div className="space-y-3 sm:space-y-4 md:space-y-5 mt-3 sm:mt-4 md:mt-0">
+                {keyPoints.slice(4).map((point, i) => renderTab(point, i + 4, true))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

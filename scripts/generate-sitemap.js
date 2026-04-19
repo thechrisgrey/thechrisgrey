@@ -25,6 +25,7 @@ const staticPages = [
   { url: '/', priority: '1.0', changefreq: 'weekly' },
   { url: '/about', priority: '0.8', changefreq: 'monthly' },
   { url: '/altivum', priority: '0.9', changefreq: 'weekly' },
+  { url: '/foundation', priority: '0.9', changefreq: 'weekly' },
   { url: '/podcast', priority: '0.8', changefreq: 'weekly' },
   { url: '/blog', priority: '0.8', changefreq: 'weekly' },
   { url: '/contact', priority: '0.7', changefreq: 'monthly' },

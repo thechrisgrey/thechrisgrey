@@ -93,7 +93,7 @@ describe('Navigation Integration', () => {
       });
     });
 
-    it('shows all 6 sub-items in the dropdown', async () => {
+    it('shows all 7 sub-items in the dropdown', async () => {
       const user = userEvent.setup();
       renderNavigation();
 
@@ -101,12 +101,13 @@ describe('Navigation Integration', () => {
 
       await waitFor(() => {
         const menuItems = screen.getAllByRole('menuitem');
-        expect(menuItems).toHaveLength(6);
+        expect(menuItems).toHaveLength(7);
       });
 
       // Check the labels
       expect(screen.getByRole('menuitem', { name: 'Personal Biography' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Altivum Inc' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'The Altivum Foundation' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'The Vector Podcast' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Beyond the Assessment' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Amazon Web Services' })).toBeInTheDocument();
@@ -128,6 +129,9 @@ describe('Navigation Integration', () => {
           'href',
           '/altivum'
         );
+        expect(
+          screen.getByRole('menuitem', { name: 'The Altivum Foundation' })
+        ).toHaveAttribute('href', '/foundation');
         expect(screen.getByRole('menuitem', { name: 'The Vector Podcast' })).toHaveAttribute(
           'href',
           '/podcast'
