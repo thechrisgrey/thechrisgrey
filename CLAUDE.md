@@ -323,9 +323,11 @@ const posts = await client.fetch(POSTS_QUERY);
 ```bash
 cd lambda/chat-stream
 npm install
-zip -r function.zip index.mjs package.json node_modules
+zip -r function.zip index.mjs hmac.mjs validation.mjs prompts.mjs metrics.mjs kbRetrieve.mjs package.json node_modules
 aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-file fileb://function.zip --region us-east-1
 ```
+
+See `lambda/chat-stream/README.md` for the module layout and unit-test commands (`npm run test:lambda`).
 
 **Updating Knowledge Base Content:**
 
