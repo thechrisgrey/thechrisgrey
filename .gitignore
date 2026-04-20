@@ -55,3 +55,12 @@ lambda/metrics/function.zip
 
 # Reference materials (not deployed)
 Anthropic Academy/
+
+# Uncompressed 3D model — only public/alti.glb is shipped
+/alti.glb
+
+# Workshop/reference PDFs at repo root — keep public/**/*.pdf trackable
+/*.pdf
+
+# Coverage reports
+coverage/

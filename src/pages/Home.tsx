@@ -12,15 +12,25 @@ import SocialIcon from '../components/SocialIcon';
 const Home = () => {
   const [scrollProgress, setScrollProgress] = useState(-1);
   const isMobileRef = useRef(window.innerWidth < 768);
-  const [, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      isMobileRef.current = window.innerWidth < 768;
-      setIsMobile(isMobileRef.current);
+    let ticking = false;
+    const handleResize = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const next = window.innerWidth < 768;
+        if (next !== isMobileRef.current) {
+          isMobileRef.current = next;
+          // Breakpoint crossed — force a single re-render so the animation
+          // thresholds reflect the new interval before the next scroll tick.
+          setScrollProgress((p) => p);
+        }
+        ticking = false;
+      });
     };
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
