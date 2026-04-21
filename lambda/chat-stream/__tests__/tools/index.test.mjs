@@ -17,14 +17,15 @@ test("buildTools returns three tools by default (no sanity, no memory)", () => {
   assert.deepEqual(names, ["draft_message", "draft_newsletter_subscription", "navigate_to"]);
 });
 
-test("buildTools includes cite_blog_passage when sanityClient provided", () => {
+test("buildTools includes cite_blog_passage and search_blog when sanityClient provided", () => {
   const tools = buildTools({
     responseStream: fakeStream(),
     metrics: fakeMetrics(),
     sanityClient: fakeSanity(),
   });
-  assert.equal(tools.length, 4);
+  assert.equal(tools.length, 5);
   assert.ok(tools.some((t) => t.name === "cite_blog_passage"));
+  assert.ok(tools.some((t) => t.name === "search_blog"));
 });
 
 test("buildTools includes remember_fact when docClient + deviceId provided", () => {
@@ -51,7 +52,7 @@ test("buildTools omits remember_fact when deviceId is missing", () => {
   assert.ok(!tools.some((t) => t.name === "remember_fact"));
 });
 
-test("buildTools returns all five tools when every dep present", () => {
+test("buildTools returns all six tools when every dep present", () => {
   const tools = buildTools({
     responseStream: fakeStream(),
     metrics: fakeMetrics(),
@@ -60,7 +61,7 @@ test("buildTools returns all five tools when every dep present", () => {
     PutCommand,
     deviceId: "device-1",
   });
-  assert.equal(tools.length, 5);
+  assert.equal(tools.length, 6);
   const names = tools.map((t) => t.name).sort();
   assert.deepEqual(names, [
     "cite_blog_passage",
@@ -68,5 +69,6 @@ test("buildTools returns all five tools when every dep present", () => {
     "draft_newsletter_subscription",
     "navigate_to",
     "remember_fact",
+    "search_blog",
   ]);
 });

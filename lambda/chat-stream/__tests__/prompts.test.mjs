@@ -69,6 +69,7 @@ test("BASE_SYSTEM_PROMPT includes tool etiquette for each tool", () => {
   assert.match(BASE_SYSTEM_PROMPT, /navigate_to/);
   assert.match(BASE_SYSTEM_PROMPT, /draft_message/);
   assert.match(BASE_SYSTEM_PROMPT, /draft_newsletter_subscription/);
+  assert.match(BASE_SYSTEM_PROMPT, /search_blog/);
   assert.match(BASE_SYSTEM_PROMPT, /cite_blog_passage/);
   assert.match(BASE_SYSTEM_PROMPT, /remember_fact/);
 });

@@ -261,11 +261,12 @@ const posts = await client.fetch(POSTS_QUERY);
 **Module Layout:**
 - `index.mjs` — handler: validates HMAC + input, routes `/forget`, retrieves KB context, builds tools + agent, streams response
 - `agent.mjs` — factory functions for `BedrockModel`, Strands `Agent`, the guardrail config, and `streamAgentResponse(agent, messages, stream, signal, events)`
-- `tools/` — five Strands tools, each a small factory exporting a Zod-typed tool definition:
+- `tools/` — six Strands tools, each a small factory exporting a Zod-typed tool definition:
   - `navigate.mjs` — `navigate_to` (whitelisted paths + `/blog/<slug>` regex); emits a `draft_action{action:"navigate"}` event
   - `draftMessage.mjs` — `draft_message` (intents: speaking, podcast, consulting, collaboration, media, general); NEVER fabricates visitor identity
   - `draftNewsletter.mjs` — `draft_newsletter_subscription`; emits newsletter draft_action
-  - `citePassage.mjs` — `cite_blog_passage` (GROQ lookup on Sanity, returns URL + excerpt); omitted if no Sanity client configured
+  - `citePassage.mjs` — `cite_blog_passage` (GROQ lookup on Sanity by exact slug, returns URL + excerpt); omitted if no Sanity client configured
+  - `searchBlog.mjs` — `search_blog` (GROQ `match` + `score()` over title/excerpt/body/tags; emits `draft_action{action:"blog_search_results"}` with up to 5 posts); omitted if no Sanity client configured
   - `rememberFact.mjs` — `remember_fact` (DynamoDB write keyed by deviceHash); omitted if no deviceId is provided
   - `index.mjs` — `buildTools({ responseStream, sanityClient, docClient, deviceId })` returns the set of tools applicable to this request
 - `events.mjs` — writes framed event chunks to the response stream: `\x00EVT\x00{json}\x00EVT\x00` for `tool_invocation`, `tool_result`, `draft_action`, `memory_update`, `guardrail_intervention`; plain text streams raw
@@ -335,11 +336,12 @@ const posts = await client.fetch(POSTS_QUERY);
 - `Message` interface now carries optional `drafts: DraftAction[]`, `toolActivity: { tool, status }[]`, and `memoryEvents: MemoryEventRecord[]` so messages can render inline tool feedback without extra plumbing
 
 **Agentic UI:**
-- `src/components/chat/ToolDraftCard.tsx` — dismissible gold-bordered card with four variants:
+- `src/components/chat/ToolDraftCard.tsx` — dismissible gold-bordered card with five variants:
   - `navigate` → "Take me there" button invokes `useNavigate()` to the whitelisted path
   - `contact` → "Review & send" builds `/contact?subject=...&message=...&intent=...` via `URLSearchParams` so the form pre-fills
   - `newsletter` → links to `/contact#newsletter`
   - `citation` → links to `/blog/{slug}` with the excerpt preview
+  - `blog_search_results` → stacked list of up to 5 matches with per-post "Read this post" buttons and one "Dismiss all"
 - `ChatMessage.tsx` renders a pulsing hourglass + tool-friendly label while a tool is in flight (`toolActivity`), a compact "Saved" badge for each entry in `memoryEvents`, and a stack of `<ToolDraftCard>`s for any `drafts`
 - Chat page header adds a "Forget me" button (delete_sweep icon) next to "Clear" that confirms, calls `handleForgetMemory()`, and reports success/failure via `window.alert`
 
