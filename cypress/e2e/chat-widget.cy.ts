@@ -19,7 +19,7 @@ describe('Chat Widget', () => {
   it('should open the chat panel when clicking the FAB', () => {
     cy.get('button[aria-label="Open chat"]').click();
 
-    cy.get('[role="dialog"][aria-label="AI Chat"]').should('be.visible');
+    cy.get('[role="dialog"][aria-label="Alti - Altivum\'s AI Agent"]').should('be.visible');
   });
 
   it('should update the FAB aria attributes when open', () => {
@@ -34,15 +34,15 @@ describe('Chat Widget', () => {
     cy.get('button[aria-label="Open chat"]').click();
 
     cy.get('[role="dialog"]').within(() => {
-      cy.contains("I'm Christian's Personal AI Assistant").should('be.visible');
+      cy.contains("Altivum's official AI Agent").should('be.visible');
     });
   });
 
-  it('should display the header with AI Chat label and status dot', () => {
+  it('should display the header with the Alti label and status dot', () => {
     cy.get('button[aria-label="Open chat"]').click();
 
     cy.get('[role="dialog"]').within(() => {
-      cy.contains('AI Chat').should('be.visible');
+      cy.contains('Alti').should('be.visible');
     });
   });
 
