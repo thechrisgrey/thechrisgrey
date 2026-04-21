@@ -109,6 +109,9 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
                 content={message.content}
                 isStreaming={message.id === streamingMessageId}
                 isSystem={message.isSystem}
+                drafts={message.drafts}
+                toolActivity={message.toolActivity}
+                memoryEvent={message.memoryEvent}
               />
             ))}
             {isTyping && <TypingIndicator />}
