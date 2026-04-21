@@ -1,14 +1,17 @@
 import {
-  BedrockRuntimeClient,
-  ConverseStreamCommand,
-} from "@aws-sdk/client-bedrock-runtime";
-import {
   BedrockAgentRuntimeClient,
   RetrieveCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  BatchWriteCommand,
+  PutCommand,
+  QueryCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
+import { createClient as createSanityClient } from "@sanity/client";
 import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 
@@ -17,12 +20,27 @@ import { validateInput, validatePageContext, getLatestUserMessage } from "./vali
 import { buildSystemPrompt } from "./prompts.mjs";
 import { MetricsCollector } from "./metrics.mjs";
 import { retrieveContext } from "./kbRetrieve.mjs";
+import { buildBedrockModel, buildAgent, streamAgentResponse } from "./agent.mjs";
+import { buildTools } from "./tools/index.mjs";
+import { getFacts, forgetDevice } from "./memory.mjs";
+import { emitEvent, EVENT_KINDS } from "./events.mjs";
 
-const bedrockClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const cloudwatchClient = new CloudWatchClient({ region: "us-east-1" });
+
+const sanityProjectId = process.env.SANITY_PROJECT_ID || "k5950b3w";
+const sanityDataset = process.env.SANITY_DATASET || "production";
+const sanityClient = sanityProjectId
+  ? createSanityClient({
+      projectId: sanityProjectId,
+      dataset: sanityDataset,
+      apiVersion: process.env.SANITY_API_VERSION || "2024-01-01",
+      useCdn: true,
+      timeout: 4000,
+    })
+  : null;
 
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
@@ -31,6 +49,7 @@ const GUARDRAIL_VERSION = "5";
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
 const BEDROCK_MAX_MESSAGES = 20;
+const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
 
 if (!SIGNING_KEY) {
   console.warn(JSON.stringify({
@@ -42,6 +61,64 @@ if (!SIGNING_KEY) {
 function writeSystemMessage(responseStream, message) {
   responseStream.write(SYSTEM_MESSAGE_PREFIX + message);
   responseStream.end();
+}
+
+function validateDeviceId(raw) {
+  if (typeof raw !== "string") return null;
+  if (!DEVICE_ID_PATTERN.test(raw)) return null;
+  return raw;
+}
+
+function toStrandsMessages(messages) {
+  const truncated = messages.length > BEDROCK_MAX_MESSAGES
+    ? messages.slice(messages.length - BEDROCK_MAX_MESSAGES)
+    : messages;
+  const windowed = truncated[0]?.role === "assistant"
+    ? truncated.slice(1)
+    : truncated;
+
+  if (windowed.length === 0) return { history: [], latest: null };
+
+  const latest = windowed[windowed.length - 1];
+  if (latest.role !== "user") return { history: [], latest: null };
+
+  const historyRaw = windowed.slice(0, -1);
+  const history = historyRaw.map((msg) => ({
+    role: msg.role,
+    content: [{ text: msg.content }],
+  }));
+
+  return { history, latest: latest.content };
+}
+
+async function handleForget(event, responseStream, requestId, metrics) {
+  try {
+    const body = JSON.parse(event.body || "{}");
+    const deviceId = validateDeviceId(body.deviceId);
+    if (!deviceId) {
+      metrics.record("ForgetRejection_InvalidDevice");
+      writeSystemMessage(responseStream, "Invalid request.");
+      await metrics.flush();
+      return;
+    }
+    const { deleted } = await forgetDevice(docClient, QueryCommand, BatchWriteCommand, deviceId);
+    metrics.record("MemoryForget");
+    metrics.record("MemoryForgetDeleted", deleted);
+    console.log(JSON.stringify({ requestId, event: "memory_forget", deleted }));
+    responseStream.write(JSON.stringify({ ok: true, deleted }));
+    responseStream.end();
+    await metrics.flush();
+  } catch (error) {
+    console.error(JSON.stringify({
+      requestId,
+      event: "forget_error",
+      error: error.name,
+      message: error.message,
+    }));
+    metrics.record("ForgetFailure");
+    writeSystemMessage(responseStream, "Unable to clear memory right now.");
+    await metrics.flush();
+  }
 }
 
 export const handler = awslambda.streamifyResponse(
@@ -62,6 +139,12 @@ export const handler = awslambda.streamifyResponse(
       console.log(JSON.stringify({ requestId, event: "signature_rejected", reason: sigResult.error }));
       writeSystemMessage(responseStream, "Unable to process request.");
       await metrics.flush();
+      return;
+    }
+
+    const rawPath = event.rawPath || event.requestContext?.http?.path || "/";
+    if (rawPath.endsWith("/forget")) {
+      await handleForget(event, responseStream, requestId, metrics);
       return;
     }
 
@@ -99,6 +182,7 @@ export const handler = awslambda.streamifyResponse(
       }
       const messages = body.messages || [];
       const pageContext = validatePageContext(body.pageContext);
+      const deviceId = validateDeviceId(body.deviceId);
 
       const validation = validateInput(messages);
       if (!validation.valid) {
@@ -107,7 +191,34 @@ export const handler = awslambda.streamifyResponse(
         return;
       }
 
-      const latestQuery = getLatestUserMessage(messages);
+      const { history, latest } = toStrandsMessages(messages);
+      if (!latest) {
+        metrics.record("InvalidLatestMessage");
+        writeSystemMessage(responseStream, "Please send a message to start our conversation.");
+        await metrics.flush();
+        return;
+      }
+
+      const latestQuery = getLatestUserMessage(messages) || latest;
+
+      let facts = [];
+      if (deviceId) {
+        const memStart = Date.now();
+        try {
+          facts = await getFacts(docClient, QueryCommand, deviceId);
+          metrics.record("MemoryLoadLatency", Date.now() - memStart, "Milliseconds");
+          metrics.record("MemoryFactsLoaded", facts.length);
+        } catch (err) {
+          metrics.record("MemoryLoadFailure");
+          console.error(JSON.stringify({
+            requestId,
+            event: "memory_load_failure",
+            error: err.name,
+            message: err.message,
+          }));
+          facts = [];
+        }
+      }
 
       let retrievedContext = null;
       if (latestQuery) {
@@ -123,78 +234,104 @@ export const handler = awslambda.streamifyResponse(
         });
       }
 
-      const systemPrompt = buildSystemPrompt(retrievedContext, pageContext);
+      const systemPrompt = buildSystemPrompt(retrievedContext, pageContext, facts);
 
-      const truncated = messages.length > BEDROCK_MAX_MESSAGES
-        ? messages.slice(messages.length - BEDROCK_MAX_MESSAGES)
-        : messages;
-      const windowMessages = truncated[0]?.role === "assistant"
-        ? truncated.slice(1)
-        : truncated;
+      const tools = buildTools({
+        responseStream,
+        metrics,
+        sanityClient,
+        docClient,
+        PutCommand,
+        deviceId,
+        requestId,
+      });
 
-      const bedrockMessages = windowMessages.map((msg) => ({
-        role: msg.role,
-        content: [{ text: msg.content }],
-      }));
-
-      const command = new ConverseStreamCommand({
+      const model = buildBedrockModel({
         modelId: MODEL_ID,
-        messages: bedrockMessages,
-        system: [{ text: systemPrompt }],
-        inferenceConfig: {
-          maxTokens: 350,
-          temperature: 0.6,
-        },
-        guardrailConfig: {
-          guardrailIdentifier: GUARDRAIL_ID,
-          guardrailVersion: GUARDRAIL_VERSION,
-          streamProcessingMode: "async",
-        },
+        region: "us-east-1",
+        guardrailId: GUARDRAIL_ID,
+        guardrailVersion: GUARDRAIL_VERSION,
+        maxTokens: 500,
+        temperature: 0.6,
       });
 
-      const bedrockStart = Date.now();
-      const bedrockAbort = new AbortController();
-      const bedrockTimeout = setTimeout(() => bedrockAbort.abort(), 10_000);
-      const response = await bedrockClient.send(command, {
-        abortSignal: bedrockAbort.signal,
+      const agent = buildAgent({
+        model,
+        tools,
+        systemPrompt,
+        messages: history,
+        name: "Alti",
       });
 
-      for await (const streamEvent of response.stream) {
-        if (streamEvent.contentBlockDelta) {
-          const text = streamEvent.contentBlockDelta.delta?.text;
-          if (text) {
-            responseStream.write(text);
-          }
-        }
+      const agentStart = Date.now();
+      const agentAbort = new AbortController();
+      const agentTimeout = setTimeout(() => agentAbort.abort(), 25_000);
 
-        if (streamEvent.metadata?.trace?.guardrail?.action === "INTERVENED") {
-          console.log(JSON.stringify({ requestId, event: "guardrail_intervened_stream" }));
-          metrics.record("GuardrailInterventionStream");
-          writeSystemMessage(responseStream, "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?");
+      let result;
+      try {
+        result = await streamAgentResponse({
+          agent,
+          userMessage: latest,
+          responseStream,
+          cancelSignal: agentAbort.signal,
+          metrics,
+        });
+      } finally {
+        clearTimeout(agentTimeout);
+      }
+
+      metrics.record("AgentInvocationLatency", Date.now() - agentStart, "Milliseconds");
+
+      if (result.usage) {
+        if (result.usage.inputTokens != null) metrics.record("BedrockInputTokens", result.usage.inputTokens);
+        if (result.usage.outputTokens != null) metrics.record("BedrockOutputTokens", result.usage.outputTokens);
+        console.log(JSON.stringify({
+          requestId,
+          event: "token_usage",
+          inputTokens: result.usage.inputTokens,
+          outputTokens: result.usage.outputTokens,
+        }));
+      }
+
+      if (result.guardrailIntervened) {
+        metrics.record("GuardrailInterventionStream");
+        console.log(JSON.stringify({ requestId, event: "guardrail_intervened" }));
+        if (!result.hadText) {
+          writeSystemMessage(
+            responseStream,
+            "I'm here to help you learn about Christian Perez and his work. I'm not able to help with that particular request. Is there something about his background or career I can help you with?",
+          );
           await metrics.flush();
           return;
         }
-
-        if (streamEvent.metadata?.usage) {
-          const { inputTokens, outputTokens } = streamEvent.metadata.usage;
-          if (inputTokens != null) metrics.record("BedrockInputTokens", inputTokens);
-          if (outputTokens != null) metrics.record("BedrockOutputTokens", outputTokens);
-          console.log(JSON.stringify({ requestId, event: "token_usage", inputTokens, outputTokens }));
-        }
       }
 
-      clearTimeout(bedrockTimeout);
-      metrics.record("BedrockInvocationLatency", Date.now() - bedrockStart, "Milliseconds");
+      if (!result.hadText) {
+        emitEvent(responseStream, {
+          kind: EVENT_KINDS.GUARDRAIL,
+          reason: "empty_response",
+          stopReason: result.stopReason || "unknown",
+        });
+        writeSystemMessage(responseStream, "I couldn't put together a response just now. Mind rephrasing?");
+        await metrics.flush();
+        return;
+      }
+
       metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
       console.log(JSON.stringify({ requestId, event: "request_complete", totalMs: Date.now() - requestStart }));
 
       responseStream.end();
       await metrics.flush();
     } catch (error) {
-      console.error(JSON.stringify({ requestId, event: "request_error", error: error.name, message: error.message }));
+      console.error(JSON.stringify({
+        requestId,
+        event: "request_error",
+        error: error.name,
+        message: error.message,
+      }));
 
       if (error.name === "AbortError") {
-        metrics.record("BedrockTimeout");
+        metrics.record("AgentTimeout");
         writeSystemMessage(responseStream, "The response is taking too long. Please try again.");
         await metrics.flush();
         return;
@@ -221,5 +358,5 @@ export const handler = awslambda.streamifyResponse(
       writeSystemMessage(responseStream, "I encountered an error processing your request. Please try again.");
       await metrics.flush();
     }
-  }
+  },
 );
