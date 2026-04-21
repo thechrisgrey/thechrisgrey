@@ -1,38 +1,12 @@
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
+import {
+  BLOG_SEARCH_QUERY,
+  SITE_ORIGIN,
+  normalizeQuery,
+  isMeaningful,
+} from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
-
-const SEARCH_QUERY = `*[_type == "post" && defined(slug.current) && (
-  title match $q ||
-  excerpt match $q ||
-  pt::text(body) match $q ||
-  count(tags[@ match $q]) > 0
-)] | score(
-  title match $q,
-  excerpt match $q,
-  pt::text(body) match $q
-) | order(_score desc)[0...$limit]{
-  title,
-  "slug": slug.current,
-  excerpt,
-  publishedAt
-}`;
-
-const SITE_ORIGIN = "https://thechrisgrey.com";
-
-const STOP_ONLY = new Set([
-  "the", "a", "an", "and", "or", "for", "to", "of", "in", "on", "at",
-  "is", "it", "be", "by", "as", "but", "if", "so", "do", "did", "was",
-]);
-
-function normalizeQuery(raw) {
-  return raw.trim().replace(/\s+/g, " ");
-}
-
-function isMeaningful(query) {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  return words.some((w) => !STOP_ONLY.has(w));
-}
 
 export function buildSearchBlogTool({ sanityClient, responseStream, metrics, requestId }) {
   return tool({
@@ -65,7 +39,7 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
 
       const startedAt = Date.now();
       try {
-        const results = await sanityClient.fetch(SEARCH_QUERY, {
+        const results = await sanityClient.fetch(BLOG_SEARCH_QUERY, {
           q: normalized,
           limit,
         });
