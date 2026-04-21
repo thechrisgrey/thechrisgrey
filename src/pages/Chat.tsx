@@ -21,18 +21,30 @@ const ChatContent = () => {
     handleSend,
     handleClearConversation,
     handleSuggestionSelect,
+    handleForgetMemory,
   } = useChatEngine(pageContext);
+
+  const onForget = async () => {
+    const confirmed = window.confirm('Forget everything you told Alti? This deletes your saved facts and cannot be undone.');
+    if (!confirmed) return;
+    const result = await handleForgetMemory();
+    if (result.ok) {
+      window.alert(`Cleared. ${result.deleted ?? 0} saved item(s) removed.`);
+    } else {
+      window.alert(`Unable to clear right now: ${result.error || 'Unknown error.'}`);
+    }
+  };
 
   return (
     <div className="h-screen pt-20 flex flex-col bg-altivum-dark overflow-hidden">
       <SEO
-        title="AI Chat"
-        description="Have a conversation with an AI assistant trained on Christian Perez's background, work, and expertise. Learn about his journey from Green Beret to tech CEO."
-        keywords="AI chat, Christian Perez, conversation, Altivum, veteran entrepreneur"
+        title="Alti - Altivum's AI Agent"
+        description="Meet Alti, Altivum's AI agent. Have a conversation about Christian Perez's journey from Green Beret to tech founder, Altivum Inc, The Vector Podcast, and more."
+        keywords="Alti, AI agent, Christian Perez, conversation, Altivum, veteran entrepreneur"
         url="https://thechrisgrey.com/chat"
         breadcrumbs={[
           { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "AI Chat", url: "https://thechrisgrey.com/chat" }
+          { name: "Alti", url: "https://thechrisgrey.com/chat" }
         ]}
       />
 
@@ -41,22 +53,32 @@ const ChatContent = () => {
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-start justify-between">
           <div>
             <h1 className="text-white mb-2" style={typography.cardTitleLarge}>
-              AI Chat
+              Alti<sup className="text-xs">TM</sup>
             </h1>
             <p className="text-altivum-silver" style={typography.smallText}>
-              Ask me anything about Christian's background, Altivum, the podcast, or his book.
+              Ask me anything about Christian, Altivum, the podcast, or his book.
             </p>
           </div>
-          {hasUserMessages && (
+          <div className="flex items-center gap-2">
+            {hasUserMessages && (
+              <button
+                onClick={handleClearConversation}
+                className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
+                aria-label="Clear conversation"
+              >
+                <span className="material-icons text-base">refresh</span>
+                <span className="hidden sm:inline">Clear</span>
+              </button>
+            )}
             <button
-              onClick={handleClearConversation}
+              onClick={onForget}
               className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
-              aria-label="Clear conversation"
+              aria-label="Forget what I told Alti"
             >
-              <span className="material-icons text-base">refresh</span>
-              <span className="hidden sm:inline">Clear</span>
+              <span className="material-icons text-base">delete_sweep</span>
+              <span className="hidden sm:inline">Forget me</span>
             </button>
-          )}
+          </div>
         </div>
       </div>
 
@@ -79,6 +101,9 @@ const ChatContent = () => {
                 content={message.content}
                 isStreaming={message.id === streamingMessageId}
                 isSystem={message.isSystem}
+                drafts={message.drafts}
+                toolActivity={message.toolActivity}
+                memoryEvents={message.memoryEvents}
               />
             ))}
             {isTyping && <TypingIndicator />}

@@ -1,0 +1,209 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  buildBedrockModel,
+  buildAgent,
+  streamAgentResponse,
+  DEFAULT_WINDOW_SIZE,
+  DEFAULT_MAX_TOKENS,
+  DEFAULT_TEMPERATURE,
+  DEFAULT_REGION,
+} from "../agent.mjs";
+import { EVENT_DELIM } from "../events.mjs";
+
+function fakeStream() {
+  const chunks = [];
+  return { chunks, write: (s) => chunks.push(s) };
+}
+
+function fakeMetrics() {
+  const records = [];
+  return { records, record: (n) => records.push(n) };
+}
+
+function eventChunks(stream) {
+  return stream.chunks.filter((c) => c.startsWith(EVENT_DELIM));
+}
+
+function textChunks(stream) {
+  return stream.chunks.filter((c) => !c.startsWith(EVENT_DELIM));
+}
+
+function makeAgent(events, finalResult) {
+  return {
+    stream: () => {
+      let i = 0;
+      return {
+        next: async () => {
+          if (i >= events.length) {
+            return { done: true, value: finalResult };
+          }
+          return { done: false, value: events[i++] };
+        },
+      };
+    },
+  };
+}
+
+test("buildBedrockModel throws when modelId missing", () => {
+  assert.throws(() => buildBedrockModel({}), /modelId is required/);
+});
+
+test("buildBedrockModel constructs with guardrail config", () => {
+  const model = buildBedrockModel({
+    modelId: "anthropic.claude-haiku",
+    guardrailId: "gr-1",
+    guardrailVersion: "5",
+  });
+  assert.ok(model);
+  const cfg = model.getConfig();
+  assert.equal(cfg.modelId, "anthropic.claude-haiku");
+  assert.equal(cfg.stream, true);
+  assert.equal(cfg.guardrailConfig.guardrailIdentifier, "gr-1");
+  assert.equal(cfg.guardrailConfig.guardrailVersion, "5");
+  assert.equal(cfg.guardrailConfig.streamProcessingMode, "async");
+});
+
+test("buildBedrockModel omits guardrailConfig when ids absent", () => {
+  const model = buildBedrockModel({ modelId: "m" });
+  const cfg = model.getConfig();
+  assert.equal(cfg.guardrailConfig, undefined);
+});
+
+test("buildBedrockModel defaults are exposed", () => {
+  assert.equal(DEFAULT_REGION, "us-east-1");
+  assert.equal(DEFAULT_MAX_TOKENS, 500);
+  assert.equal(DEFAULT_TEMPERATURE, 0.6);
+  assert.equal(DEFAULT_WINDOW_SIZE, 40);
+});
+
+test("buildAgent throws when model missing", () => {
+  assert.throws(() => buildAgent({}), /model is required/);
+});
+
+test("buildAgent builds Strands agent with tools and system prompt", () => {
+  const model = buildBedrockModel({ modelId: "m" });
+  const agent = buildAgent({
+    model,
+    tools: [],
+    systemPrompt: "Be Alti.",
+    messages: [],
+    name: "Alti",
+  });
+  assert.equal(agent.name, "Alti");
+  assert.ok(Array.isArray(agent.messages));
+});
+
+test("streamAgentResponse writes text deltas to responseStream", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "Hello " } },
+      },
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "world." } },
+      },
+    ],
+    { stopReason: "end_turn", metrics: { accumulatedUsage: { inputTokens: 10, outputTokens: 3 } } },
+  );
+  const stream = fakeStream();
+  const metrics = fakeMetrics();
+  const res = await streamAgentResponse({
+    agent,
+    userMessage: "hi",
+    responseStream: stream,
+    metrics,
+  });
+  assert.equal(res.hadText, true);
+  assert.equal(res.stopReason, "end_turn");
+  assert.deepEqual(res.usage, { inputTokens: 10, outputTokens: 3 });
+  assert.equal(textChunks(stream).join(""), "Hello world.");
+  assert.equal(eventChunks(stream).length, 0);
+});
+
+test("streamAgentResponse emits tool_invocation before tool call", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "beforeToolCallEvent",
+        toolUse: { name: "navigate_to", toolUseId: "t1", input: { path: "/about" } },
+      },
+      {
+        type: "afterToolCallEvent",
+        toolUse: { name: "navigate_to", toolUseId: "t1" },
+        result: { status: "success" },
+      },
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "Done." } },
+      },
+    ],
+    { stopReason: "end_turn" },
+  );
+  const stream = fakeStream();
+  const metrics = fakeMetrics();
+  await streamAgentResponse({ agent, userMessage: "x", responseStream: stream, metrics });
+  const events = eventChunks(stream).map((c) => JSON.parse(c.slice(EVENT_DELIM.length, c.length - EVENT_DELIM.length)));
+  assert.equal(events.length, 2);
+  assert.equal(events[0].kind, "tool_invocation");
+  assert.equal(events[0].tool, "navigate_to");
+  assert.equal(events[0].toolUseId, "t1");
+  assert.equal(events[1].kind, "tool_result");
+  assert.equal(events[1].tool, "navigate_to");
+  assert.equal(events[1].status, "success");
+  assert.ok(metrics.records.includes("AgentToolInvoked_navigate_to"));
+});
+
+test("streamAgentResponse flags guardrail intervention on redaction event", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelRedactionEvent", inputRedaction: { replaceContent: "[blocked]" } },
+      },
+    ],
+    { stopReason: "guardrail_intervened" },
+  );
+  const stream = fakeStream();
+  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  assert.equal(res.guardrailIntervened, true);
+  assert.equal(res.hadText, false);
+});
+
+test("streamAgentResponse flags guardrail via afterModelCallEvent redaction", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "afterModelCallEvent",
+        stopData: { redaction: { userMessage: "[redacted]" } },
+      },
+    ],
+    { stopReason: "guardrail_intervened" },
+  );
+  const stream = fakeStream();
+  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  assert.equal(res.guardrailIntervened, true);
+});
+
+test("streamAgentResponse extracts usage from metadata events", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelMetadataEvent", usage: { inputTokens: 50, outputTokens: 20 } },
+      },
+    ],
+    { stopReason: "end_turn" },
+  );
+  const stream = fakeStream();
+  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  assert.deepEqual(res.usage, { inputTokens: 50, outputTokens: 20 });
+});
+
+test("streamAgentResponse validates required args", async () => {
+  await assert.rejects(() => streamAgentResponse({ userMessage: "x", responseStream: fakeStream() }), /agent is required/);
+  await assert.rejects(() => streamAgentResponse({ agent: {}, responseStream: fakeStream() }), /userMessage is required/);
+  await assert.rejects(() => streamAgentResponse({ agent: {}, userMessage: "x" }), /responseStream is required/);
+});

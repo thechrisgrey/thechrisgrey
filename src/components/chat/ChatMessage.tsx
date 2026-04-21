@@ -1,11 +1,33 @@
 import { typography } from '../../utils/typography';
 import { memo, useMemo, ReactNode } from 'react';
+import type { DraftAction } from '../../utils/chatEvents';
+import ToolDraftCard from './ToolDraftCard';
+
+interface MemoryEventRecord {
+  action: 'remembered' | 'forgotten';
+  content?: string;
+}
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   isStreaming?: boolean;
   isSystem?: boolean;
+  drafts?: DraftAction[];
+  toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
+  memoryEvents?: MemoryEventRecord[];
+}
+
+const TOOL_LABELS: Record<string, string> = {
+  navigate_to: 'navigating',
+  draft_message: 'drafting a message',
+  draft_newsletter_subscription: 'preparing a subscription',
+  cite_blog_passage: 'looking up a blog post',
+  remember_fact: 'saving that detail',
+};
+
+function toolLabel(tool: string): string {
+  return TOOL_LABELS[tool] || tool.replace(/_/g, ' ');
 }
 
 // Map of keywords to their URLs (ordered by length desc to match longer phrases first)
@@ -71,10 +93,9 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = memo(({ role, content, isStreaming, isSystem }: ChatMessageProps) => {
+const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolActivity, memoryEvents }: ChatMessageProps) => {
   const isUser = role === 'user';
 
-  // Memoize link processing — only recomputes when content changes
   const displayContent = useMemo(
     () => (isUser || isSystem) ? content : processContentWithLinks(content),
     [content, isUser, isSystem]
@@ -93,26 +114,68 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem }: ChatMessageP
     );
   }
 
+  const activeTool = toolActivity?.find((t) => t.status === 'invoked');
+
   return (
     <div
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}
     >
-      <div
-        className={`max-w-[90%] md:max-w-[80%] px-5 py-4 ${
-          isUser
-            ? 'bg-white/5 border border-white/30 rounded-2xl rounded-br-sm'
-            : 'bg-white/5 border border-altivum-gold/30 rounded-2xl rounded-bl-sm'
-        }`}
-      >
-        <p
-          className={isUser ? 'text-white' : 'text-altivum-gold'}
-          style={typography.bodyText}
-        >
-          {displayContent}
-          {isStreaming && (
-            <span className="inline-block w-[2px] h-[1em] bg-altivum-gold ml-0.5 animate-pulse align-middle" aria-hidden="true" />
-          )}
-        </p>
+      <div className="flex flex-col gap-3 max-w-full" style={{ maxWidth: '100%' }}>
+        {!isUser && activeTool ? (
+          <div
+            className="max-w-[90%] md:max-w-[80%] px-3 py-2 bg-white/5 border border-altivum-gold/20 rounded-xl"
+            role="status"
+            aria-live="polite"
+          >
+            <p className="text-altivum-silver flex items-center gap-2" style={typography.smallText}>
+              <span className="material-icons text-altivum-gold/70 text-sm animate-pulse">hourglass_empty</span>
+              <span>Alti is {toolLabel(activeTool.tool)}…</span>
+            </p>
+          </div>
+        ) : null}
+
+        {content || (!isUser && isStreaming) ? (
+          <div
+            className={`max-w-[90%] md:max-w-[80%] px-5 py-4 ${
+              isUser
+                ? 'bg-white/5 border border-white/30 rounded-2xl rounded-br-sm'
+                : 'bg-white/5 border border-altivum-gold/30 rounded-2xl rounded-bl-sm'
+            }`}
+          >
+            <p
+              className={isUser ? 'text-white' : 'text-altivum-gold'}
+              style={typography.bodyText}
+            >
+              {displayContent}
+              {isStreaming && (
+                <span className="inline-block w-[2px] h-[1em] bg-altivum-gold ml-0.5 animate-pulse align-middle" aria-hidden="true" />
+              )}
+            </p>
+          </div>
+        ) : null}
+
+        {!isUser && memoryEvents && memoryEvents.length > 0
+          ? memoryEvents.map((evt, idx) => (
+              <div
+                key={`mem-${idx}`}
+                className="max-w-[90%] md:max-w-[80%] px-3 py-2 bg-white/5 border border-white/10 rounded-xl"
+                role="status"
+              >
+                <p className="text-altivum-silver flex items-center gap-2" style={typography.smallText}>
+                  <span className="material-icons text-altivum-gold/70 text-sm">bookmark_added</span>
+                  <span>
+                    {evt.action === 'remembered'
+                      ? 'Saved that for next time.'
+                      : 'Cleared what I had saved.'}
+                  </span>
+                </p>
+              </div>
+            ))
+          : null}
+
+        {!isUser && drafts && drafts.length > 0
+          ? drafts.map((d, idx) => <ToolDraftCard key={`draft-${idx}`} action={d} />)
+          : null}
       </div>
     </div>
   );

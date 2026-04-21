@@ -3,25 +3,9 @@ import awsHero from '../assets/aws-hero.png';
 import awsCommunityBuilder from '../assets/aws-community-builder.png';
 import { typography } from '../utils/typography';
 import { buildWebPageSchema } from '../utils/schemas';
+import { InfraTopology } from '../components/aws/InfraTopology';
 
 const AWS = () => {
-  const focusAreas = [
-    {
-      title: "AI & Machine Learning",
-      description: "Building intelligent systems with Amazon Bedrock, SageMaker, and foundation models. From RAG pipelines to real-time inference, designing AI architectures that solve real problems.",
-      services: ["Amazon Bedrock", "SageMaker", "Titan Embeddings", "Knowledge Bases"],
-    },
-    {
-      title: "Cloud Architecture",
-      description: "Designing serverless, event-driven systems on AWS that scale efficiently. Infrastructure as code, cost optimization, and operational excellence as first principles.",
-      services: ["Lambda", "API Gateway", "DynamoDB", "CloudFormation"],
-    },
-    {
-      title: "Community & Content",
-      description: "Sharing knowledge through technical writing, open-source contributions, and community engagement. Helping others navigate the path from traditional infrastructure to cloud-native AI.",
-      services: ["Technical Blogs", "Architecture Patterns", "Best Practices"],
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-altivum-dark">
@@ -116,109 +100,9 @@ const AWS = () => {
         </div>
       </section>
 
-      {/* Focus Areas */}
-      <section className="py-24 md:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-white mb-4" style={typography.sectionHeader}>
-              Focus Areas
-            </h2>
-            <p className="text-altivum-silver max-w-2xl mx-auto" style={typography.subtitle}>
-              Where I build and contribute
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {focusAreas.map((area, index) => (
-              <div
-                key={index}
-                className="opacity-0 animate-fade-in"
-                style={{ animationDelay: `${0.2 + index * 0.2}s` }}
-              >
-                <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-8 rounded-lg hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group h-full flex flex-col">
-                  <h3
-                    className="text-white mb-4 group-hover:text-altivum-gold transition-colors duration-300"
-                    style={typography.cardTitleLarge}
-                  >
-                    {area.title}
-                  </h3>
-                  <p className="text-altivum-silver mb-6 flex-grow" style={typography.bodyText}>
-                    {area.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 border-t border-altivum-slate/20 pt-4">
-                    {area.services.map((service) => (
-                      <span
-                        key={service}
-                        className="text-xs text-altivum-gold/80 bg-altivum-gold/5 border border-altivum-gold/20 px-3 py-1 rounded-full"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* What It Means */}
-      <section className="py-24 bg-altivum-navy/10">
-        <div className="max-w-3xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-white mb-4" style={typography.sectionHeader}>
-              What This Means
-            </h2>
-          </div>
-
-          <div className="space-y-8">
-            <div className="border-l border-altivum-slate/30 pl-8 relative group">
-              <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-altivum-slate/50 group-hover:bg-altivum-gold transition-colors duration-300" />
-              <h3
-                className="text-white mb-2 group-hover:text-altivum-gold transition-colors duration-300"
-                style={typography.cardTitleLarge}
-              >
-                Direct Access
-              </h3>
-              <p className="text-altivum-silver" style={typography.bodyText}>
-                Early access to AWS services, features, and the teams building them.
-                The ability to test, provide feedback, and shape the tools before they
-                reach general availability.
-              </p>
-            </div>
-
-            <div className="border-l border-altivum-slate/30 pl-8 relative group">
-              <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-altivum-slate/50 group-hover:bg-altivum-gold transition-colors duration-300" />
-              <h3
-                className="text-white mb-2 group-hover:text-altivum-gold transition-colors duration-300"
-                style={typography.cardTitleLarge}
-              >
-                Knowledge Sharing
-              </h3>
-              <p className="text-altivum-silver" style={typography.bodyText}>
-                A commitment to sharing what I learn through technical writing, blog posts,
-                and community engagement. Documenting real-world patterns from production
-                deployments, not theoretical exercises.
-              </p>
-            </div>
-
-            <div className="border-l border-altivum-slate/30 pl-8 relative group">
-              <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-altivum-slate/50 group-hover:bg-altivum-gold transition-colors duration-300" />
-              <h3
-                className="text-white mb-2 group-hover:text-altivum-gold transition-colors duration-300"
-                style={typography.cardTitleLarge}
-              >
-                Builder Network
-              </h3>
-              <p className="text-altivum-silver" style={typography.bodyText}>
-                Connection to a global network of builders, architects, and practitioners
-                who are pushing the boundaries of what's possible on AWS. Peer learning
-                from people solving the hardest problems in cloud and AI.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Infrastructure Topology */}
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <InfraTopology />
     </div>
   );
 };

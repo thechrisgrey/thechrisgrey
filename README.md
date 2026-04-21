@@ -1,8 +1,17 @@
 # thechrisgrey.com
 
-Personal website for **Christian Perez** (@thechrisgrey) — Founder & CEO of Altivum Inc., former Green Beret (18D Special Forces Medical Sergeant), Bronze Star Recipient, host of The Vector Podcast, and author of "Beyond the Assessment."
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![AWS Amplify](https://img.shields.io/badge/AWS_Amplify-Hosted-FF9900?logo=awsamplify&logoColor=white)](https://aws.amazon.com/amplify/)
+[![Amazon Bedrock](https://img.shields.io/badge/Amazon_Bedrock-Claude_Haiku_4.5-232F3E?logo=amazonaws&logoColor=white)](https://aws.amazon.com/bedrock/)
+[![CI](https://img.shields.io/github/actions/workflow/status/thechrisgrey/thechrisgrey/ci.yml?branch=main&label=CI&logo=github)](https://github.com/thechrisgrey/thechrisgrey/actions)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-lightgrey)](#license)
 
-**Live Site:** [https://thechrisgrey.com](https://thechrisgrey.com)
+Personal website for **Christian Perez** ([@thechrisgrey](https://thechrisgrey.com)) | Founder & CEO of Altivum Inc. | Former Green Beret (18D Special Forces Medical Sergeant) | Bronze Star Recipient | Host of The Vector Podcast | Author of "Beyond the Assessment"
+
+**[https://thechrisgrey.com](https://thechrisgrey.com)**
 
 ---
 
@@ -13,12 +22,12 @@ Personal website for **Christian Perez** (@thechrisgrey) — Founder & CEO of Al
 - [Architecture](#architecture)
 - [AWS Infrastructure](#aws-infrastructure)
 - [Getting Started](#getting-started)
+- [Testing](#testing)
 - [Environment Variables](#environment-variables)
 - [Deployment](#deployment)
 - [Project Structure](#project-structure)
 - [Key Integrations](#key-integrations)
 - [Design System](#design-system)
-- [Build Scripts](#build-scripts)
 - [License](#license)
 
 ---
@@ -27,38 +36,46 @@ Personal website for **Christian Perez** (@thechrisgrey) — Founder & CEO of Al
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | React 18, TypeScript, Vite |
-| **Styling** | Tailwind CSS (custom design system) |
+| **Frontend** | React 18, TypeScript 5, Vite 5 |
+| **Styling** | Tailwind CSS 3.4 (custom design system) |
 | **Routing** | React Router v6 |
 | **CMS** | Sanity.io (blog content) |
 | **AI Chat** | Amazon Bedrock (Claude Haiku 4.5) + RAG |
+| **Auth** | Amazon Cognito (admin panel) |
 | **Hosting** | AWS Amplify |
 | **CDN/Analytics** | Cloudflare Web Analytics |
-| **Typography** | SF Pro Display (system font stack) |
+| **Testing** | Vitest + React Testing Library + Cypress |
+| **Code Quality** | ESLint, strict TypeScript |
 
 ---
 
 ## Features
 
 ### Pages
-- **Home** — Sophisticated scroll-based animations with sticky profile sections
-- **About** — Personal biography and military background
-- **Altivum Inc** — Company showcase and services
-- **The Vector Podcast** — YouTube video embeds, Spotify player, collapsible episode list
-- **Beyond the Assessment** — Book information and purchase links
-- **Blog** — Sanity CMS-powered with categories, tags, series, and reading progress
-- **AI Chat** — Full-viewport conversational AI with RAG-enhanced responses
-- **Links** — Linktree-style quick links page
-- **Contact** — Contact form, speaking topics, downloadable press kit
 
-### Technical Features
-- **SEO Optimized** — JSON-LD structured data, Open Graph, dynamic sitemap, RSS feed
-- **AI Chat with RAG** — Amazon Bedrock Knowledge Base retrieval for contextual responses
-- **Podcast Auto-Sync** — YouTube Data API integration fetches episodes at build time
-- **Chat Persistence** — Conversation history saved to sessionStorage
-- **Error Boundaries** — Page-level error handling with custom fallback UIs
-- **Accessibility** — Focus trapping, keyboard navigation, ARIA labels, skip links
-- **Performance** — Image optimization, lazy loading, code splitting
+- **Home** : Scroll-based animations with sticky profile sections
+- **About** : Personal biography and military background
+- **Altivum Inc** : Company showcase and services
+- **The Vector Podcast** : YouTube embeds, Spotify player, collapsible episode list
+- **Beyond the Assessment** : Book information and purchase links
+- **Blog** : Sanity CMS-powered with categories, tags, series, and reading progress
+- **AI Chat** : Full-viewport conversational AI with RAG-enhanced responses
+- **Claude** : AWS certifications and Claude expertise showcase
+- **AWS** : AWS partnership and community builder profile
+- **Admin** : Cognito-authenticated KB management and site health dashboard
+- **Links** : Linktree-style quick links
+- **Contact** : Contact form, speaking topics, downloadable press kit
+
+### Technical Highlights
+
+- **SEO** : JSON-LD structured data, Open Graph, dynamic sitemap, RSS feed
+- **AI Chat with RAG** : Bedrock Knowledge Base retrieval with streaming responses
+- **Podcast Auto-Sync** : YouTube Data API fetches episodes at build time
+- **Chat Widget** : Floating chat widget available across all pages
+- **Metrics Dashboard** : CloudWatch and DynamoDB-backed operational metrics
+- **Error Boundaries** : Page-level error handling with custom fallback UIs
+- **Accessibility** : Focus trapping, keyboard navigation, ARIA labels, skip links
+- **Performance** : Image optimization (Sharp/SVGO), lazy loading, code splitting, manual chunking
 
 ---
 
@@ -72,7 +89,6 @@ Personal website for **Christian Perez** (@thechrisgrey) — Founder & CEO of Al
 │  └──────────┘ └──────────┘ └──────────┘ └──────────┘           │
 └─────────────────────────────────────────────────────────────────┘
         │               │              │              │
-        │               │              │              │
         ▼               ▼              ▼              ▼
 ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────────┐
 │  Amplify  │   │  YouTube  │   │  Sanity   │   │    Bedrock    │
@@ -81,24 +97,25 @@ Personal website for **Christian Perez** (@thechrisgrey) — Founder & CEO of Al
                 (build-time)     (runtime)       (Lambda stream)
 ```
 
-### Request Flow — AI Chat
+### AI Chat Request Flow
+
 ```
 User Message
     │
     ▼
 Lambda Function URL (streaming)
     │
-    ├──► Bedrock Knowledge Base (retrieve context)
+    ├──> Bedrock Knowledge Base (retrieve context)
     │         │
     │         ▼
     │    S3 Vectors (autobiography chunks)
     │
-    ├──► Bedrock Guardrails (content filtering)
+    ├──> Bedrock Guardrails (content filtering)
     │
-    └──► Bedrock ConverseStream API (Claude Haiku 4.5)
+    └──> Bedrock ConverseStream API (Claude Haiku 4.5)
               │
               ▼
-         Streaming Response → Client
+         Streaming Response -> Client
 ```
 
 ---
@@ -107,12 +124,15 @@ Lambda Function URL (streaming)
 
 | Service | Resource | Region | Purpose |
 |---------|----------|--------|---------|
-| **Amplify** | `dv3g3860t7qiz` | us-east-2 | Hosting, CI/CD |
+| **Amplify** | `d3du8eg39a9peo` | us-east-2 | Hosting, CI/CD |
 | **Lambda** | `thechrisgrey-chat-stream` | us-east-1 | AI chat streaming |
 | **Lambda** | `thechrisgrey-contact-email` | us-east-2 | Contact form |
 | **Lambda** | `thechrisgrey-newsletter-subscription` | us-east-2 | Newsletter |
 | **Lambda** | `thechrisgrey-kb-sync` | us-east-1 | KB auto-sync on S3 changes |
+| **Lambda** | `thechrisgrey-kb-builder` | us-east-1 | KB admin CRUD operations |
+| **Lambda** | `thechrisgrey-metrics` | us-east-1 | Metrics collection and reporting |
 | **Bedrock KB** | `ARFYABW8HP` | us-east-1 | RAG knowledge base |
+| **Cognito** | User Pool | us-east-1 | Admin authentication |
 | **S3** | `thechrisgrey-kb-source` | us-east-1 | KB source documents |
 | **S3** | `thechrisgrey-vectors` | us-east-1 | Vector embeddings |
 | **DynamoDB** | `thechrisgrey-chat-ratelimit` | us-east-1 | Rate limiting (20 req/hr/IP) |
@@ -125,77 +145,68 @@ Lambda Function URL (streaming)
 
 ### Prerequisites
 
-- Node.js 18.x or 20.x
+- Node.js 18.x or 20.x (see `.nvmrc`)
 - npm
-- AWS CLI (configured for deployment)
+- AWS CLI (for deployment)
 
 ### Installation
 
 ```bash
-git clone https://github.com/Christian-Perez-Personal/thechrisgrey.git
+git clone https://github.com/thechrisgrey/thechrisgrey.git
 cd thechrisgrey
 npm install
 ```
 
-### Development Server
+### Development
 
 ```bash
-npm run dev
+npm run dev             # Start dev server at http://localhost:5173
+npm run build           # Full production build
+npm run preview         # Preview production build
+npm run lint            # Run ESLint
 ```
 
-Opens at [http://localhost:5173](http://localhost:5173)
+### Build Pipeline
 
-### Production Build
+The production build runs these steps in sequence:
 
-```bash
-npm run build
+```
+validate-env -> podcast-episodes -> lint -> tsc -> vite build -> sitemap -> rss
 ```
 
-Build includes:
-1. Podcast episode fetch from YouTube API
-2. TypeScript compilation
-3. Vite production build
-4. Sitemap generation (Sanity blog posts)
-5. RSS feed generation
+---
 
-### Preview Build
+## Testing
 
-```bash
-npm run preview
-```
+| Framework | Scope | Command |
+|-----------|-------|---------|
+| **Vitest** | Unit + Integration | `npm test` |
+| **Vitest** | Watch mode | `npm run test:watch` |
+| **Vitest** | Coverage report | `npm run test:coverage` |
+| **Cypress** | E2E (headless) | `npm run cy:run` |
+| **Cypress** | E2E (interactive) | `npm run cy:open` |
 
-### Linting
-
-```bash
-npm run lint
-```
+The test suite includes unit tests for components, hooks, and utilities; integration tests for page-level behavior; and end-to-end tests covering navigation, chat, blog, and contact flows.
 
 ---
 
 ## Environment Variables
 
-Set in AWS Amplify console (Environment variables):
+Set in AWS Amplify console or in a local `.env` file:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `VITE_CHAT_ENDPOINT` | Lambda Function URL for AI chat | Yes |
 | `VITE_CONTACT_ENDPOINT` | Lambda Function URL for contact form | Yes |
 | `VITE_NEWSLETTER_ENDPOINT` | Lambda Function URL for newsletter | Yes |
-| `YOUTUBE_API_KEY` | YouTube Data API v3 key (build-time) | Yes |
+| `VITE_COGNITO_USER_POOL_ID` | Cognito User Pool ID (admin auth) | Yes |
+| `VITE_COGNITO_CLIENT_ID` | Cognito App Client ID | Yes |
+| `VITE_KB_BUILDER_ENDPOINT` | Lambda Function URL for KB admin | Yes |
+| `VITE_CHAT_SIGNING_KEY` | HMAC signing key for chat requests | Yes |
+| `VITE_METRICS_ENDPOINT` | Lambda Function URL for metrics | Yes |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key (build-time only) | Yes |
 
-**Note:** `VITE_` prefixed variables are bundled into the frontend. `YOUTUBE_API_KEY` is only used at build time.
-
-### Adding/Updating Environment Variables
-
-```bash
-aws amplify update-branch \
-  --app-id dv3g3860t7qiz \
-  --branch-name main \
-  --environment-variables "KEY1=value1,KEY2=value2" \
-  --region us-east-2
-```
-
-**Important:** This replaces all variables. Include existing ones when adding new ones.
+`VITE_` prefixed variables are bundled into the frontend. `YOUTUBE_API_KEY` is only used during the build step.
 
 ---
 
@@ -203,7 +214,7 @@ aws amplify update-branch \
 
 ### Automatic (Recommended)
 
-Push to `main` branch triggers automatic Amplify deployment.
+Push to `main` triggers automatic Amplify deployment:
 
 ```bash
 git push origin main
@@ -213,13 +224,15 @@ git push origin main
 
 ```bash
 aws amplify start-job \
-  --app-id dv3g3860t7qiz \
+  --app-id d3du8eg39a9peo \
   --branch-name main \
   --job-type RELEASE \
   --region us-east-2
 ```
 
-### Lambda Deployment (Chat)
+### Lambda Deployment
+
+Each Lambda function is deployed independently:
 
 ```bash
 cd lambda/chat-stream
@@ -231,105 +244,95 @@ aws lambda update-function-code \
   --region us-east-1
 ```
 
+Repeat for `kb-sync`, `kb-builder`, and `metrics` (adjust function name and region as needed).
+
 ---
 
 ## Project Structure
 
 ```
 thechrisgrey/
-├── public/                     # Static assets (served as-is)
-│   ├── profile1.jpeg           # Hero profile image (full quality)
-│   ├── og.png                  # Open Graph image
-│   ├── press-kit/              # Downloadable press materials
-│   ├── press-kit.zip           # Press kit archive
-│   └── .well-known/            # security.txt
+├── public/                          # Static assets (served as-is)
+│   ├── assets/documents/            # Downloadable PDFs
+│   ├── press-kit/                   # Press materials + archive
+│   ├── .well-known/security.txt
+│   ├── robots.txt
+│   ├── _redirects
+│   ├── og.png                       # Open Graph image
+│   └── favicon.png
 │
 ├── src/
-│   ├── assets/                 # Optimized images (Vite processed)
-│   │
 │   ├── components/
-│   │   ├── chat/               # AI chat components
-│   │   │   ├── ChatMessage.tsx
-│   │   │   ├── ChatInput.tsx
-│   │   │   ├── ChatSuggestions.tsx
-│   │   │   └── TypingIndicator.tsx
-│   │   ├── ErrorBoundary.tsx   # Global + page-level error handling
-│   │   ├── ErrorFallbacks.tsx  # Custom fallback UIs
-│   │   ├── EpisodeCard.tsx     # Podcast episode (featured/standard/compact)
-│   │   ├── Navigation.tsx      # Responsive nav with dropdowns
+│   │   ├── admin/                   # Admin panel (login, KB entries, site health)
+│   │   ├── chat/                    # AI chat (message, input, suggestions, widget)
+│   │   ├── ui/                      # Base UI (Button, FormInput, IconButton)
+│   │   ├── Navigation.tsx
 │   │   ├── Footer.tsx
-│   │   ├── SEO.tsx             # Meta tags + JSON-LD structured data
-│   │   └── ReadingProgressBar.tsx
+│   │   ├── SEO.tsx                  # Meta tags + JSON-LD
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── ErrorFallbacks.tsx
+│   │   ├── EpisodeCard.tsx
+│   │   ├── NewsletterForm.tsx
+│   │   ├── ReadingProgressBar.tsx
+│   │   └── ...
 │   │
-│   ├── pages/
-│   │   ├── Home.tsx            # Scroll animations, sticky sections
-│   │   ├── About.tsx
-│   │   ├── Altivum.tsx
-│   │   ├── Podcast.tsx         # YouTube embed, Spotify, episode list
-│   │   ├── BeyondTheAssessment.tsx
-│   │   ├── Blog.tsx            # Sanity CMS list with filters
-│   │   ├── BlogPost.tsx        # Single post with Portable Text
-│   │   ├── Chat.tsx            # AI chat with persistence
-│   │   ├── Links.tsx
-│   │   ├── Contact.tsx
-│   │   ├── Privacy.tsx
-│   │   └── NotFound.tsx        # Custom 404
+│   ├── pages/                       # Route-level page components
+│   │   ├── Home.tsx, About.tsx, Altivum.tsx, Podcast.tsx
+│   │   ├── BeyondTheAssessment.tsx, Blog.tsx, BlogPost.tsx
+│   │   ├── Chat.tsx, Claude.tsx, AWS.tsx, Admin.tsx
+│   │   ├── Contact.tsx, Links.tsx, Privacy.tsx
+│   │   └── NotFound.tsx
 │   │
-│   ├── hooks/
-│   │   ├── useFormSubmit.ts    # Form submission with loading states
-│   │   ├── useFocusTrap.ts     # Modal focus management
-│   │   ├── useSessionStorage.ts # Typed sessionStorage with Date revival
-│   │   └── index.ts
+│   ├── hooks/                       # Custom React hooks
+│   │   ├── useAuth.ts               # Cognito authentication
+│   │   ├── useChatEngine.ts         # Chat state and streaming
+│   │   ├── useFocusTrap.ts          # Modal focus management
+│   │   ├── useKbAdmin.ts            # KB admin operations
+│   │   ├── usePageContext.ts        # Page-level context for chat
+│   │   ├── useSessionStorage.ts     # Typed sessionStorage with Date revival
+│   │   └── useSiteHealth.ts         # Site health monitoring
 │   │
-│   ├── data/
-│   │   ├── podcastEpisodes.ts  # Episode data (uses generated or fallback)
-│   │   └── generatedEpisodes.json  # Auto-generated from YouTube API
+│   ├── sanity/                      # Sanity CMS client, queries, types, cache
+│   ├── utils/                       # Typography, schemas, validators, web vitals
+│   ├── constants/                   # Social links
+│   ├── types/                       # TypeScript interfaces
+│   ├── data/                        # Podcast episode data (generated + fallback)
+│   ├── assets/                      # Optimized images (Vite processed)
 │   │
-│   ├── sanity/
-│   │   ├── client.ts           # Sanity client config
-│   │   ├── queries.ts          # GROQ queries
-│   │   ├── types.ts            # TypeScript interfaces
-│   │   └── PortableTextComponents.tsx
+│   ├── __tests__/
+│   │   ├── integration/             # Page-level integration tests
+│   │   └── setup.ts
 │   │
-│   ├── utils/
-│   │   ├── typography.ts       # Centralized typography system
-│   │   ├── schemas.ts          # JSON-LD schema builders
-│   │   ├── validators.ts       # Email validation, etc.
-│   │   └── dateFormatter.ts
-│   │
-│   ├── constants/
-│   │   └── links.ts            # Social media URLs
-│   │
-│   ├── types/
-│   │   └── podcast.ts          # Podcast interfaces
-│   │
-│   ├── App.tsx                 # Routes, layout, error boundaries
-│   ├── main.tsx                # Entry point
-│   └── index.css               # Tailwind directives, focus styles
+│   ├── App.tsx                      # Routes, layout, error boundaries
+│   ├── main.tsx                     # Entry point
+│   └── index.css                    # Tailwind directives
 │
 ├── lambda/
-│   ├── chat-stream/            # Bedrock streaming Lambda
-│   │   ├── index.mjs
-│   │   ├── package.json
-│   │   └── iam-policy.json
-│   └── kb-sync/                # Knowledge Base auto-sync Lambda
-│       └── index.mjs
+│   ├── shared/                      # Shared utilities (auth, rate limiting, response)
+│   ├── chat-stream/                 # Bedrock streaming Lambda
+│   ├── kb-sync/                     # Knowledge Base auto-sync
+│   ├── kb-builder/                  # KB admin CRUD
+│   └── metrics/                     # Metrics collection
 │
 ├── scripts/
-│   ├── generate-sitemap.js     # Build-time sitemap from Sanity
-│   ├── generate-rss.js         # Build-time RSS feed
-│   └── generate-podcast-episodes.js  # Fetch from YouTube API
+│   ├── validate-env.js              # Build-time env validation
+│   ├── generate-podcast-episodes.js # YouTube API fetch
+│   ├── generate-sitemap.js          # Sitemap from Sanity
+│   └── generate-rss.js             # RSS feed from Sanity
 │
-├── docs/
-│   ├── bedrock-logging-queries.md  # CloudWatch Insights queries
-│   └── ideas-to-consider.md
+├── cypress/                         # E2E tests
+│   ├── e2e/                         # Test specs
+│   ├── fixtures/                    # Test data
+│   └── support/                     # Custom commands
 │
-├── amplify.yml                 # Amplify build config
-├── tailwind.config.js          # Custom colors, fonts, animations
-├── vite.config.ts              # Vite + image optimization
-├── tsconfig.json
-├── CLAUDE.md                   # AI assistant context
-└── README.md
+├── docs/                            # Internal documentation and plans
+├── .github/workflows/ci.yml        # GitHub Actions CI
+├── amplify.yml                      # Amplify build config
+├── tailwind.config.js
+├── vite.config.ts
+├── vitest.config.ts
+├── cypress.config.ts
+└── tsconfig.json
 ```
 
 ---
@@ -338,46 +341,30 @@ thechrisgrey/
 
 ### Sanity CMS (Blog)
 
-- **Project ID:** `k5950b3w`
-- **Dataset:** `production`
-- **Content:** Blog posts with categories, tags, series, Portable Text
-
-```typescript
-import { client, POSTS_QUERY } from './sanity';
-const posts = await client.fetch(POSTS_QUERY);
-```
+- **Project ID:** `k5950b3w` | **Dataset:** `production`
+- Content includes blog posts with categories, tags, series, and Portable Text rich content
+- Client-side caching via `postCache.ts` with Date revival
 
 ### YouTube Data API (Podcast)
 
-Episodes fetched at build time from `@AltivumPress` channel.
+Episodes are fetched at build time from the `@AltivumPress` channel.
 
-**Setup:**
-1. Enable YouTube Data API v3 in Google Cloud Console
-2. Create API key (Public data, restricted to YouTube API)
-3. Add `YOUTUBE_API_KEY` to Amplify environment variables
-
-**How it works:**
-1. `generate-podcast-episodes.js` runs at build start
-2. Fetches channel → uploads playlist → video details
+1. `generate-podcast-episodes.js` runs during the build step
+2. Fetches channel, uploads playlist, and video details
 3. Generates `src/data/generatedEpisodes.json`
-4. Falls back to static data if API unavailable
+4. Falls back to static data if the API is unavailable
 
 ### Amazon Bedrock (AI Chat)
 
 - **Model:** Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`)
 - **Knowledge Base:** `ARFYABW8HP` (autobiography chunks)
 - **Guardrail:** `5kofhp46ssob` (content filtering)
-- **Rate Limit:** 20 requests/hour per IP
-
-**Features:**
-- Streaming responses via Lambda Function URL
-- RAG retrieval (5 chunks) before each response
-- Conversation history in sessionStorage
-- Plain text responses (no markdown)
+- **Rate Limit:** 20 requests/hour per IP (DynamoDB-backed)
+- Streaming responses via Lambda Function URL with RAG retrieval (5 chunks per query)
 
 ### Cloudflare Web Analytics
 
-Privacy-friendly analytics (no cookies, no personal data).
+Privacy-friendly, cookie-free analytics with no personal data collection.
 
 ---
 
@@ -396,42 +383,19 @@ Privacy-friendly analytics (no cookies, no personal data).
 
 ### Typography
 
-SF Pro Display with system font fallbacks. Ultra-light weight (200) throughout.
+SF Pro Display with system font fallbacks. Ultra-light weight (200) throughout. Defined in `src/utils/typography.ts`.
 
-```typescript
-import { typography } from './utils/typography';
+### Animations
 
-<h1 style={typography.heroHeader}>Title</h1>
-<p style={typography.bodyText}>Content</p>
-```
-
-**Styles:** `heroHeader`, `sectionHeader`, `cardTitleLarge`, `cardTitleSmall`, `subtitle`, `bodyText`, `smallText`
-
-### Custom Animations
-
-- `animate-fade-in` — Hero entrance (1.2s)
-- `animate-nav-fade-in` — Nav delayed entrance (0.8s, 2s delay)
-- `shimmer` — Background shimmer effect
-
----
-
-## Build Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `generate-podcast-episodes.js` | Fetch YouTube videos → `generatedEpisodes.json` |
-| `generate-sitemap.js` | Fetch Sanity posts → `dist/sitemap.xml` |
-| `generate-rss.js` | Fetch Sanity posts → `dist/rss.xml` |
-
-**Build order:**
-```bash
-podcast-episodes → tsc → vite build → sitemap → rss
-```
+- `animate-fade-in` : Hero entrance (1.2s)
+- `animate-nav-fade-in` : Nav delayed entrance (0.8s, 2s delay)
+- `shimmer` : Background shimmer effect
+- `widget-open` : Chat widget expansion (250ms)
 
 ---
 
 ## License
 
-Copyright © 2026 Christian Perez. All rights reserved.
+Copyright 2026 Christian Perez. All rights reserved.
 
 For inquiries, use the [contact form](https://thechrisgrey.com/contact) or email via the website.

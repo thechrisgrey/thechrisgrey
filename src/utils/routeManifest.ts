@@ -3,6 +3,7 @@ type LazyImport = () => Promise<unknown>;
 const routeImports = new Map<string, LazyImport>([
   ['/about', () => import('../pages/About')],
   ['/altivum', () => import('../pages/Altivum')],
+  ['/foundation', () => import('../pages/Foundation')],
   ['/podcast', () => import('../pages/Podcast')],
   ['/beyond-the-assessment', () => import('../pages/BeyondTheAssessment')],
   ['/aws', () => import('../pages/AWS')],

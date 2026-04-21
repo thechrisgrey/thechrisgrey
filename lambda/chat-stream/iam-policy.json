@@ -45,6 +45,18 @@
       ]
     },
     {
+      "Sid": "DynamoDBChatMemory",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:Query",
+        "dynamodb:PutItem",
+        "dynamodb:BatchWriteItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-memory"
+      ]
+    },
+    {
       "Sid": "CloudWatchLogs",
       "Effect": "Allow",
       "Action": [

@@ -16,3 +16,43 @@ updates:
       day: "monday"
     labels:
       - "dependencies"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/chat-stream"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/kb-builder"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/metrics"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/kb-sync"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
