@@ -21,7 +21,19 @@ const ChatContent = () => {
     handleSend,
     handleClearConversation,
     handleSuggestionSelect,
+    handleForgetMemory,
   } = useChatEngine(pageContext);
+
+  const onForget = async () => {
+    const confirmed = window.confirm('Forget everything you told Alti? This deletes your saved facts and cannot be undone.');
+    if (!confirmed) return;
+    const result = await handleForgetMemory();
+    if (result.ok) {
+      window.alert(`Cleared. ${result.deleted ?? 0} saved item(s) removed.`);
+    } else {
+      window.alert(`Unable to clear right now: ${result.error || 'Unknown error.'}`);
+    }
+  };
 
   return (
     <div className="h-screen pt-20 flex flex-col bg-altivum-dark overflow-hidden">
@@ -47,16 +59,26 @@ const ChatContent = () => {
               Ask me anything about Christian, Altivum, the podcast, or his book.
             </p>
           </div>
-          {hasUserMessages && (
+          <div className="flex items-center gap-2">
+            {hasUserMessages && (
+              <button
+                onClick={handleClearConversation}
+                className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
+                aria-label="Clear conversation"
+              >
+                <span className="material-icons text-base">refresh</span>
+                <span className="hidden sm:inline">Clear</span>
+              </button>
+            )}
             <button
-              onClick={handleClearConversation}
+              onClick={onForget}
               className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
-              aria-label="Clear conversation"
+              aria-label="Forget what I told Alti"
             >
-              <span className="material-icons text-base">refresh</span>
-              <span className="hidden sm:inline">Clear</span>
+              <span className="material-icons text-base">delete_sweep</span>
+              <span className="hidden sm:inline">Forget me</span>
             </button>
-          )}
+          </div>
         </div>
       </div>
 
@@ -79,6 +101,9 @@ const ChatContent = () => {
                 content={message.content}
                 isStreaming={message.id === streamingMessageId}
                 isSystem={message.isSystem}
+                drafts={message.drafts}
+                toolActivity={message.toolActivity}
+                memoryEvents={message.memoryEvents}
               />
             ))}
             {isTyping && <TypingIndicator />}

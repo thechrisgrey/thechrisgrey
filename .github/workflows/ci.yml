@@ -40,6 +40,9 @@ jobs:
           path: coverage/
           retention-days: 14
 
+      - name: Install Lambda dependencies
+        run: cd lambda/chat-stream && npm ci --no-audit --no-fund
+
       - name: Run Lambda tests
         run: npm run test:lambda
 

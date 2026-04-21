@@ -21,7 +21,7 @@ describe('Desktop Navigation', () => {
     cy.get('nav').within(() => {
       cy.contains('Home').should('exist');
       cy.contains('Blog').should('exist');
-      cy.contains('AI Chat').should('exist');
+      cy.contains('Alti').should('exist');
       cy.contains('Links').should('exist');
       cy.contains('Contact').should('exist');
     });
@@ -97,8 +97,8 @@ describe('Desktop Navigation', () => {
     cy.url().should('include', '/blog');
   });
 
-  it('should navigate to AI Chat page via nav link', () => {
-    cy.get('nav').contains('AI Chat').click();
+  it('should navigate to the Alti chat page via nav link', () => {
+    cy.get('nav').contains('Alti').click();
     cy.url().should('include', '/chat');
   });
 
