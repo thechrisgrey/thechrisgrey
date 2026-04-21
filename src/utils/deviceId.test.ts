@@ -55,12 +55,25 @@ describe('deviceId', () => {
   });
 
   it('returns null when localStorage throws', () => {
-    vi.spyOn(window.localStorage, 'getItem').mockImplementation(() => {
-      throw new Error('quota');
+    const originalDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    const throwingStorage: Storage = {
+      length: 0,
+      clear: () => {},
+      getItem: () => { throw new Error('quota'); },
+      key: () => null,
+      removeItem: () => {},
+      setItem: () => { throw new Error('quota'); },
+    };
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: throwingStorage,
     });
-    vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
-      throw new Error('quota');
-    });
-    expect(getOrCreateDeviceId()).toBeNull();
+    try {
+      expect(getOrCreateDeviceId()).toBeNull();
+    } finally {
+      if (originalDescriptor) {
+        Object.defineProperty(window, 'localStorage', originalDescriptor);
+      }
+    }
   });
 });
