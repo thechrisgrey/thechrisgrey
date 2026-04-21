@@ -3,6 +3,11 @@ import { memo, useMemo, ReactNode } from 'react';
 import type { DraftAction } from '../../utils/chatEvents';
 import ToolDraftCard from './ToolDraftCard';
 
+interface MemoryEventRecord {
+  action: 'remembered' | 'forgotten';
+  content?: string;
+}
+
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
@@ -10,7 +15,7 @@ interface ChatMessageProps {
   isSystem?: boolean;
   drafts?: DraftAction[];
   toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
-  memoryEvent?: { action: 'remembered' | 'forgotten'; content?: string };
+  memoryEvents?: MemoryEventRecord[];
 }
 
 const TOOL_LABELS: Record<string, string> = {
@@ -88,7 +93,7 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolActivity, memoryEvent }: ChatMessageProps) => {
+const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolActivity, memoryEvents }: ChatMessageProps) => {
   const isUser = role === 'user';
 
   const displayContent = useMemo(
@@ -129,7 +134,7 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolAc
           </div>
         ) : null}
 
-        {content ? (
+        {content || (!isUser && isStreaming) ? (
           <div
             className={`max-w-[90%] md:max-w-[80%] px-5 py-4 ${
               isUser
@@ -149,21 +154,24 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolAc
           </div>
         ) : null}
 
-        {!isUser && memoryEvent ? (
-          <div
-            className="max-w-[90%] md:max-w-[80%] px-3 py-2 bg-white/5 border border-white/10 rounded-xl"
-            role="status"
-          >
-            <p className="text-altivum-silver flex items-center gap-2" style={typography.smallText}>
-              <span className="material-icons text-altivum-gold/70 text-sm">bookmark_added</span>
-              <span>
-                {memoryEvent.action === 'remembered'
-                  ? 'Saved that for next time.'
-                  : 'Cleared what I had saved.'}
-              </span>
-            </p>
-          </div>
-        ) : null}
+        {!isUser && memoryEvents && memoryEvents.length > 0
+          ? memoryEvents.map((evt, idx) => (
+              <div
+                key={`mem-${idx}`}
+                className="max-w-[90%] md:max-w-[80%] px-3 py-2 bg-white/5 border border-white/10 rounded-xl"
+                role="status"
+              >
+                <p className="text-altivum-silver flex items-center gap-2" style={typography.smallText}>
+                  <span className="material-icons text-altivum-gold/70 text-sm">bookmark_added</span>
+                  <span>
+                    {evt.action === 'remembered'
+                      ? 'Saved that for next time.'
+                      : 'Cleared what I had saved.'}
+                  </span>
+                </p>
+              </div>
+            ))
+          : null}
 
         {!isUser && drafts && drafts.length > 0
           ? drafts.map((d, idx) => <ToolDraftCard key={`draft-${idx}`} action={d} />)

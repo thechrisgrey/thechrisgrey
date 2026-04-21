@@ -263,13 +263,13 @@ const posts = await client.fetch(POSTS_QUERY);
 - `agent.mjs` — factory functions for `BedrockModel`, Strands `Agent`, the guardrail config, and `streamAgentResponse(agent, messages, stream, signal, events)`
 - `tools/` — five Strands tools, each a small factory exporting a Zod-typed tool definition:
   - `navigate.mjs` — `navigate_to` (whitelisted paths + `/blog/<slug>` regex); emits a `draft_action{action:"navigate"}` event
-  - `draftMessage.mjs` — `draft_message` (intents: speaking, podcast_guest, consulting, general); NEVER fabricates visitor identity
+  - `draftMessage.mjs` — `draft_message` (intents: speaking, podcast, consulting, collaboration, media, general); NEVER fabricates visitor identity
   - `draftNewsletter.mjs` — `draft_newsletter_subscription`; emits newsletter draft_action
-  - `citeBlog.mjs` — `cite_blog_passage` (GROQ lookup on Sanity, returns URL + excerpt); omitted if no Sanity client configured
-  - `rememberFact.mjs` — `remember_fact` (DynamoDB write keyed by deviceId); omitted if no deviceId is provided
+  - `citePassage.mjs` — `cite_blog_passage` (GROQ lookup on Sanity, returns URL + excerpt); omitted if no Sanity client configured
+  - `rememberFact.mjs` — `remember_fact` (DynamoDB write keyed by deviceHash); omitted if no deviceId is provided
   - `index.mjs` — `buildTools({ responseStream, sanityClient, docClient, deviceId })` returns the set of tools applicable to this request
 - `events.mjs` — writes framed event chunks to the response stream: `\x00EVT\x00{json}\x00EVT\x00` for `tool_invocation`, `tool_result`, `draft_action`, `memory_update`, `guardrail_intervention`; plain text streams raw
-- `memory.mjs` — DynamoDB helpers for `thechrisgrey-chat-memory`: `putFact`, `getFacts`, `forgetFacts` (90-day TTL, deviceId-partitioned)
+- `memory.mjs` — DynamoDB helpers for `thechrisgrey-chat-memory`: `putFact`, `getFacts`, `forgetDevice` (90-day TTL, partitioned by deviceHash — SHA-256 of deviceId)
 - `prompts.mjs` — system prompt composition; `buildSystemPrompt(retrievedContext, pageContext, facts)` now folds KB context, visitor memory, and TOOL ETIQUETTE rules (PII prohibitions, never invent visitor identity, etc.)
 - `kbRetrieve.mjs`, `hmac.mjs`, `validation.mjs`, `metrics.mjs` — unchanged utilities (KB RAG, signature check, input validation, CloudWatch metrics)
 
@@ -280,8 +280,8 @@ const posts = await client.fetch(POSTS_QUERY);
 - Client parser (`src/utils/chatEvents.ts`) buffers partial delimiters across chunks, routes text/events separately, and falls back to raw text on invalid JSON payloads
 
 **Visitor Memory (opt-in, per-device):**
-- DynamoDB table `thechrisgrey-chat-memory` (env: `CHAT_MEMORY_TABLE`), partitioned by `deviceId`
-- `remember_fact` tool writes a plain-text fact (≤500 chars) with 90-day TTL — PII is explicitly disallowed by tool etiquette in the system prompt
+- DynamoDB table `thechrisgrey-chat-memory` (env: `CHAT_MEMORY_TABLE`), partitioned by `deviceHash` (SHA-256 of the client `deviceId`)
+- `remember_fact` tool writes a plain-text fact (≤240 chars) with 90-day TTL — sanitized for prompt-injection sentinels; PII is explicitly disallowed by tool etiquette in the system prompt
 - Facts are loaded into the system prompt at the start of every conversation turn when a `deviceId` is supplied
 - `POST /forget` clears all facts for a device in a single DynamoDB delete — used by the "Forget me" button in the chat header
 - `deviceId` is a localStorage-backed UUID (`src/utils/deviceId.ts`, pattern `/^[a-zA-Z0-9_-]{8,64}$/`) generated via `crypto.randomUUID()`; malformed or missing IDs disable the memory tool rather than rejecting the request
@@ -330,9 +330,9 @@ const posts = await client.fetch(POSTS_QUERY);
 - Client-side 20-message sliding window mirrors server-side limit
 - Graceful `AbortError` handling: preserves partial streamed content, only shows timeout message if nothing received
 - Passes the localStorage `deviceId` (from `src/utils/deviceId.ts`) alongside each request; memory-scoped tools are only enabled when the ID is well-formed
-- Streams are parsed by `createChatStreamParser()` (from `src/utils/chatEvents.ts`) which returns `{ kind: 'text' | 'system' | 'event' }` chunks; text streams straight into the active assistant bubble while events mutate that message's `drafts`, `toolActivity`, and `memoryEvent` fields via `applyEventToMessage()`
-- Exposes `handleForgetMemory()` which POSTs to `${CHAT_ENDPOINT}/forget`, wipes sessionStorage history, and resets to the welcome message
-- `Message` interface now carries optional `drafts: DraftAction[]`, `toolActivity: ToolInvocationEvent | null`, and `memoryEvent: MemoryUpdateEvent | null` so messages can render inline tool feedback without extra plumbing
+- Streams are parsed by `createChatStreamParser()` (from `src/utils/chatEvents.ts`) which returns `{ kind: 'text' | 'system' | 'event' }` chunks; text streams straight into the active assistant bubble while events append to that message's `drafts`, `toolActivity`, and `memoryEvents` collections via `applyEventToMessage()`
+- Exposes `handleForgetMemory()` which POSTs JSON to `${CHAT_ENDPOINT}/forget` (plain `{ok, deleted}` or `{ok:false, error}` response), clears the `deviceId`, wipes sessionStorage history, and resets to the welcome message
+- `Message` interface now carries optional `drafts: DraftAction[]`, `toolActivity: { tool, status }[]`, and `memoryEvents: MemoryEventRecord[]` so messages can render inline tool feedback without extra plumbing
 
 **Agentic UI:**
 - `src/components/chat/ToolDraftCard.tsx` — dismissible gold-bordered card with four variants:
@@ -340,7 +340,7 @@ const posts = await client.fetch(POSTS_QUERY);
   - `contact` → "Review & send" builds `/contact?subject=...&message=...&intent=...` via `URLSearchParams` so the form pre-fills
   - `newsletter` → links to `/contact#newsletter`
   - `citation` → links to `/blog/{slug}` with the excerpt preview
-- `ChatMessage.tsx` renders a pulsing hourglass + tool-friendly label while a tool is in flight (`toolActivity`), a compact "Saved" badge for `memoryEvent`, and a stack of `<ToolDraftCard>`s for any `drafts`
+- `ChatMessage.tsx` renders a pulsing hourglass + tool-friendly label while a tool is in flight (`toolActivity`), a compact "Saved" badge for each entry in `memoryEvents`, and a stack of `<ToolDraftCard>`s for any `drafts`
 - Chat page header adds a "Forget me" button (delete_sweep icon) next to "Clear" that confirms, calls `handleForgetMemory()`, and reports success/failure via `window.alert`
 
 **Response Guidelines** (enforced in system prompt):

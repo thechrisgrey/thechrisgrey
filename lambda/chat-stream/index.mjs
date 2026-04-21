@@ -91,13 +91,18 @@ function toStrandsMessages(messages) {
   return { history, latest: latest.content };
 }
 
+function writeForgetResult(responseStream, payload) {
+  responseStream.write(JSON.stringify(payload));
+  responseStream.end();
+}
+
 async function handleForget(event, responseStream, requestId, metrics) {
   try {
     const body = JSON.parse(event.body || "{}");
     const deviceId = validateDeviceId(body.deviceId);
     if (!deviceId) {
       metrics.record("ForgetRejection_InvalidDevice");
-      writeSystemMessage(responseStream, "Invalid request.");
+      writeForgetResult(responseStream, { ok: false, error: "Invalid request." });
       await metrics.flush();
       return;
     }
@@ -105,8 +110,7 @@ async function handleForget(event, responseStream, requestId, metrics) {
     metrics.record("MemoryForget");
     metrics.record("MemoryForgetDeleted", deleted);
     console.log(JSON.stringify({ requestId, event: "memory_forget", deleted }));
-    responseStream.write(JSON.stringify({ ok: true, deleted }));
-    responseStream.end();
+    writeForgetResult(responseStream, { ok: true, deleted });
     await metrics.flush();
   } catch (error) {
     console.error(JSON.stringify({
@@ -116,7 +120,7 @@ async function handleForget(event, responseStream, requestId, metrics) {
       message: error.message,
     }));
     metrics.record("ForgetFailure");
-    writeSystemMessage(responseStream, "Unable to clear memory right now.");
+    writeForgetResult(responseStream, { ok: false, error: "Unable to clear memory right now." });
     await metrics.flush();
   }
 }

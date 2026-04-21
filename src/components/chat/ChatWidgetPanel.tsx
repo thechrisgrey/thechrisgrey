@@ -111,7 +111,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
                 isSystem={message.isSystem}
                 drafts={message.drafts}
                 toolActivity={message.toolActivity}
-                memoryEvent={message.memoryEvent}
+                memoryEvents={message.memoryEvents}
               />
             ))}
             {isTyping && <TypingIndicator />}

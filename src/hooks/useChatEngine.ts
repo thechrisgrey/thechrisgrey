@@ -7,6 +7,11 @@ import { createChatStreamParser, type DraftAction, type ChatEvent } from '../uti
 
 const MAX_HISTORY = 20;
 
+export interface MemoryEventRecord {
+  action: 'remembered' | 'forgotten';
+  content?: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -15,7 +20,7 @@ export interface Message {
   isSystem?: boolean;
   drafts?: DraftAction[];
   toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
-  memoryEvent?: { action: 'remembered' | 'forgotten'; content?: string };
+  memoryEvents?: MemoryEventRecord[];
 }
 
 const CHAT_ENDPOINT = import.meta.env.VITE_CHAT_ENDPOINT;
@@ -51,8 +56,11 @@ function applyEventToMessage(msg: Message, event: ChatEvent): Message {
       }
       return { ...msg, toolActivity };
     }
-    case 'memory_update':
-      return { ...msg, memoryEvent: { action: event.action, content: event.content } };
+    case 'memory_update': {
+      const memoryEvents = msg.memoryEvents ? [...msg.memoryEvents] : [];
+      memoryEvents.push({ action: event.action, content: event.content });
+      return { ...msg, memoryEvents };
+    }
     case 'guardrail':
       return msg;
     default:
@@ -186,6 +194,18 @@ export function useChatEngine(pageContext?: PageContext) {
           setMessages((prev) => {
             const idx = prev.findIndex((m) => m.id === assistantMessageId);
             if (idx === -1) {
+              if (isSystem) {
+                return [
+                  ...prev,
+                  {
+                    id: `system-${Date.now()}`,
+                    role: 'assistant' as const,
+                    content: text,
+                    timestamp: new Date(),
+                    isSystem: true,
+                  },
+                ];
+              }
               return [
                 ...prev,
                 {
@@ -193,14 +213,21 @@ export function useChatEngine(pageContext?: PageContext) {
                   role: 'assistant' as const,
                   content: text,
                   timestamp: new Date(),
-                  ...(isSystem && { isSystem: true }),
                 },
               ];
             }
             const existing = prev[idx];
-            const merged: Message = isSystem
-              ? { ...existing, content: text, isSystem: true }
-              : { ...existing, content: existing.content + text };
+            if (isSystem) {
+              const systemMessage: Message = {
+                id: `system-${Date.now()}`,
+                role: 'assistant',
+                content: text,
+                timestamp: new Date(),
+                isSystem: true,
+              };
+              return [...prev, systemMessage];
+            }
+            const merged: Message = { ...existing, content: existing.content + text };
             return [...prev.slice(0, idx), merged, ...prev.slice(idx + 1)];
           });
         };
@@ -317,6 +344,7 @@ export function useChatEngine(pageContext?: PageContext) {
     const deviceId = getOrCreateDeviceId();
     if (!deviceId) {
       clearDeviceId();
+      clearMessages();
       return { ok: true, deleted: 0 };
     }
     const requestBody = JSON.stringify({ deviceId });
@@ -328,23 +356,22 @@ export function useChatEngine(pageContext?: PageContext) {
         headers: { 'Content-Type': 'application/json', ...signedHeaders },
         body: requestBody,
       });
-      if (!response.ok) return { ok: false, error: 'Server declined request.' };
-      const text = await response.text();
-      const first = text.split('\x00SYS\x00')[0];
+      let json: { ok?: boolean; deleted?: number; error?: string } | null = null;
       try {
-        const json = JSON.parse(first);
-        if (json?.ok) {
-          clearDeviceId();
-          return { ok: true, deleted: json.deleted };
-        }
-        return { ok: false, error: 'Unexpected response.' };
+        json = await response.json();
       } catch {
         return { ok: false, error: 'Unable to parse response.' };
       }
+      if (!response.ok || !json?.ok) {
+        return { ok: false, error: json?.error || 'Server declined request.' };
+      }
+      clearDeviceId();
+      clearMessages();
+      return { ok: true, deleted: json.deleted };
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : 'Network error.' };
     }
-  }, []);
+  }, [clearMessages]);
 
   const handleSuggestionSelect = useCallback(
     (suggestion: string) => {
