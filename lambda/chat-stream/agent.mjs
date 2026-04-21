@@ -99,17 +99,8 @@ export async function streamAgentResponse({
   const options = cancelSignal ? { cancelSignal } : undefined;
   const generator = agent.stream(userMessage, options);
 
-  let next;
-  while (true) {
-    next = await generator.next();
-    if (next.done) {
-      if (next.value) {
-        stopReason = next.value.stopReason;
-        const accumulated = next.value.metrics?.accumulatedUsage;
-        if (accumulated) usage = accumulated;
-      }
-      break;
-    }
+  let next = await generator.next();
+  while (!next.done) {
     const event = next.value;
 
     switch (event?.type) {
@@ -154,6 +145,14 @@ export async function streamAgentResponse({
       default:
         break;
     }
+
+    next = await generator.next();
+  }
+
+  if (next.value) {
+    stopReason = next.value.stopReason;
+    const accumulated = next.value.metrics?.accumulatedUsage;
+    if (accumulated) usage = accumulated;
   }
 
   return { hadText, usage, guardrailIntervened, stopReason };
