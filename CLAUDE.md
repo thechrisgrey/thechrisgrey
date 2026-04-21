@@ -250,10 +250,47 @@ const posts = await client.fetch(POSTS_QUERY);
 
 **Backend** (`lambda/chat-stream/`):
 - Lambda function with streaming response via `awslambda.streamifyResponse()`
-- Uses Bedrock ConverseStream API with Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`)
-- RAG-enhanced via Bedrock Knowledge Base retrieval before each response
-- Function URL: streaming enabled with CORS for thechrisgrey.com
+- Built on **AWS Strands Agents TypeScript SDK** (`@strands-agents/sdk` v1.0.0-rc.4) running Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`) through `BedrockModel`
+- Tool-using agent: the model can call navigation, contact-draft, newsletter, blog-citation, and memory tools mid-conversation
+- RAG-enhanced via Bedrock Knowledge Base retrieval before the agent starts streaming (context injected into system prompt)
+- Function URL with two paths:
+  - `POST /` — chat streaming
+  - `POST /forget` — erases a visitor's stored facts (see Memory below)
 - Lambda execution role: `thechrisgrey-chat-stream-role`
+
+**Module Layout:**
+- `index.mjs` — handler: validates HMAC + input, routes `/forget`, retrieves KB context, builds tools + agent, streams response
+- `agent.mjs` — factory functions for `BedrockModel`, Strands `Agent`, the guardrail config, and `streamAgentResponse(agent, messages, stream, signal, events)`
+- `tools/` — six Strands tools, each a small factory exporting a Zod-typed tool definition:
+  - `navigate.mjs` — `navigate_to` (whitelisted paths + `/blog/<slug>` regex); emits a `draft_action{action:"navigate"}` event
+  - `draftMessage.mjs` — `draft_message` (intents: speaking, podcast, consulting, collaboration, media, general); NEVER fabricates visitor identity
+  - `draftNewsletter.mjs` — `draft_newsletter_subscription`; emits newsletter draft_action
+  - `citePassage.mjs` — `cite_blog_passage` (GROQ lookup on Sanity by exact slug, returns URL + excerpt); omitted if no Sanity client configured
+  - `searchBlog.mjs` — `search_blog` (GROQ `match` + `score()` over title/excerpt/body/tags; emits `draft_action{action:"blog_search_results"}` with up to 5 posts); omitted if no Sanity client configured
+  - `rememberFact.mjs` — `remember_fact` (DynamoDB write keyed by deviceHash); omitted if no deviceId is provided
+  - `index.mjs` — `buildTools({ responseStream, sanityClient, docClient, deviceId })` returns the set of tools applicable to this request
+- `events.mjs` — writes framed event chunks to the response stream: `\x00EVT\x00{json}\x00EVT\x00` for `tool_invocation`, `tool_result`, `draft_action`, `memory_update`, `guardrail_intervention`; plain text streams raw
+- `memory.mjs` — DynamoDB helpers for `thechrisgrey-chat-memory`: `putFact`, `getFacts`, `forgetDevice` (90-day TTL, partitioned by deviceHash — SHA-256 of deviceId)
+- `prompts.mjs` — system prompt composition; `buildSystemPrompt(retrievedContext, pageContext, facts)` now folds KB context, visitor memory, and TOOL ETIQUETTE rules (PII prohibitions, never invent visitor identity, etc.)
+- `kbRetrieve.mjs`, `hmac.mjs`, `validation.mjs`, `metrics.mjs` — unchanged utilities (KB RAG, signature check, input validation, CloudWatch metrics)
+
+**Event Stream Protocol (wire format):**
+- Text tokens stream as-is from the model
+- Structured events are framed with `\x00EVT\x00` delimiters: `...text\x00EVT\x00{"kind":"draft_action",...}\x00EVT\x00more text...`
+- System/error sentinels still use the legacy `\x00SYS\x00` prefix and terminate the stream
+- Client parser (`src/utils/chatEvents.ts`) buffers partial delimiters across chunks, routes text/events separately, and falls back to raw text on invalid JSON payloads
+
+**Visitor Memory (opt-in, per-device):**
+- DynamoDB table `thechrisgrey-chat-memory` (env: `CHAT_MEMORY_TABLE`), partitioned by `deviceHash` (SHA-256 of the client `deviceId`)
+- `remember_fact` tool writes a plain-text fact (≤240 chars) with 90-day TTL — sanitized for prompt-injection sentinels; PII is explicitly disallowed by tool etiquette in the system prompt
+- Facts are loaded into the system prompt at the start of every conversation turn when a `deviceId` is supplied
+- `POST /forget` clears all facts for a device in a single DynamoDB delete — used by the "Forget me" button in the chat header
+- `deviceId` is a localStorage-backed UUID (`src/utils/deviceId.ts`, pattern `/^[a-zA-Z0-9_-]{8,64}$/`) generated via `crypto.randomUUID()`; malformed or missing IDs disable the memory tool rather than rejecting the request
+
+**Agent Timeout / Cancellation:**
+- 25-second `AbortController` timeout wraps the Strands `streamAgentResponse()` call
+- Guardrail interventions surface as a `guardrail_intervention` event and the stream ends gracefully
+- Strands `SlidingWindowConversationManager` uses a window size of 40 turns — client still enforces 20 as a safety cap
 
 **Request Signing (HMAC):**
 - Frontend generates HMAC-SHA256 signature using `VITE_CHAT_SIGNING_KEY` (`src/utils/chatSigning.ts`)
@@ -293,6 +330,20 @@ const posts = await client.fetch(POSTS_QUERY);
 - Abort-on-resend: sending a new message cancels any in-flight request
 - Client-side 20-message sliding window mirrors server-side limit
 - Graceful `AbortError` handling: preserves partial streamed content, only shows timeout message if nothing received
+- Passes the localStorage `deviceId` (from `src/utils/deviceId.ts`) alongside each request; memory-scoped tools are only enabled when the ID is well-formed
+- Streams are parsed by `createChatStreamParser()` (from `src/utils/chatEvents.ts`) which returns `{ kind: 'text' | 'system' | 'event' }` chunks; text streams straight into the active assistant bubble while events append to that message's `drafts`, `toolActivity`, and `memoryEvents` collections via `applyEventToMessage()`
+- Exposes `handleForgetMemory()` which POSTs JSON to `${CHAT_ENDPOINT}/forget` (plain `{ok, deleted}` or `{ok:false, error}` response), clears the `deviceId`, wipes sessionStorage history, and resets to the welcome message
+- `Message` interface now carries optional `drafts: DraftAction[]`, `toolActivity: { tool, status }[]`, and `memoryEvents: MemoryEventRecord[]` so messages can render inline tool feedback without extra plumbing
+
+**Agentic UI:**
+- `src/components/chat/ToolDraftCard.tsx` — dismissible gold-bordered card with five variants:
+  - `navigate` → "Take me there" button invokes `useNavigate()` to the whitelisted path
+  - `contact` → "Review & send" builds `/contact?subject=...&message=...&intent=...` via `URLSearchParams` so the form pre-fills
+  - `newsletter` → links to `/contact#newsletter`
+  - `citation` → links to `/blog/{slug}` with the excerpt preview
+  - `blog_search_results` → stacked list of up to 5 matches with per-post "Read this post" buttons and one "Dismiss all"
+- `ChatMessage.tsx` renders a pulsing hourglass + tool-friendly label while a tool is in flight (`toolActivity`), a compact "Saved" badge for each entry in `memoryEvents`, and a stack of `<ToolDraftCard>`s for any `drafts`
+- Chat page header adds a "Forget me" button (delete_sweep icon) next to "Clear" that confirms, calls `handleForgetMemory()`, and reports success/failure via `window.alert`
 
 **Response Guidelines** (enforced in system prompt):
 - Plain text only - NO markdown (no bold, italics, headers, bullet lists)
@@ -315,15 +366,19 @@ const posts = await client.fetch(POSTS_QUERY);
 - IAM Role: `TheChrisGreyKnowledgeBaseRole`
 
 **Files:**
-- `lambda/chat-stream/index.mjs`: Lambda handler with KB retrieval + streaming
-- `lambda/chat-stream/iam-policy.json`: IAM policy for Bedrock + KB access
-- `lambda/chat-stream/package.json`: Dependencies (bedrock-runtime, bedrock-agent-runtime, dynamodb)
+- `lambda/chat-stream/index.mjs`: Lambda handler — HMAC + input validation, `/forget` routing, KB retrieval, Strands agent streaming
+- `lambda/chat-stream/agent.mjs`: Strands `BedrockModel` + `Agent` factory with guardrail + sliding window manager
+- `lambda/chat-stream/tools/*.mjs`: Five Zod-typed Strands tools (navigate, draft message, draft newsletter, cite blog, remember fact)
+- `lambda/chat-stream/events.mjs`: Framed-event writer (`\x00EVT\x00{json}\x00EVT\x00`)
+- `lambda/chat-stream/memory.mjs`: DynamoDB helpers for `thechrisgrey-chat-memory`
+- `lambda/chat-stream/iam-policy.json`: IAM policy for Bedrock + KB + memory table access
+- `lambda/chat-stream/package.json`: Dependencies (`@strands-agents/sdk`, `@sanity/client`, `zod`, bedrock-runtime, bedrock-agent-runtime, dynamodb)
 
 **Deployment:**
 ```bash
 cd lambda/chat-stream
 npm install
-zip -r function.zip index.mjs hmac.mjs validation.mjs prompts.mjs metrics.mjs kbRetrieve.mjs package.json node_modules
+zip -r function.zip index.mjs agent.mjs events.mjs memory.mjs hmac.mjs validation.mjs prompts.mjs metrics.mjs kbRetrieve.mjs tools package.json node_modules
 aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-file fileb://function.zip --region us-east-1
 ```
 
@@ -645,10 +700,14 @@ aws lambda update-function-code --function-name thechrisgrey-<function-name> --z
 - `src/pages/Home.tsx`: Complex scroll animations and sticky sections
 - `src/pages/Chat.tsx`: Full-viewport AI chat experience
 - `src/hooks/useChatEngine.ts`: Shared chat state/streaming hook used by both Chat page and widget
-- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, AltiMascot, ChatWidgetPanel)
+- `src/components/chat/`: Chat UI components (ChatMessage, ChatInput, ChatSuggestions, TypingIndicator, ChatWidget, ChatWidgetButton, AltiMascot, ChatWidgetPanel, ToolDraftCard)
+- `src/components/chat/ToolDraftCard.tsx`: Dismissible gold-bordered card for agentic drafts (navigate / contact / newsletter / citation)
+- `src/utils/chatEvents.ts`: Streaming event protocol parser (`createChatStreamParser`) + TypeScript types for all agent events
+- `src/utils/deviceId.ts`: localStorage-backed UUID used to scope visitor memory across sessions
 - `src/sanity/`: Sanity CMS client, queries, types for blog
 - `lambda/shared/`: Shared utilities (rate limiting, auth, response) used by all Lambda functions
-- `lambda/chat-stream/`: Bedrock streaming Lambda function for AI chat
+- `lambda/chat-stream/`: Strands Agent Lambda for AI chat (streaming + tools + memory)
+- `lambda/chat-stream/agent.mjs`, `events.mjs`, `memory.mjs`, `tools/`: New agentic modules (see Alti section above)
 - `lambda/kb-sync/`: Lambda triggered by S3 to auto-sync Knowledge Base
 - `lambda/kb-builder/`: KB admin Lambda (Sanity CRUD + S3 document assembly + input validation)
 - `lambda/metrics/`: Metrics Lambda (Web Vitals, CSP reports, health dashboard)
@@ -691,6 +750,14 @@ Required (set in AWS Amplify console):
 - `VITE_COGNITO_CLIENT_ID`: Cognito App Client ID for admin auth
 - `VITE_KB_BUILDER_ENDPOINT`: Lambda Function URL for KB admin operations
 - `VITE_METRICS_ENDPOINT`: Lambda Function URL for Web Vitals and metrics collection
+
+Required on the chat-stream Lambda (set via `aws lambda update-function-configuration`):
+- `CHAT_SIGNING_KEY`: HMAC-SHA256 shared secret (must match `VITE_CHAT_SIGNING_KEY`)
+- `CHAT_RATE_LIMIT_TABLE`: DynamoDB table for per-IP rate limits (`thechrisgrey-chat-ratelimit`)
+- `CHAT_MEMORY_TABLE`: DynamoDB table for per-device visitor facts (`thechrisgrey-chat-memory`, partition key `deviceId`, TTL field `ttl`)
+- `KB_ID`, `KB_DATA_SOURCE_ID`: Bedrock Knowledge Base identifiers
+- `GUARDRAIL_ID`, `GUARDRAIL_VERSION`: Bedrock Guardrail identifiers
+- `SANITY_PROJECT_ID`, `SANITY_DATASET`: Optional — enables the `cite_blog_passage` tool when present
 
 **Important:** Local `.env.local` variables are NOT automatically synced to production. Any new `VITE_*` variable added locally must also be added to Amplify via:
 - AWS Console: Amplify > App > Environment variables

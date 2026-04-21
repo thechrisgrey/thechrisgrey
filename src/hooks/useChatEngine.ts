@@ -2,8 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 import type { PageContext } from '../utils/pageContext';
 import { getSignedHeaders } from '../utils/chatSigning';
+import { getOrCreateDeviceId, clearDeviceId } from '../utils/deviceId';
+import { createChatStreamParser, type DraftAction, type ChatEvent } from '../utils/chatEvents';
 
 const MAX_HISTORY = 20;
+
+export interface MemoryEventRecord {
+  action: 'remembered' | 'forgotten';
+  content?: string;
+}
 
 export interface Message {
   id: string;
@@ -11,10 +18,12 @@ export interface Message {
   content: string;
   timestamp: Date;
   isSystem?: boolean;
+  drafts?: DraftAction[];
+  toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
+  memoryEvents?: MemoryEventRecord[];
 }
 
 const CHAT_ENDPOINT = import.meta.env.VITE_CHAT_ENDPOINT;
-const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 export const CHAT_STORAGE_KEY = 'chat-messages';
 
 export const initialWelcomeMessage: Message = {
@@ -24,6 +33,40 @@ export const initialWelcomeMessage: Message = {
     "Hey there, I'm Alti\u2122, Altivum's official AI Agent and friend of Christian's. Feel free to ask about his background, Altivum\u00AE Inc, The Vector Podcast, or his book \"Beyond the Assessment.\" What would you like to know?",
   timestamp: new Date(),
 };
+
+function applyEventToMessage(msg: Message, event: ChatEvent): Message {
+  switch (event.kind) {
+    case 'draft_action': {
+      const drafts = msg.drafts ? [...msg.drafts, event] : [event];
+      return { ...msg, drafts };
+    }
+    case 'tool_invocation': {
+      const toolActivity = msg.toolActivity ? [...msg.toolActivity] : [];
+      toolActivity.push({ tool: event.tool, status: 'invoked' });
+      return { ...msg, toolActivity };
+    }
+    case 'tool_result': {
+      const toolActivity = msg.toolActivity ? [...msg.toolActivity] : [];
+      const lastIdx = [...toolActivity].reverse().findIndex((t) => t.tool === event.tool && t.status === 'invoked');
+      if (lastIdx !== -1) {
+        const forwardIdx = toolActivity.length - 1 - lastIdx;
+        toolActivity[forwardIdx] = { tool: event.tool, status: 'complete' };
+      } else {
+        toolActivity.push({ tool: event.tool, status: 'complete' });
+      }
+      return { ...msg, toolActivity };
+    }
+    case 'memory_update': {
+      const memoryEvents = msg.memoryEvents ? [...msg.memoryEvents] : [];
+      memoryEvents.push({ action: event.action, content: event.content });
+      return { ...msg, memoryEvents };
+    }
+    case 'guardrail':
+      return msg;
+    default:
+      return msg;
+  }
+}
 
 export function useChatEngine(pageContext?: PageContext) {
   const [messages, setMessages, clearMessages] = useSessionStorage<Message[]>(
@@ -38,12 +81,10 @@ export function useChatEngine(pageContext?: PageContext) {
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
-  // Clean up stale chat-typing key from sessionStorage (legacy)
   useEffect(() => {
     sessionStorage.removeItem('chat-typing');
   }, []);
 
-  // Abort in-flight request on unmount
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
@@ -72,7 +113,6 @@ export function useChatEngine(pageContext?: PageContext) {
 
   const handleSend = useCallback(
     async (content: string) => {
-      // Abort any previous in-flight request
       abortControllerRef.current?.abort();
 
       const controller = new AbortController();
@@ -89,7 +129,6 @@ export function useChatEngine(pageContext?: PageContext) {
       setMessages((prev) => [...prev, userMessage]);
       setIsTyping(true);
 
-      // Client-side sliding window (mirrors server-side 20-message limit)
       const allMessages = [
         ...messagesRef.current.filter((m) => m.id !== 'welcome'),
         userMessage,
@@ -106,9 +145,12 @@ export function useChatEngine(pageContext?: PageContext) {
       streamingMessageIdRef.current = assistantMessageId;
       setIsStreaming(true);
 
+      const deviceId = getOrCreateDeviceId();
+
       try {
         const requestBody = JSON.stringify({
           messages: conversationHistory,
+          ...(deviceId && { deviceId }),
           ...(pageContext && {
             pageContext: {
               currentPage: pageContext.currentPage,
@@ -131,48 +173,119 @@ export function useChatEngine(pageContext?: PageContext) {
 
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
+        const parser = createChatStreamParser();
+
+        const ensureMessage = () => {
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === assistantMessageId)) return prev;
+            return [
+              ...prev,
+              {
+                id: assistantMessageId,
+                role: 'assistant' as const,
+                content: '',
+                timestamp: new Date(),
+              },
+            ];
+          });
+        };
+
+        const applyText = (text: string, isSystem: boolean) => {
+          setMessages((prev) => {
+            const idx = prev.findIndex((m) => m.id === assistantMessageId);
+            if (idx === -1) {
+              if (isSystem) {
+                return [
+                  ...prev,
+                  {
+                    id: `system-${Date.now()}`,
+                    role: 'assistant' as const,
+                    content: text,
+                    timestamp: new Date(),
+                    isSystem: true,
+                  },
+                ];
+              }
+              return [
+                ...prev,
+                {
+                  id: assistantMessageId,
+                  role: 'assistant' as const,
+                  content: text,
+                  timestamp: new Date(),
+                },
+              ];
+            }
+            const existing = prev[idx];
+            if (isSystem) {
+              const systemMessage: Message = {
+                id: `system-${Date.now()}`,
+                role: 'assistant',
+                content: text,
+                timestamp: new Date(),
+                isSystem: true,
+              };
+              return [...prev, systemMessage];
+            }
+            const merged: Message = { ...existing, content: existing.content + text };
+            return [...prev.slice(0, idx), merged, ...prev.slice(idx + 1)];
+          });
+        };
+
+        const applyEvent = (event: ChatEvent) => {
+          setMessages((prev) => {
+            const idx = prev.findIndex((m) => m.id === assistantMessageId);
+            if (idx === -1) return prev;
+            const updated = applyEventToMessage(prev[idx], event);
+            return [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
+          });
+        };
 
         if (reader) {
           let done = false;
-          let firstChunk = true;
+          let firstOutput = true;
           while (!done) {
             const result = await reader.read();
             done = result.done;
 
             if (result.value) {
               const chunk = decoder.decode(result.value, { stream: true });
+              const parts = parser.push(chunk);
 
-              if (firstChunk) {
-                firstChunk = false;
-                setIsTyping(false);
-                const isSystemMsg = chunk.startsWith(SYSTEM_MESSAGE_PREFIX);
-                const displayChunk = isSystemMsg
-                  ? chunk.slice(SYSTEM_MESSAGE_PREFIX.length)
-                  : chunk;
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: assistantMessageId,
-                    role: 'assistant' as const,
-                    content: displayChunk,
-                    timestamp: new Date(),
-                    ...(isSystemMsg && { isSystem: true }),
-                  },
-                ]);
-              } else {
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === assistantMessageId
-                      ? { ...msg, content: msg.content + chunk }
-                      : msg
-                  )
-                );
+              for (const part of parts) {
+                if (firstOutput) {
+                  firstOutput = false;
+                  setIsTyping(false);
+                  ensureMessage();
+                }
+                if (part.kind === 'text') {
+                  applyText(part.text, false);
+                } else if (part.kind === 'system') {
+                  applyText(part.text, true);
+                } else if (part.kind === 'event') {
+                  ensureMessage();
+                  applyEvent(part.event);
+                }
               }
             }
           }
 
-          // Edge case: stream opened but no chunks received
-          if (firstChunk) {
+          const tail = parser.flush();
+          for (const part of tail) {
+            if (firstOutput) {
+              firstOutput = false;
+              setIsTyping(false);
+              ensureMessage();
+            }
+            if (part.kind === 'text') applyText(part.text, false);
+            else if (part.kind === 'system') applyText(part.text, true);
+            else if (part.kind === 'event') {
+              ensureMessage();
+              applyEvent(part.event);
+            }
+          }
+
+          if (firstOutput) {
             setIsTyping(false);
             setMessages((prev) => [
               ...prev,
@@ -190,7 +303,7 @@ export function useChatEngine(pageContext?: PageContext) {
         if (error instanceof Error && error.name === 'AbortError') {
           setMessages((prev) => {
             const hasMessage = prev.some((m) => m.id === assistantMessageId);
-            if (hasMessage) return prev; // partial content visible, keep it
+            if (hasMessage) return prev;
             return [
               ...prev,
               {
@@ -227,6 +340,39 @@ export function useChatEngine(pageContext?: PageContext) {
     [setMessages, pageContext]
   );
 
+  const handleForgetMemory = useCallback(async (): Promise<{ ok: boolean; deleted?: number; error?: string }> => {
+    const deviceId = getOrCreateDeviceId();
+    if (!deviceId) {
+      clearDeviceId();
+      clearMessages();
+      return { ok: true, deleted: 0 };
+    }
+    const requestBody = JSON.stringify({ deviceId });
+    const signedHeaders = await getSignedHeaders(requestBody);
+    const forgetUrl = CHAT_ENDPOINT.endsWith('/') ? `${CHAT_ENDPOINT}forget` : `${CHAT_ENDPOINT}/forget`;
+    try {
+      const response = await fetch(forgetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...signedHeaders },
+        body: requestBody,
+      });
+      let json: { ok?: boolean; deleted?: number; error?: string } | null = null;
+      try {
+        json = await response.json();
+      } catch {
+        return { ok: false, error: 'Unable to parse response.' };
+      }
+      if (!response.ok || !json?.ok) {
+        return { ok: false, error: json?.error || 'Server declined request.' };
+      }
+      clearDeviceId();
+      clearMessages();
+      return { ok: true, deleted: json.deleted };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : 'Network error.' };
+    }
+  }, [clearMessages]);
+
   const handleSuggestionSelect = useCallback(
     (suggestion: string) => {
       handleSend(suggestion);
@@ -247,5 +393,6 @@ export function useChatEngine(pageContext?: PageContext) {
     handleSend,
     handleClearConversation,
     handleSuggestionSelect,
+    handleForgetMemory,
   };
 }

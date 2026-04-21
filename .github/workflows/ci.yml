@@ -40,6 +40,11 @@ jobs:
           path: coverage/
           retention-days: 14
 
+      - name: Install Lambda dependencies
+        run: |
+          cd lambda/chat-stream && npm ci --no-audit --no-fund
+          cd ../mcp-server && npm install --no-audit --no-fund
+
       - name: Run Lambda tests
         run: npm run test:lambda
 
@@ -72,7 +77,7 @@ jobs:
       - name: Audit Lambda dependencies
         run: |
           set -e
-          for dir in lambda/chat-stream lambda/kb-builder lambda/metrics lambda/kb-sync; do
+          for dir in lambda/chat-stream lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
             echo "=== Auditing $dir ==="
             (cd "$dir" && npm install --no-audit --no-fund && npm audit --audit-level=high --omit=dev)
           done

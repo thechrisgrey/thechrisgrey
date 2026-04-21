@@ -8,6 +8,7 @@
     ".": "./index.mjs",
     "./rateLimit": "./rateLimit.mjs",
     "./auth": "./auth.mjs",
-    "./response": "./response.mjs"
+    "./response": "./response.mjs",
+    "./sanityQueries": "./sanityQueries.mjs"
   }
 }

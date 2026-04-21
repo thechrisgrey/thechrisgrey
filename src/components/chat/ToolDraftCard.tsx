@@ -1,0 +1,247 @@
+import { memo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { typography } from '../../utils/typography';
+import type { DraftAction } from '../../utils/chatEvents';
+
+interface ToolDraftCardProps {
+  action: DraftAction;
+  onDismiss?: () => void;
+  onAccept?: () => void;
+}
+
+function IconButton({
+  icon,
+  label,
+  onClick,
+  variant = 'primary',
+  disabled,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'ghost';
+  disabled?: boolean;
+}) {
+  const base =
+    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2';
+  const styles =
+    variant === 'primary'
+      ? 'bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20'
+      : 'text-altivum-silver border border-white/10 hover:bg-white/5';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`${base} ${styles} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      <span className="material-icons text-base leading-none">{icon}</span>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept }: ToolDraftCardProps) {
+  const navigate = useNavigate();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  const dismiss = () => {
+    setDismissed(true);
+    onDismiss?.();
+  };
+
+  const accepted = () => {
+    setDismissed(true);
+    onAccept?.();
+  };
+
+  if (action.action === 'navigate') {
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Navigation suggestion"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-1" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">open_in_new</span>
+          <span>Suggested navigation</span>
+        </p>
+        <p className="text-altivum-gold mb-1" style={typography.bodyText}>
+          Open <span className="font-medium">{action.path}</span>
+        </p>
+        <p className="text-altivum-silver/80 mb-3" style={typography.smallText}>
+          {action.reason}
+        </p>
+        <div className="flex gap-2">
+          <IconButton
+            icon="arrow_forward"
+            label="Take me there"
+            onClick={() => {
+              navigate(action.path);
+              accepted();
+            }}
+          />
+          <IconButton icon="close" label="Dismiss" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  if (action.action === 'contact') {
+    const intentLabel: Record<string, string> = {
+      speaking: 'Speaking invitation',
+      podcast: 'Podcast invitation',
+      consulting: 'Consulting inquiry',
+      collaboration: 'Collaboration',
+      media: 'Media / press',
+      general: 'General inquiry',
+    };
+    const openContact = () => {
+      const params = new URLSearchParams({
+        subject: action.subject,
+        message: action.body,
+        intent: action.intent,
+      });
+      navigate(`/contact?${params.toString()}`);
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Message draft"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-2" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">draft</span>
+          <span>{intentLabel[action.intent] || 'Draft message'}</span>
+        </p>
+        <p className="text-altivum-gold mb-1" style={typography.bodyText}>
+          {action.subject}
+        </p>
+        <p className="text-altivum-silver/80 mb-3 whitespace-pre-wrap" style={typography.smallText}>
+          {action.body}
+        </p>
+        <p className="text-altivum-silver/60 mb-3" style={typography.smallText}>
+          You'll be sent to the contact form to review and send.
+        </p>
+        <div className="flex gap-2">
+          <IconButton icon="edit" label="Review & send" onClick={openContact} />
+          <IconButton icon="close" label="Dismiss" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  if (action.action === 'newsletter') {
+    const openNewsletter = () => {
+      navigate('/contact#newsletter');
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Newsletter suggestion"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-1" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">mail</span>
+          <span>Subscribe to Christian's updates</span>
+        </p>
+        <p className="text-altivum-silver/80 mb-3" style={typography.smallText}>
+          {action.pitch}
+        </p>
+        <div className="flex gap-2">
+          <IconButton icon="notifications" label="Subscribe" onClick={openNewsletter} />
+          <IconButton icon="close" label="Not now" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  if (action.action === 'citation') {
+    const openPost = () => {
+      navigate(`/blog/${action.slug}`);
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Blog citation"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-1" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">article</span>
+          <span>From the blog</span>
+        </p>
+        <p className="text-altivum-gold mb-1" style={typography.bodyText}>
+          {action.title}
+        </p>
+        {action.excerpt ? (
+          <p className="text-altivum-silver/80 mb-3 italic" style={typography.smallText}>
+            "{action.excerpt}"
+          </p>
+        ) : null}
+        <div className="flex gap-2">
+          <IconButton icon="open_in_new" label="Read the post" onClick={openPost} />
+          <IconButton icon="close" label="Dismiss" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  if (action.action === 'blog_search_results') {
+    if (action.results.length === 0) return null;
+    const openPost = (slug: string) => {
+      navigate(`/blog/${slug}`);
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Blog search results"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-2" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">menu_book</span>
+          <span>
+            Posts matching <span className="text-altivum-gold">"{action.query}"</span>
+          </span>
+        </p>
+        <ul className="space-y-3 mb-3">
+          {action.results.map((result) => (
+            <li
+              key={result.slug}
+              className="border-l-2 border-altivum-gold/40 pl-3"
+            >
+              <p className="text-altivum-gold" style={typography.bodyText}>
+                {result.title}
+              </p>
+              {result.excerpt ? (
+                <p className="text-altivum-silver/80 mb-2 italic" style={typography.smallText}>
+                  "{result.excerpt}"
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => openPost(result.slug)}
+                className="inline-flex items-center gap-1 text-sm text-altivum-gold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 rounded"
+              >
+                <span className="material-icons text-base leading-none">open_in_new</span>
+                <span>Read this post</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="flex gap-2">
+          <IconButton icon="close" label="Dismiss all" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+});
+
+export default ToolDraftCard;
