@@ -1,0 +1,16 @@
+{
+  "name": "thechrisgrey-mcp-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Public MCP (Model Context Protocol) server exposing Alti's blog search and ask_alti capabilities to external AI clients",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.1002.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1002.0",
+    "@aws-sdk/client-cloudwatch": "^3.1002.0",
+    "@aws-sdk/client-dynamodb": "^3.1002.0",
+    "@aws-sdk/lib-dynamodb": "^3.1002.0",
+    "@sanity/client": "^7.21.0",
+    "lambda-shared": "file:../shared"
+  }
+}

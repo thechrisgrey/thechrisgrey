@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:lambda": "node --test lambda/chat-stream/__tests__/*.test.mjs",
+    "test:lambda": "node --test lambda/chat-stream/__tests__/*.test.mjs lambda/mcp-server/__tests__/*.test.mjs",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:headed": "cypress run --headed"

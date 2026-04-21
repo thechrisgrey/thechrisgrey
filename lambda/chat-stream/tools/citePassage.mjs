@@ -1,15 +1,7 @@
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
+import { BLOG_CITE_QUERY, SITE_ORIGIN } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
-
-const CITE_QUERY = `*[_type == "post" && slug.current == $slug][0]{
-  title,
-  excerpt,
-  "slug": slug.current,
-  publishedAt
-}`;
-
-const SITE_ORIGIN = "https://thechrisgrey.com";
 
 export function buildCitePassageTool({ sanityClient, responseStream, metrics, requestId }) {
   return tool({
@@ -29,7 +21,7 @@ export function buildCitePassageTool({ sanityClient, responseStream, metrics, re
     callback: async ({ slug }) => {
       const startedAt = Date.now();
       try {
-        const post = await sanityClient.fetch(CITE_QUERY, { slug });
+        const post = await sanityClient.fetch(BLOG_CITE_QUERY, { slug });
         const latencyMs = Date.now() - startedAt;
         metrics?.record("ToolCall_CitePassage");
         metrics?.record("ToolLatency_CitePassage", latencyMs, "Milliseconds");
