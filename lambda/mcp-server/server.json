@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "com.thechrisgrey/mcp",
+  "description": "Public MCP server for thechrisgrey.com — search the blog, retrieve posts, and ask about Christian's work.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/thechrisgrey/thechrisgrey",
+    "source": "github"
+  },
+  "websiteUrl": "https://thechrisgrey.com",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.thechrisgrey.com"
+    }
+  ]
+}
