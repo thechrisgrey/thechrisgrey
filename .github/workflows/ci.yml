@@ -26,12 +26,30 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Run tests
-        run: npx vitest run --reporter=verbose
+      - name: Run Lambda lint
+        run: npm run lint:lambda
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      - name: Run tests with coverage
+        run: npx vitest run --coverage --reporter=verbose
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+      - name: Install Lambda dependencies
+        run: |
+          cd lambda/chat-stream && npm ci --no-audit --no-fund
+          cd ../mcp-server && npm install --no-audit --no-fund
+
+      - name: Run Lambda tests
+        run: npm run test:lambda
+
+      - name: Audit production dependencies
+        run: npm audit --audit-level=high --omit=dev
 
       - name: Build project
         run: npm run build
@@ -44,3 +62,22 @@ jobs:
           VITE_COGNITO_CLIENT_ID: placeholder
           VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
           VITE_METRICS_ENDPOINT: https://placeholder.example.com
+
+  lambda-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Audit Lambda dependencies
+        run: |
+          set -e
+          for dir in lambda/chat-stream lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+            echo "=== Auditing $dir ==="
+            (cd "$dir" && npm install --no-audit --no-fund && npm audit --audit-level=high --omit=dev)
+          done

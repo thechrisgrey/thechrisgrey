@@ -67,5 +67,70 @@ describe('webVitals', () => {
 
       consoleSpy.mockRestore();
     });
+
+    it('should send vitals via navigator.sendBeacon in production when endpoint is set', async () => {
+      vi.stubEnv('DEV', false);
+      vi.stubEnv('PROD', true);
+      vi.stubEnv('VITE_METRICS_ENDPOINT', 'https://metrics.example.com');
+
+      const sendBeacon = vi.fn().mockReturnValue(true);
+      vi.stubGlobal('navigator', { ...globalThis.navigator, sendBeacon });
+
+      const { initWebVitals } = await import('./webVitals');
+      initWebVitals();
+
+      const lcpCallback = mockOnLCP.mock.calls[0][0];
+      lcpCallback({
+        name: 'LCP',
+        value: 2500,
+        rating: 'good',
+        delta: 2500,
+        id: 'lcp-id',
+        navigationType: 'navigate',
+      });
+
+      expect(sendBeacon).toHaveBeenCalledTimes(1);
+      const [url, body] = sendBeacon.mock.calls[0];
+      expect(url).toBe('https://metrics.example.com/vitals');
+      const parsed = JSON.parse(body);
+      expect(parsed).toEqual({
+        name: 'LCP',
+        value: 2500,
+        rating: 'good',
+        delta: 2500,
+        id: 'lcp-id',
+        navigationType: 'navigate',
+      });
+
+      vi.unstubAllEnvs();
+      vi.unstubAllGlobals();
+    });
+
+    it('should not call sendBeacon in production when endpoint is unset', async () => {
+      vi.stubEnv('DEV', false);
+      vi.stubEnv('PROD', true);
+      vi.stubEnv('VITE_METRICS_ENDPOINT', '');
+
+      const sendBeacon = vi.fn();
+      vi.stubGlobal('navigator', { ...globalThis.navigator, sendBeacon });
+
+      const { initWebVitals } = await import('./webVitals');
+      initWebVitals();
+
+      const clsCallback = mockOnCLS.mock.calls[0][0];
+      clsCallback({
+        name: 'CLS',
+        value: 0.1,
+        rating: 'good',
+        delta: 0.1,
+        id: 'cls-id',
+        navigationType: 'navigate',
+      });
+
+      expect(sendBeacon).not.toHaveBeenCalled();
+
+      vi.unstubAllEnvs();
+      vi.unstubAllGlobals();
+    });
   });
 });

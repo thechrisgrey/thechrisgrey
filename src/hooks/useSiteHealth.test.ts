@@ -1,12 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSiteHealth } from './useSiteHealth';
+import type { useSiteHealth as UseSiteHealth } from './useSiteHealth';
+
+// Stub the metrics endpoint BEFORE importing the hook so the module-level
+// `const METRICS_ENDPOINT = import.meta.env.VITE_METRICS_ENDPOINT` sees it.
+vi.stubEnv('VITE_METRICS_ENDPOINT', 'https://metrics.example.com');
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+let useSiteHealth: typeof UseSiteHealth;
+
 describe('useSiteHealth', () => {
   const mockGetAccessToken = vi.fn();
+
+  beforeAll(async () => {
+    // Dynamic import guarantees the stubbed env var is applied first.
+    ({ useSiteHealth } = await import('./useSiteHealth'));
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -74,6 +85,30 @@ describe('useSiteHealth', () => {
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
+  });
+
+  it('should send Bearer token in Authorization header', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          vitals: {},
+          chat: {},
+          security: {},
+          periodHours: 24,
+          timestamp: '',
+        }),
+    });
+
+    renderHook(() => useSiteHealth(mockGetAccessToken, true));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalled();
+    });
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('https://metrics.example.com/health');
+    expect(options.headers).toEqual({ Authorization: 'Bearer test-token' });
   });
 
   it('should set error when fetch fails with HTTP error', async () => {

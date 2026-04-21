@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -50,7 +50,15 @@ describe('SEO Integration Across Pages', () => {
   });
 
   afterEach(() => {
-    // Clean up Helmet side effects between tests
+    // React 19 + react-helmet-async + jsdom: Helmet manipulates document.head
+    // outside React's tree. During unmount, React 19's stricter reconciliation
+    // may throw when trying to remove already-detached nodes.
+    // This only affects jsdom — browsers handle it fine.
+    try {
+      cleanup();
+    } catch {
+      // Ignore removeChild errors from Helmet + React 19 unmount race
+    }
     document.title = '';
     document.head
       .querySelectorAll('meta, link[rel="canonical"], script[type="application/ld+json"]')

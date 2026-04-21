@@ -1,4 +1,4 @@
-describe('AI Chat Page', () => {
+describe('Alti Chat Page', () => {
   beforeEach(() => {
     // Clear sessionStorage before each test to start fresh
     cy.window().then((win) => {
@@ -14,20 +14,20 @@ describe('AI Chat Page', () => {
   });
 
   it('should display the page heading', () => {
-    cy.contains('h1', 'AI Chat').should('be.visible');
+    cy.contains('h1', 'Alti').should('be.visible');
   });
 
   it('should display the subheading with instructions', () => {
-    cy.contains("Ask me anything about Christian's background").should('be.visible');
+    cy.contains('Ask me anything about Christian, Altivum, the podcast, or his book.').should('be.visible');
   });
 
   it('should have correct SEO meta tags', () => {
-    cy.verifySEO('AI Chat');
+    cy.verifySEO('Alti');
   });
 
   it('should display the welcome message from the assistant', () => {
     cy.get('[role="log"]').within(() => {
-      cy.contains("I'm Christian's Personal AI Assistant").should('be.visible');
+      cy.contains("Altivum's official AI Agent").should('be.visible');
     });
   });
 
@@ -131,7 +131,7 @@ describe('AI Chat Page', () => {
 
     // Should reset to the welcome message only
     cy.get('[role="log"]').within(() => {
-      cy.contains("I'm Christian's Personal AI Assistant").should('be.visible');
+      cy.contains("Altivum's official AI Agent").should('be.visible');
       cy.contains('Hello').should('not.exist');
     });
   });
@@ -160,12 +160,12 @@ describe('AI Chat Page', () => {
 
   it('should be responsive on mobile viewport', () => {
     cy.viewport('iphone-x');
-    cy.contains('h1', 'AI Chat').should('be.visible');
+    cy.contains('h1', 'Alti').should('be.visible');
     cy.get('textarea[aria-label="Type a message"]').should('be.visible');
   });
 });
 
-describe('AI Chat Page - Error Handling', () => {
+describe('Alti Chat Page - Error Handling', () => {
   beforeEach(() => {
     cy.window().then((win) => {
       win.sessionStorage.clear();

@@ -7,7 +7,7 @@ import PrefetchLink from './PrefetchLink';
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
   { path: '/blog', label: 'Blog' },
-  { path: '/chat', label: 'AI Chat' },
+  { path: '/chat', label: 'Alti' },
   { path: '/links', label: 'Links' },
   { path: '/contact', label: 'Contact' },
 ];
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
 const ABOUT_DROPDOWN_ITEMS = [
   { path: '/about', label: 'Personal Biography' },
   { path: '/altivum', label: 'Altivum Inc' },
+  { path: '/foundation', label: 'The Altivum Foundation' },
   { path: '/podcast', label: 'The Vector Podcast' },
   { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
   { path: '/aws', label: 'Amazon Web Services' },
@@ -33,7 +34,7 @@ const Navigation = () => {
   useEffect(() => {
     const updateScrollState = () => {
       if (location.pathname === '/') {
-        const summaryEndPosition = window.innerHeight * 8;
+        const summaryEndPosition = window.innerHeight * 9;
         setIsScrolled(window.scrollY > summaryEndPosition);
       } else {
         setIsScrolled(window.scrollY > 20);

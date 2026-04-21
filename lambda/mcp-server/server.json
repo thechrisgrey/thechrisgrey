@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.thechrisgrey/mcp",
+  "description": "Search Christian Perez's blog, read posts, and ask about his work, podcast, and writing.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/thechrisgrey/thechrisgrey",
+    "source": "github"
+  },
+  "websiteUrl": "https://thechrisgrey.com",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.thechrisgrey.com"
+    }
+  ]
+}

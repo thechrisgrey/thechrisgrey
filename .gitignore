@@ -47,5 +47,20 @@ lambda/kb-builder/package-lock.json
 lambda/metrics/node_modules/
 lambda/metrics/function.zip
 
+# Superpowers brainstorming sessions
+.superpowers/
+
+# Git worktrees
+.worktrees/
+
 # Reference materials (not deployed)
 Anthropic Academy/
+
+# Uncompressed 3D model — only public/alti.glb is shipped
+/alti.glb
+
+# Workshop/reference PDFs at repo root — keep public/**/*.pdf trackable
+/*.pdf
+
+# Coverage reports
+coverage/

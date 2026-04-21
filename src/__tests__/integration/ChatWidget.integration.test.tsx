@@ -1,8 +1,17 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ChatWidget from '../../components/chat/ChatWidget';
+
+// Mock AltiMascot since Three.js Canvas doesn't work in jsdom
+vi.mock('../../components/chat/AltiMascot', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) => (
+    <div data-testid="alti-mascot" data-is-open={isOpen}>
+      {isOpen && <span>close</span>}
+    </div>
+  ),
+}));
 
 // jsdom does not implement scrollTo on elements; polyfill for these tests
 beforeEach(() => {
@@ -22,7 +31,7 @@ const renderWidget = (route = '/') => {
 };
 
 describe('Chat Widget Integration', () => {
-  let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: MockInstance<typeof fetch>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -58,7 +67,7 @@ describe('Chat Widget Integration', () => {
       await user.click(screen.getByRole('button', { name: /open chat/i }));
 
       await waitFor(() => {
-        const dialog = screen.getByRole('dialog', { name: /ai chat/i });
+        const dialog = screen.getByRole('dialog', { name: /alti/i });
         expect(dialog).toBeInTheDocument();
       });
     });
@@ -72,7 +81,7 @@ describe('Chat Widget Integration', () => {
       await waitFor(() => {
         // Should show the welcome message
         expect(
-          screen.getByText(/I'm Christian's Personal AI Assistant/i)
+          screen.getByText(/I'm Alti/i)
         ).toBeInTheDocument();
 
         // Should show the input
@@ -204,7 +213,7 @@ describe('Chat Widget Integration', () => {
       await waitFor(() => {
         const dialog = screen.getByRole('dialog');
         expect(dialog).toHaveAttribute('aria-modal', 'true');
-        expect(dialog).toHaveAttribute('aria-label', 'AI Chat');
+        expect(dialog).toHaveAttribute('aria-label', 'Alti - Altivum\'s AI Agent');
       });
     });
 

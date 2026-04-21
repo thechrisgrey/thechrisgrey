@@ -22,7 +22,7 @@ describe('Mobile Navigation', () => {
     cy.get('nav div.md\\:hidden').within(() => {
       cy.contains('Home').should('be.visible');
       cy.contains('Blog').should('be.visible');
-      cy.contains('AI Chat').should('be.visible');
+      cy.contains('Alti').should('be.visible');
       cy.contains('Links').should('be.visible');
       cy.contains('Contact').should('be.visible');
     });

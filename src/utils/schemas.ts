@@ -524,3 +524,45 @@ export const contactFAQs: FAQItem[] = [
         answer: "Yes, Christian Perez is available for speaking engagements on topics including veteran entrepreneurship, AI and cloud technology, military leadership, and building mission-driven companies. Contact him through the form at thechrisgrey.com/contact or email christian.perez@altivum.ai."
     }
 ];
+
+export const foundationFAQs: FAQItem[] = [
+    {
+        question: "What is The Altivum Foundation?",
+        answer: "The Altivum Foundation is a 501(c)(3) nonprofit (EIN 41-4163272) founded by Christian Perez that funds U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, and cybersecurity. Scholarships cover the full cost of certifications, degrees, and bootcamps, at no cost to the scholar."
+    },
+    {
+        question: "Who is eligible for a scholarship?",
+        answer: "Scholarships are for U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, or cybersecurity. Full eligibility criteria and application details are available at altivumfoundation.org."
+    },
+    {
+        question: "Is my donation tax-deductible?",
+        answer: "Yes. The Altivum Foundation is a registered 501(c)(3) nonprofit (EIN 41-4163272), so contributions are tax-deductible to the extent allowed by law. Donations are accepted at altivumfoundation.org/give."
+    }
+];
+
+/**
+ * NonprofitOrganization schema for The Altivum Foundation
+ */
+export const buildFoundationOrganizationSchema = () => ({
+    "@type": "NonprofitOrganization",
+    "@id": "https://altivumfoundation.org/#organization",
+    "name": "The Altivum Foundation",
+    "url": "https://altivumfoundation.org",
+    "description": "A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, and robotics — at no cost to the scholar.",
+    "taxID": "41-4163272",
+    "nonprofitStatus": "Nonprofit501c3",
+    "founder": {
+        "@id": `${SITE_URL}/#person`
+    },
+    "knowsAbout": [
+        "Cloud Computing",
+        "Artificial Intelligence",
+        "Robotics",
+        "Cybersecurity",
+        "Veteran Education"
+    ],
+    "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+    }
+});
