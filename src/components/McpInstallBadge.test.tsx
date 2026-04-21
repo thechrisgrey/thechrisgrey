@@ -27,7 +27,7 @@ describe('McpInstallBadge', () => {
     render(<McpInstallBadge />);
     const snippet = screen.getByLabelText('Claude Desktop configuration snippet');
     expect(snippet.textContent).toContain('"mcpServers"');
-    expect(snippet.textContent).toContain('streamableHttp');
+    expect(snippet.textContent).toContain('mcp-remote');
     expect(snippet.textContent).toContain('https://mcp.thechrisgrey.com');
   });
 
@@ -68,7 +68,7 @@ describe('McpInstallBadge', () => {
     });
     const copiedValue = writeTextMock.mock.calls[0][0] as string;
     expect(copiedValue).toContain('"mcpServers"');
-    expect(copiedValue).toContain('"streamableHttp"');
+    expect(copiedValue).toContain('"mcp-remote"');
     expect(copiedValue).toContain('https://mcp.thechrisgrey.com');
   });
 

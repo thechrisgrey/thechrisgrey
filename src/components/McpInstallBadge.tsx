@@ -6,10 +6,8 @@ const MCP_ENDPOINT = 'https://mcp.thechrisgrey.com';
 const CLAUDE_DESKTOP_SNIPPET = `{
   "mcpServers": {
     "alti": {
-      "transport": {
-        "type": "streamableHttp",
-        "url": "${MCP_ENDPOINT}"
-      }
+      "command": "npx",
+      "args": ["mcp-remote", "${MCP_ENDPOINT}"]
     }
   }
 }`;
@@ -127,6 +125,15 @@ export function McpInstallBadge() {
             >
               <code>{CLAUDE_DESKTOP_SNIPPET}</code>
             </pre>
+            <p
+              className="text-altivum-silver/60 mt-3"
+              style={typography.smallText}
+            >
+              Claude Desktop reaches the server through{' '}
+              <code className="text-altivum-gold/90 font-mono">mcp-remote</code>, a small stdio
+              bridge. Alternatively, open Settings &rarr; Connectors &rarr; Add custom connector
+              and paste the URL above &mdash; no config file needed.
+            </p>
           </div>
 
           <div>
