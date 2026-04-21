@@ -31,6 +31,20 @@ export type DraftActionCitation = {
   url: string;
 };
 
+export type BlogSearchResult = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  url: string;
+};
+
+export type DraftActionBlogSearchResults = {
+  kind: 'draft_action';
+  action: 'blog_search_results';
+  query: string;
+  results: BlogSearchResult[];
+};
+
 export type ToolInvocationEvent = {
   kind: 'tool_invocation';
   tool: string;
@@ -61,7 +75,8 @@ export type DraftAction =
   | DraftActionNavigate
   | DraftActionContact
   | DraftActionNewsletter
-  | DraftActionCitation;
+  | DraftActionCitation
+  | DraftActionBlogSearchResults;
 
 export type ChatEvent =
   | DraftAction

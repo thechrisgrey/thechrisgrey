@@ -2,6 +2,7 @@ import { buildNavigateTool } from "./navigate.mjs";
 import { buildDraftMessageTool } from "./draftMessage.mjs";
 import { buildDraftNewsletterTool } from "./draftNewsletter.mjs";
 import { buildCitePassageTool } from "./citePassage.mjs";
+import { buildSearchBlogTool } from "./searchBlog.mjs";
 import { buildRememberFactTool } from "./rememberFact.mjs";
 
 /**
@@ -26,6 +27,7 @@ export function buildTools(deps) {
 
   if (deps.sanityClient) {
     tools.push(buildCitePassageTool(deps));
+    tools.push(buildSearchBlogTool(deps));
   }
 
   if (deps.docClient && deps.PutCommand && deps.deviceId) {
@@ -40,5 +42,6 @@ export {
   buildDraftMessageTool,
   buildDraftNewsletterTool,
   buildCitePassageTool,
+  buildSearchBlogTool,
   buildRememberFactTool,
 };

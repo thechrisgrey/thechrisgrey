@@ -153,3 +153,111 @@ describe('ToolDraftCard — citation', () => {
     expect(current).toBe('/blog/a-post');
   });
 });
+
+describe('ToolDraftCard — blog_search_results', () => {
+  const sampleResults = [
+    {
+      slug: 'going-agentic',
+      title: 'Going Agentic',
+      excerpt: 'How Alti became a tool-user.',
+      url: 'https://thechrisgrey.com/blog/going-agentic',
+    },
+    {
+      slug: 'strands-a-tour',
+      title: 'Strands, A Tour',
+      excerpt: 'Walkthrough of the SDK.',
+      url: 'https://thechrisgrey.com/blog/strands-a-tour',
+    },
+  ];
+
+  it('renders query and all result titles', () => {
+    renderWithRouter(
+      <ToolDraftCard
+        action={{
+          kind: 'draft_action',
+          action: 'blog_search_results',
+          query: 'strands',
+          results: sampleResults,
+        }}
+      />,
+    );
+    expect(screen.getByText(/Posts matching/i)).toBeInTheDocument();
+    expect(screen.getByText('Going Agentic')).toBeInTheDocument();
+    expect(screen.getByText('Strands, A Tour')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Read this post/i })).toHaveLength(2);
+  });
+
+  it('navigates to clicked post slug', () => {
+    let current = '/';
+    renderWithRouter(
+      <ToolDraftCard
+        action={{
+          kind: 'draft_action',
+          action: 'blog_search_results',
+          query: 'agents',
+          results: sampleResults,
+        }}
+      />,
+      (loc) => { current = loc; },
+    );
+    const buttons = screen.getAllByRole('button', { name: /Read this post/i });
+    fireEvent.click(buttons[1]);
+    expect(current).toBe('/blog/strands-a-tour');
+  });
+
+  it('dismisses all on Dismiss all click', () => {
+    const onDismiss = vi.fn();
+    renderWithRouter(
+      <ToolDraftCard
+        action={{
+          kind: 'draft_action',
+          action: 'blog_search_results',
+          query: 'agents',
+          results: sampleResults,
+        }}
+        onDismiss={onDismiss}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Dismiss all/i }));
+    expect(onDismiss).toHaveBeenCalled();
+    expect(screen.queryByText('Going Agentic')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when results array is empty', () => {
+    const { container } = renderWithRouter(
+      <ToolDraftCard
+        action={{
+          kind: 'draft_action',
+          action: 'blog_search_results',
+          query: 'nothing',
+          results: [],
+        }}
+      />,
+    );
+    expect(container.querySelector('[aria-label="Blog search results"]')).toBeNull();
+  });
+
+  it('omits excerpt paragraph when excerpt is empty', () => {
+    const { container } = renderWithRouter(
+      <ToolDraftCard
+        action={{
+          kind: 'draft_action',
+          action: 'blog_search_results',
+          query: 'test',
+          results: [
+            {
+              slug: 'no-excerpt',
+              title: 'No Excerpt',
+              excerpt: '',
+              url: 'https://thechrisgrey.com/blog/no-excerpt',
+            },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText('No Excerpt')).toBeInTheDocument();
+    const listItems = container.querySelectorAll('li');
+    expect(listItems).toHaveLength(1);
+    expect(listItems[0].querySelector('.italic')).toBeNull();
+  });
+});

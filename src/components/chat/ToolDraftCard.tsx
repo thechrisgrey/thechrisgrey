@@ -191,6 +191,56 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
     );
   }
 
+  if (action.action === 'blog_search_results') {
+    if (action.results.length === 0) return null;
+    const openPost = (slug: string) => {
+      navigate(`/blog/${slug}`);
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Blog search results"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-2" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">menu_book</span>
+          <span>
+            Posts matching <span className="text-altivum-gold">"{action.query}"</span>
+          </span>
+        </p>
+        <ul className="space-y-3 mb-3">
+          {action.results.map((result) => (
+            <li
+              key={result.slug}
+              className="border-l-2 border-altivum-gold/40 pl-3"
+            >
+              <p className="text-altivum-gold" style={typography.bodyText}>
+                {result.title}
+              </p>
+              {result.excerpt ? (
+                <p className="text-altivum-silver/80 mb-2 italic" style={typography.smallText}>
+                  "{result.excerpt}"
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => openPost(result.slug)}
+                className="inline-flex items-center gap-1 text-sm text-altivum-gold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 rounded"
+              >
+                <span className="material-icons text-base leading-none">open_in_new</span>
+                <span>Read this post</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="flex gap-2">
+          <IconButton icon="close" label="Dismiss all" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
   return null;
 });
 
