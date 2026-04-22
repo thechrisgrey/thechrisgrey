@@ -3,7 +3,7 @@
  *
  * Three model paths:
  *  - invokeOpus():  Blocking generation. Returns full text + usage when done.
- *                   110s timeout, Opus model (4.7 when available, 4.6 fallback).
+ *                   110s timeout, Opus 4.6 via inference profile.
  *  - streamOpus():  Streaming generation. Emits each content_block_delta via
  *                   onChunk(text). Returns the accumulated text + usage when
  *                   the stream ends. Same 110s cap but the client sees tokens
@@ -22,7 +22,7 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 
 export const OPUS_MODEL_ID =
-  process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-7";
+  process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-6-v1";
 export const HAIKU_MODEL_ID =
   process.env.BEDROCK_HAIKU_MODEL_ID ||
   "us.anthropic.claude-haiku-4-5-20251001-v1:0";

@@ -7,7 +7,7 @@
  *  3. A concise description of the required output shape
  *
  * The output shape is enforced by Zod at parse time (BlueprintOutputSchema);
- * the prompt only has to communicate intent and tone well enough that Opus 4.7
+ * the prompt only has to communicate intent and tone well enough that Opus 4.6
  * produces JSON the validator accepts on the first try.
  */
 

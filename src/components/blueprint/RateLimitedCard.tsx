@@ -28,7 +28,7 @@ export function RateLimitedCard({ message }: RateLimitedCardProps) {
               {message}
             </p>
             <p className="text-altivum-silver/80 mt-3" style={typography.smallText}>
-              Opus 4.7 is expensive to run at scale, so the free tier is intentionally
+              Opus 4.6 is expensive to run at scale, so the free tier is intentionally
               limited. A higher-limit Pro tier is coming — join the waitlist below to
               hear about it first.
             </p>

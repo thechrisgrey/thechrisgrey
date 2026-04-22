@@ -2,7 +2,7 @@
 
 These examples seed the `generateBlueprint` engine's system prompt. For each user
 request, the prompt builder selects 2–3 relevant examples by category match and
-injects them so Opus 4.7 produces output of comparable depth and style. We target
+injects them so Opus 4.6 produces output of comparable depth and style. We target
 **8–10 total** — at least one per category plus 1–2 extras for variety.
 
 Each example is stored in Sanity as an `architectureBlueprint` document matching

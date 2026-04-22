@@ -15,7 +15,7 @@ const HIGHLIGHT_ITEMS: Array<{ icon: string; title: string; body: string }> = [
   {
     icon: 'schema',
     title: 'Opus-grade architecture',
-    body: 'Claude Opus 4.7 picks services, wires a Mermaid diagram, and justifies every choice.',
+    body: 'Claude Opus 4.6 picks services, wires a Mermaid diagram, and justifies every choice.',
   },
   {
     icon: 'terminal',
@@ -47,7 +47,7 @@ function BlueprintHero() {
         className="text-altivum-silver max-w-2xl mx-auto"
         style={typography.subtitle}
       >
-        Describe what you want to build. Claude Opus 4.7 returns a tight architecture,
+        Describe what you want to build. Claude Opus 4.6 returns a tight architecture,
         diagram, IaC scaffold, cost estimate, and ready-to-use Claude Code artifacts.
       </p>
     </section>
@@ -87,7 +87,7 @@ function WaitlistPlaceholder() {
       <div className="pt-6">
         <Waitlist
           heading="Be first when Blueprint goes live."
-          subheading="Opus 4.7 generation is expensive, so we're launching to the waitlist first. Drop your email and we'll email you the moment it opens."
+          subheading="Opus 4.6 generation is expensive, so we're launching to the waitlist first. Drop your email and we'll email you the moment it opens."
         />
       </div>
       <p
@@ -151,7 +151,7 @@ export default function Blueprint() {
     <div className="min-h-screen bg-altivum-dark pt-28 pb-24">
       <SEO
         title="Blueprint"
-        description="Describe what you want to build and receive an AWS architecture blueprint: Mermaid diagram, IaC scaffold, IAM highlights, cost estimate, and Claude Code artifacts — powered by Claude Opus 4.7."
+        description="Describe what you want to build and receive an AWS architecture blueprint: Mermaid diagram, IaC scaffold, IAM highlights, cost estimate, and Claude Code artifacts — powered by Claude Opus 4.6."
         keywords="AWS architecture, blueprint, AWS CDK, SAM, Terraform, Claude Opus, serverless, RAG, Christian Perez"
         url="https://thechrisgrey.com/blueprint"
         breadcrumbs={[

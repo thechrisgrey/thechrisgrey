@@ -416,13 +416,13 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 
 ### thechrisgrey Blueprint (in development)
 
-Public architecture-generator feature at `/blueprint`. User supplies a project spec; Claude Opus 4.7 returns an AWS architecture blueprint with a Mermaid diagram, IaC scaffold, IAM highlights, cost estimate, and 1–4 ready-to-use Claude Code artifacts (skill / slash command / subagent / MCP tool). V1 is waitlist-only — monetization (Pro tier, higher limits) ships in V2.
+Public architecture-generator feature at `/blueprint`. User supplies a project spec; Claude Opus 4.6 returns an AWS architecture blueprint with a Mermaid diagram, IaC scaffold, IAM highlights, cost estimate, and 1–4 ready-to-use Claude Code artifacts (skill / slash command / subagent / MCP tool). V1 is waitlist-only — monetization (Pro tier, higher limits) ships in V2.
 
 **Core Design Principles:**
 - **Dual-transport, engine-first.** `lambda/blueprint/engine.mjs` exports `generateBlueprint(spec, { tier, sanityClient, bedrockClient, logger })` — a pure function that accepts a validated plain JS object and returns a plain JS object. An HTTP Function URL handler consumes it today; `lambda/mcp-server` will wrap it as a `generate_blueprint` tool tomorrow. No `req`, `res`, CORS, or streaming concerns leak into the engine. New code in this feature must preserve that seam.
 - **Monetization gate at the handler layer.** The engine accepts `tier: 'free' | 'pro'` as an option but knows nothing about billing. The HTTP handler and (future) MCP tool wrapper resolve tier from auth/Cognito and pass it in. V1 always passes `'free'`.
 - **Single-source schema.** `lambda/blueprint/schema.mjs` is the only place input/output shapes live. The build step exports JSON Schema to `src/utils/blueprintSchema.json` via `z.toJsonSchema()` for the frontend (React Hook Form + Zod resolver) and the future MCP tool's `inputSchema`.
-- **Opus for generation, Haiku for validation.** Opus 4.7 (`us.anthropic.claude-opus-4-7` inference profile) generates the blueprint; Haiku 4.5 validates the result against `BlueprintOutputSchema` and flags missing/weak fields. Opus retries once on validation failure.
+- **Opus for generation, Haiku for validation.** Opus 4.6 (`us.anthropic.claude-opus-4-6-v1` inference profile) generates the blueprint; Haiku 4.5 validates the result against `BlueprintOutputSchema` and flags missing/weak fields. Opus retries once on validation failure.
 - **Golden-example grounding.** System prompt injects 2–3 relevant examples (selected from 8–10 curated Sanity docs by category match) to anchor output depth and style. Authored by Christian, stored as `architectureBlueprint` documents. 5-minute in-memory cache per Lambda container.
 - **Mermaid diagrams.** Lazy-loaded `mermaid` chunk (~40KB gzip) renders `flowchart TD` / `graph LR` source from `output.diagram_mermaid`.
 
@@ -458,7 +458,7 @@ docs/blueprint/system-prompt-principles.md    # Authored by Christian (opinionat
 **Sanity Schema (`architectureBlueprint`):** Fields — `title` (string), `slug`, `category` (string enum: same 8 categories as `BlueprintInputSchema`), `spec` (object matching `BlueprintInputSchema`), `output` (object matching `BlueprintOutputSchema`), `notes` (text, optional), `isActive` (boolean), `sortOrder` (number). Deploy via Sanity MCP `deploy_schema` tool or Sanity Studio when the feature reaches implementation.
 
 **Rate Limiting & Cost:**
-- Primary quota: 1 blueprint / 30 days per `deviceHash`, shared `thechrisgrey-chat-ratelimit` table with `blueprint-{deviceHash}` prefix via `lambda-shared/checkRateLimit`. Tight because Opus 4.7 is expensive.
+- Primary quota: 1 blueprint / 30 days per `deviceHash`, shared `thechrisgrey-chat-ratelimit` table with `blueprint-{deviceHash}` prefix via `lambda-shared/checkRateLimit`. Tight because Opus 4.6 is expensive.
 - Secondary soft quota (added only if abuse detected): 5 blueprints/day per IP, `blueprint-ip-{hash}` prefix.
 - Pro tier (V2): higher limits, gated at the handler layer via Cognito bearer token.
 - CloudWatch alarms (us-east-1): `thechrisgrey-blueprint-opus-cost` at $25/day on Opus spend, `thechrisgrey-blueprint-errors` at >20% error rate over 15 min, `thechrisgrey-blueprint-validation-failures` at >10% Haiku rejection. All → SNS `thechrisgrey-site-alerts`.

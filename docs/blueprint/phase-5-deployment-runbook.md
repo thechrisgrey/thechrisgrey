@@ -94,7 +94,7 @@ aws lambda create-function \
   --timeout 90 \
   --memory-size 1024 \
   --region us-east-1 \
-  --description "Blueprint generator (Opus 4.7) — public rate-limited endpoint"
+  --description "Blueprint generator (Opus 4.6) — public rate-limited endpoint"
 ```
 
 > **Note:** IAM role propagation takes ~10s. If `create-function` fails with
@@ -115,7 +115,7 @@ CORS_ORIGIN=$CORS_ORIGIN,
 SANITY_PROJECT_ID=k5950b3w,
 SANITY_DATASET=production,
 SANITY_READ_TOKEN=$SANITY_READ_TOKEN,
-BEDROCK_OPUS_MODEL_ID=us.anthropic.claude-opus-4-7,
+BEDROCK_OPUS_MODEL_ID=us.anthropic.claude-opus-4-6-v1,
 BEDROCK_HAIKU_MODEL_ID=us.anthropic.claude-haiku-4-5-20251001-v1:0
 }"
 ```
@@ -187,7 +187,7 @@ All alarms publish to the existing `thechrisgrey-site-alerts` SNS topic.
 ```bash
 aws cloudwatch put-metric-alarm \
   --alarm-name thechrisgrey-blueprint-opus-cost \
-  --alarm-description "Blueprint Opus 4.7 spend exceeds \$25/day (rough estimate: ~1.6M input + ~800K output tokens)" \
+  --alarm-description "Blueprint Opus 4.6 spend exceeds \$25/day (rough estimate: ~1.6M input + ~800K output tokens)" \
   --actions-enabled \
   --alarm-actions "$SNS_TOPIC_ARN" \
   --metric-name BlueprintOpusOutputTokens \

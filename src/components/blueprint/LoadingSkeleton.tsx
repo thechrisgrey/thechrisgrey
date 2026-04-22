@@ -26,7 +26,7 @@ export function LoadingSkeleton({ message }: LoadingSkeletonProps) {
           className="w-5 h-5 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin"
           aria-hidden="true"
         />
-        <span>{message ?? 'Opus 4.7 is thinking this through…'}</span>
+        <span>{message ?? 'Opus 4.6 is thinking this through…'}</span>
       </div>
 
       <ul className="space-y-2 text-altivum-silver/70" style={typography.smallText}>
