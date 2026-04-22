@@ -94,15 +94,15 @@ The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based anima
 
 **Structure:**
 1. **Hero Section (100vh)**: Static hero image with fade-in animation
-2. **Summary Section (575vh mobile / 680vh desktop)**: Sticky profile image with scroll-triggered key points
+2. **Summary Section (675vh mobile / 840vh desktop)**: Sticky profile image with scroll-triggered key points
 3. **CTA Section**: Standard content with social links
 
 **Summary Section Mechanics:**
-- Profile image is `position: sticky` inside a tall container (575vh mobile, 680vh desktop)
-- 6 key points fade in from left as user scrolls:
+- Profile image is `position: sticky` inside a tall container (675vh mobile, 840vh desktop)
+- 8 key points fade in from left as user scrolls:
   - Mobile: appear every 50vh
   - Desktop: appear every 80vh
-  - Points: Personal Biography, Altivum Inc, The Vector Podcast, Beyond the Assessment, Amazon Web Services, Claude
+  - Points: Personal Biography, Altivum Inc, The Altivum Foundation, The Vector Podcast, Beyond the Assessment, Amazon Web Services, Claude, thechrisgrey Blueprint
 - Scroll progress tracked via `useState` + `useEffect` with throttled scroll listener using `requestAnimationFrame`; mobile detection uses `useRef` to avoid stale closure
 - Key points styled as left-aligned tabs with `border-l-4 border-altivum-gold`
 - Uses `will-change: opacity, transform` for performance optimization
@@ -110,7 +110,7 @@ The Home page (`src/pages/Home.tsx`) features a sophisticated scroll-based anima
 **Navigation Transparency:**
 - Nav bar stays transparent through hero + summary sections (~780vh total on home page)
 - Becomes solid (`bg-altivum-navy/95 backdrop-blur-md`) after scrolling past summary
-- Threshold: `window.innerHeight * 8` in `Navigation.tsx`
+- Threshold: `window.innerHeight * 10` in `Navigation.tsx`
 - On other pages, nav becomes solid after 20px scroll
 
 ### Navigation Structure
@@ -413,6 +413,69 @@ aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-sour
 - Logs include full text data (questions and responses)
 - Token usage captured for cost analysis
 - See `docs/bedrock-logging-queries.md` for CloudWatch Logs Insights queries
+
+### thechrisgrey Blueprint (in development)
+
+Public architecture-generator feature at `/blueprint`. User supplies a project spec; Claude Opus 4.7 returns an AWS architecture blueprint with a Mermaid diagram, IaC scaffold, IAM highlights, cost estimate, and 1–4 ready-to-use Claude Code artifacts (skill / slash command / subagent / MCP tool). V1 is waitlist-only — monetization (Pro tier, higher limits) ships in V2.
+
+**Core Design Principles:**
+- **Dual-transport, engine-first.** `lambda/blueprint/engine.mjs` exports `generateBlueprint(spec, { tier, sanityClient, bedrockClient, logger })` — a pure function that accepts a validated plain JS object and returns a plain JS object. An HTTP Function URL handler consumes it today; `lambda/mcp-server` will wrap it as a `generate_blueprint` tool tomorrow. No `req`, `res`, CORS, or streaming concerns leak into the engine. New code in this feature must preserve that seam.
+- **Monetization gate at the handler layer.** The engine accepts `tier: 'free' | 'pro'` as an option but knows nothing about billing. The HTTP handler and (future) MCP tool wrapper resolve tier from auth/Cognito and pass it in. V1 always passes `'free'`.
+- **Single-source schema.** `lambda/blueprint/schema.mjs` is the only place input/output shapes live. The build step exports JSON Schema to `src/utils/blueprintSchema.json` via `z.toJsonSchema()` for the frontend (React Hook Form + Zod resolver) and the future MCP tool's `inputSchema`.
+- **Opus for generation, Haiku for validation.** Opus 4.7 (`us.anthropic.claude-opus-4-7` inference profile) generates the blueprint; Haiku 4.5 validates the result against `BlueprintOutputSchema` and flags missing/weak fields. Opus retries once on validation failure.
+- **Golden-example grounding.** System prompt injects 2–3 relevant examples (selected from 8–10 curated Sanity docs by category match) to anchor output depth and style. Authored by Christian, stored as `architectureBlueprint` documents. 5-minute in-memory cache per Lambda container.
+- **Mermaid diagrams.** Lazy-loaded `mermaid` chunk (~40KB gzip) renders `flowchart TD` / `graph LR` source from `output.diagram_mermaid`.
+
+**File Layout:**
+
+```
+lambda/blueprint/                 # Public generation Lambda (HTTP + future MCP)
+  index.mjs                       # Function URL handler: HMAC + rate-limit + CORS → engine
+  engine.mjs                      # generateBlueprint(spec) — transport-agnostic core
+  schema.mjs                      # Zod BlueprintInput/Output + GoldenExample schemas
+  prompts.mjs                     # System prompt + golden-example selection/injection
+  artifacts.mjs                   # Claude skill / slash / subagent / MCP tool emitters
+  validation.mjs                  # Haiku 4.5 output validator
+  bedrock.mjs                     # Bedrock client wrapper (Opus + Haiku)
+  goldenExamples.mjs              # Sanity GROQ fetch + 10-min in-memory cache
+  package.json, iam-policy.json
+  __tests__/*.test.mjs            # node --test
+
+lambda/blueprint-builder/         # Dedicated admin Lambda (NOT extending kb-builder)
+  index.mjs                       # Cognito-auth'd CRUD for architectureBlueprint docs
+  package.json, iam-policy.json
+
+src/pages/Blueprint.tsx
+src/pages/admin/BlueprintAdmin.tsx
+src/components/blueprint/*.tsx    # Form, Result, ArtifactCard, ServiceList, MermaidDiagram, CostCard, Waitlist, LoadingSkeleton
+src/hooks/useBlueprint.ts, useBlueprintAdmin.ts
+src/utils/blueprintSigning.ts     # HMAC signer (mirrors chatSigning.ts)
+
+docs/blueprint/golden-examples-template.md    # Fill-in template for 8–10 curated examples
+docs/blueprint/system-prompt-principles.md    # Authored by Christian (opinionated architecture principles)
+```
+
+**Sanity Schema (`architectureBlueprint`):** Fields — `title` (string), `slug`, `category` (string enum: same 8 categories as `BlueprintInputSchema`), `spec` (object matching `BlueprintInputSchema`), `output` (object matching `BlueprintOutputSchema`), `notes` (text, optional), `isActive` (boolean), `sortOrder` (number). Deploy via Sanity MCP `deploy_schema` tool or Sanity Studio when the feature reaches implementation.
+
+**Rate Limiting & Cost:**
+- Primary quota: 1 blueprint / 30 days per `deviceHash`, shared `thechrisgrey-chat-ratelimit` table with `blueprint-{deviceHash}` prefix via `lambda-shared/checkRateLimit`. Tight because Opus 4.7 is expensive.
+- Secondary soft quota (added only if abuse detected): 5 blueprints/day per IP, `blueprint-ip-{hash}` prefix.
+- Pro tier (V2): higher limits, gated at the handler layer via Cognito bearer token.
+- CloudWatch alarms (us-east-1): `thechrisgrey-blueprint-opus-cost` at $25/day on Opus spend, `thechrisgrey-blueprint-errors` at >20% error rate over 15 min, `thechrisgrey-blueprint-validation-failures` at >10% Haiku rejection. All → SNS `thechrisgrey-site-alerts`.
+
+**Frontend Integration:**
+- Home page scroll tab #8: "thechrisgrey Blueprint" / "Architect" — extends the 7-key-point sequence in `Home.tsx`.
+- Summary section heights: mobile `675vh`, desktop `840vh` (after Foundation + Blueprint tabs). Per-point spacing stays at `50vh` mobile / `80vh` desktop.
+- Navigation transparency threshold: `window.innerHeight * 10` in `Navigation.tsx` (bumped from `* 8` as the key-point sequence grew).
+- Route `/blueprint` is lazy-loaded and feature-flagged via `VITE_BLUEPRINT_ENABLED`.
+- Waitlist endpoint reuses the existing newsletter Lambda with `source: "blueprint"` tag.
+
+**Environment Variables (add in Phase 1–2):**
+- Lambda `blueprint`: `BLUEPRINT_SIGNING_KEY`, `BLUEPRINT_RATE_LIMIT_TABLE`, `SANITY_PROJECT_ID`, `SANITY_DATASET`, `SANITY_READ_TOKEN`, `BEDROCK_OPUS_MODEL_ID`, `BEDROCK_HAIKU_MODEL_ID`.
+- Lambda `blueprint-builder`: `SANITY_WRITE_TOKEN`, `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID` (reuses pattern from `kb-builder`).
+- Frontend: `VITE_BLUEPRINT_ENDPOINT`, `VITE_BLUEPRINT_SIGNING_KEY`, `VITE_BLUEPRINT_ENABLED`, `VITE_BLUEPRINT_BUILDER_ENDPOINT`.
+
+**MCP Integration (deferred but pre-designed):** When ready, add `lambda/mcp-server/tools/generateBlueprint.mjs` that imports the pure engine and exposes it as an MCP tool. Its `inputSchema` is `BlueprintInputSchema` converted via `z.toJsonSchema()`. The MCP server's existing per-IP quota is the rate limit on that path — the engine does not own rate limiting.
 
 ### KB Admin (`/admin`)
 

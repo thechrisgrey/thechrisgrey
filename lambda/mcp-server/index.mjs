@@ -118,7 +118,7 @@ export const handler = async (event) => {
       ttlBuffer: 3600,
       requestId,
     });
-    if (rlResult?.blocked) {
+    if (rlResult && !rlResult.allowed) {
       metrics.record("McpRateLimitRejection");
       return jsonRpcResponse(429, {
         jsonrpc: "2.0",
@@ -126,7 +126,7 @@ export const handler = async (event) => {
         error: {
           code: -32000,
           message: "Rate limit exceeded. Try again in an hour.",
-          data: { retryAfterSeconds: rlResult.retryAfterSeconds ?? RATE_LIMIT_WINDOW_SECONDS },
+          data: { retryAfterSeconds: RATE_LIMIT_WINDOW_SECONDS },
         },
       });
     }

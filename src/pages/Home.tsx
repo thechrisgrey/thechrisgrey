@@ -41,7 +41,7 @@ const Home = () => {
           const scrollPosition = window.scrollY;
           const windowHeight = window.innerHeight;
           const scrollInterval = isMobileRef.current ? 0.5 : 0.8;
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 6);
+          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 7);
           setScrollProgress(Math.max(-1, progress));
           ticking = false;
         });
@@ -60,7 +60,8 @@ const Home = () => {
     { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
     { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
     { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
-    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" }
+    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" },
+    { title: "thechrisgrey Blueprint", subtitle: "Architect", link: "/blueprint" }
   ];
 
   const renderTab = (point: typeof keyPoints[number], index: number, mirrored = false) => {
@@ -142,7 +143,7 @@ const Home = () => {
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
-      <section className="relative h-[625vh] md:h-[760vh]">
+      <section className="relative h-[675vh] md:h-[840vh]">
         <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img
@@ -154,7 +155,7 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
           </div>
 
-          {/* Summary Tabs — 4 on left, 3 on right (desktop); stacked (mobile) */}
+          {/* Summary Tabs — 4 on left, 4 on right (desktop); stacked (mobile) */}
           <div className="absolute inset-0 flex items-center pointer-events-none">
             <div className="w-full max-w-xl md:max-w-none px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-16">
               <div className="space-y-3 sm:space-y-4 md:space-y-5">

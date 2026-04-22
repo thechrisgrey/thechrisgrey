@@ -93,7 +93,7 @@ describe('Navigation Integration', () => {
       });
     });
 
-    it('shows all 7 sub-items in the dropdown', async () => {
+    it('shows all 8 sub-items in the dropdown', async () => {
       const user = userEvent.setup();
       renderNavigation();
 
@@ -101,7 +101,7 @@ describe('Navigation Integration', () => {
 
       await waitFor(() => {
         const menuItems = screen.getAllByRole('menuitem');
-        expect(menuItems).toHaveLength(7);
+        expect(menuItems).toHaveLength(8);
       });
 
       // Check the labels
@@ -112,6 +112,7 @@ describe('Navigation Integration', () => {
       expect(screen.getByRole('menuitem', { name: 'Beyond the Assessment' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Amazon Web Services' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'Claude' })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'thechrisgrey Blueprint' })).toBeInTheDocument();
     });
 
     it('dropdown sub-items link to correct routes', async () => {
@@ -145,6 +146,9 @@ describe('Navigation Integration', () => {
         expect(
           screen.getByRole('menuitem', { name: 'Claude' })
         ).toHaveAttribute('href', '/claude');
+        expect(
+          screen.getByRole('menuitem', { name: 'thechrisgrey Blueprint' })
+        ).toHaveAttribute('href', '/blueprint');
       });
     });
 

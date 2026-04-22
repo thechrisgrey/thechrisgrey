@@ -65,7 +65,7 @@ async function retrieveKbContext({
     const latencyMs = Date.now() - startedAt;
     metrics?.record("McpKbLatency", latencyMs, "Milliseconds");
     metrics?.record("McpKbSuccess");
-    kbCache?.set(key, joined);
+    if (joined !== null) kbCache?.set(key, joined);
     return joined;
   } catch (err) {
     if (err?.name === "AbortError") {

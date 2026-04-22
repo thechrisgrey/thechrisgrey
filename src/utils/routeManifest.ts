@@ -13,6 +13,7 @@ const routeImports = new Map<string, LazyImport>([
   ['/contact', () => import('../pages/Contact')],
   ['/chat', () => import('../pages/Chat')],
   ['/privacy', () => import('../pages/Privacy')],
+  ['/blueprint', () => import('../pages/Blueprint')],
 ]);
 
 // Also export the BlogPost chunk import for use by blog card prefetching

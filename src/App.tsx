@@ -25,6 +25,7 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const AWS = lazy(() => import('./pages/AWS'));
 const Claude = lazy(() => import('./pages/Claude'));
 const Admin = lazy(() => import('./pages/Admin'));
+const Blueprint = lazy(() => import('./pages/Blueprint'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoadingFallback = () => (
@@ -74,6 +75,7 @@ function App() {
               <Route path="/claude" element={<Claude />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/blueprint" element={<Blueprint />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

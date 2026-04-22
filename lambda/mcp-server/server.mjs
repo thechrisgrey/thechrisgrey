@@ -50,6 +50,10 @@ export function buildMcpServer({ tools, serverInfo }) {
     if (!request || typeof request !== "object") {
       return rpcError(null, JSONRPC_ERRORS.INVALID_REQUEST);
     }
+    // JSON-RPC 2.0 §4.1: a request without an "id" member is a notification and
+    // MUST NOT receive a response, regardless of method name or validity.
+    if (!Object.hasOwn(request, "id")) return null;
+
     if (request.jsonrpc !== "2.0") {
       return rpcError(request.id, JSONRPC_ERRORS.INVALID_REQUEST, "jsonrpc must be '2.0'");
     }
@@ -90,11 +94,6 @@ export function buildMcpServer({ tools, serverInfo }) {
 
         case "ping":
           return rpcResult(id, {});
-
-        // Client notifications (no response required by JSON-RPC spec when id is absent)
-        case "notifications/initialized":
-        case "notifications/cancelled":
-          return null;
 
         default:
           return rpcError(id, JSONRPC_ERRORS.METHOD_NOT_FOUND, `Unknown method: ${method}`);

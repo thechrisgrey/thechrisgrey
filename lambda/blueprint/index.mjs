@@ -1,0 +1,345 @@
+/**
+ * Blueprint Lambda — HTTP Function URL handler (streaming).
+ *
+ * Flow:
+ *   1. Handle CORS preflight.
+ *   2. Verify HMAC signature.
+ *   3. Parse payload and rate-limit by deviceHash (1 blueprint / 30 days).
+ *   4. Open a streaming NDJSON response and delegate to engine.generateBlueprint
+ *      with an onProgress callback so status events + Opus token deltas flow
+ *      to the client in real time.
+ *   5. Emit a final {type:"complete", output, meta} (success) or
+ *      {type:"error", error, message} (failure) and close the stream.
+ *
+ * Wire format: newline-delimited JSON. Each line is one event:
+ *   {"type":"ready","requestId":"..."}
+ *   {"type":"status","phase":"generating","attempt":1,"examplesUsed":3}
+ *   {"type":"token","text":"..."}
+ *   ...
+ *   {"type":"complete","ok":true,"output":{...},"meta":{...}}
+ *
+ * The engine is transport-agnostic (see engine.mjs). A future MCP tool wrapper
+ * under lambda/mcp-server imports the same engine directly and does not go
+ * through this handler.
+ */
+
+import { createHash, randomUUID } from "crypto";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
+import { createClient as createSanityClient } from "@sanity/client";
+import { checkRateLimit } from "lambda-shared/rateLimit";
+
+import { verifySignature } from "./hmac.mjs";
+import { generateBlueprint } from "./engine.mjs";
+import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
+import { MetricsCollector } from "./metrics.mjs";
+
+const REGION = process.env.AWS_REGION || "us-east-1";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://thechrisgrey.com";
+const SIGNING_KEY = process.env.BLUEPRINT_SIGNING_KEY || "";
+const RATE_LIMIT_TABLE = process.env.BLUEPRINT_RATE_LIMIT_TABLE
+  || process.env.CHAT_RATE_LIMIT_TABLE
+  || "thechrisgrey-chat-ratelimit";
+const RATE_LIMIT_MAX = 1;
+const RATE_LIMIT_WINDOW_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
+
+const bedrockClient = new BedrockRuntimeClient({ region: REGION });
+const dynamoClient = new DynamoDBClient({ region: REGION });
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const cloudwatchClient = new CloudWatchClient({ region: REGION });
+
+const sanityProjectId = process.env.SANITY_PROJECT_ID || "k5950b3w";
+const sanityDataset = process.env.SANITY_DATASET || "production";
+const sanityClient = sanityProjectId
+  ? createSanityClient({
+      projectId: sanityProjectId,
+      dataset: sanityDataset,
+      apiVersion: process.env.SANITY_API_VERSION || "2024-01-01",
+      token: process.env.SANITY_READ_TOKEN || undefined,
+      useCdn: !process.env.SANITY_READ_TOKEN,
+      timeout: 4000,
+    })
+  : null;
+
+// Module-scope fetcher so the 5-min cache persists across warm invocations.
+const examplesFetcher = sanityClient
+  ? createGoldenExamplesFetcher(sanityClient)
+  : null;
+
+if (!SIGNING_KEY) {
+  console.warn(JSON.stringify({
+    event: "startup_warning",
+    message: "BLUEPRINT_SIGNING_KEY not set — HMAC verification disabled",
+  }));
+}
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": CORS_ORIGIN,
+    "Access-Control-Allow-Headers":
+      "Content-Type, x-blueprint-timestamp, x-blueprint-signature",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "3600",
+  };
+}
+
+function validateDeviceId(raw) {
+  if (typeof raw !== "string") return null;
+  if (!DEVICE_ID_PATTERN.test(raw)) return null;
+  return raw;
+}
+
+function hashDeviceId(deviceId) {
+  return createHash("sha256").update(deviceId).digest("hex");
+}
+
+function logStructured(requestId, event, extra = {}) {
+  console.log(JSON.stringify({ requestId, event, ...extra }));
+}
+
+export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
+  const requestId = randomUUID();
+  const metrics = new MetricsCollector(cloudwatchClient);
+  const start = Date.now();
+
+  // Tracks whether the response metadata (status + headers) has already been
+  // committed via HttpResponseStream.from. Once true, we can only keep writing
+  // bytes — not change status or headers — so late errors become NDJSON events.
+  let streamOpened = false;
+  let ndjsonMode = false;
+
+  // Commit headers + status for a buffered-style JSON response and end.
+  const closeWithJson = (statusCode, body) => {
+    if (streamOpened) return; // caller bug — defensive no-op
+    const withMeta = awslambda.HttpResponseStream.from(responseStream, {
+      statusCode,
+      headers: { "Content-Type": "application/json", ...corsHeaders() },
+    });
+    streamOpened = true;
+    try {
+      withMeta.write(JSON.stringify(body));
+    } finally {
+      withMeta.end();
+    }
+  };
+
+  // Commit the streaming NDJSON response headers and return a writer that
+  // serializes each event as one JSON line. Idempotent.
+  const openNdjsonStream = () => {
+    if (!streamOpened) {
+      awslambda.HttpResponseStream.from(responseStream, {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/x-ndjson",
+          "Cache-Control": "no-cache, no-transform",
+          ...corsHeaders(),
+        },
+      });
+      streamOpened = true;
+      ndjsonMode = true;
+    }
+    return (ev) => {
+      try {
+        responseStream.write(JSON.stringify(ev) + "\n");
+      } catch {
+        // Stream may be torn down mid-write; swallow so engine can continue.
+      }
+    };
+  };
+
+  try {
+    // CORS preflight
+    if (event.requestContext?.http?.method === "OPTIONS") {
+      const preflight = awslambda.HttpResponseStream.from(responseStream, {
+        statusCode: 204,
+        headers: corsHeaders(),
+      });
+      streamOpened = true;
+      preflight.end();
+      return;
+    }
+
+    if (event.requestContext?.http?.method !== "POST") {
+      closeWithJson(405, { error: "method_not_allowed" });
+      return;
+    }
+
+    // HMAC verification
+    const sigResult = verifySignature(event, SIGNING_KEY);
+    if (!sigResult.valid) {
+      metrics.record("SignatureRejection");
+      logStructured(requestId, "signature_rejection", { reason: sigResult.error });
+      closeWithJson(401, { error: "unauthorized" });
+      return;
+    }
+
+    // Parse body
+    let payload;
+    try {
+      payload = JSON.parse(event.body || "{}");
+    } catch {
+      closeWithJson(400, { error: "invalid_json" });
+      return;
+    }
+
+    const { spec, deviceId: rawDeviceId } = payload;
+    if (!spec || typeof spec !== "object") {
+      closeWithJson(400, { error: "missing_spec" });
+      return;
+    }
+
+    const deviceId = validateDeviceId(rawDeviceId);
+    if (!deviceId) {
+      closeWithJson(400, { error: "invalid_device_id" });
+      return;
+    }
+    const deviceHash = hashDeviceId(deviceId);
+
+    // Rate limit by deviceHash — 1 blueprint per 30-day window
+    const rateLimitResult = await checkRateLimit(docClient, UpdateCommand, {
+      table: RATE_LIMIT_TABLE,
+      ip: deviceHash,
+      prefix: "blueprint-",
+      maxRequests: RATE_LIMIT_MAX,
+      windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+      ttlBuffer: 3600,
+      requestId,
+    });
+
+    if (!rateLimitResult.allowed) {
+      metrics.record("BlueprintRateLimited");
+      logStructured(requestId, "rate_limited", { deviceHash });
+      closeWithJson(429, {
+        error: "rate_limited",
+        message:
+          "You've generated your blueprint for this 30-day window. Join the waitlist for higher-limit Pro access.",
+      });
+      return;
+    }
+
+    // ── Stream opens here. From this point forward, every result — success
+    //    or failure — is delivered as NDJSON events. HTTP status is locked
+    //    at 200; the client distinguishes outcomes by the terminal event.
+    const writeEvent = openNdjsonStream();
+    writeEvent({ type: "ready", requestId });
+
+    const logger = {
+      info: (code, extra) => logStructured(requestId, code, extra),
+      warn: (code, extra) => logStructured(requestId, code, extra),
+      error: (code, extra) => logStructured(requestId, code, extra),
+    };
+
+    const result = await generateBlueprint(spec, {
+      tier: "free",
+      bedrockClient,
+      sanityClient,
+      examplesFetcher,
+      logger,
+      requestId,
+      onProgress: writeEvent,
+    });
+
+    // Record metrics regardless of ok/not-ok
+    if (result?.meta?.opus_tokens) {
+      metrics.record("BlueprintOpusInputTokens", result.meta.opus_tokens.input_tokens);
+      metrics.record("BlueprintOpusOutputTokens", result.meta.opus_tokens.output_tokens);
+    }
+    if (result?.meta?.haiku_tokens) {
+      metrics.record("BlueprintHaikuInputTokens", result.meta.haiku_tokens.input_tokens);
+      metrics.record("BlueprintHaikuOutputTokens", result.meta.haiku_tokens.output_tokens);
+    }
+
+    const totalMs = Date.now() - start;
+
+    if (!result.ok) {
+      let message = "Something went wrong. Please try again.";
+      if (result.error === "invalid_input") {
+        metrics.record("BlueprintInvalidInput");
+        message = "Your blueprint spec failed validation. Please review required fields.";
+      } else if (result.error === "validation_failed") {
+        metrics.record("BlueprintValidationFailure");
+        message = "The model returned a blueprint that didn't meet our quality bar. Please try again.";
+        logStructured(requestId, "blueprint_validation_failed", {
+          issues: result.details?.slice(0, 5),
+        });
+      } else if (result.error === "opus_timeout") {
+        metrics.record("BlueprintOpusTimeout");
+        message = "Generation took too long. Please try again.";
+      } else {
+        metrics.record("BlueprintGenerationError");
+      }
+      writeEvent({
+        type: "error",
+        error: result.error,
+        message,
+        details: result.details,
+        meta: { requestId, latency_ms: totalMs },
+      });
+      responseStream.end();
+      return;
+    }
+
+    metrics.record("BlueprintGenerated");
+    if (result.meta?.haiku_verdict && result.meta.haiku_verdict.ok === false) {
+      metrics.record("BlueprintHaikuFlagged");
+    }
+    metrics.record("BlueprintLatency", totalMs, "Milliseconds");
+    logStructured(requestId, "blueprint_generated", {
+      totalMs,
+      category: spec?.category,
+      attempts: result.meta?.attempts,
+      opus_tokens: result.meta?.opus_tokens,
+      haiku_verdict: result.meta?.haiku_verdict?.confidence,
+    });
+
+    writeEvent({
+      type: "complete",
+      ok: true,
+      output: result.output,
+      meta: {
+        requestId,
+        tier: result.meta?.tier,
+        latency_ms: totalMs,
+        examples_used: result.meta?.examples_used,
+        haiku_verdict: result.meta?.haiku_verdict,
+      },
+    });
+    responseStream.end();
+  } catch (error) {
+    logStructured(requestId, "handler_error", {
+      error: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+    });
+    metrics.record("BlueprintHandlerError");
+
+    if (streamOpened && ndjsonMode) {
+      // Stream already live — surface the error as an NDJSON event.
+      try {
+        responseStream.write(JSON.stringify({
+          type: "error",
+          error: "internal_error",
+          message: "An unexpected error occurred.",
+        }) + "\n");
+      } catch {
+        // Already torn down.
+      }
+      try { responseStream.end(); } catch { /* already ended */ }
+    } else if (!streamOpened) {
+      closeWithJson(500, { error: "internal_error" });
+    } else {
+      // streamOpened but not NDJSON (e.g., OPTIONS path already ended). Nothing to do.
+      try { responseStream.end(); } catch { /* already ended */ }
+    }
+  } finally {
+    await metrics.flush();
+  }
+});
+
+export default { handler };

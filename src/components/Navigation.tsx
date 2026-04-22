@@ -20,6 +20,7 @@ const ABOUT_DROPDOWN_ITEMS = [
   { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
   { path: '/aws', label: 'Amazon Web Services' },
   { path: '/claude', label: 'Claude' },
+  { path: '/blueprint', label: 'thechrisgrey Blueprint' },
 ];
 
 const Navigation = () => {
@@ -34,7 +35,7 @@ const Navigation = () => {
   useEffect(() => {
     const updateScrollState = () => {
       if (location.pathname === '/') {
-        const summaryEndPosition = window.innerHeight * 9;
+        const summaryEndPosition = window.innerHeight * 10;
         setIsScrolled(window.scrollY > summaryEndPosition);
       } else {
         setIsScrolled(window.scrollY > 20);

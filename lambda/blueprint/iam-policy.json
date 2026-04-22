@@ -1,0 +1,75 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BedrockInvokeFoundationModels",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-7",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-opus-4-7",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-opus-4-7",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-7-20251101-v1:0",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-opus-4-7-20251101-v1:0",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-opus-4-7-20251101-v1:0",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0"
+      ]
+    },
+    {
+      "Sid": "BedrockInvokeInferenceProfiles",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-opus-4-7",
+        "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      ]
+    },
+    {
+      "Sid": "DynamoDBRateLimit",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-ratelimit"
+      ]
+    },
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-blueprint:*"
+    },
+    {
+      "Sid": "CloudWatchMetrics",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricData"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "cloudwatch:namespace": "TheChrisGrey/Blueprint"
+        }
+      }
+    }
+  ]
+}
