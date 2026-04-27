@@ -10,7 +10,7 @@
     "@aws-sdk/client-cloudwatch": "^3.1033.0",
     "@aws-sdk/client-dynamodb": "^3.1034.0",
     "@aws-sdk/lib-dynamodb": "^3.1002.0",
-    "@sanity/client": "^7.21.0",
+    "@sanity/client": "^7.22.0",
     "@strands-agents/sdk": "^1.0.0-rc.4",
     "lambda-shared": "file:../shared",
     "zod": "^4.3.6"
