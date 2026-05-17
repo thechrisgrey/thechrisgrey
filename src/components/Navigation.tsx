@@ -1,8 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
-import PrefetchLink from './PrefetchLink';
+import ViewTransitionLink from './ViewTransitionLink';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home' },
@@ -119,6 +119,7 @@ const Navigation = () => {
 
   return (
     <nav
+      data-vt-persist="navigation"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
         }`}
     >
@@ -132,7 +133,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex justify-between items-center h-20">
           {/* Logo/Name */}
-          <Link to="/" className="flex items-center">
+          <ViewTransitionLink to="/" className="flex items-center">
             <img src={logo} alt="TCG Logo" className="h-16 w-16" />
             <div className="flex flex-col -ml-2">
               <span className="text-white tracking-tight" style={{ ...typography.cardTitleLarge, fontWeight: 700 }}>
@@ -142,11 +143,11 @@ const Navigation = () => {
                 thechrisgrey
               </span>
             </div>
-          </Link>
+          </ViewTransitionLink>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:mr-[-10rem]">
-            <Link
+            <ViewTransitionLink
               to="/"
               className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive('/')
                 ? 'text-altivum-gold bg-altivum-blue/30'
@@ -154,7 +155,7 @@ const Navigation = () => {
                 }`}
             >
               Home
-            </Link>
+            </ViewTransitionLink>
 
             {/* About Dropdown */}
             <div className="relative" ref={dropdownRef} onKeyDown={handleDropdownKeyDown}>
@@ -185,7 +186,7 @@ const Navigation = () => {
                 >
                   {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
-                      <PrefetchLink
+                      <ViewTransitionLink
                         key={index}
                         ref={(el) => { dropdownItemsRef.current[index] = el; }}
                         to={item.path}
@@ -201,7 +202,7 @@ const Navigation = () => {
                           } ${focusedDropdownIndex === index ? 'bg-altivum-blue/20' : ''}`}
                       >
                         {item.label}
-                      </PrefetchLink>
+                      </ViewTransitionLink>
                     ) : (
                       <div
                         key={index}
@@ -218,7 +219,7 @@ const Navigation = () => {
             </div>
 
             {NAV_ITEMS.slice(1).map((item) => (
-              <PrefetchLink
+              <ViewTransitionLink
                 key={item.path}
                 to={item.path}
                 className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive(item.path)
@@ -227,7 +228,7 @@ const Navigation = () => {
                   }`}
               >
                 {item.label}
-              </PrefetchLink>
+              </ViewTransitionLink>
             ))}
           </div>
 
@@ -248,7 +249,7 @@ const Navigation = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden pb-4 bg-altivum-navy/95 backdrop-blur-md">
             <div className="flex flex-col space-y-2">
-              <Link
+              <ViewTransitionLink
                 to="/"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive('/')
@@ -257,7 +258,7 @@ const Navigation = () => {
                   }`}
               >
                 Home
-              </Link>
+              </ViewTransitionLink>
 
               {/* About Section */}
               <div className="px-4 py-2">
@@ -265,7 +266,7 @@ const Navigation = () => {
                 <div className="flex flex-col space-y-1 ml-2">
                   {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
                     item.path ? (
-                      <PrefetchLink
+                      <ViewTransitionLink
                         key={index}
                         to={item.path}
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -275,7 +276,7 @@ const Navigation = () => {
                           }`}
                       >
                         {item.label}
-                      </PrefetchLink>
+                      </ViewTransitionLink>
                     ) : (
                       <div
                         key={index}
@@ -289,7 +290,7 @@ const Navigation = () => {
               </div>
 
               {NAV_ITEMS.slice(1).map((item) => (
-                <PrefetchLink
+                <ViewTransitionLink
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -299,7 +300,7 @@ const Navigation = () => {
                     }`}
                 >
                   {item.label}
-                </PrefetchLink>
+                </ViewTransitionLink>
               ))}
             </div>
           </div>

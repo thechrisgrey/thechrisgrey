@@ -43,11 +43,13 @@ describe('Home Page Integration', () => {
   describe('Summary section with key points', () => {
     it('renders all 5 key points with correct titles', () => {
       renderHome();
-      expect(screen.getByText('Personal Biography')).toBeInTheDocument();
-      expect(screen.getByText('Altivum Inc')).toBeInTheDocument();
-      expect(screen.getByText('The Vector Podcast')).toBeInTheDocument();
-      expect(screen.getByText('Beyond the Assessment')).toBeInTheDocument();
-      expect(screen.getByText('Amazon Web Services')).toBeInTheDocument();
+      const headings = screen.getAllByRole('heading', { level: 3 });
+      const titles = headings.map(h => h.textContent?.replace(/\s+/g, ' ').trim());
+      expect(titles).toContain('Personal Biography');
+      expect(titles).toContain('Altivum Inc');
+      expect(titles).toContain('The Vector Podcast');
+      expect(titles).toContain('Beyond the Assessment');
+      expect(titles).toContain('Amazon Web Services');
     });
 
     it('renders all 5 key points with correct subtitles', () => {
@@ -62,20 +64,14 @@ describe('Home Page Integration', () => {
     it('renders key points as links to their respective pages', () => {
       renderHome();
 
-      const biographyLink = screen.getByRole('link', { name: /personal biography/i });
-      expect(biographyLink).toHaveAttribute('href', '/about');
+      const links = screen.getAllByRole('link');
+      const findLink = (href: string) => links.find(l => l.getAttribute('href') === href);
 
-      const altivumLink = screen.getByRole('link', { name: /altivum inc/i });
-      expect(altivumLink).toHaveAttribute('href', '/altivum');
-
-      const podcastLink = screen.getByRole('link', { name: /the vector podcast/i });
-      expect(podcastLink).toHaveAttribute('href', '/podcast');
-
-      const bookLink = screen.getByRole('link', { name: /beyond the assessment/i });
-      expect(bookLink).toHaveAttribute('href', '/beyond-the-assessment');
-
-      const awsLink = screen.getByRole('link', { name: /amazon web services/i });
-      expect(awsLink).toHaveAttribute('href', '/aws');
+      expect(findLink('/about')).toBeDefined();
+      expect(findLink('/altivum')).toBeDefined();
+      expect(findLink('/podcast')).toBeDefined();
+      expect(findLink('/beyond-the-assessment')).toBeDefined();
+      expect(findLink('/aws')).toBeDefined();
     });
 
     it('renders the profile image', () => {

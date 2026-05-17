@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import { PortableText } from '@portabletext/react';
 import { SEO } from '../components/SEO';
 import NewsletterForm from '../components/NewsletterForm';
@@ -79,7 +80,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
   return (
     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
       {prevPost ? (
-        <Link to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
+        <ViewTransitionLink to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
           <span className="material-icons text-sm flex-shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <div className="min-w-0">
             <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
@@ -87,10 +88,10 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
             </div>
             <div className="truncate">{prevPost.title}</div>
           </div>
-        </Link>
+        </ViewTransitionLink>
       ) : <div />}
       {nextPost ? (
-        <Link to={`/blog/${nextPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0">
+        <ViewTransitionLink to={`/blog/${nextPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0">
           <div className="min-w-0">
             <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
               {nextPost.seriesOrder != null ? `Part ${nextPost.seriesOrder}` : 'Next'}
@@ -98,7 +99,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
             <div className="truncate">{nextPost.title}</div>
           </div>
           <span className="material-icons text-sm flex-shrink-0 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-        </Link>
+        </ViewTransitionLink>
       ) : <div />}
     </div>
   );
@@ -217,13 +218,13 @@ const BlogPost = () => {
                 <span className="material-icons mr-2 text-sm">refresh</span>
                 Try Again
               </button>
-              <Link
+              <ViewTransitionLink
                 to="/blog"
                 className="inline-flex items-center px-6 py-3 border border-altivum-gold text-altivum-gold font-medium uppercase tracking-wider text-sm hover:bg-altivum-gold hover:text-altivum-dark transition-colors duration-300"
               >
                 <span className="material-icons mr-2 text-sm">arrow_back</span>
                 Back to Blog
-              </Link>
+              </ViewTransitionLink>
             </div>
           </div>
         </div>
@@ -250,13 +251,13 @@ const BlogPost = () => {
             <p className="text-altivum-silver mb-8" style={typography.bodyText}>
               The article you're looking for doesn't exist or has been moved.
             </p>
-            <Link
+            <ViewTransitionLink
               to="/blog"
               className="inline-flex items-center px-6 py-3 bg-altivum-gold text-altivum-dark font-semibold hover:bg-white transition-colors"
             >
               <span className="material-icons mr-2 text-sm">arrow_back</span>
               Back to Blog
-            </Link>
+            </ViewTransitionLink>
           </div>
         </div>
       </div>
@@ -336,13 +337,13 @@ const BlogPost = () => {
 
         <div className="relative max-w-4xl mx-auto px-6 lg:px-8 pt-16">
           {/* Back link */}
-          <Link
+          <ViewTransitionLink
             to="/blog"
             className="inline-flex items-center text-altivum-silver hover:text-altivum-gold transition-colors mb-8"
           >
             <span className="material-icons mr-2 text-sm">arrow_back</span>
             Back to Blog
-          </Link>
+          </ViewTransitionLink>
 
           {/* Meta info */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-altivum-gold uppercase tracking-wider font-medium mb-6">
@@ -371,13 +372,13 @@ const BlogPost = () => {
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-8">
               {post.tags.map(tag => (
-                <Link
+                <ViewTransitionLink
                   key={tag._id}
                   to={`/blog?tag=${tag.slug.current}`}
                   className="px-3 py-1 text-sm bg-altivum-gold/10 text-altivum-gold rounded hover:bg-altivum-gold/20 transition-colors"
                 >
                   {tag.title}
-                </Link>
+                </ViewTransitionLink>
               ))}
             </div>
           )}
@@ -471,13 +472,13 @@ const BlogPost = () => {
               {post.series.description && (
                 <p className="text-altivum-silver/70 text-sm">{post.series.description}</p>
               )}
-              <Link
+              <ViewTransitionLink
                 to={`/blog?series=${post.series.slug.current}`}
                 className="inline-flex items-center mt-4 text-altivum-gold text-sm hover:underline"
               >
                 View all posts in this series
                 <span className="material-icons text-sm ml-1">arrow_forward</span>
-              </Link>
+              </ViewTransitionLink>
               {post.seriesPosts && (
                 <SeriesNavigation seriesPosts={post.seriesPosts} currentId={post._id} />
               )}
@@ -507,13 +508,13 @@ const BlogPost = () => {
                 Christian writes about AI adoption, veteran entrepreneurship, and lessons learned from
                 a decade in Special Operations.
               </p>
-              <Link
+              <ViewTransitionLink
                 to="/about"
                 className="text-altivum-gold text-sm hover:text-white transition-colors inline-flex items-center gap-1"
               >
                 Learn more about Christian
                 <span className="material-icons text-sm">arrow_forward</span>
-              </Link>
+              </ViewTransitionLink>
             </div>
           </div>
         </div>
@@ -528,7 +529,7 @@ const BlogPost = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {post.relatedPosts.map((relatedPost: SanityPostPreview) => (
-                <Link
+                <ViewTransitionLink
                   key={relatedPost._id}
                   to={`/blog/${relatedPost.slug.current}`}
                   className="group"
@@ -557,7 +558,7 @@ const BlogPost = () => {
                   <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>
                     {relatedPost.title}
                   </h3>
-                </Link>
+                </ViewTransitionLink>
               ))}
             </div>
           </div>
@@ -577,13 +578,13 @@ const BlogPost = () => {
           <NewsletterForm variant="compact" />
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <Link
+            <ViewTransitionLink
               to="/blog"
               className="inline-flex items-center justify-center px-6 py-3 bg-white/5 border border-white/10 text-white font-medium hover:border-altivum-gold hover:text-altivum-gold transition-colors"
             >
               <span className="material-icons mr-2 text-sm">arrow_back</span>
               More Articles
-            </Link>
+            </ViewTransitionLink>
             <a
               href={SOCIAL_LINKS.linkedin}
               target="_blank"

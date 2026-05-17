@@ -42,6 +42,12 @@ Chat-stream zip includes: `index.mjs agent.mjs events.mjs memory.mjs hmac.mjs va
 
 **Animations** (`tailwind.config.js`): `animate-fade-in` (1.2s), `animate-nav-fade-in` (0.8s, 2s delay), `animate-widget-open` (250ms). `prefers-reduced-motion` override in `index.css` forces opacity:1.
 
+**Smooth Scroll:** Lenis (`src/hooks/useLenis.ts`, `src/components/LenisProvider.tsx`) provides momentum-based inertial scrolling site-wide. Configured at `lerp: 0.1` desktop / `0.07` touch. Disabled entirely when `prefers-reduced-motion: reduce`. Scrollable sub-containers (chat panel) use `data-lenis-prevent`.
+
+**View Transitions:** `src/hooks/useViewTransitionNavigate.ts` + `src/components/ViewTransitionLink.tsx` wrap React Router navigations in `document.startViewTransition()`. Persistent elements (nav, footer, chat widget) use `data-vt-persist` attribute to exclude from crossfade. CSS keyframes in `index.css` (`vt-fade-out`/`vt-fade-in`, 150-200ms). Use `<ViewTransitionLink>` instead of `<Link>` for all internal navigation (except error boundaries).
+
+**ScrollTrigger Text Reveals:** `src/components/SplitReveal.tsx` + `src/components/FadeReveal.tsx` use GSAP ScrollTrigger for scroll-linked word-by-word animations. Accept `triggerRef`, `triggerStart`, `triggerEnd` props for sticky-section positioning. Mock GSAP in jsdom tests.
+
 **Micro-interactions:**
 - Card hover: `hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300`
 - Button press: `active:scale-[0.98]`
@@ -54,7 +60,7 @@ Chat-stream zip includes: `index.mjs agent.mjs events.mjs memory.mjs hmac.mjs va
 
 ### Home Page Scroll
 
-`src/pages/Home.tsx`: Hero (100vh) → Summary (675vh mobile / 840vh desktop, sticky profile + 8 scroll-triggered key points at 50vh/80vh intervals) → CTA. Scroll tracked via rAF-throttled listener. Nav transparency threshold: `window.innerHeight * 10`.
+`src/pages/Home.tsx`: Hero (100vh) → Summary (675vh mobile / 840vh desktop, sticky profile + 8 scroll-triggered key points) → CTA. Key points animate via GSAP ScrollTrigger (`SplitReveal` for titles, `FadeReveal` for subtitles), each triggered at staggered positions (5%+11%*index) within the section's scroll range. No manual scroll listener — ScrollTrigger handles everything. Nav transparency threshold: `window.innerHeight * 10`.
 
 ### Navigation
 

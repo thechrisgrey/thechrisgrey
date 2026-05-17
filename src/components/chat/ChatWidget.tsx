@@ -6,10 +6,10 @@ const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <>
+    <div data-vt-persist="chat-widget">
       {isOpen && <ChatWidgetPanel onClose={() => setIsOpen(false)} />}
       <ChatWidgetButton isOpen={isOpen} onClick={() => setIsOpen((prev) => !prev)} />
-    </>
+    </div>
   );
 };
 

@@ -94,7 +94,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
       </div>
 
       {/* Messages */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto" data-lenis-prevent>
         <div className="px-4 py-4">
           <div
             className="space-y-4"

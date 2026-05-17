@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import { SEO } from '../components/SEO';
 import altivumImage from '../assets/altivum.jpg';
 import awsPartnerLogo from '../assets/aws-partner-dark.png';
@@ -413,12 +413,12 @@ const Altivum = () => {
             >
               Visit Altivum.ai
             </a>
-            <Link
+            <ViewTransitionLink
               to="/contact"
               className="inline-block px-8 py-4 bg-transparent border border-altivum-gold text-altivum-gold font-semibold rounded hover:bg-altivum-gold/10 transition-all duration-200"
             >
               Get in Touch
-            </Link>
+            </ViewTransitionLink>
           </div>
         </div>
       </section>

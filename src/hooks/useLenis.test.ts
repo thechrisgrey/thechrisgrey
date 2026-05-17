@@ -1,0 +1,82 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { useLenisInstance, useLenisContext } from './useLenis';
+
+vi.mock('lenis', () => {
+  return {
+    default: vi.fn(() => ({
+      destroy: vi.fn(),
+      raf: vi.fn(),
+      scrollTo: vi.fn(),
+    })),
+  };
+});
+
+describe('useLenisInstance', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    let called = false;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => {
+      if (!called) { called = true; }
+      return 1;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('initializes Lenis when reduced motion is not preferred', () => {
+    const { result } = renderHook(() => useLenisInstance());
+    expect(result.current.lenis).not.toBeNull();
+  });
+
+  it('does not initialize Lenis when prefers-reduced-motion is active', () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }));
+
+    const { result } = renderHook(() => useLenisInstance());
+    expect(result.current.lenis).toBeNull();
+  });
+
+  it('scrollTo falls back to window.scrollTo when lenis is null', () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }));
+
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const { result } = renderHook(() => useLenisInstance());
+    result.current.scrollTo(100);
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 100, left: 0, behavior: 'instant' });
+  });
+
+  it('cleans up on unmount', () => {
+    const { unmount } = renderHook(() => useLenisInstance());
+    unmount();
+    expect(window.cancelAnimationFrame).toHaveBeenCalled();
+  });
+});
+
+describe('useLenisContext', () => {
+  it('returns default context value when not wrapped in provider', () => {
+    const { result } = renderHook(() => useLenisContext());
+    expect(result.current.lenis).toBeNull();
+    expect(typeof result.current.scrollTo).toBe('function');
+  });
+});

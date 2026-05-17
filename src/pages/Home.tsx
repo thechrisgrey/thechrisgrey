@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import ViewTransitionLink from '../components/ViewTransitionLink';
+import SplitReveal from '../components/SplitReveal';
+import FadeReveal from '../components/FadeReveal';
 import { SEO } from '../components/SEO';
-// Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
 import heroImage from '../assets/hero2.png';
 import { typography } from '../utils/typography';
@@ -10,48 +11,7 @@ import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
 
 const Home = () => {
-  const [scrollProgress, setScrollProgress] = useState(-1);
-  const isMobileRef = useRef(window.innerWidth < 768);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleResize = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(() => {
-        const next = window.innerWidth < 768;
-        if (next !== isMobileRef.current) {
-          isMobileRef.current = next;
-          // Breakpoint crossed — force a single re-render so the animation
-          // thresholds reflect the new interval before the next scroll tick.
-          setScrollProgress((p) => p);
-        }
-        ticking = false;
-      });
-    };
-    window.addEventListener('resize', handleResize, { passive: true });
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollPosition = window.scrollY;
-          const windowHeight = window.innerHeight;
-          const scrollInterval = isMobileRef.current ? 0.5 : 0.8;
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 7);
-          setScrollProgress(Math.max(-1, progress));
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const keyPoints = [
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
@@ -65,41 +25,56 @@ const Home = () => {
   ];
 
   const renderTab = (point: typeof keyPoints[number], index: number, mirrored = false) => {
-    const hiddenTransform = mirrored
-      ? 'opacity-0 transform -translate-x-10 md:translate-x-10'
-      : 'opacity-0 transform -translate-x-10';
+    const direction = mirrored ? 'right' as const : 'left' as const;
     const cardClass = mirrored
       ? 'border-l-4 md:border-l-0 md:border-r-4 border-altivum-gold pl-4 sm:pl-6 md:pl-0 md:pr-6 py-3 sm:py-4 md:text-right transition-all duration-300'
       : 'border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 transition-all duration-300';
     const linkHover = mirrored
       ? 'block cursor-pointer group md:hover:pr-8 active:pl-6 sm:active:pl-8 touch-manipulation'
       : 'block cursor-pointer group md:hover:pl-8 active:pl-6 sm:active:pl-8 touch-manipulation';
+
+    const startPct = 5 + index * 11;
+    const endPct = startPct + 8;
+    const triggerStart = `${startPct}% bottom`;
+    const triggerEnd = `${endPct}% bottom`;
+
+    const content = (
+      <>
+        <SplitReveal
+          as="h3"
+          direction={direction}
+          stagger={0.04}
+          className="text-white mb-1 sm:mb-2"
+          style={typography.cardTitleLarge}
+          triggerRef={sectionRef}
+          triggerStart={triggerStart}
+          triggerEnd={triggerEnd}
+        >
+          {point.title}
+        </SplitReveal>
+        <FadeReveal
+          direction={direction}
+          delay={0.15}
+          triggerRef={sectionRef}
+          triggerStart={triggerStart}
+          triggerEnd={triggerEnd}
+        >
+          <p className="text-altivum-gold italic" style={typography.subtitle}>
+            {point.subtitle}
+          </p>
+        </FadeReveal>
+      </>
+    );
+
     return (
-      <div
-        key={index}
-        style={{ willChange: 'opacity, transform' }}
-        className={`pointer-events-auto transition-all duration-700 ${index <= scrollProgress
-          ? 'opacity-100 transform translate-x-0'
-          : hiddenTransform
-          }`}
-      >
+      <div key={index} className="pointer-events-auto">
         {point.link ? (
-          <Link to={point.link} className={`${cardClass} ${linkHover}`}>
-            <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
-              {point.title}
-            </h3>
-            <p className="text-altivum-gold italic" style={typography.subtitle}>
-              {point.subtitle}
-            </p>
-          </Link>
+          <ViewTransitionLink to={point.link} className={`${cardClass} ${linkHover}`}>
+            {content}
+          </ViewTransitionLink>
         ) : (
           <div className={cardClass}>
-            <h3 className="text-white mb-1 sm:mb-2" style={typography.cardTitleLarge}>
-              {point.title}
-            </h3>
-            <p className="text-altivum-gold italic" style={typography.subtitle}>
-              {point.subtitle}
-            </p>
+            {content}
           </div>
         )}
       </div>
@@ -143,7 +118,7 @@ const Home = () => {
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
-      <section className="relative h-[675vh] md:h-[840vh]">
+      <section ref={sectionRef} className="relative h-[675vh] md:h-[840vh]">
         <div className="sticky top-0 h-screen overflow-hidden" style={{ transform: 'translate3d(0,0,0)' }}>
           <div className="absolute inset-0">
             <img
@@ -202,13 +177,13 @@ const Home = () => {
           </div>
 
           {/* Link to all socials */}
-          <Link
+          <ViewTransitionLink
             to="/links"
             className="inline-block text-altivum-silver hover:text-white underline transition-colors touch-manipulation"
             style={typography.bodyText}
           >
             Check out the rest of my socials
-          </Link>
+          </ViewTransitionLink>
         </div>
       </section>
     </div>

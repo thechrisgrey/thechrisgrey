@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import { SEO } from '../components/SEO';
 import NewsletterForm from '../components/NewsletterForm';
 import { typography } from '../utils/typography';
@@ -385,7 +386,7 @@ const Blog = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {filteredPosts.map((post) => (
                 <article key={post._id} className="group hover:-translate-y-0.5 transition-transform duration-300" onMouseEnter={() => handleCardHover(post.slug.current)}>
-                  <Link to={`/blog/${post.slug.current}`} className="block">
+                  <ViewTransitionLink to={`/blog/${post.slug.current}`} className="block">
                     <div className="relative overflow-hidden rounded-lg mb-6 aspect-video">
                       <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
                       {post.image?.asset ? (
@@ -427,27 +428,27 @@ const Blog = () => {
                         {post.excerpt}
                       </p>
                     </div>
-                  </Link>
+                  </ViewTransitionLink>
                   {/* Tags */}
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {post.tags.slice(0, 3).map(tag => (
-                        <Link
+                        <ViewTransitionLink
                           key={tag._id}
                           to={`/blog?tag=${tag.slug.current}`}
                           className="px-2 py-1 text-xs bg-altivum-gold/10 text-altivum-gold rounded hover:bg-altivum-gold/20 transition-colors"
                         >
                           {tag.title}
-                        </Link>
+                        </ViewTransitionLink>
                       ))}
                     </div>
                   )}
-                  <Link
+                  <ViewTransitionLink
                     to={`/blog/${post.slug.current}`}
                     className="inline-flex items-center text-altivum-gold text-sm font-medium mt-3 group-hover:translate-x-2 transition-transform"
                   >
                     Read Article <span className="material-icons text-sm ml-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                  </Link>
+                  </ViewTransitionLink>
                 </article>
               ))}
             </div>

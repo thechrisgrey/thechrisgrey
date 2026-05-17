@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import ViewTransitionLink from './ViewTransitionLink';
 import { typography } from '../utils/typography';
 import { SOCIAL_LINKS } from '../constants/links';
 
@@ -6,7 +6,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-altivum-navy border-t border-altivum-slate/30">
+    <footer data-vt-persist="footer" className="bg-altivum-navy border-t border-altivum-slate/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-4">
         {/* Mobile: Compact 2-column layout for links, Desktop: 3-column with brand */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
@@ -28,29 +28,29 @@ const Footer = () => {
             </h4>
             <ul className="space-y-1 sm:space-y-2">
               <li>
-                <Link to="/about" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/about" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   About
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
-                <Link to="/altivum" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/altivum" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   Altivum Inc.
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
-                <Link to="/podcast" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/podcast" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   The Vector Podcast
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
-                <Link to="/claude" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/claude" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   Claude
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
-                <Link to="/blog" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/blog" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   Blog
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
                 <a
@@ -73,9 +73,9 @@ const Footer = () => {
             </h4>
             <ul className="space-y-1 sm:space-y-2">
               <li>
-                <Link to="/contact" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink to="/contact" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
                   Get in Touch
-                </Link>
+                </ViewTransitionLink>
               </li>
               <li>
                 <a
@@ -107,9 +107,9 @@ const Footer = () => {
           <p className="text-center text-altivum-silver" style={typography.smallText}>
             &copy; {currentYear} Christian Perez. All rights reserved.
             <span className="mx-2">·</span>
-            <Link to="/privacy" className="hover:text-altivum-gold transition-colors link-underline">
+            <ViewTransitionLink to="/privacy" className="hover:text-altivum-gold transition-colors link-underline">
               Privacy Policy
-            </Link>
+            </ViewTransitionLink>
           </p>
         </div>
       </div>

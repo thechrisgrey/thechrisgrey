@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import ViewTransitionLink from '../ViewTransitionLink';
 
 interface ButtonProps {
   children: React.ReactNode;
@@ -64,9 +64,9 @@ export const Button = ({
   // Internal link using React Router
   if (to) {
     return (
-      <Link to={to} className={combinedClasses}>
+      <ViewTransitionLink to={to} className={combinedClasses}>
         {content}
-      </Link>
+      </ViewTransitionLink>
     );
   }
 

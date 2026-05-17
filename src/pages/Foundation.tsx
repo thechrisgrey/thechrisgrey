@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import { SEO } from '../components/SEO';
 import foundationImage from '../assets/foundation.jpg';
 import { typography } from '../utils/typography';
@@ -189,7 +189,7 @@ const Foundation = () => {
               </p>
             </div>
             <div className="mt-8">
-              <Link
+              <ViewTransitionLink
                 to="/about"
                 className="inline-flex items-center text-altivum-gold hover:text-altivum-gold/80 transition-colors group"
                 style={typography.bodyText}
@@ -198,7 +198,7 @@ const Foundation = () => {
                 <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </Link>
+              </ViewTransitionLink>
             </div>
           </div>
         </div>

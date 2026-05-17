@@ -39,9 +39,21 @@
   }
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Lenis smooth scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 /* Focus-visible styles for keyboard navigation */
@@ -76,14 +88,50 @@ select:focus:not(:focus-visible) {
     opacity: 1 !important;
     transform: none !important;
   }
+  .split-word-inner {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* View Transitions — progressive enhancement for browsers that support it */
 @supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: vt-fade-out 150ms ease-in-out forwards;
+  }
+
+  ::view-transition-new(root) {
+    animation: vt-fade-in 200ms ease-in-out forwards;
+  }
+
+  @keyframes vt-fade-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(8px); }
+  }
+
+  @keyframes vt-fade-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  [data-vt-persist="navigation"] { view-transition-name: navigation; }
+  [data-vt-persist="footer"] { view-transition-name: footer; }
+  [data-vt-persist="chat-widget"] { view-transition-name: chat-widget; }
+
+  ::view-transition-old(navigation),
+  ::view-transition-new(navigation),
+  ::view-transition-old(footer),
+  ::view-transition-new(footer),
+  ::view-transition-old(chat-widget),
+  ::view-transition-new(chat-widget) {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 150ms;
-    animation-timing-function: ease-in-out;
+    animation: none !important;
   }
 }
 
