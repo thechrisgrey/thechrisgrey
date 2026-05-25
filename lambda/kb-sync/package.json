@@ -5,6 +5,6 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-bedrock-agent": "^3.1034.0",
-    "@aws-sdk/client-cloudwatch": "^3.1033.0"
+    "@aws-sdk/client-cloudwatch": "^3.1053.0"
   }
 }
