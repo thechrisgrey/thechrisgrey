@@ -11,7 +11,7 @@ function countingSanityClient(results, { failFirst = false } = {}) {
   return {
     callCount: () => calls,
     setFail(v) { shouldFail = v; },
-    async fetch(query) {
+    async fetch(_query) {
       calls++;
       if (shouldFail) {
         shouldFail = false;

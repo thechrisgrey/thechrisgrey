@@ -1,19 +1,24 @@
 import { PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 
-export const NAMESPACE = "TheChrisGrey/SiteMetrics";
 export const MAX_METRICS_PER_CALL = 20;
 
 /**
- * Batched metrics collector. Accumulates metrics during a request and flushes
- * them in parallel PutMetricDataCommand calls at the end. The CloudWatch
- * client is injected so tests can stub it.
+ * Batched metrics collector shared across the Lambda fleet. Accumulates metrics
+ * during a request and flushes them in parallel PutMetricDataCommand calls at the
+ * end. The CloudWatch namespace is a constructor arg so each service can alarm on
+ * its own metrics in isolation (e.g. "TheChrisGrey/SiteMetrics" vs
+ * "TheChrisGrey/Blueprint"). The CloudWatch client is injected so tests can stub it.
  */
 export class MetricsCollector {
-  constructor(cloudwatchClient) {
+  constructor(cloudwatchClient, namespace) {
     if (!cloudwatchClient) {
       throw new Error("MetricsCollector requires a cloudwatchClient");
     }
+    if (!namespace) {
+      throw new Error("MetricsCollector requires a namespace");
+    }
     this.client = cloudwatchClient;
+    this.namespace = namespace;
     this.buffer = [];
   }
 
@@ -37,7 +42,7 @@ export class MetricsCollector {
     await Promise.all(
       batches.map((batch) =>
         this.client
-          .send(new PutMetricDataCommand({ Namespace: NAMESPACE, MetricData: batch }))
+          .send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: batch }))
           .catch((err) => console.error(JSON.stringify({
             event: "metrics_flush_error",
             error: err.name,

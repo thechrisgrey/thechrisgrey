@@ -232,19 +232,23 @@ aws amplify start-job \
 
 ### Lambda Deployment
 
-Each Lambda function is deployed independently:
+Each Lambda function is deployed independently via a single verified script. The script
+installs from the lockfile, dereferences the `lambda-shared` symlink into the bundle, and
+**verifies the entire module graph resolves before upload** — so a deploy can no longer ship
+a Lambda that crashes on cold start.
 
 ```bash
-cd lambda/chat-stream
-npm install
-zip -r function.zip index.mjs package.json node_modules
-aws lambda update-function-code \
-  --function-name thechrisgrey-chat-stream \
-  --zip-file fileb://function.zip \
-  --region us-east-1
+# Verify the bundle builds and resolves, without uploading:
+npm run deploy:lambda -- chat-stream --dry-run
+
+# Deploy for real:
+npm run deploy:lambda -- chat-stream
 ```
 
-Repeat for `kb-sync`, `kb-builder`, and `metrics` (adjust function name and region as needed).
+Works for any Lambda under `lambda/` (e.g. `chat-stream`, `blueprint`, `kb-builder`,
+`metrics`, `kb-sync`, `mcp-server`). Pass `--region <r>` to override the default
+(`us-east-1`). Do **not** hand-build `function.zip` — the manual `zip` glob omits the
+sibling modules each handler imports and produces a broken artifact.
 
 ---
 

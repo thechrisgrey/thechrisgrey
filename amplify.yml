@@ -5,6 +5,10 @@ frontend:
       commands:
         - npm ci
     build:
+      # Lightweight deploy-time smoke gate. The authoritative test gate is GitHub
+      # Actions CI (.github/workflows/ci.yml: full coverage threshold + lint + lambda
+      # tests + audits) — protect `main` with a required status check so deploys can't
+      # outrun a red CI run.
       commands:
         - npm run test
         - npm run build

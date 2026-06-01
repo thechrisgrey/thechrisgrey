@@ -17,12 +17,12 @@ npm run lint         # ESLint
 
 **Deployment:** Push to `main` triggers Amplify. Manual: `aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELEASE --region us-east-2`
 
-**Lambda deploy pattern:**
+**Lambda deploy pattern:** Use the verified script — never hand-build `function.zip` (the manual `zip` glob omits sibling modules each handler imports and ships a crash-on-cold-start artifact).
 ```bash
-cd lambda/<name> && npm install && zip -r function.zip index.mjs package.json node_modules
-aws lambda update-function-code --function-name thechrisgrey-<name> --zip-file fileb://function.zip --region us-east-1
+npm run deploy:lambda -- <name> --dry-run   # build + verify module graph, no upload
+npm run deploy:lambda -- <name>             # deploy (default region us-east-1; --region to override)
 ```
-Chat-stream zip includes: `index.mjs agent.mjs events.mjs memory.mjs hmac.mjs validation.mjs prompts.mjs metrics.mjs kbRetrieve.mjs tools`
+`scripts/deploy-lambda.sh` runs `npm ci`, dereferences `lambda-shared` fresh into the bundle, and runs a stubbed-`awslambda` `import()` smoke check that aborts on any unresolved import before calling `update-function-code`.
 
 ## Architecture
 

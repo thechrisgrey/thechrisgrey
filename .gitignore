@@ -37,15 +37,12 @@ cypress/downloads
 amplify/
 .amplify/
 amplify-*
-lambda/kb-sync/node_modules/
-lambda/kb-sync/function.zip
-lambda/chat-stream/node_modules/
-lambda/chat-stream/function.zip
-lambda/kb-builder/node_modules/
-lambda/kb-builder/function.zip
+# Build artifacts for every Lambda (glob, so new Lambdas are covered automatically).
+# NOTE: package-lock.json is intentionally NOT globbed — chat-stream and blueprint
+# commit their lockfiles so CI can `npm ci`. Only kb-builder (npm install) ignores it.
+lambda/*/node_modules/
+lambda/*/function.zip
 lambda/kb-builder/package-lock.json
-lambda/metrics/node_modules/
-lambda/metrics/function.zip
 
 # Superpowers brainstorming sessions
 .superpowers/

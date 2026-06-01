@@ -3,19 +3,29 @@ import { createHmac, timingSafeEqual } from "crypto";
 export const SIGNATURE_MAX_AGE_SECONDS = 300;
 
 /**
- * Verify HMAC signature on an incoming Lambda Function URL event.
+ * Verify an HMAC signature on an incoming Lambda Function URL event.
  *
- * @param {object} event - The Lambda event.
+ * Header names are parameterized so multiple services can share this one
+ * implementation: chat-stream uses x-chat-* (the defaults), blueprint passes
+ * its x-blueprint-* pair via `options`.
+ *
+ * @param {object} event - The Lambda event (Function URL shape).
  * @param {string} signingKey - Shared secret. Empty string disables verification.
+ * @param {{ signatureHeader?: string, timestampHeader?: string }} [options]
  * @returns {{ valid: true } | { valid: false, error: string }}
  */
-export function verifySignature(event, signingKey) {
+export function verifySignature(
+  event,
+  signingKey,
+  { signatureHeader = "x-chat-signature", timestampHeader = "x-chat-timestamp" } = {}
+) {
   if (!signingKey) {
     return { valid: true };
   }
 
-  const timestamp = event.headers?.["x-chat-timestamp"];
-  const signature = event.headers?.["x-chat-signature"];
+  const headers = event.headers || {};
+  const timestamp = headers[timestampHeader];
+  const signature = headers[signatureHeader];
 
   if (!timestamp || !signature) {
     return { valid: false, error: "missing_headers" };

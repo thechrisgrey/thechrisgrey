@@ -34,10 +34,10 @@ import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { createClient as createSanityClient } from "@sanity/client";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 
-import { verifySignature } from "./hmac.mjs";
+import { verifySignature } from "lambda-shared/hmac";
+import { MetricsCollector } from "lambda-shared/metrics";
 import { generateBlueprint } from "./engine.mjs";
 import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
-import { MetricsCollector } from "./metrics.mjs";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://thechrisgrey.com";
@@ -105,7 +105,7 @@ function logStructured(requestId, event, extra = {}) {
 
 export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
   const requestId = randomUUID();
-  const metrics = new MetricsCollector(cloudwatchClient);
+  const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/Blueprint");
   const start = Date.now();
 
   // Tracks whether the response metadata (status + headers) has already been
@@ -171,7 +171,10 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
     }
 
     // HMAC verification
-    const sigResult = verifySignature(event, SIGNING_KEY);
+    const sigResult = verifySignature(event, SIGNING_KEY, {
+      signatureHeader: "x-blueprint-signature",
+      timestampHeader: "x-blueprint-timestamp",
+    });
     if (!sigResult.valid) {
       metrics.record("SignatureRejection");
       logStructured(requestId, "signature_rejection", { reason: sigResult.error });

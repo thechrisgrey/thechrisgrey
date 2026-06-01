@@ -8,6 +8,8 @@ vi.mock('lenis', () => ({
     destroy: vi.fn(),
     raf: vi.fn(),
     scrollTo: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
   })),
 }));
 
