@@ -27,6 +27,9 @@ export const HAIKU_MODEL_ID =
   process.env.BEDROCK_HAIKU_MODEL_ID ||
   "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 
+// MUST stay below the deployed blueprint Lambda timeout (currently 150s) so the internal
+// AbortController fires first and the engine surfaces a graceful `opus_timeout` event +
+// BlueprintOpusTimeout metric. Keep the runbook's --timeout in sync (phase-5-deployment-runbook.md).
 export const OPUS_TIMEOUT_MS = 110_000;
 export const HAIKU_TIMEOUT_MS = 15_000;
 
