@@ -123,7 +123,7 @@ Architecture generator at `/blueprint`. Opus 4.6 generates blueprint from spec; 
 
 **Design principles:** Engine-first (`lambda/blueprint/engine.mjs` is transport-agnostic), monetization at handler layer, single-source schema (`schema.mjs` → Zod → JSON Schema), golden-example grounding from Sanity `architectureBlueprint` docs.
 
-**Layout:** `lambda/blueprint/` (engine, schema, prompts, artifacts, validation, bedrock, goldenExamples), `lambda/blueprint-builder/` (admin CRUD), `src/pages/Blueprint.tsx`, `src/components/blueprint/`, `src/hooks/useBlueprint.ts`
+**Layout:** `lambda/blueprint/` (engine, schema, prompts, artifacts, validation, bedrock, goldenExamples), `lambda/blueprint-builder/` (admin CRUD — planned, not yet scaffolded), `src/pages/Blueprint.tsx`, `src/components/blueprint/`, `src/hooks/useBlueprint.ts`
 
 **Rate limit:** 1/30 days per device (`blueprint-{deviceHash}` prefix). Alarms: opus-cost $25/day, errors >20%/15min, validation-failures >10%.
 
