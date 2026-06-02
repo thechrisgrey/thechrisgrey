@@ -82,7 +82,7 @@ zip -r function.zip \
   package.json node_modules
 ```
 
-Create the function (Node 20, 1024MB memory, 90s timeout — Opus can take ~30s):
+Create the function (Node 20, 1024MB memory, 150s timeout (must exceed bedrock.mjs OPUS_TIMEOUT_MS = 110s, with buffer) — Opus can take ~30s):
 
 ```bash
 aws lambda create-function \
@@ -91,7 +91,7 @@ aws lambda create-function \
   --role arn:aws:iam::205930636302:role/thechrisgrey-blueprint-role \
   --handler index.handler \
   --zip-file fileb://lambda/blueprint/function.zip \
-  --timeout 90 \
+  --timeout 150 \
   --memory-size 1024 \
   --region us-east-1 \
   --description "Blueprint generator (Opus 4.6) — public rate-limited endpoint"
