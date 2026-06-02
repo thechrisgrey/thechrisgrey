@@ -84,7 +84,11 @@ jobs:
         # (advisory-DB drift). Durable remediation is tracked via Dependabot.
         run: |
           set -e
-          for dir in lambda/chat-stream lambda/blueprint lambda/blueprint-builder lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+          for dir in lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+            if [ ! -f "$dir/package.json" ]; then
+              echo "=== Skipping $dir (no package.json) ==="
+              continue
+            fi
             echo "=== Auditing $dir ==="
             # --ignore-scripts: audit only needs the dependency tree, not postinstall
             # native-binary downloads (e.g. @anthropic-ai/claude-code) that fail in CI.
