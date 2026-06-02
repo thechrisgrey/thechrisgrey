@@ -56,3 +56,43 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/blueprint"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/blueprint-builder"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/mcp-server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
+
+  - package-ecosystem: "npm"
+    directory: "/lambda/shared"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "lambda"
