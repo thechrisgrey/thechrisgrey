@@ -86,6 +86,8 @@ jobs:
           set -e
           for dir in lambda/chat-stream lambda/blueprint lambda/blueprint-builder lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
             echo "=== Auditing $dir ==="
-            (cd "$dir" && npm install --no-audit --no-fund)
+            # --ignore-scripts: audit only needs the dependency tree, not postinstall
+            # native-binary downloads (e.g. @anthropic-ai/claude-code) that fail in CI.
+            (cd "$dir" && npm install --no-audit --no-fund --ignore-scripts)
             (cd "$dir" && npm audit --audit-level=high --omit=dev) || echo "::warning::$dir has high-severity advisories (non-blocking) — see Dependabot PRs."
           done
