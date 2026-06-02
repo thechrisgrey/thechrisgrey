@@ -43,13 +43,18 @@ jobs:
       - name: Install Lambda dependencies
         run: |
           cd lambda/chat-stream && npm ci --no-audit --no-fund
+          cd ../blueprint && npm ci --no-audit --no-fund
+          cd ../shared && npm install --no-audit --no-fund
           cd ../mcp-server && npm install --no-audit --no-fund
 
       - name: Run Lambda tests
         run: npm run test:lambda
 
-      - name: Audit production dependencies
-        run: npm audit --audit-level=high --omit=dev
+      - name: Audit production dependencies (informational — does not gate merges)
+        # npm audit checks the live advisory DB, so a hard gate here flips CI red on
+        # newly-published CVEs in transitive deps with no code change. Kept visible but
+        # non-blocking; durable remediation is tracked via Dependabot (.github/dependabot.yml).
+        run: npm audit --audit-level=high --omit=dev || echo "::warning::Production dependency audit found high-severity advisories (non-blocking) — see Dependabot PRs."
 
       - name: Build project
         run: npm run build
@@ -74,10 +79,19 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: Audit Lambda dependencies
+      - name: Audit Lambda dependencies (informational — does not gate merges)
+        # Install failures stay fatal (real problems); audit findings are non-blocking
+        # (advisory-DB drift). Durable remediation is tracked via Dependabot.
         run: |
           set -e
-          for dir in lambda/chat-stream lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+          for dir in lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+            if [ ! -f "$dir/package.json" ]; then
+              echo "=== Skipping $dir (no package.json) ==="
+              continue
+            fi
             echo "=== Auditing $dir ==="
-            (cd "$dir" && npm install --no-audit --no-fund && npm audit --audit-level=high --omit=dev)
+            # --ignore-scripts: audit only needs the dependency tree, not postinstall
+            # native-binary downloads (e.g. @anthropic-ai/claude-code) that fail in CI.
+            (cd "$dir" && npm install --no-audit --no-fund --ignore-scripts)
+            (cd "$dir" && npm audit --audit-level=high --omit=dev) || echo "::warning::$dir has high-severity advisories (non-blocking) — see Dependabot PRs."
           done

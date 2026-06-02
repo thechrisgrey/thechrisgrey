@@ -15,10 +15,10 @@ import { createClient as createSanityClient } from "@sanity/client";
 import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 
-import { verifySignature } from "./hmac.mjs";
+import { verifySignature } from "lambda-shared/hmac";
+import { MetricsCollector } from "lambda-shared/metrics";
 import { validateInput, validatePageContext, getLatestUserMessage } from "./validation.mjs";
 import { buildSystemPrompt } from "./prompts.mjs";
-import { MetricsCollector } from "./metrics.mjs";
 import { retrieveContext } from "./kbRetrieve.mjs";
 import { buildBedrockModel, buildAgent, streamAgentResponse } from "./agent.mjs";
 import { buildTools } from "./tools/index.mjs";
@@ -134,7 +134,7 @@ export const handler = awslambda.streamifyResponse(
     }
 
     const requestId = randomUUID();
-    const metrics = new MetricsCollector(cloudwatchClient);
+    const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/SiteMetrics");
     const requestStart = Date.now();
 
     const sigResult = verifySignature(event, SIGNING_KEY);

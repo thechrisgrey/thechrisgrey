@@ -1,5 +1,9 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 type LenisContextValue = {
   lenis: Lenis | null;
@@ -17,7 +21,6 @@ export function useLenisContext() {
 
 export function useLenisInstance() {
   const [lenis, setLenis] = useState<Lenis | null>(null);
-  const rafId = useRef<number>(0);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,16 +36,20 @@ export function useLenisInstance() {
       smoothWheel: true,
     });
 
-    function raf(time: number) {
-      instance.raf(time);
-      rafId.current = requestAnimationFrame(raf);
-    }
-    rafId.current = requestAnimationFrame(raf);
+    // Bridge Lenis to GSAP ScrollTrigger: scrub-linked reveals read Lenis's
+    // animated scroll position (not native scroll), and both run off GSAP's single
+    // ticker clock — eliminating the scrub lag/jitter on the homepage's sticky scroll.
+    instance.on('scroll', ScrollTrigger.update);
+    const tick = (time: number) => instance.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.refresh();
 
     setLenis(instance);
 
     return () => {
-      cancelAnimationFrame(rafId.current);
+      gsap.ticker.remove(tick);
+      instance.off('scroll', ScrollTrigger.update);
       instance.destroy();
       setLenis(null);
     };

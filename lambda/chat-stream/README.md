@@ -42,12 +42,15 @@ Runs `node --test` against `lambda/chat-stream/__tests__/*.test.mjs`. No externa
 
 ## Deployment
 
+Deploy via the repo-root verified script (do **not** hand-build `function.zip` — the manual
+`zip` glob is easy to get wrong and has shipped broken artifacts):
+
 ```bash
-cd lambda/chat-stream
-npm install
-zip -r function.zip index.mjs agent.mjs events.mjs memory.mjs hmac.mjs validation.mjs prompts.mjs metrics.mjs kbRetrieve.mjs tools package.json node_modules
-aws lambda update-function-code \
-  --function-name thechrisgrey-chat-stream \
-  --zip-file fileb://function.zip \
-  --region us-east-1
+npm run deploy:lambda -- chat-stream --dry-run   # build + verify module graph, no upload
+npm run deploy:lambda -- chat-stream             # deploy to thechrisgrey-chat-stream (us-east-1)
 ```
+
+The script installs from the lockfile, dereferences `lambda-shared` fresh into the bundle,
+and verifies the full module graph (`agent.mjs`, `events.mjs`, `memory.mjs`, `hmac` →
+`lambda-shared/hmac`, `validation.mjs`, `prompts.mjs`, `metrics` → `lambda-shared/metrics`,
+`kbRetrieve.mjs`, `tools/`, plus `lambda-shared/*`) resolves before uploading.

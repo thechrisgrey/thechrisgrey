@@ -2,15 +2,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useLenisInstance, useLenisContext } from './useLenis';
 
-vi.mock('lenis', () => {
-  return {
-    default: vi.fn(() => ({
-      destroy: vi.fn(),
-      raf: vi.fn(),
-      scrollTo: vi.fn(),
-    })),
-  };
-});
+// Shared Lenis instance so we can assert teardown wiring. Hoisted so it exists
+// before vi.mock's factory runs. The instance now also exposes on/off, which the
+// GSAP ScrollTrigger bridge in useLenis depends on.
+const { lenisInstance } = vi.hoisted(() => ({
+  lenisInstance: {
+    destroy: vi.fn(),
+    raf: vi.fn(),
+    scrollTo: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+  },
+}));
+
+vi.mock('lenis', () => ({
+  default: vi.fn(() => lenisInstance),
+}));
 
 describe('useLenisInstance', () => {
   beforeEach(() => {
@@ -66,10 +73,11 @@ describe('useLenisInstance', () => {
     expect(scrollToSpy).toHaveBeenCalledWith({ top: 100, left: 0, behavior: 'instant' });
   });
 
-  it('cleans up on unmount', () => {
+  it('cleans up on unmount (removes the scroll listener and destroys Lenis)', () => {
     const { unmount } = renderHook(() => useLenisInstance());
     unmount();
-    expect(window.cancelAnimationFrame).toHaveBeenCalled();
+    expect(lenisInstance.off).toHaveBeenCalledWith('scroll', expect.any(Function));
+    expect(lenisInstance.destroy).toHaveBeenCalled();
   });
 });
 

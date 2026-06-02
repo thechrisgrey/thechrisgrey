@@ -9,6 +9,11 @@
     "./rateLimit": "./rateLimit.mjs",
     "./auth": "./auth.mjs",
     "./response": "./response.mjs",
-    "./sanityQueries": "./sanityQueries.mjs"
+    "./sanityQueries": "./sanityQueries.mjs",
+    "./hmac": "./hmac.mjs",
+    "./metrics": "./metrics.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.1033.0"
   }
 }

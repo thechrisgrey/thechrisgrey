@@ -1,9 +1,10 @@
-import { Suspense, useRef, useState, useCallback } from 'react';
+import { Suspense, useRef, useState, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
-function AltiModel({ onHoverChange }: { onHoverChange: (h: boolean) => void }) {
+function AltiModel({ onHoverChange, animate }: { onHoverChange: (h: boolean) => void; animate: boolean }) {
   const { scene } = useGLTF('/alti.glb');
   const groupRef = useRef<THREE.Group>(null);
   const hoveredRef = useRef(false);
@@ -11,7 +12,7 @@ function AltiModel({ onHoverChange }: { onHoverChange: (h: boolean) => void }) {
   const baseY = useRef(0);
 
   useFrame(({ clock }) => {
-    if (!groupRef.current) return;
+    if (!groupRef.current || !animate) return;
     const t = clock.elapsedTime;
 
     // Gentle idle float — slow sine wave
@@ -56,8 +57,6 @@ function AltiModel({ onHoverChange }: { onHoverChange: (h: boolean) => void }) {
   );
 }
 
-useGLTF.preload('/alti.glb');
-
 interface AltiMascotProps {
   isOpen: boolean;
 }
@@ -66,19 +65,40 @@ const AltiMascot = ({ isOpen }: AltiMascotProps) => {
   const [hovered, setHovered] = useState(false);
   const handleHoverChange = useCallback((h: boolean) => setHovered(h), []);
 
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const [docVisible, setDocVisible] = useState(() =>
+    typeof document === 'undefined' ? true : !document.hidden
+  );
+  useEffect(() => {
+    const onVisibility = () => setDocVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  // Keep the 3D mascot, but: honor reduced-motion (render the model once, no idle
+  // animation) and pause the render loop entirely when the tab is backgrounded —
+  // so it stops burning GPU/battery off-screen. dpr is capped and antialias is off
+  // (negligible at 64x64) to keep it light on mobile/high-DPI screens.
+  const frameloop: 'always' | 'demand' | 'never' = reducedMotion
+    ? 'demand'
+    : docVisible
+      ? 'always'
+      : 'never';
+
   return (
     <div className="flex flex-col items-center">
       <div className="w-16 h-16" style={{ pointerEvents: 'none' }}>
         <Canvas
-          frameloop="always"
-          gl={{ alpha: true, antialias: true }}
+          frameloop={frameloop}
+          dpr={[1, 2]}
+          gl={{ alpha: true, antialias: false }}
           camera={{ position: [0, 0, 3], fov: 45 }}
           style={{ pointerEvents: 'auto' }}
         >
           <ambientLight intensity={0.6} />
           <directionalLight position={[2, 2, 5]} intensity={0.8} />
           <Suspense fallback={null}>
-            <AltiModel onHoverChange={handleHoverChange} />
+            <AltiModel onHoverChange={handleHoverChange} animate={!reducedMotion} />
           </Suspense>
         </Canvas>
       </div>
