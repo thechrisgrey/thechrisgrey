@@ -23,7 +23,12 @@ import {
   buildUserPrompt,
   selectExamples,
 } from "./prompts.mjs";
-import { invokeOpus, streamOpus, BedrockTimeoutError } from "./bedrock.mjs";
+import {
+  invokeOpus,
+  streamOpus,
+  opusTimeoutForDeadline,
+  BedrockTimeoutError,
+} from "./bedrock.mjs";
 import {
   tryParseJson,
   validateSchema,
@@ -70,6 +75,13 @@ function emit(onProgress, event) {
  *                                            reuse across requests); otherwise
  *                                            created from sanityClient.
  * @param {string} [deps.requestId]
+ * @param {number|null} [deps.opusDeadlineMs] - Absolute epoch-ms deadline by
+ *        which every Opus attempt must abort, shared across the schema-retry. The
+ *        handler derives it from the Lambda's remaining time via
+ *        resolveOpusDeadlineMs; each attempt re-derives its own timeout via
+ *        opusTimeoutForDeadline, so retries can't exceed the request's Opus
+ *        window. When null (off-Lambda: MCP, local, tests) each attempt uses the
+ *        static OPUS_TIMEOUT_MS cap.
  * @param {(event: object) => void} [deps.onProgress] - Optional progress
  *        callback. When provided, the engine uses streamOpus and relays each
  *        token delta as `{type:"token", text}`. Also emits lifecycle
@@ -86,6 +98,7 @@ export async function generateBlueprint(rawSpec, deps) {
     examplesFetcher: injectedFetcher,
     requestId = null,
     onProgress = null,
+    opusDeadlineMs = null,
   } = deps || {};
 
   if (!bedrockClient) {
@@ -160,6 +173,11 @@ export async function generateBlueprint(rawSpec, deps) {
       ? `\n\nNOTE: A previous attempt failed schema validation with these issues:\n${JSON.stringify(lastSchemaIssues).slice(0, 600)}\nReturn a corrected JSON object that satisfies every constraint.`
       : "";
 
+    // Re-derive this attempt's abort budget from the shared deadline so a retry
+    // that starts later gets less time — two attempts can never exceed the
+    // request's Opus window. Off-Lambda (null deadline) → the static cap.
+    const timeoutMs = opusTimeoutForDeadline(opusDeadlineMs, Date.now());
+
     let opusResult;
     try {
       if (onProgress) {
@@ -167,6 +185,7 @@ export async function generateBlueprint(rawSpec, deps) {
           system,
           user: user + retryNote,
           requestId,
+          timeoutMs,
           onChunk: (text) => emit(onProgress, { type: "token", text }),
         });
       } else {
@@ -174,6 +193,7 @@ export async function generateBlueprint(rawSpec, deps) {
           system,
           user: user + retryNote,
           requestId,
+          timeoutMs,
         });
       }
     } catch (error) {

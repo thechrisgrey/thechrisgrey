@@ -3,13 +3,15 @@
  *
  * Three model paths:
  *  - invokeOpus():  Blocking generation. Returns full text + usage when done.
- *                   110s timeout, Opus 4.6 via inference profile.
+ *                   Opus 4.6 via inference profile. Per-attempt abort budget
+ *                   passed in by the caller (opusTimeoutForDeadline), capped at
+ *                   OPUS_TIMEOUT_MS.
  *  - streamOpus():  Streaming generation. Emits each content_block_delta via
  *                   onChunk(text). Returns the accumulated text + usage when
- *                   the stream ends. Same 110s cap but the client sees tokens
- *                   the whole time.
+ *                   the stream ends. Same caller-supplied per-attempt budget, but
+ *                   the client sees tokens the whole time.
  *  - invokeHaiku(): Validation pass. Haiku 4.5 via inference profile.
- *                   15s timeout, returns { ok, issues, raw } + token usage.
+ *                   Fixed 15s timeout, returns { ok, issues, raw } + token usage.
  *
  * Clients are injected so tests can stub BedrockRuntimeClient without touching
  * AWS. On timeout, we abort the underlying request and surface a typed error
@@ -27,11 +29,81 @@ export const HAIKU_MODEL_ID =
   process.env.BEDROCK_HAIKU_MODEL_ID ||
   "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 
-// MUST stay below the deployed blueprint Lambda timeout (currently 150s) so the internal
-// AbortController fires first and the engine surfaces a graceful `opus_timeout` event +
-// BlueprintOpusTimeout metric. Keep the runbook's --timeout in sync (phase-5-deployment-runbook.md).
+// Opus's abort budget is anchored to a single ABSOLUTE deadline, derived once
+// per request from the Lambda's remaining execution time (resolveOpusDeadlineMs)
+// as handlerStart + remaining - buffer. Every Opus attempt re-derives its own
+// timeout from that shared deadline (opusTimeoutForDeadline), so retries AND
+// pre-Opus latency all draw from the same budget — the final attempt's internal
+// AbortController fires by (deadline + at most the floor), always before the
+// Lambda hard-timeout, surfacing a graceful `opus_timeout` event +
+// BlueprintOpusTimeout metric, no matter how the deployed --timeout is set.
+// OPUS_TIMEOUT_MS is the per-attempt upper cap and the fallback when no Lambda
+// deadline is available (local runs, the MCP wrapper, tests). HAIKU_TIMEOUT_MS
+// stays fixed; it has its own timer and runs only after a successful Opus pass,
+// inside the buffer reserved below.
 export const OPUS_TIMEOUT_MS = 110_000;
 export const HAIKU_TIMEOUT_MS = 15_000;
+
+// Time reserved between the Opus deadline and the Lambda hard-timeout for the
+// post-Opus tail: the Haiku validation pass (its own 15s timer), the terminal
+// NDJSON write, and metrics.flush(). Because the Opus deadline is absolute
+// (anchored at handler start), this buffer is preserved regardless of how long
+// pre-Opus work or a schema-retry takes.
+export const OPUS_TIMEOUT_BUFFER_MS = 20_000;
+// Floor so a nearly-exhausted (or already-past) deadline never yields a
+// zero/negative abort delay; such a request is effectively doomed, but we still
+// abort cleanly. floor < buffer keeps even the final attempt's abort before the
+// hard-timeout.
+export const OPUS_TIMEOUT_FLOOR_MS = 5_000;
+
+/**
+ * Anchor the absolute instant (epoch ms) by which every Opus attempt must have
+ * aborted, leaving OPUS_TIMEOUT_BUFFER_MS for the post-Opus tail. Anchoring on
+ * an absolute deadline — rather than a per-call duration re-armed each attempt —
+ * means retries and pre-Opus latency all draw from the SAME budget, so total
+ * Opus wall time can never exceed it. Self-adjusts to whatever --timeout the
+ * function is deployed with, replacing the old requirement to keep
+ * OPUS_TIMEOUT_MS manually below the deployed timeout.
+ *
+ * @param {number} [remainingMs] - context.getRemainingTimeInMillis() at the
+ *   anchor instant.
+ * @param {number} nowMs - Date.now() at the same instant (handler start).
+ * @param {object} [opts]
+ * @param {number} [opts.buffer=OPUS_TIMEOUT_BUFFER_MS]
+ * @returns {number|null} epoch-ms deadline, or null when there is no Lambda
+ *   window (off-Lambda: local, MCP, tests) — callers then use the static cap.
+ */
+export function resolveOpusDeadlineMs(remainingMs, nowMs, {
+  buffer = OPUS_TIMEOUT_BUFFER_MS,
+} = {}) {
+  if (typeof remainingMs !== "number" || !Number.isFinite(remainingMs)) return null;
+  if (typeof nowMs !== "number" || !Number.isFinite(nowMs)) return null;
+  return nowMs + remainingMs - buffer;
+}
+
+/**
+ * Per-attempt Opus abort budget: time from `nowMs` until the shared deadline,
+ * clamped to [floor, cap]. Recomputed before EACH Opus attempt so a retry that
+ * starts later automatically gets a smaller budget and the final attempt still
+ * aborts by (deadline + at most floor). A null deadline (off-Lambda) yields the
+ * static cap, so off-Lambda behavior is unchanged.
+ *
+ * @param {number|null} [deadlineMs] - from resolveOpusDeadlineMs.
+ * @param {number} nowMs - Date.now() at the start of this attempt.
+ * @param {object} [opts]
+ * @param {number} [opts.floor=OPUS_TIMEOUT_FLOOR_MS]
+ * @param {number} [opts.cap=OPUS_TIMEOUT_MS]
+ * @returns {number} timeout in ms, clamped to [floor, cap].
+ */
+export function opusTimeoutForDeadline(deadlineMs, nowMs, {
+  floor = OPUS_TIMEOUT_FLOOR_MS,
+  cap = OPUS_TIMEOUT_MS,
+} = {}) {
+  if (deadlineMs == null || !Number.isFinite(deadlineMs) || !Number.isFinite(nowMs)) {
+    return cap;
+  }
+  return Math.max(floor, Math.min(cap, Math.round(deadlineMs - nowMs)));
+}
 
 export const OPUS_MAX_TOKENS = 6000;
 export const HAIKU_MAX_TOKENS = 1200;
@@ -151,14 +223,19 @@ export async function invokeClaude(bedrockClient, {
  * with high schema fidelity. Blocking — callers waiting on full output
  * use this path; callers that want streaming feedback use streamOpus().
  */
-export async function invokeOpus(bedrockClient, { system, user, requestId = null }) {
+export async function invokeOpus(bedrockClient, {
+  system,
+  user,
+  requestId = null,
+  timeoutMs = OPUS_TIMEOUT_MS,
+}) {
   return invokeClaude(bedrockClient, {
     modelId: OPUS_MODEL_ID,
     system,
     user,
     maxTokens: OPUS_MAX_TOKENS,
     temperature: 0.3,
-    timeoutMs: OPUS_TIMEOUT_MS,
+    timeoutMs,
     requestId,
   });
 }
@@ -181,10 +258,11 @@ export async function streamOpus(bedrockClient, {
   user,
   onChunk,
   requestId = null,
+  timeoutMs = OPUS_TIMEOUT_MS,
 }) {
   const start = Date.now();
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), OPUS_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   const body = {
     anthropic_version: DEFAULT_ANTHROPIC_VERSION,
@@ -265,11 +343,11 @@ export async function streamOpus(bedrockClient, {
           event: "bedrock_stream_timeout",
           modelId: OPUS_MODEL_ID,
           latencyMs,
-          timeoutMs: OPUS_TIMEOUT_MS,
+          timeoutMs,
           partialChars: accumulated.length,
         }));
       }
-      throw new BedrockTimeoutError(OPUS_MODEL_ID, OPUS_TIMEOUT_MS);
+      throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
     }
     if (requestId) {
       console.error(JSON.stringify({

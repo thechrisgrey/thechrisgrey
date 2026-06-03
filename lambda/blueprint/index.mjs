@@ -37,6 +37,7 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 import { verifySignature } from "lambda-shared/hmac";
 import { MetricsCollector } from "lambda-shared/metrics";
 import { generateBlueprint } from "./engine.mjs";
+import { resolveOpusDeadlineMs } from "./bedrock.mjs";
 import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
@@ -103,10 +104,20 @@ function logStructured(requestId, event, extra = {}) {
   console.log(JSON.stringify({ requestId, event, ...extra }));
 }
 
-export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
+export const handler = awslambda.streamifyResponse(async (event, responseStream, context) => {
   const requestId = randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/Blueprint");
   const start = Date.now();
+
+  // Anchor a single absolute Opus deadline = start + remaining - buffer. The
+  // engine re-derives each attempt's timeout from this shared deadline
+  // (opusTimeoutForDeadline), so retries and pre-Opus latency all draw from one
+  // budget and the internal AbortController always fires before the Lambda
+  // hard-timeout — surfacing a graceful opus_timeout — regardless of the deployed
+  // --timeout. `start` (now) + getRemainingTimeInMillis() is the invariant Lambda
+  // deadline, so anchoring once here holds for the whole request. Returns null
+  // off-Lambda (no context), where the engine falls back to the static cap.
+  const opusDeadlineMs = resolveOpusDeadlineMs(context?.getRemainingTimeInMillis?.(), start);
 
   // Tracks whether the response metadata (status + headers) has already been
   // committed via HttpResponseStream.from. Once true, we can only keep writing
@@ -245,6 +256,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
       examplesFetcher,
       logger,
       requestId,
+      opusDeadlineMs,
       onProgress: writeEvent,
     });
 
