@@ -82,7 +82,7 @@ zip -r function.zip \
   package.json node_modules
 ```
 
-Create the function (Node 20, 1024MB memory, 150s timeout (must exceed bedrock.mjs OPUS_TIMEOUT_MS = 110s, with buffer) — Opus can take ~30s):
+Create the function (Node 20, 1024MB memory, 150s timeout — Opus can take ~30s):
 
 ```bash
 aws lambda create-function \
@@ -96,6 +96,23 @@ aws lambda create-function \
   --region us-east-1 \
   --description "Blueprint generator (Opus 4.6) — public rate-limited endpoint"
 ```
+
+> **Timeout:** `--timeout 150` is the authoritative deadline; tune it freely.
+> The Lambda no longer needs `OPUS_TIMEOUT_MS` (110s) kept manually below it.
+> At handler start the function anchors a single absolute Opus deadline =
+> `now + getRemainingTimeInMillis() − 20s buffer` (`resolveOpusDeadlineMs`).
+> Every Opus attempt — including the schema-retry — re-derives its own abort
+> budget from that shared deadline as `clamp(deadline − now, floor 5s, cap 110s)`
+> (`opusTimeoutForDeadline`), so retries and pre-Opus latency all draw from one
+> budget and the internal AbortController always fires before the hard-timeout
+> (by `deadline + at most the 5s floor`), surfacing a graceful `opus_timeout`
+> event + `BlueprintOpusTimeout` metric. Anchoring on an absolute deadline
+> (rather than a per-call duration re-armed each attempt) is what keeps two
+> attempts from consuming `2×` the budget and overrunning the hard-timeout. The
+> 20s buffer reserves the tail between the Opus deadline and the hard-timeout for
+> the Haiku validation pass (its own 15s timer, success path only), the terminal
+> NDJSON write, and `metrics.flush()`. Off-Lambda callers (MCP, local, tests)
+> have no deadline, so each attempt uses the static 110s cap.
 
 > **Note:** IAM role propagation takes ~10s. If `create-function` fails with
 > `InvalidParameterValueException`, wait and retry.
