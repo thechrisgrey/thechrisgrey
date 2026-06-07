@@ -80,6 +80,7 @@ export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order as
   episodeUrl,
   image { "asset": asset->{ _id, url }, alt },
   linkedinUrl,
+  instagramUrl,
   websiteUrl,
   websiteLabel,
   order

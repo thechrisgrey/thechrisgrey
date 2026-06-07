@@ -137,6 +137,7 @@ export interface PodcastGuest {
   episodeUrl?: string
   image?: SanityImage
   linkedinUrl?: string
+  instagramUrl?: string
   websiteUrl?: string
   websiteLabel?: string
   order: number

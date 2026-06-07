@@ -103,7 +103,7 @@ describe('GROQ queries', () => {
     });
 
     it('should project guest fields', () => {
-      const expectedFields = ['name', 'role', 'branch', 'episodeUrl', 'image', 'linkedinUrl', 'websiteUrl', 'websiteLabel', 'order'];
+      const expectedFields = ['name', 'role', 'branch', 'episodeUrl', 'image', 'linkedinUrl', 'instagramUrl', 'websiteUrl', 'websiteLabel', 'order'];
       expectedFields.forEach((field) => {
         expect(PODCAST_GUESTS_QUERY).toContain(field);
       });
