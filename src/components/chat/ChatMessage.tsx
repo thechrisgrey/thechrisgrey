@@ -1,7 +1,9 @@
 import { typography } from '../../utils/typography';
 import { memo, useMemo, ReactNode } from 'react';
 import type { DraftAction } from '../../utils/chatEvents';
+import type { UiBlock } from '../../utils/uiBlocks';
 import ToolDraftCard from './ToolDraftCard';
+import GenerativeBlocks from './GenerativeBlocks';
 
 interface MemoryEventRecord {
   action: 'remembered' | 'forgotten';
@@ -14,8 +16,11 @@ interface ChatMessageProps {
   isStreaming?: boolean;
   isSystem?: boolean;
   drafts?: DraftAction[];
+  uiBlocks?: UiBlock[];
   toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
   memoryEvents?: MemoryEventRecord[];
+  /** 'page' enables generative UI blocks; 'widget' (default) never renders them. */
+  surface?: 'page' | 'widget';
 }
 
 const TOOL_LABELS: Record<string, string> = {
@@ -93,7 +98,7 @@ function processContentWithLinks(content: string): ReactNode[] {
   return result;
 }
 
-const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolActivity, memoryEvents }: ChatMessageProps) => {
+const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, uiBlocks, toolActivity, memoryEvents, surface = 'widget' }: ChatMessageProps) => {
   const isUser = role === 'user';
 
   const displayContent = useMemo(
@@ -152,6 +157,10 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, toolAc
               )}
             </p>
           </div>
+        ) : null}
+
+        {!isUser && surface === 'page' && uiBlocks && uiBlocks.length > 0 ? (
+          <GenerativeBlocks blocks={uiBlocks} />
         ) : null}
 
         {!isUser && memoryEvents && memoryEvents.length > 0

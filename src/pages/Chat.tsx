@@ -102,8 +102,10 @@ const ChatContent = () => {
                 isStreaming={message.id === streamingMessageId}
                 isSystem={message.isSystem}
                 drafts={message.drafts}
+                uiBlocks={message.uiBlocks}
                 toolActivity={message.toolActivity}
                 memoryEvents={message.memoryEvents}
+                surface="page"
               />
             ))}
             {isTyping && <TypingIndicator />}

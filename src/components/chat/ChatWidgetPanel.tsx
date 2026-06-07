@@ -112,6 +112,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
                 drafts={message.drafts}
                 toolActivity={message.toolActivity}
                 memoryEvents={message.memoryEvents}
+                surface="widget"
               />
             ))}
             {isTyping && <TypingIndicator />}

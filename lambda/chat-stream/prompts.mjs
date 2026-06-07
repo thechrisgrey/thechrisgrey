@@ -82,21 +82,36 @@ ${lines.join("\n")}
 }
 
 /**
+ * Generative-UI etiquette, appended ONLY on the dedicated /chat surface (where the
+ * render_ui tool is registered). The floating widget never sees this, so it never
+ * tries to call a tool that isn't there.
+ */
+export const RENDER_UI_ETIQUETTE = `
+
+GENERATIVE UI (this full-page chat only):
+You have a render_ui tool that draws a small visual block to supplement an answer — a timeline, a side-by-side comparison, a row of stats, a mini profile, a short explainer, or a grid of internal links.
+- Use it SPARINGLY. Most answers need no block at all. Reach for it only when structure genuinely helps: a career timeline, an A-vs-B comparison, a set of links to point someone to.
+- One block is plenty; three is the hard maximum.
+- ALWAYS write your short text reply too. The block supplements your words — it never replaces them. Never dump raw data into the block that you wouldn't say out loud.`;
+
+/**
  * Assemble the full system prompt for a request. When no KB context is
  * retrieved, the prompt falls back to a brief reminder of who Christian is.
  * Facts (optional) is the visitor's stored memory from the remember_fact tool.
+ * Surface ('page' | 'widget') controls whether render_ui guidance is included.
  */
-export function buildSystemPrompt(retrievedContext, pageContext, facts) {
+export function buildSystemPrompt(retrievedContext, pageContext, facts, surface) {
   const visitorContext = buildVisitorContext(pageContext);
   const memoryContext = buildMemoryContext(facts);
+  const renderUiEtiquette = surface === "page" ? RENDER_UI_ETIQUETTE : "";
 
   if (!retrievedContext) {
-    return `${BASE_SYSTEM_PROMPT}${visitorContext}${memoryContext}
+    return `${BASE_SYSTEM_PROMPT}${visitorContext}${memoryContext}${renderUiEtiquette}
 
 Note: No specific context was retrieved for this query. Answer based on general knowledge about Christian Perez as the Founder & CEO of Altivum Inc., a former Green Beret (18D), host of The Vector Podcast, and author of "Beyond the Assessment."`;
   }
 
-  return `${BASE_SYSTEM_PROMPT}${visitorContext}${memoryContext}
+  return `${BASE_SYSTEM_PROMPT}${visitorContext}${memoryContext}${renderUiEtiquette}
 
 === RETRIEVED CONTEXT ===
 The following information was retrieved from Christian's personal knowledge base. Use this to provide accurate, detailed answers:

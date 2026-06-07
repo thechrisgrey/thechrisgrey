@@ -238,7 +238,12 @@ export const handler = awslambda.streamifyResponse(
         });
       }
 
-      const systemPrompt = buildSystemPrompt(retrievedContext, pageContext, facts);
+      // Generative UI (render_ui) is gated to the dedicated /chat page only — never
+      // the floating widget, which reports the host page's path. The system prompt
+      // only advertises render_ui on that surface, matching the registered tools.
+      const surface = pageContext?.currentPage === "/chat" ? "page" : "widget";
+
+      const systemPrompt = buildSystemPrompt(retrievedContext, pageContext, facts, surface);
 
       const tools = buildTools({
         responseStream,
@@ -247,6 +252,7 @@ export const handler = awslambda.streamifyResponse(
         docClient,
         PutCommand,
         deviceId,
+        surface,
         requestId,
       });
 
