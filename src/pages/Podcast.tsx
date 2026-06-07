@@ -7,6 +7,7 @@ const profileImage = '/profile1.jpeg';
 import { podcastFAQs, buildPodcastSeriesSchema, buildVideoObjectSchema } from '../utils/schemas';
 import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
+import AskTheVector from '../components/podcast/AskTheVector';
 import SubscribePlatforms from '../components/SubscribePlatforms';
 import YouTubeFacade from '../components/YouTubeFacade';
 import SpotifyFacade from '../components/SpotifyFacade';
@@ -88,6 +89,10 @@ const Podcast = () => {
           </div>
         </div>
       </section>
+
+      {/* Ask The Vector — semantic podcast search with timestamp-cited answers */}
+      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <AskTheVector />
 
       {/* About Section */}
       <section className="py-24 bg-altivum-dark">

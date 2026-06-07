@@ -23,6 +23,7 @@ const TOOL_LABELS: Record<string, string> = {
   draft_message: 'drafting a message',
   draft_newsletter_subscription: 'preparing a subscription',
   cite_blog_passage: 'looking up a blog post',
+  search_podcast: 'searching the podcast',
   remember_fact: 'saving that detail',
 };
 

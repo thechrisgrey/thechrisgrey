@@ -44,6 +44,7 @@ const sanityClient = sanityProjectId
 
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
+const PODCAST_KNOWLEDGE_BASE_ID = process.env.PODCAST_KB_ID || "";
 const GUARDRAIL_ID = "5kofhp46ssob";
 const GUARDRAIL_VERSION = "5";
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
@@ -244,6 +245,9 @@ export const handler = awslambda.streamifyResponse(
         responseStream,
         metrics,
         sanityClient,
+        agentClient,
+        RetrieveCommand,
+        podcastKbId: PODCAST_KNOWLEDGE_BASE_ID,
         docClient,
         PutCommand,
         deviceId,
