@@ -3,6 +3,10 @@ import { render, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
+// Mock the WebGL hero backdrop — R3F's Canvas needs ResizeObserver/WebGL, which
+// jsdom lacks (see CLAUDE.md: mock 3D in jsdom tests). SEO assertions don't need it.
+vi.mock('../../components/home/HeroCanvas', () => ({ default: () => null }));
+
 // Mock static image imports
 vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));

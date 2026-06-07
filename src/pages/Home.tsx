@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import ViewTransitionLink from '../components/ViewTransitionLink';
 import SplitReveal from '../components/SplitReveal';
 import FadeReveal from '../components/FadeReveal';
@@ -9,9 +9,17 @@ import { typography } from '../utils/typography';
 import { homeFAQs, buildWebPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+
+// Lazy so the WebGL hero backdrop is its own chunk that hydrates after the
+// critical path. The static hero2.png is always rendered on top and stays the
+// LCP element; the backdrop fades in behind it once its chunk resolves.
+const HeroCanvas = lazy(() => import('../components/home/HeroCanvas'));
 
 const Home = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   const keyPoints = [
     { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
@@ -98,9 +106,24 @@ const Home = () => {
         ]}
       />
       {/* Hero Section with fade-in animation */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden opacity-0 animate-fade-in">
-        {/* Background gradient */}
+      <section
+        ref={heroRef}
+        className="relative min-h-screen flex items-center justify-center overflow-hidden opacity-0 animate-fade-in"
+      >
+        {/* Base background gradient — also the resting look under reduced motion
+            and the color shown before the WebGL backdrop hydrates. */}
         <div className="absolute inset-0 bg-gradient-to-br from-altivum-dark via-altivum-navy to-altivum-blue opacity-50"></div>
+
+        {/* Living "signal field" backdrop. Mounted only when motion is allowed;
+            its lazy chunk loads after the static brandmark below, so the
+            brandmark remains the LCP element. */}
+        {!reducedMotion && (
+          <div className="absolute inset-0" aria-hidden="true">
+            <Suspense fallback={null}>
+              <HeroCanvas heroRef={heroRef} />
+            </Suspense>
+          </div>
+        )}
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
           <div className="max-w-4xl mx-auto text-center">
