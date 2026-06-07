@@ -5,10 +5,14 @@ import { buildTools } from "../../tools/index.mjs";
 class PutCommand {
   constructor(input) { this.input = input; }
 }
+class RetrieveCommand {
+  constructor(input) { this.input = input; }
+}
 function fakeStream() { return { write: () => {} }; }
 function fakeMetrics() { return { record: () => {} }; }
 function fakeDoc() { return { send: async () => ({}) }; }
 function fakeSanity() { return { fetch: async () => null }; }
+function fakeAgentClient() { return { send: async () => ({ retrievalResults: [] }) }; }
 
 test("buildTools returns three tools by default (no sanity, no memory)", () => {
   const tools = buildTools({ responseStream: fakeStream(), metrics: fakeMetrics() });
@@ -26,6 +30,28 @@ test("buildTools includes cite_blog_passage and search_blog when sanityClient pr
   assert.equal(tools.length, 5);
   assert.ok(tools.some((t) => t.name === "cite_blog_passage"));
   assert.ok(tools.some((t) => t.name === "search_blog"));
+});
+
+test("buildTools includes search_podcast when agentClient + RetrieveCommand + podcastKbId provided", () => {
+  const tools = buildTools({
+    responseStream: fakeStream(),
+    metrics: fakeMetrics(),
+    agentClient: fakeAgentClient(),
+    RetrieveCommand,
+    podcastKbId: "PODKB123",
+  });
+  assert.ok(tools.some((t) => t.name === "search_podcast"));
+});
+
+test("buildTools omits search_podcast when podcastKbId is missing", () => {
+  const tools = buildTools({
+    responseStream: fakeStream(),
+    metrics: fakeMetrics(),
+    agentClient: fakeAgentClient(),
+    RetrieveCommand,
+    podcastKbId: "",
+  });
+  assert.ok(!tools.some((t) => t.name === "search_podcast"));
 });
 
 test("buildTools includes remember_fact when docClient + deviceId provided", () => {

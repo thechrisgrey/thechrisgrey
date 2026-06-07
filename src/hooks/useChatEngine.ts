@@ -68,10 +68,19 @@ function applyEventToMessage(msg: Message, event: ChatEvent): Message {
   }
 }
 
-export function useChatEngine(pageContext?: PageContext) {
+export interface ChatEngineOptions {
+  /** sessionStorage key — pass a distinct key to isolate a conversation (e.g. the podcast ask-box). */
+  storageKey?: string;
+  /** Seed messages — defaults to Alti's welcome. Pass [] for a welcome-free surface. */
+  initialMessages?: Message[];
+}
+
+export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOptions) {
+  const storageKey = options?.storageKey ?? CHAT_STORAGE_KEY;
+  const seedMessages = options?.initialMessages ?? [initialWelcomeMessage];
   const [messages, setMessages, clearMessages] = useSessionStorage<Message[]>(
-    CHAT_STORAGE_KEY,
-    [initialWelcomeMessage]
+    storageKey,
+    seedMessages
   );
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);

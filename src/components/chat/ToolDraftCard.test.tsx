@@ -261,3 +261,47 @@ describe('ToolDraftCard — blog_search_results', () => {
     expect(listItems[0].querySelector('.italic')).toBeNull();
   });
 });
+
+describe('ToolDraftCard — podcast_citation', () => {
+  const baseAction = {
+    kind: 'draft_action' as const,
+    action: 'podcast_citation' as const,
+    videoId: 'ndX9SkIY7Mc',
+    startSeconds: 725,
+    episodeTitle: 'Brittinie Wick on Women Veterans',
+    quote: 'Women veterans are too often invisible after service.',
+    timestampLabel: '12:05',
+    url: 'https://www.youtube.com/watch?v=ndX9SkIY7Mc&t=725s',
+  };
+
+  it('renders episode title, quote, and a timestamped play button', () => {
+    renderWithRouter(<ToolDraftCard action={baseAction} />);
+    expect(screen.getByText(/From The Vector Podcast/i)).toBeInTheDocument();
+    expect(screen.getByText('Brittinie Wick on Women Veterans')).toBeInTheDocument();
+    expect(screen.getByText(/Women veterans are too often invisible/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Play at 12:05/i })).toBeInTheDocument();
+  });
+
+  it('opens the timestamped YouTube URL in a new tab on play', () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderWithRouter(<ToolDraftCard action={baseAction} />);
+    fireEvent.click(screen.getByRole('button', { name: /Play at 12:05/i }));
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://www.youtube.com/watch?v=ndX9SkIY7Mc&t=725s',
+      '_blank',
+      'noopener,noreferrer',
+    );
+    expect(screen.queryByRole('button', { name: /Play at 12:05/i })).not.toBeInTheDocument();
+    openSpy.mockRestore();
+  });
+
+  it('dismisses without opening a tab', () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const onDismiss = vi.fn();
+    renderWithRouter(<ToolDraftCard action={baseAction} onDismiss={onDismiss} />);
+    fireEvent.click(screen.getByRole('button', { name: /Dismiss/i }));
+    expect(onDismiss).toHaveBeenCalled();
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+});
