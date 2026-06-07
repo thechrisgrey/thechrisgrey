@@ -7,7 +7,7 @@
  * Usage: node scripts/generate-podcast-episodes.js
  */
 
-import { writeFileSync, existsSync } from 'fs';
+import { writeFileSync, existsSync, realpathSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -20,6 +20,12 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 // Podcast platform links (static, won't change)
 const SPOTIFY_SHOW_URL = 'https://open.spotify.com/show/4JtDt7M9b6J2HRvQxzX1CX';
 const APPLE_PODCAST_URL = 'https://podcasts.apple.com/us/podcast/the-vector-podcast/id1820813071';
+
+// Minimum duration (in seconds) for a video to count as a full episode.
+// Filters out YouTube Shorts and short clips so they never appear in the
+// episode list or as the "Latest Episode" hero on the Podcast page.
+// 600s = 10 minutes (long-form only). Tune this value to change the cutoff.
+export const MIN_EPISODE_DURATION_SECONDS = 600;
 
 /**
  * Fetch channel ID from handle using YouTube API
@@ -129,10 +135,24 @@ function parseDuration(isoDuration) {
 }
 
 /**
+ * Parse ISO 8601 duration (e.g., "PT1H2M30S") to total seconds.
+ * Returns 0 for missing/unparseable input so such videos are filtered out.
+ */
+export function parseDurationSeconds(isoDuration) {
+  const match = (isoDuration || '').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+  const seconds = parseInt(match[3] || '0', 10);
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+/**
  * Extract episode number from video title if present
  * Looks for patterns like "Ep 1", "Episode 1", "E1", "#1"
  */
-function extractEpisodeNumber(title) {
+export function extractEpisodeNumber(title) {
   const patterns = [
     /(?:ep(?:isode)?\.?\s*#?\s*)(\d+)/i,
     /(?:#\s*)(\d+)/,
@@ -199,14 +219,21 @@ async function generateEpisodes() {
     const videoIds = videos.map(v => v.contentDetails.videoId);
     const videoDetails = await getVideoDetails(videoIds);
 
+    // Keep only full-length episodes. Filter out YouTube Shorts and short
+    // clips by DURATION — the previous title-based "#shorts" check missed
+    // Shorts whose titles don't contain that tag (e.g. a 0:56 clip), which
+    // then sorted to the top and became the "Latest Episode" hero.
+    const fullEpisodes = videos.filter(video => {
+      const details = videoDetails[video.contentDetails.videoId] || {};
+      return parseDurationSeconds(details.duration) >= MIN_EPISODE_DURATION_SECONDS;
+    });
+    console.log(
+      `   Kept ${fullEpisodes.length} full episodes (>= ${MIN_EPISODE_DURATION_SECONDS / 60} min); ` +
+      `filtered out ${videos.length - fullEpisodes.length} shorts/clips`
+    );
+
     // Transform to episode format
-    const episodes = videos
-      .filter(video => {
-        // Filter out shorts, livestreams, or non-podcast content if needed
-        const title = video.snippet.title.toLowerCase();
-        // Keep videos that look like podcast episodes
-        return !title.includes('#shorts') && video.snippet.title.length > 10;
-      })
+    const episodes = fullEpisodes
       .map((video, index) => {
         const videoId = video.contentDetails.videoId;
         const snippet = video.snippet;
@@ -220,7 +247,7 @@ async function generateEpisodes() {
           description: extractDescription(snippet.description || ''),
           publishedAt: snippet.publishedAt.split('T')[0], // YYYY-MM-DD
           duration: parseDuration(details.duration || 'PT0S'),
-          episodeNumber: episodeNum || (videos.length - index), // Fallback to reverse index
+          episodeNumber: episodeNum || (fullEpisodes.length - index), // Fallback to reverse index within full episodes
           seasonNumber: 1,
           thumbnail: snippet.thumbnails?.maxres?.url ||
                      snippet.thumbnails?.high?.url ||
@@ -268,4 +295,20 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+// Only run when invoked directly (e.g. `node scripts/generate-podcast-episodes.js`),
+// so the exported helpers can be imported without triggering a YouTube fetch.
+// realpathSync dereferences symlinks on both sides so a symlinked invocation
+// (e.g. via a wrapper) still runs main() instead of silently skipping the build.
+// Wrapped in try/catch because process.argv[1] may be a non-path (REPL, `node -e`).
+function invokedDirectly() {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(resolve(entry)) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+if (invokedDirectly()) {
+  main().catch(console.error);
+}
