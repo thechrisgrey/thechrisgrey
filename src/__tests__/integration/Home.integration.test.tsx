@@ -7,6 +7,15 @@ import Home from '../../pages/Home';
 // Mock static image imports that Vite handles at build time
 vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 
+// WebGL is unavailable in jsdom — mock R3F so the lazy hero backdrop Canvas
+// never touches the GPU when Home mounts it. Children (R3F intrinsics) are
+// dropped rather than rendered as unknown DOM nodes.
+vi.mock('@react-three/fiber', () => ({
+  Canvas: () => <div data-testid="hero-canvas" />,
+  useFrame: () => {},
+  useThree: () => ({ size: { width: 800, height: 600 }, invalidate: () => {} }),
+}));
+
 const renderHome = () => {
   return render(
     <HelmetProvider>

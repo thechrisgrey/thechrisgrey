@@ -4,15 +4,21 @@ interface YouTubeFacadeProps {
   videoId: string;
   title: string;
   embedParams?: string;
+  /** Optional start offset (seconds) — deep-links the embed to a moment. */
+  startSeconds?: number;
 }
 
-const YouTubeFacade = ({ videoId, title, embedParams = '' }: YouTubeFacadeProps) => {
+const YouTubeFacade = ({ videoId, title, embedParams = '', startSeconds }: YouTubeFacadeProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+  const startParam =
+    typeof startSeconds === 'number' && Number.isFinite(startSeconds) && startSeconds > 0
+      ? `&start=${Math.floor(startSeconds)}`
+      : '';
   const embedSrc = embedParams
-    ? `https://www.youtube.com/embed/${videoId}?${embedParams}&autoplay=1`
-    : `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    ? `https://www.youtube.com/embed/${videoId}?${embedParams}&autoplay=1${startParam}`
+    : `https://www.youtube.com/embed/${videoId}?autoplay=1${startParam}`;
 
   if (isLoaded) {
     return (

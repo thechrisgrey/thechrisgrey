@@ -62,6 +62,22 @@ describe('createChatStreamParser', () => {
     expect(out).toContainEqual({ kind: 'event', event: payload });
   });
 
+  it('round-trips a draft_action podcast_citation event', () => {
+    const p = createChatStreamParser();
+    const payload = {
+      kind: 'draft_action',
+      action: 'podcast_citation',
+      videoId: 'ndX9SkIY7Mc',
+      startSeconds: 725,
+      episodeTitle: 'Brittinie Wick on Women Veterans',
+      quote: 'Women veterans are too often invisible after service.',
+      timestampLabel: '12:05',
+      url: 'https://www.youtube.com/watch?v=ndX9SkIY7Mc&t=725s',
+    };
+    const out = p.push(wrapEvent(payload));
+    expect(out).toContainEqual({ kind: 'event', event: payload });
+  });
+
   it('falls back to text when event JSON is invalid', () => {
     const p = createChatStreamParser();
     const out = p.push(`${EVT_DELIM}not json${EVT_DELIM}`);

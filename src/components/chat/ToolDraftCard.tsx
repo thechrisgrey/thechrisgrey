@@ -191,6 +191,44 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
     );
   }
 
+  if (action.action === 'podcast_citation') {
+    const playAtTimestamp = () => {
+      window.open(action.url, '_blank', 'noopener,noreferrer');
+      accepted();
+    };
+    return (
+      <div
+        className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
+        role="group"
+        aria-label="Podcast citation"
+      >
+        <p className="text-altivum-silver flex items-start gap-2 mb-1" style={typography.smallText}>
+          <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">podcasts</span>
+          <span>From The Vector Podcast</span>
+        </p>
+        <p className="text-altivum-gold mb-2" style={typography.bodyText}>
+          {action.episodeTitle}
+        </p>
+        {action.quote ? (
+          <p className="text-altivum-silver/80 mb-3 italic" style={typography.smallText}>
+            "{action.quote}"
+          </p>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={playAtTimestamp}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+          >
+            <span className="material-icons text-base leading-none">play_circle</span>
+            <span>Play at {action.timestampLabel}</span>
+          </button>
+          <IconButton icon="close" label="Dismiss" variant="ghost" onClick={dismiss} />
+        </div>
+      </div>
+    );
+  }
+
   if (action.action === 'blog_search_results') {
     if (action.results.length === 0) return null;
     const openPost = (slug: string) => {

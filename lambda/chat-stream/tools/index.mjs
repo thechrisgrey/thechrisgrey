@@ -3,6 +3,7 @@ import { buildDraftMessageTool } from "./draftMessage.mjs";
 import { buildDraftNewsletterTool } from "./draftNewsletter.mjs";
 import { buildCitePassageTool } from "./citePassage.mjs";
 import { buildSearchBlogTool } from "./searchBlog.mjs";
+import { buildSearchPodcastTool } from "./searchPodcast.mjs";
 import { buildRenderUiTool } from "./renderUi.mjs";
 import { buildRememberFactTool } from "./rememberFact.mjs";
 
@@ -13,6 +14,9 @@ import { buildRememberFactTool } from "./rememberFact.mjs";
  *   responseStream: { write: (s: string) => void },
  *   metrics?: { record: (n: string, v?: number, u?: string) => void },
  *   sanityClient?: { fetch: (q: string, p?: object) => Promise<unknown> },
+ *   agentClient?: { send: (cmd: unknown, opts?: unknown) => Promise<unknown> },
+ *   RetrieveCommand?: new (input: unknown) => unknown,
+ *   podcastKbId?: string | null,
  *   docClient?: { send: (cmd: unknown) => Promise<unknown> },
  *   PutCommand?: new (input: unknown) => unknown,
  *   deviceId?: string | null,
@@ -30,6 +34,10 @@ export function buildTools(deps) {
   if (deps.sanityClient) {
     tools.push(buildCitePassageTool(deps));
     tools.push(buildSearchBlogTool(deps));
+  }
+
+  if (deps.agentClient && deps.RetrieveCommand && deps.podcastKbId) {
+    tools.push(buildSearchPodcastTool(deps));
   }
 
   // Generative UI is offered ONLY on the dedicated /chat page — never the widget.
@@ -50,6 +58,7 @@ export {
   buildDraftNewsletterTool,
   buildCitePassageTool,
   buildSearchBlogTool,
+  buildSearchPodcastTool,
   buildRenderUiTool,
   buildRememberFactTool,
 };

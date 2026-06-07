@@ -47,6 +47,17 @@ export type DraftActionBlogSearchResults = {
   results: BlogSearchResult[];
 };
 
+export type DraftActionPodcastCitation = {
+  kind: 'draft_action';
+  action: 'podcast_citation';
+  videoId: string;
+  startSeconds: number;
+  episodeTitle: string;
+  quote: string;
+  timestampLabel: string;
+  url: string;
+};
+
 export type ToolInvocationEvent = {
   kind: 'tool_invocation';
   tool: string;
@@ -83,7 +94,8 @@ export type DraftAction =
   | DraftActionContact
   | DraftActionNewsletter
   | DraftActionCitation
-  | DraftActionBlogSearchResults;
+  | DraftActionBlogSearchResults
+  | DraftActionPodcastCitation;
 
 export type ChatEvent =
   | DraftAction

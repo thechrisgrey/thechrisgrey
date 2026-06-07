@@ -61,3 +61,7 @@ Anthropic Academy/
 
 # Coverage reports
 coverage/
+
+# Vector Podcast KB ingestion — local staging + source transcripts (not committed)
+podcast-kb-staging/
+podcast-transcripts/
