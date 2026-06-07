@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import ChatMessage from './ChatMessage';
+import type { UiBlock } from '../../utils/uiBlocks';
 
 describe('ChatMessage', () => {
   describe('user messages', () => {
@@ -172,6 +174,43 @@ describe('ChatMessage', () => {
       );
       const links = screen.queryAllByRole('link');
       expect(links).toHaveLength(0);
+    });
+  });
+
+  describe('generative UI surface gating', () => {
+    const statBlock: UiBlock = {
+      type: 'stat_row',
+      stats: [
+        { value: '9', label: 'Episodes' },
+        { value: '2025', label: 'Launched' },
+      ],
+    };
+
+    it('renders generative blocks on the dedicated page surface', () => {
+      render(
+        <MemoryRouter>
+          <ChatMessage role="assistant" content="Here are the numbers." uiBlocks={[statBlock]} surface="page" />
+        </MemoryRouter>
+      );
+      expect(screen.getByText('Episodes')).toBeInTheDocument();
+    });
+
+    it('does NOT render generative blocks in the widget surface', () => {
+      render(
+        <MemoryRouter>
+          <ChatMessage role="assistant" content="Here are the numbers." uiBlocks={[statBlock]} surface="widget" />
+        </MemoryRouter>
+      );
+      expect(screen.queryByText('Episodes')).not.toBeInTheDocument();
+    });
+
+    it('defaults to the widget surface (no blocks) when surface is unset', () => {
+      render(
+        <MemoryRouter>
+          <ChatMessage role="assistant" content="Here are the numbers." uiBlocks={[statBlock]} />
+        </MemoryRouter>
+      );
+      expect(screen.queryByText('Episodes')).not.toBeInTheDocument();
     });
   });
 });

@@ -1,3 +1,5 @@
+import type { UiBlock } from './uiBlocks';
+
 export const SYS_DELIM = '\x00SYS\x00';
 export const EVT_DELIM = '\x00EVT\x00';
 
@@ -82,6 +84,11 @@ export type GuardrailEvent = {
   stopReason?: string;
 };
 
+export type UiBlockEvent = {
+  kind: 'ui_block';
+  block: UiBlock;
+};
+
 export type DraftAction =
   | DraftActionNavigate
   | DraftActionContact
@@ -95,7 +102,8 @@ export type ChatEvent =
   | ToolInvocationEvent
   | ToolResultEvent
   | MemoryUpdateEvent
-  | GuardrailEvent;
+  | GuardrailEvent
+  | UiBlockEvent;
 
 export type ParsedChunk =
   | { kind: 'text'; text: string }

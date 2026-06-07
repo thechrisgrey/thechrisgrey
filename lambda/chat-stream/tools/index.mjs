@@ -4,6 +4,7 @@ import { buildDraftNewsletterTool } from "./draftNewsletter.mjs";
 import { buildCitePassageTool } from "./citePassage.mjs";
 import { buildSearchBlogTool } from "./searchBlog.mjs";
 import { buildSearchPodcastTool } from "./searchPodcast.mjs";
+import { buildRenderUiTool } from "./renderUi.mjs";
 import { buildRememberFactTool } from "./rememberFact.mjs";
 
 /**
@@ -19,6 +20,7 @@ import { buildRememberFactTool } from "./rememberFact.mjs";
  *   docClient?: { send: (cmd: unknown) => Promise<unknown> },
  *   PutCommand?: new (input: unknown) => unknown,
  *   deviceId?: string | null,
+ *   surface?: 'page' | 'widget',
  *   requestId?: string,
  * }} deps
  */
@@ -38,6 +40,11 @@ export function buildTools(deps) {
     tools.push(buildSearchPodcastTool(deps));
   }
 
+  // Generative UI is offered ONLY on the dedicated /chat page — never the widget.
+  if (deps.surface === "page") {
+    tools.push(buildRenderUiTool(deps));
+  }
+
   if (deps.docClient && deps.PutCommand && deps.deviceId) {
     tools.push(buildRememberFactTool(deps));
   }
@@ -52,5 +59,6 @@ export {
   buildCitePassageTool,
   buildSearchBlogTool,
   buildSearchPodcastTool,
+  buildRenderUiTool,
   buildRememberFactTool,
 };

@@ -32,6 +32,25 @@ test("buildTools includes cite_blog_passage and search_blog when sanityClient pr
   assert.ok(tools.some((t) => t.name === "search_blog"));
 });
 
+test("buildTools includes render_ui ONLY on the page surface", () => {
+  const onPage = buildTools({
+    responseStream: fakeStream(),
+    metrics: fakeMetrics(),
+    surface: "page",
+  });
+  assert.ok(onPage.some((t) => t.name === "render_ui"), "render_ui present on /chat page");
+
+  const onWidget = buildTools({
+    responseStream: fakeStream(),
+    metrics: fakeMetrics(),
+    surface: "widget",
+  });
+  assert.ok(!onWidget.some((t) => t.name === "render_ui"), "render_ui absent in widget");
+
+  const noSurface = buildTools({ responseStream: fakeStream(), metrics: fakeMetrics() });
+  assert.ok(!noSurface.some((t) => t.name === "render_ui"), "render_ui absent without a surface");
+});
+
 test("buildTools includes search_podcast when agentClient + RetrieveCommand + podcastKbId provided", () => {
   const tools = buildTools({
     responseStream: fakeStream(),

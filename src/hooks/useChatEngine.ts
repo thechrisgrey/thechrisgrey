@@ -4,6 +4,7 @@ import type { PageContext } from '../utils/pageContext';
 import { getSignedHeaders } from '../utils/chatSigning';
 import { getOrCreateDeviceId, clearDeviceId } from '../utils/deviceId';
 import { createChatStreamParser, type DraftAction, type ChatEvent } from '../utils/chatEvents';
+import type { UiBlock } from '../utils/uiBlocks';
 
 const MAX_HISTORY = 20;
 
@@ -19,6 +20,7 @@ export interface Message {
   timestamp: Date;
   isSystem?: boolean;
   drafts?: DraftAction[];
+  uiBlocks?: UiBlock[];
   toolActivity?: { tool: string; status: 'invoked' | 'complete' }[];
   memoryEvents?: MemoryEventRecord[];
 }
@@ -39,6 +41,10 @@ function applyEventToMessage(msg: Message, event: ChatEvent): Message {
     case 'draft_action': {
       const drafts = msg.drafts ? [...msg.drafts, event] : [event];
       return { ...msg, drafts };
+    }
+    case 'ui_block': {
+      const uiBlocks = msg.uiBlocks ? [...msg.uiBlocks, event.block] : [event.block];
+      return { ...msg, uiBlocks };
     }
     case 'tool_invocation': {
       const toolActivity = msg.toolActivity ? [...msg.toolActivity] : [];

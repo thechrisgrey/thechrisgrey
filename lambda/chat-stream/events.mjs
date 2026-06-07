@@ -4,6 +4,7 @@ export const EVENT_KINDS = Object.freeze({
   TOOL_INVOCATION: "tool_invocation",
   TOOL_RESULT: "tool_result",
   DRAFT_ACTION: "draft_action",
+  UI_BLOCK: "ui_block",
   MEMORY_UPDATE: "memory_update",
   GUARDRAIL: "guardrail",
 });
