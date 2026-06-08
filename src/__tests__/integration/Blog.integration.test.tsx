@@ -211,12 +211,15 @@ describe('Blog Page Integration', () => {
     it('renders dynamically derived category filter buttons', async () => {
       renderBlog();
 
+      // The category buttons are derived from the fetched posts and mount a tick
+      // after the always-present "All" button, so assert all three inside the same
+      // waitFor — a synchronous check on "Technology"/"Leadership" races the async
+      // derivation and flakes on slower CI runners.
       await waitFor(() => {
         expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Technology' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Leadership' })).toBeInTheDocument();
       });
-
-      expect(screen.getByRole('button', { name: 'Technology' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Leadership' })).toBeInTheDocument();
     });
 
     it('filters posts when a category button is clicked', async () => {
