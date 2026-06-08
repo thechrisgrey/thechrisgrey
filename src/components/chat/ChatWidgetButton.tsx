@@ -1,4 +1,6 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
+import SafeCanvas from '../SafeCanvas';
+import { checkWebGLSupport } from '../../utils/checkWebGL';
 
 const AltiMascot = lazy(() => import('./AltiMascot'));
 
@@ -7,7 +9,28 @@ interface ChatWidgetButtonProps {
   onClick: () => void;
 }
 
+// Static, WebGL-free stand-in for the 3D mascot: shown on unsupported GPUs
+// and if the 3D mount throws. Keeps the button meaningful and clickable.
+const MascotFallback = () => (
+  <div
+    data-testid="alti-fallback"
+    className="w-16 h-16 flex items-center justify-center rounded-full"
+    style={{
+      background:
+        'radial-gradient(circle at center, rgba(197,165,114,0.18) 0%, transparent 70%)',
+    }}
+  >
+    <span className="material-icons text-altivum-gold text-3xl">support_agent</span>
+  </div>
+);
+
 const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
+  // checkWebGLSupport() gates the mount so unsupported GPUs never attempt a
+  // Canvas (which can throw outside React's reach — useFrame rAF errors and
+  // webglcontextlost are NOT catchable by an error boundary). SafeCanvas then
+  // contains GLB-parse / R3F-init / useGLTF-Suspense throws at mount time.
+  const webglOk = checkWebGLSupport();
+
   return (
     <button
       onClick={onClick}
@@ -15,9 +38,13 @@ const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
       aria-expanded={isOpen}
       className="fixed bottom-6 right-6 z-40 flex items-center justify-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
     >
-      <Suspense fallback={null}>
-        <AltiMascot isOpen={isOpen} />
-      </Suspense>
+      {webglOk ? (
+        <SafeCanvas fallback={<MascotFallback />}>
+          <AltiMascot isOpen={isOpen} />
+        </SafeCanvas>
+      ) : (
+        <MascotFallback />
+      )}
     </button>
   );
 };
