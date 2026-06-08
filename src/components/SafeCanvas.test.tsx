@@ -1,0 +1,54 @@
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
+import SafeCanvas from './SafeCanvas';
+
+// A child that throws during render — simulates a GLB-parse / R3F-init failure.
+function Boom(): never {
+  throw new Error('webgl mount failed');
+}
+
+describe('SafeCanvas', () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('renders children when they mount cleanly', () => {
+    render(
+      <SafeCanvas fallback={<div data-testid="fallback" />}>
+        <div data-testid="child">ok</div>
+      </SafeCanvas>,
+    );
+    expect(screen.getByTestId('child')).toBeInTheDocument();
+    expect(screen.queryByTestId('fallback')).not.toBeInTheDocument();
+  });
+
+  it('renders the fallback and does NOT propagate when a child throws on mount', () => {
+    // ErrorBoundary.componentDidCatch console.errors; silence it for a clean run.
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(() =>
+      render(
+        <SafeCanvas fallback={<div data-testid="fallback" />}>
+          <Boom />
+        </SafeCanvas>,
+      ),
+    ).not.toThrow();
+
+    expect(screen.getByTestId('fallback')).toBeInTheDocument();
+    expect(screen.queryByTestId('child')).not.toBeInTheDocument();
+    errSpy.mockRestore();
+  });
+
+  it('defaults to a null fallback when none is provided (no crash)', () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() =>
+      render(
+        <SafeCanvas>
+          <Boom />
+        </SafeCanvas>,
+      ),
+    ).not.toThrow();
+    errSpy.mockRestore();
+  });
+});
