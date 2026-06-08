@@ -30,7 +30,7 @@
       ],
       "Resource": [
         "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/ARFYABW8HP",
-        "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/PODCAST_KB_ID_REPLACE_AT_PROVISION"
+        "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/FCNAZHLCUH"
       ]
     },
     {
