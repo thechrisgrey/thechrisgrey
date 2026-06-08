@@ -2,6 +2,7 @@ import {
   Agent,
   BedrockModel,
   SlidingWindowConversationManager,
+  BeforeModelCallEvent,
 } from "@strands-agents/sdk";
 import { emitEvent, EVENT_KINDS } from "./events.mjs";
 
@@ -9,6 +10,14 @@ export const DEFAULT_REGION = "us-east-1";
 export const DEFAULT_MAX_TOKENS = 500;
 export const DEFAULT_TEMPERATURE = 0.6;
 export const DEFAULT_WINDOW_SIZE = 40;
+
+// Strands SDK v1.0.0-rc.4 exposes NO declarative maxIterations/recursion config.
+// We bound the agent loop programmatically: BeforeModelCallEvent fires once per
+// loop cycle, so we count cycles and call agent.cancel() past the cap. 3 == the
+// initial model call + up to 2 tool-driven follow-ups (matches the "at most
+// twice" prompt rule in prompts.mjs). This is a hard ceiling on top of the 25s
+// cancelSignal timeout wired in index.mjs.
+export const DEFAULT_MAX_MODEL_CALLS = 3;
 
 export function buildBedrockModel({
   modelId,
@@ -47,9 +56,11 @@ export function buildAgent({
   messages = [],
   windowSize = DEFAULT_WINDOW_SIZE,
   name = "Alti",
+  maxModelCalls = DEFAULT_MAX_MODEL_CALLS,
+  AgentClass = Agent,
 } = {}) {
   if (!model) throw new Error("buildAgent: model is required");
-  return new Agent({
+  const agent = new AgentClass({
     model,
     tools,
     systemPrompt,
@@ -58,6 +69,19 @@ export function buildAgent({
     printer: false,
     name,
   });
+
+  // Programmatic loop cap. BeforeModelCallEvent fires once per loop cycle; once
+  // the count exceeds maxModelCalls we cancel the agent (idempotent — the SDK
+  // returns stopReason 'cancelled' and any text already streamed is kept).
+  let modelCalls = 0;
+  agent.addHook(BeforeModelCallEvent, () => {
+    modelCalls += 1;
+    if (modelCalls > maxModelCalls) {
+      agent.cancel();
+    }
+  });
+
+  return agent;
 }
 
 function extractText(streamEvent) {

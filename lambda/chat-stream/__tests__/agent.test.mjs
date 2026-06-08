@@ -8,6 +8,7 @@ import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_TEMPERATURE,
   DEFAULT_REGION,
+  DEFAULT_MAX_MODEL_CALLS,
 } from "../agent.mjs";
 import { EVENT_DELIM } from "../events.mjs";
 
@@ -232,4 +233,56 @@ test("streamAgentResponse validates required args", async () => {
   await assert.rejects(() => streamAgentResponse({ userMessage: "x", responseStream: fakeStream() }), /agent is required/);
   await assert.rejects(() => streamAgentResponse({ agent: {}, responseStream: fakeStream() }), /userMessage is required/);
   await assert.rejects(() => streamAgentResponse({ agent: {}, userMessage: "x" }), /responseStream is required/);
+});
+
+test("DEFAULT_MAX_MODEL_CALLS caps the agent loop", () => {
+  // initial model call + up to 2 tool-driven follow-ups = 3 model invocations.
+  assert.equal(DEFAULT_MAX_MODEL_CALLS, 3);
+});
+
+test("buildAgent registers a BeforeModelCallEvent cap that cancels past the limit", () => {
+  const hooks = [];
+  let cancelled = 0;
+  // Minimal fake Agent that records addHook registrations and cancel() calls.
+  class FakeAgent {
+    constructor(config) {
+      this.config = config;
+      this.name = config.name;
+      this.messages = config.messages || [];
+    }
+    addHook(eventCtor, cb) {
+      hooks.push({ eventCtor, cb });
+      return () => {};
+    }
+    cancel() {
+      cancelled++;
+    }
+  }
+
+  const agent = buildAgent({
+    model: buildBedrockModel({ modelId: "m" }),
+    tools: [],
+    systemPrompt: "Be Alti.",
+    messages: [],
+    name: "Alti",
+    maxModelCalls: 2,
+    AgentClass: FakeAgent,
+  });
+
+  // Exactly one hook was registered.
+  assert.equal(hooks.length, 1);
+  // Its event constructor name is BeforeModelCallEvent (real SDK export).
+  assert.equal(hooks[0].eventCtor.name, "BeforeModelCallEvent");
+
+  // Fire the hook: cycles 1 and 2 are allowed, cycle 3 trips the cap.
+  hooks[0].cb({});
+  hooks[0].cb({});
+  assert.equal(cancelled, 0, "first two model calls must not cancel");
+  hooks[0].cb({});
+  assert.equal(cancelled, 1, "third model call must trigger cancel()");
+  // Idempotent: further calls keep cancelling, never throw.
+  hooks[0].cb({});
+  assert.equal(cancelled, 2);
+
+  assert.ok(agent);
 });
