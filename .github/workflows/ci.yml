@@ -68,6 +68,61 @@ jobs:
           VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
           VITE_METRICS_ENDPOINT: https://placeholder.example.com
 
+  cypress-mocked:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_CONTACT_ENDPOINT: https://placeholder.example.com
+          VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+          VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
+          VITE_COGNITO_CLIENT_ID: placeholder
+          VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
+          VITE_METRICS_ENDPOINT: https://placeholder.example.com
+
+      - name: Run mock-stubbed Cypress specs
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: npx vite preview --port 5173
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 60
+          # WebGL-dependent specs (home, navigation, mobile-navigation,
+          # chat-widget) are intentionally excluded — they use no intercepts and
+          # flake headless on CI. Only mock-stubbed flows run here.
+          spec: >-
+            cypress/e2e/404.cy.ts,
+            cypress/e2e/about-pages.cy.ts,
+            cypress/e2e/blog.cy.ts,
+            cypress/e2e/blog-post.cy.ts,
+            cypress/e2e/chat.cy.ts,
+            cypress/e2e/chat-agentic.cy.ts,
+            cypress/e2e/contact.cy.ts
+
+      - name: Upload Cypress screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+          retention-days: 7
+          if-no-files-found: ignore
+
   lambda-audit:
     runs-on: ubuntu-latest
     steps:
