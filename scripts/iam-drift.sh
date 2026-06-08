@@ -74,6 +74,17 @@ canon() {
   '
 }
 
+# Pretty-print a JSON document on stdin (2-space indent) for human-readable
+# diff output on the drift path. Shares the parse/stringify shape with canon().
+pretty() {
+  node -e '
+    let s = "";
+    process.stdin.on("data", d => (s += d)).on("end", () => {
+      process.stdout.write(JSON.stringify(JSON.parse(s), null, 2));
+    });
+  '
+}
+
 lookup() {  # $1=dir field -> echoes "role|policy" or returns 1
   local dir="$1" entry
   for entry in "${MAP[@]}"; do
@@ -115,16 +126,22 @@ for dir in "$ROOT"/lambda/*/; do
   fi
 
   # Normalize both sides (recursively sorted keys) so formatting differences
-  # don't show as drift while real content differences still do.
-  desired="$(canon <"$policy_file")"
+  # don't show as drift while real content differences still do. Guard canon's
+  # exit status on the local file: if iam-policy.json is malformed, canon emits
+  # nothing and we'd otherwise report a confusing DRIFT instead of the real
+  # cause, so fail with a clear "invalid local policy" error.
+  if ! desired="$(canon <"$policy_file")"; then
+    echo "ERROR  $name — iam-policy.json is not valid JSON (canonicalization failed)"
+    DRIFT=1; continue
+  fi
   livenorm="$(printf '%s' "$live" | canon)"
 
   if [ "$desired" = "$livenorm" ]; then
     echo "OK     $name — live inline policy matches iam-policy.json"
   else
     echo "DRIFT  $name — live inline policy differs from iam-policy.json"
-    diff <(printf '%s' "$desired"  | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.stringify(JSON.parse(s),null,2)))") \
-         <(printf '%s' "$livenorm" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.stringify(JSON.parse(s),null,2)))") \
+    diff <(printf '%s' "$desired"  | pretty) \
+         <(printf '%s' "$livenorm" | pretty) \
       || true
     DRIFT=1
   fi
