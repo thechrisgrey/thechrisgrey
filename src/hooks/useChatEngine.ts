@@ -145,7 +145,9 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       setIsTyping(true);
 
       const allMessages = [
-        ...messagesRef.current.filter((m) => m.id !== 'welcome'),
+        ...messagesRef.current.filter(
+          (m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0
+        ),
         userMessage,
       ];
       const windowed = allMessages.length > MAX_HISTORY

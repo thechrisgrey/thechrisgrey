@@ -729,4 +729,101 @@ describe('useChatEngine', () => {
       );
     });
   });
+
+  describe('conversation-poisoning regression', () => {
+    it('should not replay a lingering empty assistant placeholder in the next request', async () => {
+      const encoder = new TextEncoder();
+      const SYSTEM_PREFIX = '\x00SYS\x00';
+
+      // Turn 1: backend empty-response path — only a SYS system message, no text.
+      const guardrailReader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: encoder.encode(
+              `${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`
+            ),
+          })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      // Turn 2: normal text reply.
+      const normalReader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({ done: false, value: encoder.encode('Sure thing') })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, body: { getReader: () => guardrailReader } })
+        .mockResolvedValueOnce({ ok: true, body: { getReader: () => normalReader } });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('first');
+      });
+      await act(async () => {
+        await result.current.handleSend('second');
+      });
+
+      // The SECOND request body must not carry any empty-content message,
+      // and must not carry the system/error string as a fake assistant turn.
+      const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+      expect(
+        secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)
+      ).toBe(false);
+      expect(
+        secondBody.messages.some((m: { content: string }) =>
+          m.content.includes("couldn't put together a response")
+        )
+      ).toBe(false);
+    });
+
+    it('should not replay isSystem error bubbles as assistant turns', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      // Seed sessionStorage with a non-empty isSystem assistant bubble.
+      window.sessionStorage.setItem(
+        CHAT_STORAGE_KEY,
+        JSON.stringify([
+          initialWelcomeMessage,
+          { id: 'user-1', role: 'user', content: 'earlier', timestamp: new Date() },
+          {
+            id: 'system-1',
+            role: 'assistant',
+            content: 'Rate limit exceeded.',
+            timestamp: new Date(),
+            isSystem: true,
+          },
+        ])
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('again');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(
+        body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')
+      ).toBe(false);
+      // The real prior user turn is preserved.
+      expect(body.messages).toEqual([
+        { role: 'user', content: 'earlier' },
+        { role: 'user', content: 'again' },
+      ]);
+    });
+  });
 });
