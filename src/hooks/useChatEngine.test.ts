@@ -859,5 +859,27 @@ describe('useChatEngine', () => {
         result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')
       ).toBe(true);
     });
+
+    it('should assign unique message ids across rapid sends', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('one');
+      });
+      await act(async () => {
+        await result.current.handleSend('two');
+      });
+
+      const ids = result.current.messages.map((m: Message) => m.id);
+      expect(new Set(ids).size).toBe(ids.length); // all unique
+    });
   });
 });

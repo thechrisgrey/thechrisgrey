@@ -135,7 +135,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
       const userMessage: Message = {
-        id: `user-${Date.now()}`,
+        id: `user-${crypto.randomUUID()}`,
         role: 'user',
         content,
         timestamp: new Date(),
@@ -158,7 +158,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         content: msg.content,
       }));
 
-      const assistantMessageId = `assistant-${Date.now()}`;
+      const assistantMessageId = `assistant-${crypto.randomUUID()}`;
       streamingMessageIdRef.current = assistantMessageId;
       setIsStreaming(true);
 
