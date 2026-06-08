@@ -882,4 +882,81 @@ describe('useChatEngine', () => {
       expect(new Set(ids).size).toBe(ids.length); // all unique
     });
   });
+
+  describe('identity-guarded finally (out-of-order completion)', () => {
+    it("request A's finally must not clobber request B's controller or streaming state", async () => {
+      // A hangs until we release it; it will be aborted by B's send.
+      let releaseA: () => void = () => {};
+      const aDone = new Promise<void>((resolve) => {
+        releaseA = resolve;
+      });
+
+      const aborts: AbortSignal[] = [];
+      let callCount = 0;
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((_url, opts) => {
+          callCount++;
+          aborts.push(opts.signal);
+          if (callCount === 1) {
+            // Request A: reject with AbortError only AFTER we manually release it,
+            // simulating A's promise settling LATE (after B already started).
+            return new Promise((_resolve, reject) => {
+              aDone.then(() => {
+                const err = new Error('Aborted');
+                err.name = 'AbortError';
+                reject(err);
+              });
+            });
+          }
+          // Request B: a stream that stays open so B is "in flight" while A settles.
+          let read = 0;
+          return Promise.resolve({
+            ok: true,
+            body: {
+              getReader: () => ({
+                read: vi.fn().mockImplementation(() => {
+                  read++;
+                  if (read === 1) {
+                    return new Promise(() => {}); // never resolves -> B stays streaming
+                  }
+                  return Promise.resolve({ done: true, value: undefined });
+                }),
+              }),
+            },
+          });
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      // Start A (do not await; it hangs).
+      act(() => {
+        result.current.handleSend('A');
+      });
+      // Start B; this aborts A's controller but B keeps streaming.
+      act(() => {
+        result.current.handleSend('B');
+      });
+
+      // B is the current in-flight request.
+      expect(result.current.isStreaming).toBe(true);
+      const bStreamingId = result.current.streamingMessageId;
+      expect(bStreamingId).not.toBeNull();
+
+      // Now let A's promise settle LAST -> A's finally runs after B started.
+      await act(async () => {
+        releaseA();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      // GUARD: A's finally must NOT have cleared B's streaming UI...
+      expect(result.current.isStreaming).toBe(true);
+      expect(result.current.streamingMessageId).toBe(bStreamingId);
+      // ...and B's controller must survive so unmount-abort still works.
+      expect(aborts[1].aborted).toBe(false);
+    });
+  });
 });

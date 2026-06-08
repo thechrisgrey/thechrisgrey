@@ -132,6 +132,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      const myController = controller;
       const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
       const userMessage: Message = {
@@ -159,6 +160,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       }));
 
       const assistantMessageId = `assistant-${crypto.randomUUID()}`;
+      const myId = assistantMessageId;
       streamingMessageIdRef.current = assistantMessageId;
       setIsStreaming(true);
 
@@ -358,9 +360,16 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         }
       } finally {
         clearTimeout(timeoutId);
-        setIsStreaming(false);
-        streamingMessageIdRef.current = null;
-        abortControllerRef.current = null;
+        // Only clear the shared refs/UI if THIS request is still the active one.
+        // A late-settling request must not clobber a newer in-flight request's
+        // controller (used by unmount-abort) or its streaming UI state.
+        if (abortControllerRef.current === myController) {
+          setIsStreaming(false);
+          abortControllerRef.current = null;
+        }
+        if (streamingMessageIdRef.current === myId) {
+          streamingMessageIdRef.current = null;
+        }
       }
     },
     [setMessages, pageContext]
