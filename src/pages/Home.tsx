@@ -12,6 +12,7 @@ import SocialIcon from '../components/SocialIcon';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import SafeCanvas from '../components/SafeCanvas';
 import { checkWebGLSupport } from '../utils/checkWebGL';
+import { isPrerender } from '../utils/prerender';
 
 // Lazy so the WebGL hero backdrop is its own chunk that hydrates after the
 // critical path. The static hero2.png is always rendered on top and stays the
@@ -117,10 +118,12 @@ const Home = () => {
             and the color shown before the WebGL backdrop hydrates. */}
         <div className="absolute inset-0 bg-gradient-to-br from-altivum-dark via-altivum-navy to-altivum-blue opacity-50"></div>
 
-        {/* Living "signal field" backdrop. Mounted only when motion is allowed
-            and WebGL is supported; its lazy chunk loads after the static
-            brandmark below, so the brandmark remains the LCP element. */}
-        {!reducedMotion && webglOk && (
+        {/* Living "signal field" backdrop. Mounted only when motion is allowed,
+            WebGL is supported, and we are not prerendering; its lazy chunk loads
+            after the static brandmark below, so the brandmark remains the LCP
+            element. isPrerender() skips it during the build-time crawl so the
+            headless render reaches a stable DOM instead of a never-idle loop. */}
+        {!reducedMotion && webglOk && !isPrerender() && (
           <div className="absolute inset-0" aria-hidden="true">
             {/* Static gradient behind (above) is the fallback, so null is fine. */}
             <SafeCanvas>

@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import SafeCanvas from '../SafeCanvas';
 import { checkWebGLSupport } from '../../utils/checkWebGL';
+import { isPrerender } from '../../utils/prerender';
 
 const AltiMascot = lazy(() => import('./AltiMascot'));
 
@@ -29,7 +30,9 @@ const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
   // Canvas (which can throw outside React's reach — useFrame rAF errors and
   // webglcontextlost are NOT catchable by an error boundary). SafeCanvas then
   // contains GLB-parse / R3F-init / useGLTF-Suspense throws at mount time.
-  const webglOk = checkWebGLSupport();
+  // isPrerender() additionally skips the 3D mount during the build-time crawl
+  // so the headless render reaches a stable DOM instead of a never-idle loop.
+  const showMascot = checkWebGLSupport() && !isPrerender();
 
   return (
     <button
@@ -38,7 +41,7 @@ const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
       aria-expanded={isOpen}
       className="fixed bottom-6 right-6 z-40 flex items-center justify-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
     >
-      {webglOk ? (
+      {showMascot ? (
         <SafeCanvas fallback={<MascotFallback />}>
           <AltiMascot isOpen={isOpen} />
         </SafeCanvas>

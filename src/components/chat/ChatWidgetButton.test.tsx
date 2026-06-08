@@ -17,10 +17,18 @@ vi.mock('../../utils/checkWebGL', () => ({
 }));
 const mockedCheckWebGL = vi.mocked(checkWebGLSupport);
 
+// Build-time prerender flag — controllable per test, default false (browser).
+import { isPrerender } from '../../utils/prerender';
+vi.mock('../../utils/prerender', () => ({
+  isPrerender: vi.fn(() => false),
+}));
+const mockedIsPrerender = vi.mocked(isPrerender);
+
 describe('ChatWidgetButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedCheckWebGL.mockReturnValue(true);
+    mockedIsPrerender.mockReturnValue(false);
   });
 
   it('should render with "Open chat" label when closed', () => {
@@ -77,5 +85,14 @@ describe('ChatWidgetButton', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('skips the 3D mascot during a build-time prerender crawl, even with WebGL', async () => {
+    mockedCheckWebGL.mockReturnValue(true);
+    mockedIsPrerender.mockReturnValue(true);
+    render(<ChatWidgetButton isOpen={false} onClick={vi.fn()} />);
+
+    expect(screen.getByTestId('alti-fallback')).toBeInTheDocument();
+    expect(screen.queryByTestId('alti-mascot')).not.toBeInTheDocument();
   });
 });

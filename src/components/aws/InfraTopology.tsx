@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { typography } from '../../utils/typography';
 import { checkWebGLSupport } from '../../utils/checkWebGL';
+import { isPrerender } from '../../utils/prerender';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { clusters } from '../../data/infrastructureTopology';
 import ErrorBoundary from '../ErrorBoundary';
@@ -27,7 +28,10 @@ function projectTo2D(position: [number, number, number]) {
 export function InfraTopology() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const webglOk = checkWebGLSupport();
-  const use3D = isDesktop && webglOk;
+  // Render the 2D fallback (the false branch below) when WebGL is unavailable
+  // OR during the build-time prerender crawl, so headless renders get a stable,
+  // crawlable DOM instead of a never-idle WebGL canvas.
+  const use3D = isDesktop && webglOk && !isPrerender();
 
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const controlRef = useRef<TopologyControlHandle | null>(null);

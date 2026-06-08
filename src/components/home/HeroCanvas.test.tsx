@@ -28,6 +28,13 @@ vi.mock('../../utils/checkWebGL', () => ({
 }));
 const mockedCheckWebGL = vi.mocked(checkWebGLSupport);
 
+// Build-time prerender flag — controllable per test, default false (browser).
+import { isPrerender } from '../../utils/prerender';
+vi.mock('../../utils/prerender', () => ({
+  isPrerender: vi.fn(() => false),
+}));
+const mockedIsPrerender = vi.mocked(isPrerender);
+
 // Lenis context — no instance needed for these assertions.
 vi.mock('../../hooks/useLenis', async () => {
   const actual = await vi.importActual<typeof import('../../hooks/useLenis')>(
@@ -55,6 +62,7 @@ describe('HeroCanvas in the hero section', () => {
     vi.clearAllMocks();
     reducedMotionRef.current = false;
     mockedCheckWebGL.mockReturnValue(true);
+    mockedIsPrerender.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -89,6 +97,17 @@ describe('HeroCanvas in the hero section', () => {
   it('does not mount the Canvas when WebGL is unsupported, even with motion allowed', async () => {
     reducedMotionRef.current = false;
     mockedCheckWebGL.mockReturnValue(false);
+    renderHome();
+
+    expect(screen.getByAltText('Leadership Forged in Service')).toBeInTheDocument();
+    await Promise.resolve();
+    expect(screen.queryByTestId('hero-canvas')).not.toBeInTheDocument();
+  });
+
+  it('does not mount the Canvas during a build-time prerender crawl', async () => {
+    reducedMotionRef.current = false;
+    mockedCheckWebGL.mockReturnValue(true);
+    mockedIsPrerender.mockReturnValue(true);
     renderHome();
 
     expect(screen.getByAltText('Leadership Forged in Service')).toBeInTheDocument();
