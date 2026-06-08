@@ -169,10 +169,12 @@ describe('SEO', () => {
     });
   });
 
-  it('should set window.__PRERENDER_READY__ after the content Helmet flushes', async () => {
-    // The build-time prerender crawl polls this flag. It must be set by the
-    // content-bearing Helmet's onChangeClientState (not an empty sibling), so
-    // the per-route <head> tags are guaranteed present when the crawl reads it.
+  it('should set window.__PRERENDER_READY__ after the route head commits', async () => {
+    // The build-time prerender crawl polls this flag. It is set by a useEffect in
+    // SEO.tsx, which runs after React commits this component (and the title/meta/
+    // JSON-LD it hoists into <head>) — NOT via onChangeClientState, which is a
+    // no-op under react-helmet-async@3 on React 19. So the per-route <head> tags
+    // are guaranteed present when the crawl reads the flag.
     delete (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__;
     renderSEO({ title: 'Test', description: 'desc' });
     await waitFor(() => {

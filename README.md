@@ -261,7 +261,6 @@ thechrisgrey/
 │   ├── press-kit/                   # Press materials + archive
 │   ├── .well-known/security.txt
 │   ├── robots.txt
-│   ├── _redirects
 │   ├── og.png                       # Open Graph image
 │   └── favicon.png
 │
