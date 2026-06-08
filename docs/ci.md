@@ -33,7 +33,7 @@ Never re-add `continue-on-error: true` to the audit step globally.
 
 ## Dependabot
 
-- `.github/dependabot.yml` scans root `/` plus the four Lambda directories (`lambda/chat-stream`, `lambda/kb-builder`, `lambda/metrics`, `lambda/kb-sync`) weekly on Mondays.
+- `.github/dependabot.yml` scans root `/` plus the six Lambda directories (`lambda/chat-stream`, `lambda/kb-builder`, `lambda/metrics`, `lambda/kb-sync`, `lambda/blueprint`, `lambda/mcp-server`) and the shared `lambda/shared` package weekly on Mondays.
 - Lambda PRs carry both `dependencies` and `lambda` labels.
 - Root is limited to 10 open PRs; each Lambda is limited to 3.
 
