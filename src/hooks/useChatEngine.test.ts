@@ -860,6 +860,53 @@ describe('useChatEngine', () => {
       ).toBe(true);
     });
 
+    it('should preserve an empty-text assistant bubble that carries a draft event', async () => {
+      // rec7's BeforeModelCallEvent loop cap can cancel the agent right after a
+      // tool emits a draft_action event but BEFORE any concluding text streams.
+      // The post-stream cleanup must NOT prune that bubble: ChatMessage renders
+      // drafts/uiBlocks/memoryEvents independently of content, so the draft card
+      // is meant to survive empty text.
+      const encoder = new TextEncoder();
+      const EVT_DELIM = '\x00EVT\x00';
+      const draftEvent = {
+        kind: 'draft_action',
+        action: 'navigate',
+        path: '/podcast',
+        reason: 'Listen to The Vector Podcast',
+      };
+      const frame = `${EVT_DELIM}${JSON.stringify(draftEvent)}${EVT_DELIM}`;
+      const reader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({ done: false, value: encoder.encode(frame) })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('where can I hear the podcast?');
+      });
+
+      const assistantBubbles = result.current.messages.filter(
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+      );
+      // The bubble carrying the draft must survive even with empty text.
+      expect(assistantBubbles).toHaveLength(1);
+      expect(assistantBubbles[0].content.trim().length).toBe(0);
+      expect(assistantBubbles[0].drafts).toBeDefined();
+      expect(assistantBubbles[0].drafts).toHaveLength(1);
+      expect(assistantBubbles[0].drafts?.[0]).toMatchObject({
+        kind: 'draft_action',
+        action: 'navigate',
+        path: '/podcast',
+      });
+    });
+
     it('should assign unique message ids across rapid sends', async () => {
       const mockReader = {
         read: vi.fn().mockResolvedValue({ done: true, value: undefined }),

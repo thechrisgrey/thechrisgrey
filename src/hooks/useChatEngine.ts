@@ -318,10 +318,24 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
           } else {
             // Output WAS produced (e.g. a SYS system message or events only) but the
             // assistant placeholder created by ensureMessage() never received any text.
-            // Drop the dead empty bubble so it neither renders nor poisons history.
+            // Drop the dead empty bubble so it neither renders nor poisons history —
+            // BUT only if it carries nothing else. A turn whose FINAL output was a
+            // tool/event (e.g. a navigate draft card, a UI block, or a memory update)
+            // with no concluding text — reachable when rec7's BeforeModelCallEvent
+            // loop cap cancels the agent after a tool event — produces an empty-text
+            // bubble that still carries a draft/uiBlock/toolActivity/memoryEvent.
+            // ChatMessage renders those independently of content, so they must survive.
             setMessages((prev) =>
               prev.filter(
-                (m) => !(m.id === assistantMessageId && m.content.trim().length === 0)
+                (m) =>
+                  !(
+                    m.id === assistantMessageId &&
+                    m.content.trim().length === 0 &&
+                    !m.drafts?.length &&
+                    !m.uiBlocks?.length &&
+                    !m.toolActivity?.length &&
+                    !m.memoryEvents?.length
+                  )
               )
             );
           }
