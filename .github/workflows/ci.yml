@@ -44,6 +44,7 @@ jobs:
         run: |
           cd lambda/chat-stream && npm ci --no-audit --no-fund
           cd ../blueprint && npm ci --no-audit --no-fund
+          cd ../metrics && npm ci --no-audit --no-fund
           cd ../shared && npm install --no-audit --no-fund
           cd ../mcp-server && npm install --no-audit --no-fund
 
