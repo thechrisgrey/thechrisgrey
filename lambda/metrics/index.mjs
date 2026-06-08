@@ -13,6 +13,7 @@ import { createHash, randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
+import { validateVitals, validateCspUri } from "./validation.mjs";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
@@ -20,12 +21,6 @@ const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 const NAMESPACE = "TheChrisGrey/SiteMetrics";
-const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
-const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
-
-// Standard CSP blocked-uri values reported by browsers
-const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
-const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
 async function putMetric(metricName, value, dimensions = []) {
   const command = new PutMetricDataCommand({
@@ -44,22 +39,12 @@ async function putMetric(metricName, value, dimensions = []) {
 }
 
 async function handleVitals(body) {
-  const { name, value, rating } = body;
-
-  if (!name || typeof value !== "number") {
-    return respond(400, { error: "name and numeric value are required" });
+  const { name, value } = body;
+  const v = validateVitals(body);
+  if (!v.ok) {
+    return respond(v.status, { error: v.error });
   }
-  if (!Number.isFinite(value) || value < 0 || value > 60000) {
-    return respond(400, { error: "value must be a finite number between 0 and 60000" });
-  }
-  if (!VALID_VITALS.has(name)) {
-    return respond(400, { error: `Invalid metric name. Must be one of: ${[...VALID_VITALS].join(", ")}` });
-  }
-
-  const dimensions = [];
-  if (rating && VALID_RATINGS.has(rating)) {
-    dimensions.push({ Name: "Rating", Value: rating });
-  }
+  const dimensions = v.dimensions;
 
   try {
     await putMetric(name, value, dimensions);
@@ -81,7 +66,7 @@ async function handleCspReport(body) {
   const blockedUri = rawUri.substring(0, 256);
 
   // Validate blocked-uri is a legitimate CSP value
-  if (!VALID_CSP_KEYWORDS.has(blockedUri) && !CSP_URI_PATTERN.test(blockedUri)) {
+  if (!validateCspUri(blockedUri)) {
     return respond(400, { error: "Invalid blocked-uri format" });
   }
 
