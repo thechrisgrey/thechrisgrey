@@ -19,6 +19,29 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+# Rewrite/redirect rules. KEEP IN SYNC with public/_redirects — Amplify applies
+# these top-to-bottom and stops at the first match, so the order matters: serve
+# real files and prerendered per-route index.html FIRST, and only let genuine
+# SPA paths fall through to the root /index.html 200 shell. Without this, the
+# blanket /<*> -> /index.html catch-all would shadow the prerendered
+# dist/<route>/index.html files written by scripts/prerender.js and every route
+# would serve homepage metadata again.
+redirects:
+  # 1. Real files (hashed JS/CSS, images, prerendered */index.html, .xml) win:
+  #    any path with a file extension is served as-is.
+  - source: '/<*>.<*>'
+    target: '/<*>.<*>'
+    status: '200'
+  # 2. Prerendered route HTML: serve the route's OWN index.html, e.g.
+  #    /blog/foo -> /blog/foo/index.html (written by scripts/prerender.js).
+  - source: '/<*>'
+    target: '/<*>/index.html'
+    status: '200'
+  # 3. SPA fallback for anything still unmatched (e.g. /admin, /blueprint, an
+  #    un-prerendered deep client-only route) so React Router + NotFound work.
+  - source: '/*'
+    target: '/index.html'
+    status: '200'
 customHeaders:
   - pattern: '**/*'
     headers:
