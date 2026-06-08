@@ -231,6 +231,7 @@ export const handler = async (event) => {
         prefix: "metrics-vitals-",
         maxRequests: 200,
         windowSeconds: 60,
+        requestId,
       });
       if (!vitalsAllowed) {
         return respond(429, { error: "Too many requests" });
@@ -251,6 +252,7 @@ export const handler = async (event) => {
         prefix: "metrics-csp-",
         maxRequests: 100,
         windowSeconds: 60,
+        requestId,
       });
       if (!cspAllowed) {
         return respond(429, { error: "Too many requests" });
