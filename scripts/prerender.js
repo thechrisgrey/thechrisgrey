@@ -23,7 +23,7 @@
  */
 import { createServer } from 'http';
 import { createReadStream, existsSync, mkdirSync, writeFileSync, statSync } from 'fs';
-import { resolve, dirname, join, extname } from 'path';
+import { resolve, dirname, join, extname, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@sanity/client';
 import { STATIC_ROUTES, BLOG_SLUGS_QUERY } from './generate-sitemap.js';
@@ -69,7 +69,13 @@ function startServer() {
   return new Promise((resolveServer, rejectServer) => {
     const server = createServer((req, res) => {
       const urlPath = decodeURIComponent(req.url.split('?')[0]);
-      let filePath = join(DIST, urlPath);
+      let filePath = resolve(DIST, `.${urlPath}`);
+      // Defensive path-traversal guard: never resolve outside dist/. Input is
+      // local-only/trusted (only this build's puppeteer hits 127.0.0.1), but a
+      // `..%2f` path would otherwise escape — clamp it to the SPA shell.
+      if (filePath !== DIST && !filePath.startsWith(DIST + sep)) {
+        filePath = join(DIST, 'index.html');
+      }
       // Directory or extensionless route -> serve the SPA shell index.html.
       if (!extname(filePath) || (existsSync(filePath) && statSync(filePath).isDirectory())) {
         filePath = join(DIST, 'index.html');

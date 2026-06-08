@@ -5,9 +5,9 @@
  */
 
 import { createClient } from '@sanity/client';
-import { writeFileSync } from 'fs';
+import { writeFileSync, realpathSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -143,8 +143,12 @@ ${allEntries.join('\n')}
 
 // Run the generator only when executed directly (`node scripts/generate-sitemap.js`).
 // Guarded so scripts/prerender.js can import STATIC_ROUTES / BLOG_SLUGS_QUERY
-// without triggering a sitemap write as an import side effect.
-if (import.meta.url === `file://${process.argv[1]}`) {
+// without triggering a sitemap write as an import side effect. Compared via
+// pathToFileURL(realpathSync(...)) so the match is robust to symlinked /
+// realpath-differing invocations rather than the fragile `file://${argv[1]}` idiom.
+const invokedDirectly =
+  process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+if (invokedDirectly) {
   generateSitemap().catch((err) => {
     console.error('Sitemap generation failed:', err);
     process.exit(1);
