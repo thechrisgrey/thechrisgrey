@@ -177,6 +177,53 @@ describe('ChatMessage', () => {
     });
   });
 
+  describe('word-boundary linking', () => {
+    it('does NOT link "Elo" inside the word "developed"', () => {
+      render(
+        <ChatMessage
+          role="assistant"
+          content="Christian developed several products."
+        />
+      );
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
+      expect(
+        screen.getByText('Christian developed several products.')
+      ).toBeInTheDocument();
+    });
+
+    it('does NOT link "elo" inside the word "below"', () => {
+      render(
+        <ChatMessage
+          role="assistant"
+          content="See the links below for more."
+        />
+      );
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
+    });
+
+    it('still links a standalone "Elo" to elo.altivum.ai', () => {
+      render(
+        <ChatMessage
+          role="assistant"
+          content="Try Elo for AI-assisted learning."
+        />
+      );
+      const link = screen.getByRole('link', { name: 'Elo' });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'https://elo.altivum.ai');
+    });
+
+    it('is case-sensitive for "Elo" — lowercase "elo." standalone does not link', () => {
+      render(
+        <ChatMessage
+          role="assistant"
+          content="The word elo. should not be a link."
+        />
+      );
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
+    });
+  });
+
   describe('generative UI surface gating', () => {
     const statBlock: UiBlock = {
       type: 'stat_row',

@@ -145,7 +145,7 @@ Lambda Function URL (streaming)
 
 ### Prerequisites
 
-- Node.js 18.x or 20.x (see `.nvmrc`)
+- Node.js 20.x (see `.nvmrc`)
 - npm
 - AWS CLI (for deployment)
 
@@ -261,7 +261,6 @@ thechrisgrey/
 │   ├── press-kit/                   # Press materials + archive
 │   ├── .well-known/security.txt
 │   ├── robots.txt
-│   ├── _redirects
 │   ├── og.png                       # Open Graph image
 │   └── favicon.png
 │

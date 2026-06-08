@@ -36,15 +36,17 @@ function toolLabel(tool: string): string {
   return TOOL_LABELS[tool] || tool.replace(/_/g, ' ');
 }
 
-// Map of keywords to their URLs (ordered by length desc to match longer phrases first)
-const linkMap: { keyword: string; url: string }[] = [
+// Map of keywords to their URLs (ordered by length desc to match longer phrases first).
+// `wholeWord: true` requires \b...\b boundaries AND case-sensitive matching — use it for
+// short, dictionary-substring product names like "Elo" to avoid linking "developed"/"below".
+const linkMap: { keyword: string; url: string; wholeWord?: boolean }[] = [
   { keyword: 'Beyond the Assessment', url: 'https://altivum.ai/bta' },
   { keyword: 'The Vector Podcast', url: 'https://www.youtube.com/@thevectorpodcast' },
   { keyword: 'Vector Podcast', url: 'https://www.youtube.com/@thevectorpodcast' },
   { keyword: 'Altivum Inc', url: 'https://altivum.ai' },
   { keyword: 'Altivum', url: 'https://altivum.ai' },
   { keyword: 'VetROI', url: 'https://vetroi.altivum.ai' },
-  { keyword: 'Elo', url: 'https://elo.altivum.ai' },
+  { keyword: 'Elo', url: 'https://elo.altivum.ai', wholeWord: true },
 ];
 
 /**
@@ -59,8 +61,16 @@ function processContentWithLinks(content: string): ReactNode[] {
     // Find the earliest match among all keywords
     let earliestMatch: { index: number; keyword: string; url: string } | null = null;
 
-    for (const { keyword, url } of linkMap) {
-      const index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
+    for (const { keyword, url, wholeWord } of linkMap) {
+      let index: number;
+      if (wholeWord) {
+        // Case-sensitive, boundary-anchored match (e.g. "Elo" must not match "developed").
+        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const match = new RegExp(`\\b${escaped}\\b`).exec(remainingText);
+        index = match ? match.index : -1;
+      } else {
+        index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
+      }
       if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
         // Get the actual text from the content (preserves original casing)
         const actualKeyword = remainingText.substring(index, index + keyword.length);

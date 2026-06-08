@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/validate-env.js && node scripts/generate-podcast-episodes.js && npm run lint && tsc && vite build && node scripts/generate-sitemap.js && node scripts/generate-rss.js",
+    "build": "node scripts/validate-env.js && node scripts/generate-podcast-episodes.js && npm run lint && tsc && vite build && node scripts/prerender.js && node scripts/generate-sitemap.js && node scripts/generate-rss.js",
     "build:analyze": "tsc && vite build && npx vite-bundle-visualizer",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:lambda": "eslint lambda --ext mjs --no-eslintrc --config lambda/.eslintrc.cjs --max-warnings 0",
@@ -13,11 +13,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:lambda": "node --test lambda/shared/__tests__/*.test.mjs lambda/blueprint/__tests__/*.test.mjs lambda/chat-stream/__tests__/*.test.mjs lambda/chat-stream/__tests__/tools/*.test.mjs lambda/mcp-server/__tests__/*.test.mjs",
+    "test:lambda": "node --test lambda/shared/__tests__/*.test.mjs lambda/blueprint/__tests__/*.test.mjs lambda/chat-stream/__tests__/*.test.mjs lambda/chat-stream/__tests__/tools/*.test.mjs lambda/mcp-server/__tests__/*.test.mjs lambda/metrics/__tests__/*.test.mjs lambda/kb-builder/__tests__/*.test.mjs",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:headed": "cypress run --headed",
-    "deploy:lambda": "bash scripts/deploy-lambda.sh"
+    "deploy:lambda": "bash scripts/deploy-lambda.sh",
+    "iam:drift": "bash scripts/iam-drift.sh"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1000.0",
@@ -56,6 +57,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "jsdom": "^29.0.2",
     "postcss": "^8.4.32",
+    "puppeteer": "^24.0.0",
     "sharp": "^0.34.5",
     "svgo": "^4.0.0",
     "tailwindcss": "^3.4.0",

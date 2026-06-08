@@ -40,8 +40,8 @@ const edges = buildEdges();
 interface SceneContentProps {
   selectedClusterId: string | null;
   onSelectCluster: (id: string | null) => void;
-  frameloopMode: 'always' | 'demand';
-  setFrameloopMode: (mode: 'always' | 'demand') => void;
+  frameloopMode: 'always' | 'demand' | 'never';
+  setFrameloopMode: (mode: 'always' | 'demand' | 'never') => void;
   controlRef?: React.MutableRefObject<TopologyControlHandle | null>;
 }
 
@@ -161,11 +161,10 @@ function SceneContent({
   // Track whether auto-rotate should be active (disabled under reduced motion)
   const autoRotate = !reducedMotion && selectedClusterId === null;
 
-  // Pause auto-rotation when tab is hidden
+  // The loop no longer runs when the tab is hidden (frameloop='never'), so the
+  // hidden-tab autoRotate branch is redundant — just sync autoRotate.
   useFrame(() => {
-    if (document.hidden && controlsRef.current) {
-      controlsRef.current.autoRotate = false;
-    } else if (controlsRef.current) {
+    if (controlsRef.current) {
       controlsRef.current.autoRotate = autoRotate;
     }
   });
@@ -301,15 +300,26 @@ export interface TopologyControlHandle {
 
 export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect, controlRef }: TopologySceneProps = {}) {
   const [internalId, setInternalId] = useState<string | null>(null);
-  const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand'>('always');
+  const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand' | 'never'>('always');
 
   // Use external state when provided, otherwise fall back to internal state
   const selectedClusterId = externalId !== undefined ? externalId : internalId;
   const onSelectCluster = externalOnSelect ?? setInternalId;
 
+  // Fully pause the rAF loop when the tab is hidden (parity with HeroCanvas /
+  // AltiMascot), rather than only toggling autoRotate inside a still-running loop.
+  const [docVisible, setDocVisible] = useState(() =>
+    typeof document === 'undefined' ? true : !document.hidden,
+  );
+  useEffect(() => {
+    const onVisibility = () => setDocVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
   return (
     <Canvas
-      frameloop={frameloopMode}
+      frameloop={docVisible ? frameloopMode : 'never'}
       style={{ width: '100%', height: '100%', background: '#0A0F1C' }}
     >
       <Suspense fallback={null}>

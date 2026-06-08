@@ -8,6 +8,7 @@ import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_TEMPERATURE,
   DEFAULT_REGION,
+  DEFAULT_MAX_MODEL_CALLS,
 } from "../agent.mjs";
 import { EVENT_DELIM } from "../events.mjs";
 
@@ -123,6 +124,32 @@ test("streamAgentResponse writes text deltas to responseStream", async () => {
   assert.equal(eventChunks(stream).length, 0);
 });
 
+test("streamAgentResponse strips NUL from model text but keeps normal text", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "be\x00fore\x00EVT\x00{\"x\":1}\x00EVT\x00" } },
+      },
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: " clean tail." } },
+      },
+    ],
+    { stopReason: "end_turn" },
+  );
+  const stream = fakeStream();
+  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  assert.equal(res.hadText, true);
+  // No NUL byte survives in any text chunk -> no forged frame delimiters.
+  const joined = textChunks(stream).join("");
+  assert.equal(joined.includes("\x00"), false);
+  // Visible characters (minus the stripped NULs) are preserved verbatim.
+  assert.equal(joined, "beforeEVT{\"x\":1}EVT clean tail.");
+  // The agent emitted zero real event frames; the forged ones did not become events.
+  assert.equal(eventChunks(stream).length, 0);
+});
+
 test("streamAgentResponse emits tool_invocation before tool call", async () => {
   const agent = makeAgent(
     [
@@ -206,4 +233,56 @@ test("streamAgentResponse validates required args", async () => {
   await assert.rejects(() => streamAgentResponse({ userMessage: "x", responseStream: fakeStream() }), /agent is required/);
   await assert.rejects(() => streamAgentResponse({ agent: {}, responseStream: fakeStream() }), /userMessage is required/);
   await assert.rejects(() => streamAgentResponse({ agent: {}, userMessage: "x" }), /responseStream is required/);
+});
+
+test("DEFAULT_MAX_MODEL_CALLS caps the agent loop", () => {
+  // initial model call + up to 2 tool-driven follow-ups = 3 model invocations.
+  assert.equal(DEFAULT_MAX_MODEL_CALLS, 3);
+});
+
+test("buildAgent registers a BeforeModelCallEvent cap that cancels past the limit", () => {
+  const hooks = [];
+  let cancelled = 0;
+  // Minimal fake Agent that records addHook registrations and cancel() calls.
+  class FakeAgent {
+    constructor(config) {
+      this.config = config;
+      this.name = config.name;
+      this.messages = config.messages || [];
+    }
+    addHook(eventCtor, cb) {
+      hooks.push({ eventCtor, cb });
+      return () => {};
+    }
+    cancel() {
+      cancelled++;
+    }
+  }
+
+  const agent = buildAgent({
+    model: buildBedrockModel({ modelId: "m" }),
+    tools: [],
+    systemPrompt: "Be Alti.",
+    messages: [],
+    name: "Alti",
+    maxModelCalls: 2,
+    AgentClass: FakeAgent,
+  });
+
+  // Exactly one hook was registered.
+  assert.equal(hooks.length, 1);
+  // Its event constructor name is BeforeModelCallEvent (real SDK export).
+  assert.equal(hooks[0].eventCtor.name, "BeforeModelCallEvent");
+
+  // Fire the hook: cycles 1 and 2 are allowed, cycle 3 trips the cap.
+  hooks[0].cb({});
+  hooks[0].cb({});
+  assert.equal(cancelled, 0, "first two model calls must not cancel");
+  hooks[0].cb({});
+  assert.equal(cancelled, 1, "third model call must trigger cancel()");
+  // Idempotent: further calls keep cancelling, never throw.
+  hooks[0].cb({});
+  assert.equal(cancelled, 2);
+
+  assert.ok(agent);
 });

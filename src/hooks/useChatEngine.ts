@@ -132,10 +132,11 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      const myController = controller;
       const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
       const userMessage: Message = {
-        id: `user-${Date.now()}`,
+        id: `user-${crypto.randomUUID()}`,
         role: 'user',
         content,
         timestamp: new Date(),
@@ -145,7 +146,9 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       setIsTyping(true);
 
       const allMessages = [
-        ...messagesRef.current.filter((m) => m.id !== 'welcome'),
+        ...messagesRef.current.filter(
+          (m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0
+        ),
         userMessage,
       ];
       const windowed = allMessages.length > MAX_HISTORY
@@ -156,7 +159,8 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         content: msg.content,
       }));
 
-      const assistantMessageId = `assistant-${Date.now()}`;
+      const assistantMessageId = `assistant-${crypto.randomUUID()}`;
+      const myId = assistantMessageId;
       streamingMessageIdRef.current = assistantMessageId;
       setIsStreaming(true);
 
@@ -311,6 +315,29 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
                 timestamp: new Date(),
               },
             ]);
+          } else {
+            // Output WAS produced (e.g. a SYS system message or events only) but the
+            // assistant placeholder created by ensureMessage() never received any text.
+            // Drop the dead empty bubble so it neither renders nor poisons history —
+            // BUT only if it carries nothing else. A turn whose FINAL output was a
+            // tool/event (e.g. a navigate draft card, a UI block, or a memory update)
+            // with no concluding text — reachable when rec7's BeforeModelCallEvent
+            // loop cap cancels the agent after a tool event — produces an empty-text
+            // bubble that still carries a draft/uiBlock/toolActivity/memoryEvent.
+            // ChatMessage renders those independently of content, so they must survive.
+            setMessages((prev) =>
+              prev.filter(
+                (m) =>
+                  !(
+                    m.id === assistantMessageId &&
+                    m.content.trim().length === 0 &&
+                    !m.drafts?.length &&
+                    !m.uiBlocks?.length &&
+                    !m.toolActivity?.length &&
+                    !m.memoryEvents?.length
+                  )
+              )
+            );
           }
         }
       } catch (error) {
@@ -347,9 +374,16 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         }
       } finally {
         clearTimeout(timeoutId);
-        setIsStreaming(false);
-        streamingMessageIdRef.current = null;
-        abortControllerRef.current = null;
+        // Only clear the shared refs/UI if THIS request is still the active one.
+        // A late-settling request must not clobber a newer in-flight request's
+        // controller (used by unmount-abort) or its streaming UI state.
+        if (abortControllerRef.current === myController) {
+          setIsStreaming(false);
+          abortControllerRef.current = null;
+        }
+        if (streamingMessageIdRef.current === myId) {
+          streamingMessageIdRef.current = null;
+        }
       }
     },
     [setMessages, pageContext]

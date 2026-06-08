@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { typography } from '../utils/typography';
-import { useAuth, useKbAdmin, useSiteHealth } from '../hooks';
+import { useAuth } from '../hooks/useAuth';
+import { useKbAdmin, useSiteHealth } from '../hooks';
 import type { KbEntry } from '../hooks';
 import { AdminLogin, EntryForm, EntryList, SiteHealthPanel } from '../components/admin';
 

@@ -20,9 +20,15 @@ describe('404 Not Found Page', () => {
   });
 
   it('should have a noindex meta tag to prevent search engine indexing', () => {
-    // react-helmet-async renders a second meta[name="robots"] with data-rh="true"
-    // The noindex tag coexists with the default robots tag from index.html
-    cy.get('head meta[name="robots"][data-rh="true"]')
+    // react-helmet-async@3 under React 19 uses native head-hoisting and does NOT
+    // add the legacy data-rh="true" attribute, so we can no longer select by it.
+    // The NotFound page injects a second meta[name="robots"] with "noindex,
+    // nofollow" that coexists with the default "index, follow" tag from
+    // index.html. Filter the robots metas down to the one whose content is
+    // noindex (the SEO-meaningful assertion: 404 must not be indexed).
+    cy.get('head meta[name="robots"]')
+      .filter('[content*="noindex"]')
+      .should('have.length.at.least', 1)
       .should('have.attr', 'content')
       .and('include', 'noindex');
   });

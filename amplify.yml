@@ -19,6 +19,29 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+# Rewrite/redirect rules are NOT configured here. Amplify Hosting does not honor a
+# top-level `redirects:` key in amplify.yml (nor a Netlify-style public/_redirects
+# file) — neither is a documented buildspec key, and the live app confirms neither
+# is ever applied. Rewrites/redirects are owned by the app's CustomRules, managed
+# via the Amplify console (Rewrites and redirects) / the CustomRules API /
+# CloudFormation AWS::Amplify::App. See:
+# https://docs.aws.amazon.com/amplify/latest/userguide/redirects.html
+#
+# The live app has a single SPA rule (verify with
+# `aws amplify get-app --app-id d3du8eg39a9peo --region us-east-2 --query app.customRules`):
+#
+#   source "/<*>"  target "/index.html"  status "404-200"
+#
+# `404-200` is a "404 rewrite": Amplify serves the requested file when it exists and
+# only rewrites to /index.html when the target 404s. Combined with Amplify's native
+# clean-URL resolution (a request for /blog/foo whose /blog/foo.html 404s is served
+# from /blog/foo/index.html), this serves the per-route HTML written by
+# scripts/prerender.js to crawlers AND falls through to the SPA shell for
+# un-prerendered routes (/admin, /blueprint, /aws, /claude) and unknown paths so
+# React Router's NotFound (404) page still renders. A plain `200` rewrite would NOT
+# fall through on a missing target and would break those routes — do not switch it.
+# To add/change a rule, edit the CustomRules in the console or via the API; editing
+# this file has no effect on hosting behavior.
 customHeaders:
   - pattern: '**/*'
     headers:

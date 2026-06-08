@@ -729,4 +729,281 @@ describe('useChatEngine', () => {
       );
     });
   });
+
+  describe('conversation-poisoning regression', () => {
+    it('should not replay a lingering empty assistant placeholder in the next request', async () => {
+      const encoder = new TextEncoder();
+      const SYSTEM_PREFIX = '\x00SYS\x00';
+
+      // Turn 1: backend empty-response path — only a SYS system message, no text.
+      const guardrailReader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: encoder.encode(
+              `${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`
+            ),
+          })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      // Turn 2: normal text reply.
+      const normalReader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({ done: false, value: encoder.encode('Sure thing') })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, body: { getReader: () => guardrailReader } })
+        .mockResolvedValueOnce({ ok: true, body: { getReader: () => normalReader } });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('first');
+      });
+      await act(async () => {
+        await result.current.handleSend('second');
+      });
+
+      // The SECOND request body must not carry any empty-content message,
+      // and must not carry the system/error string as a fake assistant turn.
+      const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+      expect(
+        secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)
+      ).toBe(false);
+      expect(
+        secondBody.messages.some((m: { content: string }) =>
+          m.content.includes("couldn't put together a response")
+        )
+      ).toBe(false);
+    });
+
+    it('should not replay isSystem error bubbles as assistant turns', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        body: { getReader: () => mockReader },
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      // Seed sessionStorage with a non-empty isSystem assistant bubble.
+      window.sessionStorage.setItem(
+        CHAT_STORAGE_KEY,
+        JSON.stringify([
+          initialWelcomeMessage,
+          { id: 'user-1', role: 'user', content: 'earlier', timestamp: new Date() },
+          {
+            id: 'system-1',
+            role: 'assistant',
+            content: 'Rate limit exceeded.',
+            timestamp: new Date(),
+            isSystem: true,
+          },
+        ])
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('again');
+      });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(
+        body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')
+      ).toBe(false);
+      // The real prior user turn is preserved.
+      expect(body.messages).toEqual([
+        { role: 'user', content: 'earlier' },
+        { role: 'user', content: 'again' },
+      ]);
+    });
+
+    it('should not leave a blank assistant bubble after a system-only turn', async () => {
+      const encoder = new TextEncoder();
+      const SYSTEM_PREFIX = '\x00SYS\x00';
+      const reader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: encoder.encode(`${SYSTEM_PREFIX}Rate limit exceeded.`),
+          })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hello');
+      });
+
+      // No assistant message should have empty content.
+      const blankAssistant = result.current.messages.filter(
+        (m: Message) => m.role === 'assistant' && m.content.trim().length === 0
+      );
+      expect(blankAssistant).toHaveLength(0);
+      // The visible system message is still present.
+      expect(
+        result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')
+      ).toBe(true);
+    });
+
+    it('should preserve an empty-text assistant bubble that carries a draft event', async () => {
+      // rec7's BeforeModelCallEvent loop cap can cancel the agent right after a
+      // tool emits a draft_action event but BEFORE any concluding text streams.
+      // The post-stream cleanup must NOT prune that bubble: ChatMessage renders
+      // drafts/uiBlocks/memoryEvents independently of content, so the draft card
+      // is meant to survive empty text.
+      const encoder = new TextEncoder();
+      const EVT_DELIM = '\x00EVT\x00';
+      const draftEvent = {
+        kind: 'draft_action',
+        action: 'navigate',
+        path: '/podcast',
+        reason: 'Listen to The Vector Podcast',
+      };
+      const frame = `${EVT_DELIM}${JSON.stringify(draftEvent)}${EVT_DELIM}`;
+      const reader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({ done: false, value: encoder.encode(frame) })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('where can I hear the podcast?');
+      });
+
+      const assistantBubbles = result.current.messages.filter(
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+      );
+      // The bubble carrying the draft must survive even with empty text.
+      expect(assistantBubbles).toHaveLength(1);
+      expect(assistantBubbles[0].content.trim().length).toBe(0);
+      expect(assistantBubbles[0].drafts).toBeDefined();
+      expect(assistantBubbles[0].drafts).toHaveLength(1);
+      expect(assistantBubbles[0].drafts?.[0]).toMatchObject({
+        kind: 'draft_action',
+        action: 'navigate',
+        path: '/podcast',
+      });
+    });
+
+    it('should assign unique message ids across rapid sends', async () => {
+      const mockReader = {
+        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('one');
+      });
+      await act(async () => {
+        await result.current.handleSend('two');
+      });
+
+      const ids = result.current.messages.map((m: Message) => m.id);
+      expect(new Set(ids).size).toBe(ids.length); // all unique
+    });
+  });
+
+  describe('identity-guarded finally (out-of-order completion)', () => {
+    it("request A's finally must not clobber request B's controller or streaming state", async () => {
+      // A hangs until we release it; it will be aborted by B's send.
+      let releaseA: () => void = () => {};
+      const aDone = new Promise<void>((resolve) => {
+        releaseA = resolve;
+      });
+
+      const aborts: AbortSignal[] = [];
+      let callCount = 0;
+
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockImplementation((_url, opts) => {
+          callCount++;
+          aborts.push(opts.signal);
+          if (callCount === 1) {
+            // Request A: reject with AbortError only AFTER we manually release it,
+            // simulating A's promise settling LATE (after B already started).
+            return new Promise((_resolve, reject) => {
+              aDone.then(() => {
+                const err = new Error('Aborted');
+                err.name = 'AbortError';
+                reject(err);
+              });
+            });
+          }
+          // Request B: a stream that stays open so B is "in flight" while A settles.
+          let read = 0;
+          return Promise.resolve({
+            ok: true,
+            body: {
+              getReader: () => ({
+                read: vi.fn().mockImplementation(() => {
+                  read++;
+                  if (read === 1) {
+                    return new Promise(() => {}); // never resolves -> B stays streaming
+                  }
+                  return Promise.resolve({ done: true, value: undefined });
+                }),
+              }),
+            },
+          });
+        })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      // Start A (do not await; it hangs).
+      act(() => {
+        result.current.handleSend('A');
+      });
+      // Start B; this aborts A's controller but B keeps streaming.
+      act(() => {
+        result.current.handleSend('B');
+      });
+
+      // B is the current in-flight request.
+      expect(result.current.isStreaming).toBe(true);
+      const bStreamingId = result.current.streamingMessageId;
+      expect(bStreamingId).not.toBeNull();
+
+      // Now let A's promise settle LAST -> A's finally runs after B started.
+      await act(async () => {
+        releaseA();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      // GUARD: A's finally must NOT have cleared B's streaming UI...
+      expect(result.current.isStreaming).toBe(true);
+      expect(result.current.streamingMessageId).toBe(bStreamingId);
+      // ...and B's controller must survive so unmount-abort still works.
+      expect(aborts[1].aborted).toBe(false);
+    });
+  });
 });
