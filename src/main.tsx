@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { HelmetProvider, Helmet } from 'react-helmet-async'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App.tsx'
 import LenisProvider from './components/LenisProvider.tsx'
 import './index.css'
@@ -10,22 +10,17 @@ import { initWebVitals } from './utils/webVitals'
 // Initialize Web Vitals tracking
 initWebVitals()
 
-// Signal to the build-time prerender crawl (Recommendation 3 Part B) that
-// react-helmet-async has flushed the per-route <head> tags. The crawl polls
-// window.__PRERENDER_READY__ instead of network idle, because the WebGL/GSAP
-// work never lets the page reach a true idle state. onChangeClientState fires
-// after every Helmet flush to the DOM, so the latest route's <title>/<meta>/
-// JSON-LD are present in <head> by the time the flag is set.
-const markPrerenderReady = () => {
-  window.__PRERENDER_READY__ = true
-}
+// NOTE: The build-time prerender crawl's readiness signal
+// (window.__PRERENDER_READY__) is now set by the content-bearing <Helmet> in
+// src/components/SEO.tsx via its onChangeClientState callback. An empty sibling
+// Helmet here would NOT fire on the route's content-Helmet flush in
+// react-helmet-async@3, leaving the flag undefined and timing out the crawl.
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <LenisProvider>
       <BrowserRouter>
         <HelmetProvider>
-          <Helmet onChangeClientState={markPrerenderReady} />
           <App />
         </HelmetProvider>
       </BrowserRouter>

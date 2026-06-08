@@ -168,4 +168,17 @@ describe('SEO', () => {
       expect(meta).toHaveAttribute('content', 'https://example.com/custom.jpg');
     });
   });
+
+  it('should set window.__PRERENDER_READY__ after the content Helmet flushes', async () => {
+    // The build-time prerender crawl polls this flag. It must be set by the
+    // content-bearing Helmet's onChangeClientState (not an empty sibling), so
+    // the per-route <head> tags are guaranteed present when the crawl reads it.
+    delete (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__;
+    renderSEO({ title: 'Test', description: 'desc' });
+    await waitFor(() => {
+      expect(
+        (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__
+      ).toBe(true);
+    });
+  });
 });
