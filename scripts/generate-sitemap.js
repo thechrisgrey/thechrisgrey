@@ -20,7 +20,12 @@ const client = createClient({
   timeout: 15000, // 15s — fail fast if Sanity is unreachable
 });
 
-// Static pages with their priorities and change frequencies
+// Static pages with their priorities and change frequencies.
+//
+// The bare route paths are exported as STATIC_ROUTES (single source of truth):
+// scripts/prerender.js imports them so the prerender crawl set can never drift
+// from the sitemap. This file owns the per-route SEO metadata (priority,
+// changefreq); prerender only needs the paths.
 const staticPages = [
   { url: '/', priority: '1.0', changefreq: 'weekly' },
   { url: '/about', priority: '0.8', changefreq: 'monthly' },
@@ -35,19 +40,32 @@ const staticPages = [
   { url: '/privacy', priority: '0.3', changefreq: 'yearly' },
 ];
 
+/**
+ * Bare static route paths, the single source of truth shared with
+ * scripts/prerender.js (which imports this) so the prerender crawl set and the
+ * sitemap never diverge. Derived from staticPages so adding a route in one
+ * place updates both.
+ */
+export const STATIC_ROUTES = staticPages.map((page) => page.url);
+
+/**
+ * GROQ projection for every published blog slug, shared with
+ * scripts/prerender.js. Sitemap also needs _updatedAt for <lastmod>; prerender
+ * only reads .slug, so the extra field is harmless there.
+ */
+export const BLOG_SLUGS_QUERY = `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+    "slug": slug.current,
+    "lastmod": _updatedAt
+  }`;
+
 const SITE_URL = 'https://thechrisgrey.com';
 
 /**
  * Fetch all published blog posts from Sanity
  */
 async function fetchBlogPosts() {
-  const query = `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
-    "slug": slug.current,
-    "lastmod": _updatedAt
-  }`;
-
   try {
-    const posts = await client.fetch(query);
+    const posts = await client.fetch(BLOG_SLUGS_QUERY);
     return posts;
   } catch (error) {
     console.error('Error fetching posts from Sanity:', error);
@@ -123,8 +141,12 @@ ${allEntries.join('\n')}
   console.log(`Total URLs: ${allEntries.length} (${staticPages.length} static + ${posts.length} blog posts)`);
 }
 
-// Run the generator
-generateSitemap().catch((err) => {
-  console.error('Sitemap generation failed:', err);
-  process.exit(1);
-});
+// Run the generator only when executed directly (`node scripts/generate-sitemap.js`).
+// Guarded so scripts/prerender.js can import STATIC_ROUTES / BLOG_SLUGS_QUERY
+// without triggering a sitemap write as an import side effect.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  generateSitemap().catch((err) => {
+    console.error('Sitemap generation failed:', err);
+    process.exit(1);
+  });
+}
