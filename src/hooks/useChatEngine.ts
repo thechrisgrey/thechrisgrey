@@ -313,6 +313,15 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
                 timestamp: new Date(),
               },
             ]);
+          } else {
+            // Output WAS produced (e.g. a SYS system message or events only) but the
+            // assistant placeholder created by ensureMessage() never received any text.
+            // Drop the dead empty bubble so it neither renders nor poisons history.
+            setMessages((prev) =>
+              prev.filter(
+                (m) => !(m.id === assistantMessageId && m.content.trim().length === 0)
+              )
+            );
           }
         }
       } catch (error) {

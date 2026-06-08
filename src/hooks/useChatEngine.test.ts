@@ -825,5 +825,39 @@ describe('useChatEngine', () => {
         { role: 'user', content: 'again' },
       ]);
     });
+
+    it('should not leave a blank assistant bubble after a system-only turn', async () => {
+      const encoder = new TextEncoder();
+      const SYSTEM_PREFIX = '\x00SYS\x00';
+      const reader = {
+        read: vi
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: encoder.encode(`${SYSTEM_PREFIX}Rate limit exceeded.`),
+          })
+          .mockResolvedValue({ done: true, value: undefined }),
+      };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
+      );
+
+      const { result } = renderHook(() => useChatEngine());
+
+      await act(async () => {
+        await result.current.handleSend('hello');
+      });
+
+      // No assistant message should have empty content.
+      const blankAssistant = result.current.messages.filter(
+        (m: Message) => m.role === 'assistant' && m.content.trim().length === 0
+      );
+      expect(blankAssistant).toHaveLength(0);
+      // The visible system message is still present.
+      expect(
+        result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')
+      ).toBe(true);
+    });
   });
 });
