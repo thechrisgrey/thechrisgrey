@@ -100,6 +100,128 @@ function outPathFor(route) {
   return join(DIST, route.replace(/^\//, ''), 'index.html');
 }
 
+// --- Sanity CORS proxy via request interception ------------------------------
+//
+// WHY: BlogPost (and podcast pages) do a CLIENT-SIDE Sanity fetch from the
+// headless browser. That browser's origin is http://127.0.0.1:<random-port>,
+// which is NOT on Sanity's CORS allowlist (only thechrisgrey.com is), so the
+// browser XHR is blocked by CORS ("No 'Access-Control-Allow-Origin' header is
+// present on the requested resource" -> net::ERR_FAILED). The fetch rejects,
+// BlogPost renders its error boundary, and the prerendered <title> becomes
+// "Error Loading Article" instead of the real article title.
+//
+// FIX: We can't add the random ephemeral port to Sanity's allowlist, and we
+// must not touch Sanity project settings. Instead we intercept every request
+// the page makes; for requests to a Sanity host we re-issue the SAME request
+// from Node (which has NO CORS — it's not a browser) and fulfill the browser
+// request with that response plus a permissive Access-Control-Allow-Origin so
+// the browser's CORS check passes. Matches BOTH Sanity projects (blog k5950b3w
+// + podcast uaxzdsfa) by domain, never a hardcoded project id. All other
+// requests pass through untouched. Every failure path is swallowed so a broken
+// proxy attempt degrades to a normal (CORS-failing) request rather than
+// crashing the crawl — the script stays strictly non-fatal (always exits 0).
+function isSanityUrl(url) {
+  try {
+    const { hostname } = new URL(url);
+    // Covers apicdn.sanity.io, api.sanity.io, <project>.apicdn.sanity.io,
+    // cdn.sanity.io, etc. — any host under the sanity.io apex.
+    return hostname === 'sanity.io' || hostname.endsWith('.sanity.io');
+  } catch {
+    return false;
+  }
+}
+
+// Hop-by-hop / forbidden response headers Chrome's Fetch.fulfillRequest will
+// reject or that don't make sense to replay (encoding handled by node fetch).
+const STRIPPED_RESPONSE_HEADERS = new Set([
+  'content-encoding',
+  'content-length',
+  'transfer-encoding',
+  'connection',
+  'keep-alive',
+]);
+
+async function proxySanityRequest(interceptedRequest) {
+  const url = interceptedRequest.url();
+  // Replay the request server-side with Node fetch (no CORS in Node).
+  const method = interceptedRequest.method();
+  const reqHeaders = { ...interceptedRequest.headers() };
+  // Drop browser-set headers that don't belong on a server-side fetch and would
+  // either be rejected or trigger an unwanted CORS preflight semantics on Node.
+  delete reqHeaders.host;
+  delete reqHeaders.origin;
+  delete reqHeaders.referer;
+  delete reqHeaders['content-length'];
+
+  const init = { method, headers: reqHeaders };
+  if (method !== 'GET' && method !== 'HEAD') {
+    const postData = interceptedRequest.postData();
+    if (postData != null) init.body = postData;
+  }
+
+  const upstream = await fetch(url, init);
+  const bodyBuf = Buffer.from(await upstream.arrayBuffer());
+
+  const headers = {};
+  upstream.headers.forEach((value, key) => {
+    if (!STRIPPED_RESPONSE_HEADERS.has(key.toLowerCase())) headers[key] = value;
+  });
+  // Permissive CORS so the browser's same-origin/CORS check passes for the
+  // 127.0.0.1:<port> origin. Local-only build context; not shipped to prod.
+  headers['access-control-allow-origin'] = '*';
+  headers['access-control-allow-methods'] = 'GET,POST,OPTIONS';
+  headers['access-control-allow-headers'] = '*';
+
+  await interceptedRequest.respond({
+    status: upstream.status,
+    headers,
+    contentType: upstream.headers.get('content-type') || undefined,
+    body: bodyBuf,
+  });
+}
+
+// Wire request interception on a page so Sanity requests are proxied through
+// Node and everything else continues normally. Errors are isolated per-request.
+async function attachSanityProxy(page) {
+  await page.setRequestInterception(true);
+  page.on('request', (interceptedRequest) => {
+    // Guard against the (rare) case a handler already resolved this request.
+    if (interceptedRequest.isInterceptResolutionHandled?.()) return;
+
+    if (!isSanityUrl(interceptedRequest.url())) {
+      interceptedRequest.continue().catch(() => {});
+      return;
+    }
+
+    // CORS preflight: answer OPTIONS locally so the browser proceeds to the
+    // real request (which we then proxy below).
+    if (interceptedRequest.method() === 'OPTIONS') {
+      interceptedRequest
+        .respond({
+          status: 204,
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-methods': 'GET,POST,OPTIONS',
+            'access-control-allow-headers': '*',
+            'access-control-max-age': '600',
+          },
+        })
+        .catch(() => {});
+      return;
+    }
+
+    proxySanityRequest(interceptedRequest).catch((proxyErr) => {
+      // Proxy failed — fall back to a normal request so the crawl never crashes.
+      // (Normal request will likely CORS-fail, but that is non-fatal: the route
+      // degrades to the error state rather than aborting the whole build.)
+      console.warn(
+        `  [prerender] WARN Sanity proxy failed for ${interceptedRequest.url().slice(0, 80)}...: ${proxyErr && proxyErr.message}`,
+      );
+      interceptedRequest.continue().catch(() => {});
+    });
+  });
+}
+
 async function crawl() {
   if (!existsSync(join(DIST, 'index.html'))) {
     console.warn('[prerender] dist/index.html not found — skipping prerender (run vite build first).');
@@ -133,6 +255,9 @@ async function crawl() {
       try {
         const page = await browser.newPage();
         page.setDefaultTimeout(30000);
+        // Proxy client-side Sanity fetches through Node to bypass the browser
+        // CORS block on the 127.0.0.1:<port> origin (see attachSanityProxy).
+        await attachSanityProxy(page);
         try {
           const url = `${base}${route}${route.includes('?') ? '&' : '?'}prerender=1`;
           // domcontentloaded only — we do NOT wait for network idle (3D never idles).
