@@ -107,7 +107,12 @@ export async function streamAgentResponse({
       case "modelStreamUpdateEvent": {
         const text = extractText(event);
         if (text) {
-          responseStream.write(text);
+          // Defense-in-depth: the wire protocol is NUL-framed (events.mjs \x00EVT\x00,
+          // index.mjs \x00SYS\x00). A literal U+0000 in MODEL output could forge a frame,
+          // so strip NUL from this model-text path only. Never strip the intentional
+          // delimiter writes in events.mjs / index.mjs.
+          // eslint-disable-next-line no-control-regex -- intentionally matching U+0000 to strip forged frame delimiters
+          responseStream.write(text.replace(/\x00/g, ""));
           hadText = true;
           onText?.(text);
           break;

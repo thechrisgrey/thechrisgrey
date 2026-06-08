@@ -123,6 +123,32 @@ test("streamAgentResponse writes text deltas to responseStream", async () => {
   assert.equal(eventChunks(stream).length, 0);
 });
 
+test("streamAgentResponse strips NUL from model text but keeps normal text", async () => {
+  const agent = makeAgent(
+    [
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "be\x00fore\x00EVT\x00{\"x\":1}\x00EVT\x00" } },
+      },
+      {
+        type: "modelStreamUpdateEvent",
+        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: " clean tail." } },
+      },
+    ],
+    { stopReason: "end_turn" },
+  );
+  const stream = fakeStream();
+  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  assert.equal(res.hadText, true);
+  // No NUL byte survives in any text chunk -> no forged frame delimiters.
+  const joined = textChunks(stream).join("");
+  assert.equal(joined.includes("\x00"), false);
+  // Visible characters (minus the stripped NULs) are preserved verbatim.
+  assert.equal(joined, "beforeEVT{\"x\":1}EVT clean tail.");
+  // The agent emitted zero real event frames; the forged ones did not become events.
+  assert.equal(eventChunks(stream).length, 0);
+});
+
 test("streamAgentResponse emits tool_invocation before tool call", async () => {
   const agent = makeAgent(
     [
