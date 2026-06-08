@@ -38,8 +38,12 @@ class ErrorBoundary extends Component<Props, State> {
     const { showHomeButton = true, pageName, fallback } = this.props;
 
     if (this.state.hasError) {
-      // Use custom fallback if provided
-      if (fallback) {
+      // Use the custom fallback if the caller passed one — even when it is null
+      // or another falsy node. `'fallback' in this.props` distinguishes "caller
+      // opted into a (possibly empty) fallback" from "no fallback prop given",
+      // so a SafeCanvas with a null fallback degrades to nothing instead of the
+      // full-screen "Something went wrong" page.
+      if ('fallback' in this.props) {
         return fallback;
       }
 

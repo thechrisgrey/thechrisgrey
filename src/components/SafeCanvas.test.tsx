@@ -40,15 +40,22 @@ describe('SafeCanvas', () => {
     errSpy.mockRestore();
   });
 
-  it('defaults to a null fallback when none is provided (no crash)', () => {
+  it('defaults to a null fallback (renders nothing, not the error page) when none is provided', () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect(() =>
-      render(
-        <SafeCanvas>
-          <Boom />
-        </SafeCanvas>,
-      ),
-    ).not.toThrow();
+
+    const { container } = render(
+      <SafeCanvas>
+        <Boom />
+      </SafeCanvas>,
+    );
+
+    // The null default must degrade to nothing so a static visual behind the
+    // canvas shows through — NOT the full-screen "Something went wrong" page.
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /refresh page/i }),
+    ).not.toBeInTheDocument();
     errSpy.mockRestore();
   });
 });
