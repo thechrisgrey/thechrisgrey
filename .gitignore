@@ -66,3 +66,8 @@ coverage/
 podcast-kb-staging/
 podcast-transcripts/
 .transcribe-audio/
+
+# TypeScript / Vite build artifacts (emitted by `tsc` in the build step)
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
