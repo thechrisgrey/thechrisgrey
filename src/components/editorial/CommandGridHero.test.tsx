@@ -1,16 +1,21 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import CommandGridHero from './CommandGridHero';
 
+const { fromToMock } = vi.hoisted(() => {
+  const fromToMock = vi.fn(() => ({ kill: vi.fn() }));
+  return { fromToMock };
+});
+
 vi.mock('gsap', () => ({
   default: {
     registerPlugin: vi.fn(),
-    fromTo: vi.fn(() => ({ kill: vi.fn() })),
+    fromTo: fromToMock,
   },
   gsap: {
     registerPlugin: vi.fn(),
-    fromTo: vi.fn(() => ({ kill: vi.fn() })),
+    fromTo: fromToMock,
   },
 }));
 vi.mock('gsap/ScrollTrigger', () => ({ ScrollTrigger: {} }));
@@ -32,6 +37,10 @@ const renderHero = () =>
   );
 
 describe('CommandGridHero', () => {
+  beforeEach(() => {
+    fromToMock.mockClear();
+  });
+
   it('renders one h1 with the full accessible name', () => {
     renderHero();
     const h1 = screen.getByRole('heading', { level: 1 });
@@ -70,5 +79,19 @@ describe('CommandGridHero', () => {
   it('renders the static ridge fallback in jsdom (no WebGL)', () => {
     const { container } = renderHero();
     expect(container.querySelector('svg path')).not.toBeNull();
+  });
+
+  it('cascades exactly the seven satellite tiles (scene tile excluded)', () => {
+    const { container } = renderHero();
+    expect(container.querySelectorAll('[data-cascade]')).toHaveLength(7);
+    // Eyebrow instances also call gsap.fromTo (clip-path wipes on single
+    // elements); the cascade tween is the only call carrying a stagger.
+    const cascadeCalls = fromToMock.mock.calls.filter(
+      (call) => 'stagger' in ((call as unknown[])[2] as Record<string, unknown>)
+    );
+    expect(cascadeCalls).toHaveLength(1);
+    const [targets, , vars] = cascadeCalls[0] as unknown[];
+    expect(targets).toHaveLength(7);
+    expect((vars as Record<string, unknown>).clearProps).toBe('transform');
   });
 });

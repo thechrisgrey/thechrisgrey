@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useEffect, useState, type Ref } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -47,6 +47,10 @@ function Dust({ count, active }: DustProps) {
   }, [active, invalidate]);
 
   useFrame((_, delta) => {
+    // The provider invalidates on every scroll event — exactly when the hero
+    // is offscreen — so the gate must also skip the per-frame particle math,
+    // not just the self-interval.
+    if (!active) return;
     const points = pointsRef.current;
     if (!points) return;
     const pos = points.geometry.attributes.position;
@@ -103,7 +107,9 @@ const AtmosphereView = ({ className = 'pointer-events-none absolute inset-0', mo
   }, []);
 
   return (
-    <View ref={viewRef as never} className={className}>
+    // drei's HtmlView forwards its rendered div via useImperativeHandle, so the
+    // ref receives an HTMLElement despite the declared ref type.
+    <View ref={viewRef as unknown as Ref<HTMLElement>} className={className}>
       <PerspectiveCamera makeDefault position={[0, 0, 3]} fov={50} />
       <Dust count={mobile ? 150 : 400} active={active} />
     </View>

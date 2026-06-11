@@ -10,9 +10,14 @@ import { useCascadeReveal } from './useCascadeReveal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { editorialType, EDITORIAL_FONT_FAMILY } from '../../utils/editorialType';
 
+// Chrome only — no transform/transition. The scene tile must NEVER carry a
+// transform: any transform creates a stacking context that traps its z-30 h1
+// below the z-20 fixed shared canvas, putting the ridge OVER the name. The
+// scroll-cue tile is inert (aria-hidden), so a hover affordance would be false.
+const TILE_CHROME =
+  'relative overflow-hidden rounded-md border border-altivum-porcelain/[0.07] bg-[#0D1322]';
 const TILE_BASE =
-  'relative overflow-hidden rounded-md border border-altivum-porcelain/[0.07] bg-[#0D1322] ' +
-  'transition-all duration-300 hover:border-altivum-gold/40 hover:-translate-y-0.5';
+  `${TILE_CHROME} transition-[border-color,box-shadow,transform] duration-300 hover:border-altivum-gold/40 hover:-translate-y-0.5`;
 
 const WAYFINDING = [
   { eyebrow: 'PODCAST', title: 'The Vector', italic: 'Podcast', to: '/podcast', label: 'The Vector Podcast' },
@@ -33,15 +38,19 @@ const CommandGridHero = () => {
   useCascadeReveal(gridRef);
 
   return (
-    <section className="min-h-[100svh] px-3 pt-24 pb-3 md:px-4 md:pb-4" aria-label="Introduction">
+    <section
+      className="min-h-screen min-h-[100svh] px-3 pt-24 pb-3 md:px-4 md:pb-4"
+      aria-label="Introduction"
+    >
       <div
         ref={gridRef}
-        className="grid h-full min-h-[calc(100svh-7rem)] grid-cols-2 gap-2 md:grid-cols-12 md:grid-rows-8 md:gap-2.5"
+        className="grid min-h-[calc(100svh-7rem)] grid-cols-2 gap-2 md:grid-cols-12 md:grid-rows-8 md:gap-2.5"
       >
-        {/* Scene tile — the eye-catcher */}
+        {/* Scene tile — the eye-catcher. TILE_CHROME (never a transform, see
+            above) and no data-cascade: the ridge draw-in is this tile's
+            reveal, and the h1 stays visible from first paint (clean LCP). */}
         <div
-          data-cascade
-          className={`${TILE_BASE} col-span-2 min-h-[22rem] md:col-span-8 md:col-start-1 md:row-span-6 md:row-start-1`}
+          className={`${TILE_CHROME} col-span-2 min-h-[22rem] md:col-span-8 md:col-start-1 md:row-span-6 md:row-start-1`}
         >
           <RidgeFallback hidden={ready} />
           {ready && <RidgeView />}
@@ -95,7 +104,7 @@ const CommandGridHero = () => {
           <span className="relative z-30 text-[0.625rem] uppercase tracking-[0.15em] text-altivum-porcelain">
             Start a<br />conversation
           </span>
-          <EditorialPill to="/contact" className="!px-5 !py-2.5 !min-h-0 text-[0.625rem]">
+          <EditorialPill to="/contact" className="!px-5 !py-2.5 !min-h-[44px] text-[0.625rem]">
             <span className="sr-only">Start a conversation — </span>Contact
           </EditorialPill>
         </div>
@@ -117,10 +126,10 @@ const CommandGridHero = () => {
           </ViewTransitionLink>
         ))}
 
-        {/* Scroll cue tile */}
+        {/* Scroll cue tile — inert (aria-hidden), so TILE_CHROME: no hover lift */}
         <div
           data-cascade
-          className={`${TILE_BASE} col-span-1 flex items-center justify-center p-5 md:col-span-3 md:row-span-2`}
+          className={`${TILE_CHROME} col-span-1 flex items-center justify-center p-5 md:col-span-3 md:row-span-2`}
           aria-hidden="true"
         >
           <span className="text-[0.625rem] uppercase tracking-[0.25em] text-altivum-porcelain/50">
