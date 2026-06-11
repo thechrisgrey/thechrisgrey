@@ -66,9 +66,10 @@ export const ridgeFragmentShader = /* glsl */ `
     // Depth fade toward the back edge keeps the horizon airy.
     float fade = mix(1.0, 0.25, smoothstep(0.55, 1.0, vUv.y));
 
-    // Occasional porcelain highlight line for tonal variation.
-    float band = floor(vH * bands);
-    float isHighlight = step(0.5, fract(band * 0.2)) * 0.0 + step(4.5, mod(band, 5.0));
+    // Nearest band (contour lines straddle band boundaries) — every 5th gets
+    // a porcelain highlight for tonal variation.
+    float band = floor(vH * bands + 0.5);
+    float isHighlight = step(3.5, mod(band, 5.0));
     vec3 color = mix(uColorGold, uColorPorcelain, isHighlight * 0.35);
 
     float alpha = line * reveal * fade * 0.85;

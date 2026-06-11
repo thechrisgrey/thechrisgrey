@@ -10,7 +10,7 @@ const COLOR_PORCELAIN = new THREE.Color('#F2EFE9');
 function RidgeTerrain() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { invalidate } = useThree();
-  const startRef = useRef<number | null>(null);
+  const elapsedRef = useRef(0);
 
   const uniforms = useMemo(
     () => ({
@@ -24,14 +24,16 @@ function RidgeTerrain() {
 
   // Draw-in once (~1.8s, power3-like curve), then never invalidate again —
   // with frameloop="demand" the settled ridge costs zero per-frame GPU work.
-  useFrame((state) => {
+  // Accumulates clamped frame deltas rather than reading clock.elapsedTime:
+  // R3F resets the clock whenever the provider flips frameloop (tab switch),
+  // which would rewind an absolute-time draw-in.
+  useFrame((_, delta) => {
     const mat = materialRef.current;
     if (!mat) return;
     if (mat.uniforms.uProgress.value >= 1) return;
-    if (startRef.current === null) startRef.current = state.clock.elapsedTime;
-    const t = Math.min((state.clock.elapsedTime - startRef.current) / 1.8, 1);
-    const eased = 1 - Math.pow(1 - t, 3);
-    mat.uniforms.uProgress.value = eased;
+    elapsedRef.current += Math.min(delta, 0.1);
+    const t = Math.min(elapsedRef.current / 1.8, 1);
+    mat.uniforms.uProgress.value = 1 - Math.pow(1 - t, 3);
     if (t < 1) invalidate();
   });
 
