@@ -9,7 +9,7 @@ const COLOR_PORCELAIN = new THREE.Color('#F2EFE9');
 
 function RidgeTerrain() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
-  const { invalidate } = useThree();
+  const invalidate = useThree((s) => s.invalidate);
   const elapsedRef = useRef(0);
 
   const uniforms = useMemo(

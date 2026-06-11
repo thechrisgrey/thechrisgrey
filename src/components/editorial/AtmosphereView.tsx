@@ -6,12 +6,14 @@ import * as THREE from 'three';
 // eslint-disable-next-line react-refresh/only-export-components
 export const PARTICLE_BOUNDS = { x: 3, y: 1.6, z: 1 };
 const DRIFT_SPEED = 0.045; // units/second — barely-there rise
+const MAX_PARTICLES = 400; // buffer capacity; active count selected via drawRange
 
-/** Pure drift step, exported for unit testing. Wraps at the top bound. */
+/** Pure drift step, exported for unit testing. Wraps modularly past the top
+ *  bound — overshoot carries into the re-entry so drift speed stays exact. */
 // eslint-disable-next-line react-refresh/only-export-components
 export function advanceParticleY(y: number, dt: number): number {
   const next = y + DRIFT_SPEED * dt;
-  return next > PARTICLE_BOUNDS.y ? -PARTICLE_BOUNDS.y : next;
+  return next > PARTICLE_BOUNDS.y ? next - 2 * PARTICLE_BOUNDS.y : next;
 }
 
 interface DustProps {
@@ -20,17 +22,19 @@ interface DustProps {
 
 function Dust({ count }: DustProps) {
   const pointsRef = useRef<THREE.Points>(null);
-  const { invalidate } = useThree();
+  const invalidate = useThree((s) => s.invalidate);
 
+  // Allocate the full capacity once; count flips (mobile breakpoint) only move
+  // drawRange instead of reallocating the GL buffer and teleporting particles.
   const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
+    const arr = new Float32Array(MAX_PARTICLES * 3);
+    for (let i = 0; i < MAX_PARTICLES; i++) {
       arr[i * 3] = (Math.random() * 2 - 1) * PARTICLE_BOUNDS.x;
       arr[i * 3 + 1] = (Math.random() * 2 - 1) * PARTICLE_BOUNDS.y;
       arr[i * 3 + 2] = (Math.random() * 2 - 1) * PARTICLE_BOUNDS.z;
     }
     return arr;
-  }, [count]);
+  }, []);
 
   // 30fps invalidation cap: with frameloop="demand" the dust drives its own
   // clock instead of forcing a 60fps loop on the whole shared canvas.
@@ -43,7 +47,8 @@ function Dust({ count }: DustProps) {
     const points = pointsRef.current;
     if (!points) return;
     const pos = points.geometry.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
+    // Advance only the active subset — capacity (pos.count) exceeds `count`.
+    for (let i = 0; i < count; i++) {
       pos.setY(i, advanceParticleY(pos.getY(i), Math.min(delta, 0.1)));
     }
     pos.needsUpdate = true;
@@ -51,7 +56,7 @@ function Dust({ count }: DustProps) {
 
   return (
     <points ref={pointsRef}>
-      <bufferGeometry>
+      <bufferGeometry drawRange={{ start: 0, count }}>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
