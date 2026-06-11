@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { isPrerender } from '../utils/prerender';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,6 +26,9 @@ export function useLenisInstance() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
+    // Skip during the prerender crawl: smooth scroll is wasted work there and
+    // Lenis's html classes would be baked into the static snapshots
+    if (isPrerender()) return;
 
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
