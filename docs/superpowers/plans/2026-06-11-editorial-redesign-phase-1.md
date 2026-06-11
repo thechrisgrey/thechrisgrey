@@ -1107,7 +1107,7 @@ interface RidgeViewProps {
  * out-of-canvas View renders AND tracks its own div (the `track` prop is dead
  * in that path) — so the View must BE the positioned element.
  */
-const RidgeView = ({ className = 'absolute inset-0' }: RidgeViewProps) => (
+const RidgeView = ({ className = 'pointer-events-none absolute inset-0' }: RidgeViewProps) => (
   <View className={className}>
     <PerspectiveCamera makeDefault position={[0, 0.7, 2.4]} fov={40} />
     <RidgeTerrain />
@@ -1241,7 +1241,7 @@ interface AtmosphereViewProps {
 
 /** Sparse gold-dust drift behind the hero — quiet depth, never busy.
  *  View-as-element per the EditorialCanvas consumer contract. */
-const AtmosphereView = ({ className = 'absolute inset-0', mobile = false }: AtmosphereViewProps) => (
+const AtmosphereView = ({ className = 'pointer-events-none absolute inset-0', mobile = false }: AtmosphereViewProps) => (
   <View className={className}>
     <PerspectiveCamera makeDefault position={[0, 0, 3]} fov={50} />
     <Dust count={mobile ? 150 : 400} />
@@ -1667,7 +1667,7 @@ const EditorialImage = ({
       {surfaceLive && textureUrl && (
         /* View-as-element per the EditorialCanvas consumer contract; its own
            Suspense so a loading texture never blanks the other views. */
-        <View className="absolute inset-0">
+        <View className="pointer-events-none absolute inset-0">
           <Suspense fallback={null}>
             <PerspectiveCamera makeDefault position={[0, 0, 1]} fov={90} />
             <SurfaceScene textureUrl={textureUrl} driver={driver} />
