@@ -2,6 +2,13 @@
 // (desktop hover) and Lenis scroll velocity. Settles to a perfect, unwarped
 // image when both inputs are at rest.
 
+/** Cover-fit UV scale: the sampled crop always has the rect's aspect. */
+export function coverScale(rectAspect: number, imageAspect: number): [number, number] {
+  return rectAspect > imageAspect
+    ? [1, imageAspect / rectAspect]
+    : [rectAspect / imageAspect, 1];
+}
+
 export const surfaceVertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {

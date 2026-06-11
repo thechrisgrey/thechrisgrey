@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -115,15 +116,19 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [enabled]);
 
+  // Identity-stable so consumer effects (and ScrollTrigger onUpdate wiring)
+  // keyed on it never tear down when `ready` flips.
+  const invalidateCb = useCallback(() => invalidateRef.current?.(), []);
+
   // `ready` alone can go stale: reduced-motion toggled mid-session unmounts
   // the canvas with no onCreated counterpart to flip it back. Expose the
   // conjunction so consumers always fall back when the canvas is gone.
   const value = useMemo(
     () => ({
       ready: ready && enabled,
-      invalidate: () => invalidateRef.current?.(),
+      invalidate: invalidateCb,
     }),
-    [ready, enabled]
+    [ready, enabled, invalidateCb]
   );
 
   return (

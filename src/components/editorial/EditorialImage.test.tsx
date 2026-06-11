@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import EditorialImage from './EditorialImage';
+import { coverScale } from './surfaceShader';
 
 const canvasState = vi.hoisted(() => ({ ready: false }));
 
@@ -70,5 +71,25 @@ describe('EditorialImage', () => {
     // (texture still "loading"), so the crossfade must not have started.
     expect(screen.getByTestId('surface-view')).toBeInTheDocument();
     expect(screen.getByAltText('Concrete curve').className).toContain('opacity-100');
+  });
+});
+
+describe('coverScale', () => {
+  it('crops texture width when the rect is taller than the image (portrait slot)', () => {
+    const [u, v] = coverScale(0.75, 0.971);
+    expect(u).toBeCloseTo(0.772, 2);
+    expect(v).toBe(1);
+  });
+
+  it('crops texture height when the rect is wider than the image (hero break)', () => {
+    const [u, v] = coverScale(1.778, 0.667);
+    expect(u).toBe(1);
+    expect(v).toBeCloseTo(0.375, 3);
+  });
+
+  it('crops texture height for a wide rect over a landscape image', () => {
+    const [u, v] = coverScale(2.333, 1.5);
+    expect(u).toBe(1);
+    expect(v).toBeCloseTo(0.643, 3);
   });
 });

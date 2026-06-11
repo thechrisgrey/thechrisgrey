@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import type Lenis from 'lenis';
 import { useEditorialCanvas } from './EditorialCanvas';
 import { useLenisContext } from '../../hooks/useLenis';
-import { surfaceVertexShader, surfaceFragmentShader } from './surfaceShader';
+import { surfaceVertexShader, surfaceFragmentShader, coverScale } from './surfaceShader';
 
 // Vite glob-imports every graded asset so stems resolve to hashed URLs.
 const ASSETS = import.meta.glob('../../assets/editorial/*', {
@@ -63,6 +63,9 @@ function primaryTexture(stem: string): string | undefined {
   return largestUpTo1280(webps.length > 0 ? webps : assetsFor(stem, 'jpg'));
 }
 
+// DEV diagnostics: warn once per unknown stem, not once per render.
+const warnedStems = new Set<string>();
+
 interface SurfaceDriver {
   pointer: { x: number; y: number }; // rect-local UV; -1,-1 when inactive
   hover: number;
@@ -111,12 +114,8 @@ function SurfaceScene({ textureUrl, driver, onReady, onUnready }: SurfaceScenePr
     const image = texture.image as { width?: number; height?: number } | undefined;
     const imageAspect =
       image && image.width && image.height ? image.width / image.height : rectAspect;
-    const uvScale = mat.uniforms.uUvScale.value as THREE.Vector2;
-    if (rectAspect > imageAspect) {
-      uvScale.set(1, imageAspect / rectAspect);
-    } else {
-      uvScale.set(rectAspect / imageAspect, 1);
-    }
+    const [scaleU, scaleV] = coverScale(rectAspect, imageAspect);
+    (mat.uniforms.uUvScale.value as THREE.Vector2).set(scaleU, scaleV);
 
     mat.uniforms.uPointer.value.set(d.pointer.x, d.pointer.y);
     mat.uniforms.uHover.value = THREE.MathUtils.lerp(mat.uniforms.uHover.value, d.hover, 0.08);
@@ -190,7 +189,8 @@ const EditorialImage = ({
   const [surfaceReady, setSurfaceReady] = useState(false);
   const textureUrl = primaryTexture(stem);
 
-  if (import.meta.env.DEV && assetsFor(stem, 'jpg').length === 0) {
+  if (import.meta.env.DEV && !warnedStems.has(stem) && assetsFor(stem, 'jpg').length === 0) {
+    warnedStems.add(stem);
     console.warn(`EditorialImage: no graded assets for stem "${stem}"`);
   }
 
@@ -225,11 +225,15 @@ const EditorialImage = ({
     const el = slotRef.current;
     if (!el || !window.matchMedia('(pointer: fine)').matches) return;
 
-    // Rect cached on entry: pointermove fires at device rate, and any scroll
-    // that would move the rect also breaks the hover.
+    // Rect cached on entry (pointermove fires at device rate) and dropped on
+    // window scroll: Lenis moves content under a stationary cursor with no
+    // boundary events, so the next move after a scroll must re-read it.
     let rect: DOMRect | null = null;
     const onEnter = () => {
       rect = el.getBoundingClientRect();
+    };
+    const onScrollClearRect = () => {
+      rect = null;
     };
     const onMove = (e: PointerEvent) => {
       if (!rect) rect = el.getBoundingClientRect();
@@ -250,10 +254,12 @@ const EditorialImage = ({
     el.addEventListener('pointerenter', onEnter);
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerleave', onLeave);
+    window.addEventListener('scroll', onScrollClearRect, { passive: true });
     return () => {
       el.removeEventListener('pointerenter', onEnter);
       el.removeEventListener('pointermove', onMove);
       el.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener('scroll', onScrollClearRect);
     };
   }, [ready, invalidateCanvas]);
 
