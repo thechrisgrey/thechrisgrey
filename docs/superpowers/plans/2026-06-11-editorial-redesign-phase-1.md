@@ -1504,19 +1504,36 @@ const ASSETS = import.meta.glob('../../assets/editorial/*', {
   import: 'default',
 }) as Record<string, string>;
 
-const WIDTHS = [640, 1280, 1920] as const;
+interface AssetEntry {
+  width: number;
+  url: string;
+}
 
-function assetUrl(stem: string, width: number, ext: string): string | undefined {
-  return ASSETS[`../../assets/editorial/${stem}-${width}.${ext}`];
+// Widths are discovered from the actual graded files, not a fixed list —
+// undersized sources (the 1200px portrait) emit native-width sets that a
+// hardcoded 640/1280/1920 builder would miss.
+function assetsFor(stem: string, ext: string): AssetEntry[] {
+  const re = new RegExp(`/${stem}-(\\d+)\\.${ext}$`);
+  return Object.entries(ASSETS)
+    .flatMap(([assetPath, url]) => {
+      const m = assetPath.match(re);
+      return m ? [{ width: Number(m[1]), url }] : [];
+    })
+    .sort((a, b) => a.width - b.width);
 }
 
 function srcSet(stem: string, ext: string): string {
-  return WIDTHS.map((w) => {
-    const url = assetUrl(stem, w, ext);
-    return url ? `${url} ${w}w` : null;
-  })
-    .filter(Boolean)
+  return assetsFor(stem, ext)
+    .map((e) => `${e.url} ${e.width}w`)
     .join(', ');
+}
+
+/** Largest jpg at or below 1280 — the WebGL texture and the <img> src. */
+function primaryJpg(stem: string): string | undefined {
+  const jpgs = assetsFor(stem, 'jpg');
+  if (jpgs.length === 0) return undefined;
+  const upTo1280 = jpgs.filter((e) => e.width <= 1280);
+  return (upTo1280.length > 0 ? upTo1280[upTo1280.length - 1] : jpgs[0]).url;
 }
 
 interface SurfaceDriver {
@@ -1595,7 +1612,7 @@ const EditorialImage = ({
   const driver = useRef<SurfaceDriver>({ pointer: { x: -1, y: -1 }, hover: 0, scroll: 0 });
   const { ready } = useEditorialCanvas();
   const { lenis } = useLenisContext();
-  const textureUrl = assetUrl(stem, 1280, 'jpg') ?? assetUrl(stem, 640, 'jpg');
+  const textureUrl = primaryJpg(stem);
 
   // Cursor tracking on the slot (fine pointers only — touch gets no ripple).
   useEffect(() => {
@@ -1656,7 +1673,7 @@ const EditorialImage = ({
         <source type="image/avif" srcSet={srcSet(stem, 'avif')} sizes={sizes} />
         <source type="image/webp" srcSet={srcSet(stem, 'webp')} sizes={sizes} />
         <img
-          src={assetUrl(stem, 1280, 'jpg')}
+          src={primaryJpg(stem)}
           srcSet={srcSet(stem, 'jpg')}
           sizes={sizes}
           alt={alt}
