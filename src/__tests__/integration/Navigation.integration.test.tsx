@@ -253,12 +253,10 @@ describe('Navigation Integration', () => {
 
       await user.click(screen.getByRole('button', { name: /open menu/i }));
 
-      // The About section in mobile has all items visible inline
+      // The full-screen overlay renders as a dialog with nav links
       await waitFor(() => {
-        // Mobile menu should show all nav items
-        // "About" appears in both desktop dropdown button and mobile section header
-        const aboutElements = screen.getAllByText('About');
-        expect(aboutElements.length).toBeGreaterThanOrEqual(2);
+        const dialog = screen.getByRole('dialog', { name: /site menu/i });
+        expect(dialog).toBeInTheDocument();
       });
     });
 
@@ -283,9 +281,9 @@ describe('Navigation Integration', () => {
       await user.click(screen.getByRole('button', { name: /open menu/i }));
 
       await waitFor(() => {
-        // Find the mobile Home link (we need to be careful with duplicates)
-        const menuButton = screen.getByRole('button', { name: /close menu/i });
-        expect(menuButton).toBeInTheDocument();
+        // The full-screen overlay dialog should be present
+        const dialog = screen.getByRole('dialog', { name: /site menu/i });
+        expect(dialog).toBeInTheDocument();
       });
     });
   });

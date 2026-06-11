@@ -2,6 +2,8 @@ import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
+import { editorialType, EDITORIAL_FONT_FAMILY } from '../utils/editorialType';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import ViewTransitionLink from './ViewTransitionLink';
 
 const NAV_ITEMS = [
@@ -32,11 +34,20 @@ const Navigation = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownItemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
+  const { containerRef: overlayRef, handleKeyDown: handleOverlayKeyDown } =
+    useFocusTrap(isMobileMenuOpen);
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   useEffect(() => {
     const updateScrollState = () => {
       if (location.pathname === '/') {
-        const summaryEndPosition = window.innerHeight * 10;
-        setIsScrolled(window.scrollY > summaryEndPosition);
+        setIsScrolled(window.scrollY > window.innerHeight * 0.85);
       } else {
         setIsScrolled(window.scrollY > 20);
       }
@@ -120,8 +131,11 @@ const Navigation = () => {
   return (
     <nav
       data-vt-persist="navigation"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${
+        isScrolled
+          ? 'bg-altivum-dark/95 backdrop-blur-md border-b border-altivum-gold/20'
+          : 'bg-transparent'
+      }`}
     >
       {/* Skip link for keyboard navigation */}
       <a
@@ -136,8 +150,11 @@ const Navigation = () => {
           <ViewTransitionLink to="/" className="flex items-center">
             <img src={logo} alt="TCG Logo" className="h-16 w-16" />
             <div className="flex flex-col -ml-2">
-              <span className="text-white tracking-tight" style={{ ...typography.cardTitleLarge, fontWeight: 700 }}>
-                CHRISTIAN <span className="text-altivum-gold">PEREZ</span>
+              <span
+                className="text-altivum-porcelain"
+                style={{ fontFamily: EDITORIAL_FONT_FAMILY, fontWeight: 500, fontSize: '1.25rem', letterSpacing: '0.04em' }}
+              >
+                CHRISTIAN <span className="italic text-altivum-gold">PEREZ</span>
               </span>
               <span className="text-altivum-silver tracking-wider" style={typography.smallText}>
                 thechrisgrey
@@ -180,7 +197,7 @@ const Navigation = () => {
 
               {isAboutDropdownOpen && (
                 <div
-                  className="absolute top-full left-0 mt-2 w-56 bg-altivum-navy/95 backdrop-blur-md rounded-md shadow-lg border border-altivum-slate/30 overflow-hidden"
+                  className="absolute top-full left-0 mt-2 w-56 bg-altivum-dark/95 backdrop-blur-md rounded-md shadow-lg border border-altivum-gold/15 overflow-hidden"
                   role="menu"
                   aria-orientation="vertical"
                 >
@@ -245,59 +262,63 @@ const Navigation = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Full-screen mobile overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden pb-4 bg-altivum-navy/95 backdrop-blur-md">
-            <div className="flex flex-col space-y-2">
-              <ViewTransitionLink
-                to="/"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive('/')
-                  ? 'text-altivum-gold bg-altivum-blue/30'
-                  : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                  }`}
-              >
-                Home
-              </ViewTransitionLink>
+          <div
+            ref={overlayRef}
+            onKeyDown={handleOverlayKeyDown}
+            className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-altivum-dark px-8 pb-12 pt-24 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+          >
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute right-6 top-6 p-2 text-altivum-silver hover:text-altivum-porcelain"
+              aria-label="Close menu"
+            >
+              <span className="material-icons" aria-hidden="true">close</span>
+            </button>
 
-              {/* About Section */}
-              <div className="px-4 py-2">
-                <div className="text-xs font-semibold text-altivum-gold uppercase tracking-wider mb-2">About</div>
-                <div className="flex flex-col space-y-1 ml-2">
-                  {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
-                    item.path ? (
-                      <ViewTransitionLink
-                        key={index}
-                        to={item.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive(item.path)
-                          ? 'text-altivum-gold bg-altivum-blue/30'
-                          : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                          }`}
-                      >
-                        {item.label}
-                      </ViewTransitionLink>
-                    ) : (
-                      <div
-                        key={index}
-                        className="px-4 py-2 text-sm font-medium text-altivum-slate"
-                      >
-                        {item.label}
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
+            <span className="italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
+              (MENU)
+            </span>
 
-              {NAV_ITEMS.slice(1).map((item) => (
+            <div className="mt-8 flex flex-col gap-5">
+              {[{ path: '/', label: 'Home' }, ...NAV_ITEMS.slice(1)].map((item, i) => (
                 <ViewTransitionLink
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive(item.path)
-                    ? 'text-altivum-gold bg-altivum-blue/30'
-                    : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                    }`}
+                  className="opacity-0 animate-fade-in text-altivum-porcelain"
+                  style={{
+                    ...editorialType.displaySection,
+                    fontSize: 'clamp(2rem, 8vw, 2.75rem)',
+                    animationDelay: `${i * 70}ms`,
+                    animationDuration: '0.6s',
+                  }}
+                >
+                  {item.label}
+                </ViewTransitionLink>
+              ))}
+            </div>
+
+            <span className="mt-10 italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
+              (ABOUT)
+            </span>
+            <div className="mt-4 flex flex-col gap-3">
+              {ABOUT_DROPDOWN_ITEMS.map((item, i) => (
+                <ViewTransitionLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="opacity-0 animate-fade-in text-altivum-silver hover:text-altivum-gold"
+                  style={{
+                    fontFamily: EDITORIAL_FONT_FAMILY,
+                    fontSize: '1.125rem',
+                    animationDelay: `${350 + i * 50}ms`,
+                    animationDuration: '0.6s',
+                  }}
                 >
                   {item.label}
                 </ViewTransitionLink>
