@@ -126,9 +126,9 @@ function SurfaceScene({ textureUrl, driver, onReady, onUnready }: SurfaceScenePr
     d.scroll *= 0.92;
     if (d.scroll < 0.001) d.scroll = 0;
 
-    // Convergence gate: render only until the uniforms settle on their
-    // targets. A parked cursor stops costing frames; per-move frames come
-    // from the context invalidate in the pointer handlers.
+    // Convergence gate: once the uniforms settle on their targets the
+    // invalidate() stops — a no-op under the continuous frameloop, but it
+    // keeps this surface correct if the provider returns to demand mode.
     const settled =
       Math.abs(mat.uniforms.uHover.value - d.hover) < 0.004 &&
       mat.uniforms.uScroll.value < 0.004 &&

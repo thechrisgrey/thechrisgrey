@@ -22,8 +22,10 @@ function RidgeTerrain() {
     []
   );
 
-  // Draw-in once (~1.8s, power3-like curve), then never invalidate again —
-  // with frameloop="demand" the settled ridge costs zero per-frame GPU work.
+  // Draw-in once (~1.8s, power3-like curve). After uProgress reaches 1 the
+  // callback returns immediately — near-zero cost under the continuous
+  // frameloop; the invalidate() below only matters if the provider ever
+  // returns to demand mode.
   // Accumulates clamped frame deltas rather than reading clock.elapsedTime:
   // R3F resets the clock whenever the provider flips frameloop (tab switch),
   // which would rewind an absolute-time draw-in.
