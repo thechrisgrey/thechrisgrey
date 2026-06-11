@@ -1,4 +1,6 @@
 describe('Mobile Navigation', () => {
+  const overlay = '[role="dialog"][aria-label="Site menu"]';
+
   beforeEach(() => {
     cy.viewport('iphone-x');
     cy.visit('/');
@@ -14,12 +16,13 @@ describe('Mobile Navigation', () => {
     cy.get('nav a[href="/contact"]').should('not.be.visible');
   });
 
-  it('should open the mobile menu when clicking the hamburger button', () => {
+  it('should open the full-screen menu overlay when clicking the hamburger button', () => {
     cy.get('button[aria-label="Open menu"]').click();
 
-    // The mobile menu is rendered in a div.md:hidden with pb-4 class (not the button)
-    // Verify links are visible by checking the mobile menu links directly
-    cy.get('nav div.md\\:hidden').within(() => {
+    // The menu is a full-screen overlay portaled to <body>
+    cy.get(overlay).should('be.visible');
+    cy.get(overlay).within(() => {
+      cy.contains('(MENU)').should('be.visible');
       cy.contains('Home').should('be.visible');
       cy.contains('Blog').should('be.visible');
       cy.contains('Alti').should('be.visible');
@@ -28,54 +31,74 @@ describe('Mobile Navigation', () => {
     });
   });
 
-  it('should display the About section with all sub-items in mobile menu', () => {
+  it('should display the About section with all sub-items in the overlay', () => {
     cy.get('button[aria-label="Open menu"]').click();
 
-    cy.get('nav div.md\\:hidden').within(() => {
-      // About section header
-      cy.contains('About').should('be.visible');
+    cy.get(overlay).within(() => {
+      // About section eyebrow
+      cy.contains('(ABOUT)').should('be.visible');
 
       // Sub-items
       cy.contains('Personal Biography').should('be.visible');
       cy.contains('Altivum Inc').should('be.visible');
+      cy.contains('The Altivum Foundation').should('be.visible');
       cy.contains('The Vector Podcast').should('be.visible');
       cy.contains('Beyond the Assessment').should('be.visible');
       cy.contains('Amazon Web Services').should('be.visible');
+      cy.contains('Claude').should('be.visible');
+      cy.contains('thechrisgrey Blueprint').should('be.visible');
     });
   });
 
-  it('should close the mobile menu after clicking the close button', () => {
+  it('should close the overlay after clicking the close button', () => {
     cy.get('button[aria-label="Open menu"]').click();
-    cy.get('button[aria-label="Close menu"]').should('be.visible');
-    cy.get('button[aria-label="Close menu"]').click();
+    cy.get(overlay).should('be.visible');
 
-    // Mobile menu div should no longer exist (hamburger button still has md:hidden)
-    cy.get('nav div.md\\:hidden').should('not.exist');
-  });
+    // The hamburger also relabels to "Close menu" when open — scope to the
+    // close button inside the dialog.
+    cy.get(overlay).find('button[aria-label="Close menu"]').click();
 
-  it('should navigate to a page and close the mobile menu', () => {
-    cy.get('button[aria-label="Open menu"]').click();
-
-    // Click the Contact link inside the mobile menu
-    cy.get('nav div.md\\:hidden').contains('Contact').click();
-
-    cy.url().should('include', '/contact');
-    // Menu should be closed after navigation
+    cy.get(overlay).should('not.exist');
     cy.get('button[aria-label="Open menu"]').should('be.visible');
   });
 
-  it('should navigate to an About sub-page from mobile menu', () => {
+  it('should close the overlay with the Escape key', () => {
     cy.get('button[aria-label="Open menu"]').click();
-    cy.get('nav div.md\\:hidden').contains('Personal Biography').click();
 
-    cy.url().should('include', '/about');
+    // The focus trap moves focus to the first focusable element (the close
+    // button) once the overlay mounts.
+    cy.get(overlay).find('button[aria-label="Close menu"]').should('have.focus');
+    cy.focused().type('{esc}');
+
+    cy.get(overlay).should('not.exist');
   });
 
-  it('should navigate to Altivum from mobile menu', () => {
+  it('should navigate to a page and close the overlay', () => {
     cy.get('button[aria-label="Open menu"]').click();
-    cy.get('nav div.md\\:hidden').contains('Altivum Inc').click();
+
+    // Click the Contact link inside the overlay
+    cy.get(overlay).contains('a', 'Contact').click();
+
+    cy.url().should('include', '/contact');
+    // Menu should be closed after navigation
+    cy.get(overlay).should('not.exist');
+    cy.get('button[aria-label="Open menu"]').should('be.visible');
+  });
+
+  it('should navigate to an About sub-page from the overlay', () => {
+    cy.get('button[aria-label="Open menu"]').click();
+    cy.get(overlay).contains('a', 'Personal Biography').click();
+
+    cy.url().should('include', '/about');
+    cy.get(overlay).should('not.exist');
+  });
+
+  it('should navigate to Altivum from the overlay', () => {
+    cy.get('button[aria-label="Open menu"]').click();
+    cy.get(overlay).contains('a', 'Altivum Inc').click();
 
     cy.url().should('include', '/altivum');
+    cy.get(overlay).should('not.exist');
   });
 
   it('should display the logo on mobile', () => {
