@@ -4,17 +4,30 @@ import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Home from '../../pages/Home';
 
-// Mock static image imports that Vite handles at build time
-vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
-
-// WebGL is unavailable in jsdom — mock R3F so the lazy hero backdrop Canvas
-// never touches the GPU when Home mounts it. Children (R3F intrinsics) are
-// dropped rather than rendered as unknown DOM nodes.
+// WebGL is unavailable in jsdom — mock R3F so EditorialCanvas never touches the
+// GPU. Children (R3F intrinsics) are dropped rather than rendered as unknown DOM nodes.
 vi.mock('@react-three/fiber', () => ({
-  Canvas: () => <div data-testid="hero-canvas" />,
+  Canvas: () => <div data-testid="editorial-canvas" />,
   useFrame: () => {},
   useThree: () => ({ size: { width: 800, height: 600 }, invalidate: () => {} }),
 }));
+
+vi.mock('@react-three/drei', () => ({
+  View: Object.assign(() => null, { Port: () => null }),
+  PerspectiveCamera: () => null,
+  useTexture: () => ({}),
+}));
+
+// Mock Playfair woff2 imports — Vite's ?url suffix produces a hashed path
+// that vitest can't resolve from node_modules.
+vi.mock(
+  '@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2?url',
+  () => ({ default: '/mock-playfair-400.woff2' })
+);
+vi.mock(
+  '@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2?url',
+  () => ({ default: '/mock-playfair-500.woff2' })
+);
 
 const renderHome = () => {
   return render(
@@ -32,106 +45,47 @@ describe('Home Page Integration', () => {
   });
 
   describe('Hero section', () => {
-    it('renders the hero image with correct alt text', () => {
+    it('renders one h1 with the accessible name "Christian Perez"', () => {
       renderHome();
-      const heroImage = screen.getByAltText('Leadership Forged in Service');
-      expect(heroImage).toBeInTheDocument();
-      expect(heroImage.tagName).toBe('IMG');
+      const h1 = screen.getByRole('heading', { level: 1 });
+      expect(h1).toHaveTextContent(/Christian\s+Perez/);
     });
 
-    it('renders an accessible h1 heading for screen readers', () => {
+    it('renders the founder eyebrow label', () => {
       renderHome();
-      const heading = screen.getByRole('heading', {
-        level: 1,
-        name: /christian perez.*leadership forged in service/i,
-      });
-      expect(heading).toBeInTheDocument();
+      expect(screen.getByText('(FOUNDER & CEO — ALTIVUM INC.)')).toBeInTheDocument();
     });
   });
 
-  describe('Summary section with key points', () => {
-    it('renders all 5 key points with correct titles', () => {
+  describe('Wayfinding tiles', () => {
+    it('renders links to The Vector Podcast, Beyond the Assessment, and Altivum Inc', () => {
       renderHome();
-      const headings = screen.getAllByRole('heading', { level: 3 });
-      const titles = headings.map(h => h.textContent?.replace(/\s+/g, ' ').trim());
-      expect(titles).toContain('Personal Biography');
-      expect(titles).toContain('Altivum Inc');
-      expect(titles).toContain('The Vector Podcast');
-      expect(titles).toContain('Beyond the Assessment');
-      expect(titles).toContain('Amazon Web Services');
+      // Multiple links may exist (hero bento + ventures section both link to these routes)
+      const podcastLinks = screen.getAllByRole('link', { name: /The Vector Podcast/i });
+      expect(podcastLinks.length).toBeGreaterThanOrEqual(1);
+      expect(podcastLinks[0]).toHaveAttribute('href', '/podcast');
+
+      const bookLinks = screen.getAllByRole('link', { name: /Beyond the Assessment/i });
+      expect(bookLinks.length).toBeGreaterThanOrEqual(1);
+      expect(bookLinks[0]).toHaveAttribute('href', '/beyond-the-assessment');
+
+      const altivumLinks = screen.getAllByRole('link', { name: /Altivum Inc/i });
+      expect(altivumLinks.length).toBeGreaterThanOrEqual(1);
+      expect(altivumLinks[0]).toHaveAttribute('href', '/altivum');
     });
 
-    it('renders all 5 key points with correct subtitles', () => {
+    it('renders a Start a conversation CTA link to /contact', () => {
       renderHome();
-      expect(screen.getByText('Christian Perez')).toBeInTheDocument();
-      expect(screen.getByText('Founder & CEO')).toBeInTheDocument();
-      expect(screen.getByText('Host')).toBeInTheDocument();
-      expect(screen.getByText('Author')).toBeInTheDocument();
-      expect(screen.getByText('AWS Community Builder (AI Engineering)')).toBeInTheDocument();
-    });
-
-    it('renders key points as links to their respective pages', () => {
-      renderHome();
-
-      const links = screen.getAllByRole('link');
-      const findLink = (href: string) => links.find(l => l.getAttribute('href') === href);
-
-      expect(findLink('/about')).toBeDefined();
-      expect(findLink('/altivum')).toBeDefined();
-      expect(findLink('/podcast')).toBeDefined();
-      expect(findLink('/beyond-the-assessment')).toBeDefined();
-      expect(findLink('/aws')).toBeDefined();
-    });
-
-    it('renders the profile image', () => {
-      renderHome();
-      const profileImage = screen.getByAltText('Christian Perez');
-      expect(profileImage).toBeInTheDocument();
-      expect(profileImage).toHaveAttribute('src', '/profile1.jpeg');
-    });
-  });
-
-  describe('CTA section', () => {
-    it('renders the "Let\'s Connect" heading', () => {
-      renderHome();
-      const heading = screen.getByRole('heading', { name: /let's connect/i });
-      expect(heading).toBeInTheDocument();
-    });
-
-    it('renders a LinkedIn social link with correct href', () => {
-      renderHome();
-      const linkedinLinks = screen.getAllByRole('link', { name: /linkedin/i });
-      const ctaLinkedIn = linkedinLinks.find(
-        (link) => link.getAttribute('href') === 'https://www.linkedin.com/in/thechrisgrey/'
-      );
-      expect(ctaLinkedIn).toBeInTheDocument();
-      expect(ctaLinkedIn).toHaveAttribute('target', '_blank');
-      expect(ctaLinkedIn).toHaveAttribute('rel', 'noopener noreferrer');
-    });
-
-    it('renders an Instagram social link with correct href', () => {
-      renderHome();
-      const instagramLinks = screen.getAllByRole('link', { name: /instagram/i });
-      const ctaInstagram = instagramLinks.find(
-        (link) => link.getAttribute('href') === 'https://www.instagram.com/thechrisgrey/'
-      );
-      expect(ctaInstagram).toBeInTheDocument();
-      expect(ctaInstagram).toHaveAttribute('target', '_blank');
-    });
-
-    it('renders a link to the Links page to see all socials', () => {
-      renderHome();
-      const allSocialsLink = screen.getByRole('link', {
-        name: /check out the rest of my socials/i,
-      });
-      expect(allSocialsLink).toHaveAttribute('href', '/links');
+      // Multiple "Start a conversation" links may exist across sections
+      const contactLinks = screen.getAllByRole('link', { name: /Start a conversation/i });
+      expect(contactLinks.length).toBeGreaterThanOrEqual(1);
+      expect(contactLinks[0]).toHaveAttribute('href', '/contact');
     });
   });
 
   describe('SEO metadata', () => {
     it('sets the page title correctly', async () => {
       renderHome();
-      // react-helmet-async sets document.title asynchronously in jsdom
       await vi.waitFor(() => {
         expect(document.title).toBe('Christian Perez | Christian Perez');
       });

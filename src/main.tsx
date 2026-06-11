@@ -21,6 +21,14 @@ initWebVitals()
 // on React 19 (it renders head tags via React 19's native hoisting and never
 // fires the legacy callback), so it cannot drive the flag.
 
+// The dist/index.html snapshot is BOTH the Home prerender AND the SPA shell
+// for every other route, so qualify by the initial route — a cold load of
+// /chat that later navigates Home never had a static hero paint.
+// NOTE: Leading semicolon avoids ASI ambiguity with the preceding initWebVitals() call.
+;(window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__ =
+  Boolean(document.getElementById('root')?.hasChildNodes()) &&
+  window.location.pathname === '/';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <LenisProvider>

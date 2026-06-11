@@ -3,12 +3,30 @@ import { render, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
-// Mock the WebGL hero backdrop — R3F's Canvas needs ResizeObserver/WebGL, which
-// jsdom lacks (see CLAUDE.md: mock 3D in jsdom tests). SEO assertions don't need it.
-vi.mock('../../components/home/HeroCanvas', () => ({ default: () => null }));
+// Mock Playfair woff2 ?url imports used in the new Home.tsx preload hints.
+vi.mock(
+  '@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2?url',
+  () => ({ default: '/mock-playfair-400.woff2' })
+);
+vi.mock(
+  '@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2?url',
+  () => ({ default: '/mock-playfair-500.woff2' })
+);
+
+// WebGL is unavailable in jsdom — mock R3F so EditorialCanvas never touches
+// the GPU. SEO assertions don't need the canvas to be real.
+vi.mock('@react-three/fiber', () => ({
+  Canvas: () => null,
+  useFrame: () => {},
+  useThree: () => ({ invalidate: () => {} }),
+}));
+vi.mock('@react-three/drei', () => ({
+  View: Object.assign(() => null, { Port: () => null }),
+  PerspectiveCamera: () => null,
+  useTexture: () => ({}),
+}));
 
 // Mock static image imports
-vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
 vi.mock('../../assets/aws-community-builder.png', () => ({
   default: '/mock-aws-cb.png',

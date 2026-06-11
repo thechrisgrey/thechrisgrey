@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import CommandGridHero from './CommandGridHero';
@@ -36,9 +36,54 @@ const renderHero = () =>
     </MemoryRouter>
   );
 
+describe('useCascadeReveal — __SKIP_HERO_CASCADE__ flag', () => {
+  afterEach(() => {
+    // Clean up window flag between tests
+    delete (window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__;
+  });
+
+  it('does NOT call gsap.fromTo cascade when flag is set, and clears the flag', () => {
+    (window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__ = true;
+
+    render(
+      <MemoryRouter>
+        <CommandGridHero />
+      </MemoryRouter>
+    );
+
+    // The cascade tween (the one with stagger) must not have been called
+    const cascadeCalls = fromToMock.mock.calls.filter(
+      (call) => 'stagger' in ((call as unknown[])[2] as Record<string, unknown>)
+    );
+    expect(cascadeCalls).toHaveLength(0);
+
+    // Flag must be consumed (set to false)
+    expect((window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__).toBe(false);
+  });
+
+  it('DOES call gsap.fromTo cascade on a subsequent render after flag was consumed', () => {
+    // Flag already false from prior consumption (or absent)
+    (window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__ = false;
+    fromToMock.mockClear();
+
+    render(
+      <MemoryRouter>
+        <CommandGridHero />
+      </MemoryRouter>
+    );
+
+    const cascadeCalls = fromToMock.mock.calls.filter(
+      (call) => 'stagger' in ((call as unknown[])[2] as Record<string, unknown>)
+    );
+    expect(cascadeCalls).toHaveLength(1);
+  });
+});
+
 describe('CommandGridHero', () => {
   beforeEach(() => {
     fromToMock.mockClear();
+    // Ensure flag is not set for standard tests
+    delete (window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__;
   });
 
   it('renders one h1 with the full accessible name', () => {

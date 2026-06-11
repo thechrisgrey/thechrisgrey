@@ -15,6 +15,16 @@ export function useCascadeReveal(containerRef: RefObject<HTMLElement | null>) {
   useLayoutEffect(() => {
     if (isPrerender()) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // One-shot: a prerendered cold load of / already painted the hero —
+    // hiding it and replaying the cascade would be a visible die-and-
+    // reanimate. Consume the flag so later SPA navs back here still play.
+    const w = window as { __SKIP_HERO_CASCADE__?: boolean };
+    if (w.__SKIP_HERO_CASCADE__) {
+      w.__SKIP_HERO_CASCADE__ = false;
+      return;
+    }
+
     const container = containerRef.current;
     if (!container) return;
     const tiles = container.querySelectorAll('[data-cascade]');
