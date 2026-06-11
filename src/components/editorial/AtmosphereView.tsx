@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -18,9 +18,10 @@ export function advanceParticleY(y: number, dt: number): number {
 
 interface DustProps {
   count: number;
+  active: boolean;
 }
 
-function Dust({ count }: DustProps) {
+function Dust({ count, active }: DustProps) {
   const pointsRef = useRef<THREE.Points>(null);
   const invalidate = useThree((s) => s.invalidate);
 
@@ -38,10 +39,12 @@ function Dust({ count }: DustProps) {
 
   // 30fps invalidation cap: with frameloop="demand" the dust drives its own
   // clock instead of forcing a 60fps loop on the whole shared canvas.
+  // Keyed on [active, invalidate] — interval is skipped entirely when inactive.
   useEffect(() => {
+    if (!active) return;
     const id = setInterval(() => invalidate(), 33);
     return () => clearInterval(id);
-  }, [invalidate]);
+  }, [active, invalidate]);
 
   useFrame((_, delta) => {
     const points = pointsRef.current;
@@ -80,12 +83,31 @@ interface AtmosphereViewProps {
 }
 
 /** Sparse gold-dust drift behind the hero — quiet depth, never busy.
- *  View-as-element per the EditorialCanvas consumer contract. */
-const AtmosphereView = ({ className = 'pointer-events-none absolute inset-0', mobile = false }: AtmosphereViewProps) => (
-  <View className={className}>
-    <PerspectiveCamera makeDefault position={[0, 0, 3]} fov={50} />
-    <Dust count={mobile ? 150 : 400} />
-  </View>
-);
+ *  View-as-element per the EditorialCanvas consumer contract.
+ *  Self-gating via IntersectionObserver: the 30Hz interval pauses while
+ *  the hero is scrolled offscreen and resumes on return. */
+const AtmosphereView = ({ className = 'pointer-events-none absolute inset-0', mobile = false }: AtmosphereViewProps) => {
+  const viewRef = useRef<HTMLElement>(null);
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const el = viewRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setActive(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <View ref={viewRef as never} className={className}>
+      <PerspectiveCamera makeDefault position={[0, 0, 3]} fov={50} />
+      <Dust count={mobile ? 150 : 400} active={active} />
+    </View>
+  );
+};
 
 export default AtmosphereView;
