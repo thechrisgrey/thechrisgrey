@@ -1382,6 +1382,8 @@ git commit -m "feat(redesign): graded editorial image set + sharp grading pipeli
 
 ### Task 11: `EditorialImage` + displacement surface (TDD on DOM path)
 
+> **AMENDED IN EXECUTION** — quality review found three critical defects in the code below (no cover-fit/rect-fill on non-square placements; hover dead on a parked page; umber flash during crossfade). The committed implementation in `src/components/editorial/EditorialImage.tsx`, `surfaceShader.ts`, and the `{ ready, invalidate }` context shape in `EditorialCanvas.tsx` is canonical and supersedes the snippets below. Downstream tasks already reflect the changes (Task 15's `onUpdate` invalidate).
+
 **Files:**
 - Create: `src/components/editorial/surfaceShader.ts`
 - Create: `src/components/editorial/EditorialImage.tsx`
@@ -2349,6 +2351,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import ViewTransitionLink from '../ViewTransitionLink';
 import Eyebrow from './Eyebrow';
 import EditorialImage from './EditorialImage';
+import { useEditorialCanvas } from './EditorialCanvas';
 import { editorialType, EDITORIAL_FONT_FAMILY } from '../../utils/editorialType';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { isPrerender } from '../../utils/prerender';
@@ -2395,6 +2398,7 @@ const VenturesSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const { invalidate } = useEditorialCanvas();
   const finePointer = useMediaQuery('(pointer: fine)');
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const pinned = finePointer && !reducedMotion && !isPrerender();
@@ -2416,7 +2420,13 @@ const VenturesSection = () => {
         scrub: 1,
         pin: true,
         invalidateOnRefresh: true,
-        onUpdate: (self) => setActive(Math.min(3, Math.round(self.progress * 3))),
+        onUpdate: (self) => {
+          setActive(Math.min(3, Math.round(self.progress * 3)));
+          // Consumer contract rule 4: scrub tails outlive scroll events, so the
+          // scrubbed track must drive canvas frames itself or the panel Views
+          // freeze while the DOM keeps sliding.
+          invalidate();
+        },
       },
     });
 
@@ -2424,7 +2434,7 @@ const VenturesSection = () => {
       tween.scrollTrigger?.kill();
       tween.kill();
     };
-  }, [pinned]);
+  }, [pinned, invalidate]);
 
   return (
     <section ref={sectionRef} className="overflow-hidden py-24 md:py-0" aria-label="Ventures">
