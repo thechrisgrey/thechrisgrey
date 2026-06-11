@@ -125,7 +125,7 @@ const Footer = () => {
         <p className="mt-6 text-center text-altivum-silver" style={typography.smallText}>
           &copy; {currentYear} Christian Perez. All rights reserved.
           <span className="mx-2">·</span>
-          <ViewTransitionLink to="/privacy" className="link-underline transition-colors hover:text-altivum-gold">
+          <ViewTransitionLink to="/privacy" className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold">
             Privacy Policy
           </ViewTransitionLink>
         </p>
