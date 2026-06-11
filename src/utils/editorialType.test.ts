@@ -33,8 +33,10 @@ describe('editorialType', () => {
     }
   });
 
-  it('eyebrow and pullQuote are italic', () => {
+  it('eyebrow, pullQuote, and statSuffix are italic', () => {
     expect(editorialType.eyebrow.fontStyle).toBe('italic');
     expect(editorialType.pullQuote.fontStyle).toBe('italic');
+    expect(editorialType.statSuffix.fontStyle).toBe('italic');
+    expect(editorialType.eyebrow.letterSpacing).toBe('0.25em');
   });
 });
