@@ -34,15 +34,16 @@ describe('CountUp', () => {
 
   it('renders the final value as text from first paint', () => {
     render(<CountUp value={18} suffix="D" caption="Special Forces Medical Sergeant" />);
-    expect(screen.getByText('18')).toBeInTheDocument();
+    const numeral = screen.getByText('18');
+    expect(numeral).toBeInTheDocument();
     expect(screen.getByText('D')).toBeInTheDocument();
+    // The visual layer is hidden from assistive tech; the sr-only span speaks.
+    expect(numeral.parentElement).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('exposes one combined accessible label', () => {
     render(<CountUp value={60} suffix="+" caption="podcast episodes" />);
-    expect(
-      screen.getByLabelText('60+ — podcast episodes')
-    ).toBeInTheDocument();
+    expect(screen.getByText('60+ — podcast episodes')).toBeInTheDocument();
   });
 
   it('renders the caption', () => {
@@ -53,7 +54,7 @@ describe('CountUp', () => {
   it('renders without a suffix', () => {
     render(<CountUp value={1} caption="book" />);
     expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByLabelText('1 — book')).toBeInTheDocument();
+    expect(screen.getByText('1 — book')).toBeInTheDocument();
   });
 
   // Guard-path tests (matching Eyebrow.test.tsx pattern)
@@ -70,11 +71,13 @@ describe('CountUp', () => {
       dispatchEvent: () => false,
     }));
 
-    render(<CountUp value={18} suffix="D" caption="Special Forces Medical Sergeant" />);
-    expect(screen.getByText('18')).toBeInTheDocument();
-    expect(fromToMock).not.toHaveBeenCalled();
-
-    vi.restoreAllMocks();
+    try {
+      render(<CountUp value={18} suffix="D" caption="Special Forces Medical Sergeant" />);
+      expect(screen.getByText('18')).toBeInTheDocument();
+      expect(fromToMock).not.toHaveBeenCalled();
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('skips the roll-up animation during prerender', () => {
@@ -91,11 +94,21 @@ describe('CountUp', () => {
   });
 
   it('kills the tween and its ScrollTrigger on unmount and restores final value', () => {
-    const { unmount } = render(<CountUp value={3} suffix="x" caption="ventures built and operating" />);
+    const { unmount } = render(
+      <CountUp value={3} suffix="x" caption="ventures built and operating" />
+    );
     expect(fromToMock).toHaveBeenCalledTimes(1);
+
+    // Drive the tween's onUpdate by hand — the internal counter starts at 0,
+    // so the numeral shows the transient roll-up value.
+    const numeral = screen.getByText('3');
+    const toVars = (fromToMock.mock.calls[0] as unknown[])[2] as { onUpdate: () => void };
+    toVars.onUpdate();
+    expect(numeral.textContent).toBe('0');
 
     unmount();
     expect(scrollTriggerKillSpy).toHaveBeenCalledTimes(1);
     expect(tweenKillSpy).toHaveBeenCalledTimes(1);
+    expect(numeral.textContent).toBe('3');
   });
 });

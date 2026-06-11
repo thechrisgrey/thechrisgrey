@@ -24,11 +24,22 @@ interface CountUpProps {
 const CountUp = ({ value, suffix = '', caption, className = '' }: CountUpProps) => {
   const numeralRef = useRef<HTMLSpanElement>(null);
 
+  // useEffect (not useLayoutEffect like Eyebrow): no pre-paint from-state is
+  // needed because the final value is the first-paint content and
+  // ScrollTrigger suppresses onUpdate at creation.
   useEffect(() => {
     if (isPrerender()) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const el = numeralRef.current;
     if (!el) return;
+
+    // Sync React's text binding, then pre-zero only when the element is still
+    // below the trigger line — the user never sees the pre-roll state, while
+    // visible-at-mount stats keep the final value (can never get stuck at 0).
+    el.textContent = String(value);
+    if (el.getBoundingClientRect().top > window.innerHeight * 0.85) {
+      el.textContent = '0';
+    }
 
     const counter = { n: 0 };
     const tween = gsap.fromTo(
@@ -49,12 +60,14 @@ const CountUp = ({ value, suffix = '', caption, className = '' }: CountUpProps) 
     return () => {
       tween.scrollTrigger?.kill();
       tween.kill();
-      el.textContent = String(value);
+      // StrictMode-safe: only restore when the tween left a transient value.
+      if (el.textContent !== String(value)) el.textContent = String(value);
     };
   }, [value]);
 
   return (
-    <div className={`relative z-30 ${className}`} aria-label={`${value}${suffix} — ${caption}`}>
+    <div className={`relative z-30 ${className}`}>
+      <span className="sr-only">{`${value}${suffix} — ${caption}`}</span>
       <span aria-hidden="true">
         <span ref={numeralRef} className="text-altivum-porcelain" style={editorialType.statNumeral}>
           {value}
