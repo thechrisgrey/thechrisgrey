@@ -306,8 +306,8 @@ export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: 
   const selectedClusterId = externalId !== undefined ? externalId : internalId;
   const onSelectCluster = externalOnSelect ?? setInternalId;
 
-  // Fully pause the rAF loop when the tab is hidden (parity with HeroCanvas /
-  // AltiMascot), rather than only toggling autoRotate inside a still-running loop.
+  // Fully pause the rAF loop when the tab is hidden (parity with AltiMascot),
+  // rather than only toggling autoRotate inside a still-running loop.
   const [docVisible, setDocVisible] = useState(() =>
     typeof document === 'undefined' ? true : !document.hidden,
   );

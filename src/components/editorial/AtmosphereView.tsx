@@ -1,5 +1,5 @@
 import { useRef, useMemo, useEffect, useState, type Ref } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { View, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -23,7 +23,6 @@ interface DustProps {
 
 function Dust({ count, active }: DustProps) {
   const pointsRef = useRef<THREE.Points>(null);
-  const invalidate = useThree((s) => s.invalidate);
 
   // Allocate the full capacity once; count flips (mobile breakpoint) only move
   // drawRange instead of reallocating the GL buffer and teleporting particles.
@@ -37,19 +36,11 @@ function Dust({ count, active }: DustProps) {
     return arr;
   }, []);
 
-  // 30fps invalidation cap: with frameloop="demand" the dust drives its own
-  // clock instead of forcing a 60fps loop on the whole shared canvas.
-  // Keyed on [active, invalidate] — interval is skipped entirely when inactive.
-  useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => invalidate(), 33);
-    return () => clearInterval(id);
-  }, [active, invalidate]);
-
   useFrame((_, delta) => {
-    // The provider invalidates on every scroll event — exactly when the hero
-    // is offscreen — so the gate must also skip the per-frame particle math,
-    // not just the self-interval.
+    // Frames are continuous while the tab is visible (frameloop="always"),
+    // so the IO gate is the cost control: skip all particle math while the
+    // hero is scrolled offscreen. The delta clamp in advanceParticleY's call
+    // keeps the resume seamless.
     if (!active) return;
     const points = pointsRef.current;
     if (!points) return;
@@ -88,7 +79,7 @@ interface AtmosphereViewProps {
 
 /** Sparse gold-dust drift behind the hero — quiet depth, never busy.
  *  View-as-element per the EditorialCanvas consumer contract.
- *  Self-gating via IntersectionObserver: the 30Hz interval pauses while
+ *  Self-gating via IntersectionObserver: all particle work pauses while
  *  the hero is scrolled offscreen and resumes on return. */
 const AtmosphereView = ({ className = 'pointer-events-none absolute inset-0', mobile = false }: AtmosphereViewProps) => {
   const viewRef = useRef<HTMLElement>(null);

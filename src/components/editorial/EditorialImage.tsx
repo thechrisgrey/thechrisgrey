@@ -274,8 +274,8 @@ const EditorialImage = ({
     };
   }, [surface, ready, invalidateCanvas]);
 
-  // Scroll-velocity energy from Lenis (same normalization as the old
-  // HeroCanvas). Decay is frame-driven inside SurfaceScene's useFrame.
+  // Scroll-velocity energy from Lenis, normalized |velocity|/30 clamped to 1.
+  // Decay is frame-driven inside SurfaceScene's useFrame.
   useEffect(() => {
     if (!surface || !ready || !lenis) return;
     const onScroll = (instance: Lenis) => {

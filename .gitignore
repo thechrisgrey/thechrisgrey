@@ -74,3 +74,6 @@ vite.config.js
 
 # Editorial raw source images (large originals, not committed)
 scripts/editorial-raw/
+
+# Claude Code session artifacts
+.claude/

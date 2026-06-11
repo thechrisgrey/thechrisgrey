@@ -18,7 +18,11 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 interface EditorialCanvasValue {
   /** True once the shared WebGL canvas has created a context and can host Views. */
   ready: boolean;
-  /** Requests a frame from the demand-loop canvas (noop until it exists). */
+  /**
+   * Requests a frame (noop until the canvas exists). Under the continuous
+   * frameloop this is rarely needed — kept for API stability and for any
+   * future return to demand-driven rendering.
+   */
   invalidate: () => void;
 }
 
@@ -54,6 +58,15 @@ const ResetReady = ({ onMount }: { onMount: () => void }) => {
  * Layering contract: canvas z-20; content that must read above the WebGL
  * uses `relative z-30`; fallback visuals hide via opacity when ready.
  *
+ * Frameloop policy: 'always' while the tab is visible, 'never' when hidden.
+ * Demand mode was tried and abandoned — drei's portal-mounted Views starve
+ * under it (late-mounted Views never get a first frame, root invalidations
+ * clear the canvas without re-rendering scissored views, and onCreated/first-
+ * frame ordering races `ready`). Continuous scissored rendering of a few
+ * small views matches how the old HeroCanvas ran and what drei View expects;
+ * per-view cost gates (IntersectionObserver `active` flags, settled shaders)
+ * keep the per-frame work trivial.
+ *
  * Consumer contract:
  * 1. Render `<View className="absolute inset-0">…</View>` AS the positioned
  *    element inside your tile — never `<View track={ref}>`. drei 10.x's
@@ -64,8 +77,6 @@ const ResetReady = ({ onMount }: { onMount: () => void }) => {
  *    blanks ALL views through SafeCanvas's outer Suspense.
  * 3. Exactly ONE <View.Port /> may exist app-wide (tunnel-rat singleton); a
  *    second Port duplicates every view. This provider owns the single Port.
- * 4. GSAP-scrubbed containers hosting Views must call the context
- *    invalidate() from their onUpdate (scrub tails outlive scroll events).
  */
 export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) => {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -89,21 +100,6 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
     const t = setTimeout(() => setIdle(true), 350);
     return () => clearTimeout(t);
   }, [enabled]);
-
-  // frameloop="demand" only re-renders on invalidate; drei View reads view
-  // rects inside useFrame, so without this the scissor rects freeze and the
-  // 3D detaches from its sections on scroll. Lenis animates native window
-  // scroll, so window scroll events fire throughout the lerp.
-  useEffect(() => {
-    if (!ready || !enabled) return;
-    const onScrollOrResize = () => invalidateRef.current?.();
-    window.addEventListener('scroll', onScrollOrResize, { passive: true });
-    window.addEventListener('resize', onScrollOrResize, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScrollOrResize);
-      window.removeEventListener('resize', onScrollOrResize);
-    };
-  }, [ready, enabled]);
 
   // Pause rendering entirely when the tab is hidden (same policy as AltiMascot).
   const [docVisible, setDocVisible] = useState(() =>
@@ -138,7 +134,7 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
         <div className="fixed inset-0 z-20 pointer-events-none" aria-hidden="true">
           <SafeCanvas fallback={<ResetReady onMount={() => setReady(false)} />}>
             <Canvas
-              frameloop={docVisible ? 'demand' : 'never'}
+              frameloop={docVisible ? 'always' : 'never'}
               dpr={[1, 2]}
               gl={{ alpha: true, antialias: true }}
               onCreated={(state) => {
