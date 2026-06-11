@@ -72,6 +72,15 @@ describe('EditorialImage', () => {
     expect(screen.getByTestId('surface-view')).toBeInTheDocument();
     expect(screen.getByAltText('Concrete curve').className).toContain('opacity-100');
   });
+
+  it('skips the View entirely when surface={false}, even when the canvas is ready', () => {
+    canvasState.ready = true;
+    render(<EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" surface={false} />);
+    // With surface=false, no View should ever mount regardless of canvas state.
+    expect(screen.queryByTestId('surface-view')).not.toBeInTheDocument();
+    // The img remains fully visible since there is no surface to cross-fade to.
+    expect(screen.getByAltText('Concrete curve').className).toContain('opacity-100');
+  });
 });
 
 describe('coverScale', () => {

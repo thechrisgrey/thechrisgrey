@@ -165,6 +165,14 @@ interface EditorialImageProps {
   sizes?: string;
   /** Set for above-the-fold placements; defaults to lazy. */
   priority?: boolean;
+  /**
+   * When false, skip the WebGL View entirely and render only the picture/img.
+   * Use in contexts where the canvas stacking context would paint over panel
+   * text (e.g. GSAP-translated tracks that form a z-auto stacking context
+   * below the fixed z-20 canvas).
+   * @default true
+   */
+  surface?: boolean;
 }
 
 /**
@@ -180,6 +188,7 @@ const EditorialImage = ({
   className = '',
   sizes = '(max-width: 768px) 100vw, 50vw',
   priority = false,
+  surface = true,
 }: EditorialImageProps) => {
   const slotRef = useRef<HTMLDivElement>(null);
   const driver = useRef<SurfaceDriver>({ pointer: { x: -1, y: -1 }, hover: 0, scroll: 0 });
@@ -199,7 +208,9 @@ const EditorialImage = ({
 
   // Defer the View (and its texture fetch) until the slot approaches the
   // viewport; sticky after the first hit so the surface never re-suspends.
+  // Skipped entirely when surface={false} — no View will ever mount.
   useEffect(() => {
+    if (!surface) return;
     const el = slotRef.current;
     if (!el) return;
     if (typeof IntersectionObserver === 'undefined') {
@@ -217,11 +228,11 @@ const EditorialImage = ({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [surface]);
 
   // Cursor tracking on the slot (fine pointers only — touch gets no ripple).
   useEffect(() => {
-    if (!ready) return;
+    if (!surface || !ready) return;
     const el = slotRef.current;
     if (!el || !window.matchMedia('(pointer: fine)').matches) return;
 
@@ -261,12 +272,12 @@ const EditorialImage = ({
       el.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('scroll', onScrollClearRect);
     };
-  }, [ready, invalidateCanvas]);
+  }, [surface, ready, invalidateCanvas]);
 
   // Scroll-velocity energy from Lenis (same normalization as the old
   // HeroCanvas). Decay is frame-driven inside SurfaceScene's useFrame.
   useEffect(() => {
-    if (!ready || !lenis) return;
+    if (!surface || !ready || !lenis) return;
     const onScroll = (instance: Lenis) => {
       const v = Math.min(Math.abs(instance.velocity) / 30, 1);
       driver.current.scroll = Math.max(driver.current.scroll, v);
@@ -275,9 +286,9 @@ const EditorialImage = ({
     return () => {
       lenis.off('scroll', onScroll);
     };
-  }, [ready, lenis]);
+  }, [surface, ready, lenis]);
 
-  const surfaceLive = ready && inView && Boolean(textureUrl);
+  const surfaceLive = surface && ready && inView && Boolean(textureUrl);
 
   return (
     <div
