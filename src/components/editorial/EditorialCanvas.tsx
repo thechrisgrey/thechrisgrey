@@ -2,6 +2,8 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -25,60 +27,115 @@ export function useEditorialCanvas(): EditorialCanvasValue {
 }
 
 /**
+ * Mounted as SafeCanvas's fallback: if the canvas tree errors (or suspends)
+ * after `ready` flipped true, this resets it so consumers restore their
+ * static fallbacks instead of staying hidden behind a dead canvas.
+ */
+const ResetReady = ({ onMount }: { onMount: () => void }) => {
+  useEffect(() => {
+    onMount();
+  }, [onMount]);
+  return null;
+};
+
+/**
  * One shared, fixed, pointer-events-none WebGL canvas for the whole page,
- * multiplexed into DOM rects via drei <View track={ref}>. Mounts idle-time
- * after first paint so the DOM (hero name) stays the LCP element. When this
- * never becomes ready (reduced motion, no WebGL, prerender, mount error) the
- * static fallbacks simply remain visible — failure is staying on first paint.
+ * multiplexed into DOM rects via drei <View>. Mounts idle-time after first
+ * paint so the DOM (hero name) stays the LCP element. When this never becomes
+ * ready (reduced motion, no WebGL, prerender, mount error) the static
+ * fallbacks simply remain visible — failure is staying on first paint.
  *
  * Layering contract: canvas z-20; content that must read above the WebGL
  * uses `relative z-30`; fallback visuals hide via opacity when ready.
+ *
+ * Consumer contract:
+ * 1. Render `<View className="absolute inset-0">…</View>` AS the positioned
+ *    element inside your tile — never `<View track={ref}>`. drei 10.x's
+ *    out-of-canvas View ignores the `track` prop (its HtmlView branch renders
+ *    and tracks its own div), so a track-based View scissors nothing.
+ * 2. Every View whose children may suspend (textures, GLTFs) must wrap them
+ *    in its own `<Suspense fallback={null}>` — otherwise one loading asset
+ *    blanks ALL views through SafeCanvas's outer Suspense.
+ * 3. Exactly ONE <View.Port /> may exist app-wide (tunnel-rat singleton); a
+ *    second Port duplicates every view. This provider owns the single Port.
  */
 export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) => {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const [idle, setIdle] = useState(false);
   const [ready, setReady] = useState(false);
+  const invalidateRef = useRef<(() => void) | null>(null);
 
-  const enabled =
-    !reducedMotion &&
-    typeof document !== 'undefined' &&
-    checkWebGLSupport() &&
-    !isPrerender();
+  // Probe WebGL once at mount, not on every render.
+  const [webglOk] = useState(
+    () => typeof document !== 'undefined' && checkWebGLSupport()
+  );
+
+  const enabled = !reducedMotion && webglOk && !isPrerender();
 
   useEffect(() => {
     if (!enabled) return;
     if ('requestIdleCallback' in window) {
-      const id = (window as Window & typeof globalThis).requestIdleCallback(
-        () => setIdle(true),
-        { timeout: 2000 }
-      );
-      return () => (window as Window & typeof globalThis).cancelIdleCallback(id);
+      const id = window.requestIdleCallback(() => setIdle(true), { timeout: 2000 });
+      return () => window.cancelIdleCallback(id);
     }
     const t = setTimeout(() => setIdle(true), 350);
     return () => clearTimeout(t);
   }, [enabled]);
+
+  // frameloop="demand" only re-renders on invalidate; drei View reads view
+  // rects inside useFrame, so without this the scissor rects freeze and the
+  // 3D detaches from its sections on scroll. Lenis animates native window
+  // scroll, so window scroll events fire throughout the lerp.
+  useEffect(() => {
+    if (!ready || !enabled) return;
+    const onScrollOrResize = () => invalidateRef.current?.();
+    window.addEventListener('scroll', onScrollOrResize, { passive: true });
+    window.addEventListener('resize', onScrollOrResize, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScrollOrResize);
+      window.removeEventListener('resize', onScrollOrResize);
+    };
+  }, [ready, enabled]);
 
   // Pause rendering entirely when the tab is hidden (same policy as AltiMascot).
   const [docVisible, setDocVisible] = useState(() =>
     typeof document === 'undefined' ? true : !document.hidden
   );
   useEffect(() => {
+    if (!enabled) return;
     const onVisibility = () => setDocVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, []);
+  }, [enabled]);
+
+  // `ready` alone can go stale: reduced-motion toggled mid-session unmounts
+  // the canvas with no onCreated counterpart to flip it back. Expose the
+  // conjunction so consumers always fall back when the canvas is gone.
+  const value = useMemo(() => ({ ready: ready && enabled }), [ready, enabled]);
 
   return (
-    <EditorialCanvasContext.Provider value={{ ready }}>
+    <EditorialCanvasContext.Provider value={value}>
       {children}
       {enabled && idle && (
         <div className="fixed inset-0 z-20 pointer-events-none" aria-hidden="true">
-          <SafeCanvas>
+          <SafeCanvas fallback={<ResetReady onMount={() => setReady(false)} />}>
             <Canvas
               frameloop={docVisible ? 'demand' : 'never'}
               dpr={[1, 2]}
               gl={{ alpha: true, antialias: true }}
-              onCreated={() => setReady(true)}
+              onCreated={(state) => {
+                invalidateRef.current = () => state.invalidate();
+                state.gl.domElement.addEventListener('webglcontextlost', (e) => {
+                  // preventDefault tells the browser it may restore the context;
+                  // without it, webglcontextrestored never fires.
+                  e.preventDefault();
+                  setReady(false);
+                });
+                state.gl.domElement.addEventListener('webglcontextrestored', () =>
+                  setReady(true)
+                );
+                setReady(true);
+              }}
               style={{ width: '100%', height: '100%' }}
             >
               <View.Port />
