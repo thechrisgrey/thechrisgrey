@@ -1044,7 +1044,7 @@ export const ridgeFragmentShader = /* glsl */ `
 
 ```tsx
 // src/components/editorial/RidgeView.tsx
-import { useRef, useMemo, type RefObject } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -1098,13 +1098,17 @@ function RidgeTerrain() {
 }
 
 interface RidgeViewProps {
-  /** The DOM element (hero scene tile) this View scissor-renders into. */
-  track: RefObject<HTMLDivElement | null>;
+  /** Positions the View's own div inside the hero scene tile. */
+  className?: string;
 }
 
-/** Live contour-line terrain rendered into the hero scene tile's rect. */
-const RidgeView = ({ track }: RidgeViewProps) => (
-  <View track={track as RefObject<HTMLElement>}>
+/**
+ * Live contour-line terrain rendered into the hero scene tile. drei 10's
+ * out-of-canvas View renders AND tracks its own div (the `track` prop is dead
+ * in that path) — so the View must BE the positioned element.
+ */
+const RidgeView = ({ className = 'absolute inset-0' }: RidgeViewProps) => (
+  <View className={className}>
     <PerspectiveCamera makeDefault position={[0, 0.7, 2.4]} fov={40} />
     <RidgeTerrain />
   </View>
@@ -1161,7 +1165,7 @@ Expected: FAIL — "Cannot find module './AtmosphereView'"
 
 ```tsx
 // src/components/editorial/AtmosphereView.tsx
-import { useRef, useMemo, useEffect, type RefObject } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
@@ -1229,14 +1233,16 @@ function Dust({ count }: DustProps) {
 }
 
 interface AtmosphereViewProps {
-  track: RefObject<HTMLDivElement | null>;
+  /** Positions the View's own div inside the hero scene tile. */
+  className?: string;
   /** Lower particle count on coarse-pointer (mobile) devices. */
   mobile?: boolean;
 }
 
-/** Sparse gold-dust drift behind the hero — quiet depth, never busy. */
-const AtmosphereView = ({ track, mobile = false }: AtmosphereViewProps) => (
-  <View track={track as RefObject<HTMLElement>}>
+/** Sparse gold-dust drift behind the hero — quiet depth, never busy.
+ *  View-as-element per the EditorialCanvas consumer contract. */
+const AtmosphereView = ({ className = 'absolute inset-0', mobile = false }: AtmosphereViewProps) => (
+  <View className={className}>
     <PerspectiveCamera makeDefault position={[0, 0, 3]} fov={50} />
     <Dust count={mobile ? 150 : 400} />
   </View>
@@ -1479,7 +1485,7 @@ export const surfaceFragmentShader = /* glsl */ `
 
 ```tsx
 // src/components/editorial/EditorialImage.tsx
-import { useRef, useEffect, type RefObject } from 'react';
+import { useRef, useEffect, Suspense, type RefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -1659,9 +1665,13 @@ const EditorialImage = ({
         />
       </picture>
       {surfaceLive && textureUrl && (
-        <View track={slotRef as RefObject<HTMLElement>}>
-          <PerspectiveCamera makeDefault position={[0, 0, 1]} fov={90} />
-          <SurfaceScene textureUrl={textureUrl} driver={driver} />
+        /* View-as-element per the EditorialCanvas consumer contract; its own
+           Suspense so a loading texture never blanks the other views. */
+        <View className="absolute inset-0">
+          <Suspense fallback={null}>
+            <PerspectiveCamera makeDefault position={[0, 0, 1]} fov={90} />
+            <SurfaceScene textureUrl={textureUrl} driver={driver} />
+          </Suspense>
         </View>
       )}
     </div>
@@ -1845,7 +1855,6 @@ const WAYFINDING = [
  */
 const CommandGridHero = () => {
   const gridRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<HTMLDivElement>(null);
   const { ready } = useEditorialCanvas();
   const coarse = useMediaQuery('(pointer: coarse)');
   useCascadeReveal(gridRef);
@@ -1858,13 +1867,12 @@ const CommandGridHero = () => {
       >
         {/* Scene tile — the eye-catcher */}
         <div
-          ref={sceneRef}
           data-cascade
           className={`${TILE_BASE} col-span-2 min-h-[22rem] md:col-span-8 md:col-start-1 md:row-span-6 md:row-start-1`}
         >
           <RidgeFallback hidden={ready} />
-          {ready && <RidgeView track={sceneRef} />}
-          {ready && <AtmosphereView track={sceneRef} mobile={coarse} />}
+          {ready && <RidgeView />}
+          {ready && <AtmosphereView mobile={coarse} />}
           <div className="absolute left-5 top-5 md:left-6 md:top-6">
             <Eyebrow>FOUNDER &amp; CEO — ALTIVUM INC.</Eyebrow>
           </div>
