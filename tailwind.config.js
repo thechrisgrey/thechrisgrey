@@ -10,6 +10,7 @@ export default {
         'sans': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
         'serif': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
         'display': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        // Keep in sync with EDITORIAL_FONT_FAMILY in src/utils/editorialType.ts
         'editorial': ['"Playfair Display"', '"Playfair Fallback"', 'Didot', 'Georgia', 'serif'],
       },
       fontWeight: {
