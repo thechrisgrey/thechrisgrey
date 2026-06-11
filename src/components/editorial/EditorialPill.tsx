@@ -3,14 +3,15 @@ import ViewTransitionLink from '../ViewTransitionLink';
 
 type PillVariant = 'gold-outline' | 'dark-solid' | 'dark-outline';
 
-interface EditorialPillProps {
+type EditorialPillProps = {
   children: ReactNode;
-  to?: string;
-  href?: string;
-  onClick?: () => void;
   variant?: PillVariant;
   className?: string;
-}
+} & (
+  | { to: string; href?: never; onClick?: (e: React.MouseEvent) => void }
+  | { href: string; to?: never; onClick?: never }
+  | { onClick: (e: React.MouseEvent) => void; to?: never; href?: never }
+);
 
 const VARIANT_CLASSES: Record<PillVariant, string> = {
   // On dark backgrounds
@@ -30,8 +31,14 @@ const BASE_CLASSES =
 
 /**
  * The editorial CTA pill — uppercase letter-spaced SF Pro inside a rounded
- * hairline border. Renders a router link (`to`), anchor (`href`), or button
- * (`onClick`) depending on which prop is provided.
+ * hairline border. Renders a router link (`to`), external anchor (`href`), or
+ * button (`onClick`) depending on which prop is provided; the union type makes
+ * the three modes mutually exclusive (`onClick` is also allowed alongside `to`
+ * and fires before navigation).
+ *
+ * `href` opens in a new tab (`target="_blank"` with `rel="noopener noreferrer"`).
+ * `className` is appended after the base utilities — overriding one of them
+ * requires Tailwind's `!` important modifier (e.g. `!px-5`).
  */
 const EditorialPill = ({
   children,
@@ -45,7 +52,7 @@ const EditorialPill = ({
 
   if (to) {
     return (
-      <ViewTransitionLink to={to} className={classes}>
+      <ViewTransitionLink to={to} onClick={onClick} className={classes}>
         {children}
       </ViewTransitionLink>
     );
