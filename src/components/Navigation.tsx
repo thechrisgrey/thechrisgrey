@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
 import { editorialType, EDITORIAL_FONT_FAMILY } from '../utils/editorialType';
@@ -163,7 +164,7 @@ const Navigation = () => {
           </ViewTransitionLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:mr-[-10rem]">
+          <div className="hidden md:flex items-center space-x-1 lg:ml-auto">
             <ViewTransitionLink
               to="/"
               className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive('/')
@@ -262,11 +263,19 @@ const Navigation = () => {
           </button>
         </div>
 
-        {/* Full-screen mobile overlay */}
-        {isMobileMenuOpen && (
+        {/* Full-screen mobile overlay — portaled to <body>: the nav's persistent
+            nav-fade-in transform makes it the containing block for fixed
+            descendants, which would clamp inset-0 to the nav's box */}
+        {isMobileMenuOpen && createPortal(
           <div
             ref={overlayRef}
-            onKeyDown={handleOverlayKeyDown}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setIsMobileMenuOpen(false);
+                return;
+              }
+              handleOverlayKeyDown(e);
+            }}
             className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-altivum-dark px-8 pb-12 pt-24 md:hidden"
             role="dialog"
             aria-modal="true"
@@ -324,7 +333,8 @@ const Navigation = () => {
                 </ViewTransitionLink>
               ))}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </nav>

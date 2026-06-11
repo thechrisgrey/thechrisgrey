@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Navigation from '../../components/Navigation';
@@ -284,6 +284,56 @@ describe('Navigation Integration', () => {
         // The full-screen overlay dialog should be present
         const dialog = screen.getByRole('dialog', { name: /site menu/i });
         expect(dialog).toBeInTheDocument();
+      });
+    });
+
+    it('portals the overlay outside the nav so fixed positioning resolves to the viewport', async () => {
+      // The nav keeps a residual transform from animate-nav-fade-in, which
+      // would otherwise become the containing block for the fixed overlay
+      const user = userEvent.setup();
+      renderNavigation();
+
+      await user.click(screen.getByRole('button', { name: /open menu/i }));
+
+      const dialog = await screen.findByRole('dialog', { name: /site menu/i });
+      expect(dialog.closest('nav')).toBeNull();
+      expect(document.body.contains(dialog)).toBe(true);
+    });
+
+    it('closes the overlay with Escape', async () => {
+      const user = userEvent.setup();
+      renderNavigation();
+
+      await user.click(screen.getByRole('button', { name: /open menu/i }));
+      const dialog = await screen.findByRole('dialog', { name: /site menu/i });
+
+      // The focus trap moves focus into the dialog asynchronously; Escape is
+      // handled by the dialog's onKeyDown, so it must reach an element inside
+      await waitFor(() => {
+        expect(dialog.contains(document.activeElement)).toBe(true);
+      });
+
+      await user.keyboard('{Escape}');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog', { name: /site menu/i })).not.toBeInTheDocument();
+      });
+    });
+
+    it('locks body scroll while the overlay is open and restores it on close', async () => {
+      const user = userEvent.setup();
+      renderNavigation();
+
+      await user.click(screen.getByRole('button', { name: /open menu/i }));
+      const dialog = await screen.findByRole('dialog', { name: /site menu/i });
+      expect(document.body.style.overflow).toBe('hidden');
+
+      // Two "Close menu" buttons exist while open (relabeled hamburger +
+      // overlay close) — use the overlay's
+      await user.click(within(dialog).getByRole('button', { name: /close menu/i }));
+
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe('');
       });
     });
   });
