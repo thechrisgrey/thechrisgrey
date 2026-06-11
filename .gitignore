@@ -71,3 +71,6 @@ podcast-transcripts/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
+
+# Editorial raw source images (large originals, not committed)
+scripts/editorial-raw/
