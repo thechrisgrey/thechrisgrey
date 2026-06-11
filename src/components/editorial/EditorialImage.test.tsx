@@ -31,8 +31,8 @@ describe('EditorialImage', () => {
     const sources = container.querySelectorAll('source');
     expect(sources[0].getAttribute('type')).toBe('image/avif');
     expect(sources[1].getAttribute('type')).toBe('image/webp');
-    expect(sources[0].getAttribute('srcset')).toContain(`640w`);
-    expect(sources[0].getAttribute('srcset')).toContain(`1920w`);
+    expect(sources[0].getAttribute('srcset')).toContain(`${stem}-640.avif 640w`);
+    expect(sources[0].getAttribute('srcset')).toContain(`${stem}-1920.avif 1920w`);
   });
 
   it('discovers native widths for undersized sources (portrait has 640+1200)', () => {
@@ -40,8 +40,8 @@ describe('EditorialImage', () => {
       <EditorialImage stem="portrait" alt="Christian Perez" aspect="3 / 4" />
     );
     const avif = container.querySelector('source[type="image/avif"]');
-    expect(avif?.getAttribute('srcset')).toContain('640w');
-    expect(avif?.getAttribute('srcset')).toContain('1200w');
+    expect(avif?.getAttribute('srcset')).toContain('portrait-640.avif 640w');
+    expect(avif?.getAttribute('srcset')).toContain('portrait-1200.avif 1200w');
     expect(avif?.getAttribute('srcset')).not.toContain('1920w');
   });
 
