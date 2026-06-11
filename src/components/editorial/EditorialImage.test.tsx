@@ -1,19 +1,30 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import EditorialImage from './EditorialImage';
+
+const canvasState = vi.hoisted(() => ({ ready: false }));
 
 vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
   useThree: () => ({ invalidate: vi.fn() }),
 }));
 vi.mock('@react-three/drei', () => ({
-  View: Object.assign(() => null, { Port: () => null }),
+  // Renders the View container but never its children — the scene stays
+  // "suspended" exactly like a texture that has not resolved yet.
+  View: Object.assign(() => <div data-testid="surface-view" />, { Port: () => null }),
   PerspectiveCamera: () => null,
   useTexture: () => ({}),
+}));
+vi.mock('./EditorialCanvas', () => ({
+  useEditorialCanvas: () => ({ ready: canvasState.ready, invalidate: vi.fn() }),
 }));
 
 describe('EditorialImage', () => {
   const stem = 'venture-altivum';
+
+  beforeEach(() => {
+    canvasState.ready = false;
+  });
 
   it('renders a real img with alt text and reserved aspect ratio', () => {
     render(<EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" />);
@@ -48,5 +59,16 @@ describe('EditorialImage', () => {
   it('keeps the img fully visible when the canvas is not ready (jsdom default)', () => {
     render(<EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" />);
     expect(screen.getByAltText('Concrete curve').className).not.toContain('opacity-0');
+    expect(screen.queryByTestId('surface-view')).not.toBeInTheDocument();
+  });
+
+  it('mounts the surface view when ready but keeps the img visible until the texture loads', () => {
+    canvasState.ready = true;
+    render(<EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" />);
+    // jsdom has no IntersectionObserver, so the in-view gate opens immediately
+    // and the View mounts — but the mocked View never renders SurfaceScene
+    // (texture still "loading"), so the crossfade must not have started.
+    expect(screen.getByTestId('surface-view')).toBeInTheDocument();
+    expect(screen.getByAltText('Concrete curve').className).toContain('opacity-100');
   });
 });

@@ -17,9 +17,14 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 interface EditorialCanvasValue {
   /** True once the shared WebGL canvas has created a context and can host Views. */
   ready: boolean;
+  /** Requests a frame from the demand-loop canvas (noop until it exists). */
+  invalidate: () => void;
 }
 
-const EditorialCanvasContext = createContext<EditorialCanvasValue>({ ready: false });
+const EditorialCanvasContext = createContext<EditorialCanvasValue>({
+  ready: false,
+  invalidate: () => {},
+});
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useEditorialCanvas(): EditorialCanvasValue {
@@ -58,6 +63,8 @@ const ResetReady = ({ onMount }: { onMount: () => void }) => {
  *    blanks ALL views through SafeCanvas's outer Suspense.
  * 3. Exactly ONE <View.Port /> may exist app-wide (tunnel-rat singleton); a
  *    second Port duplicates every view. This provider owns the single Port.
+ * 4. GSAP-scrubbed containers hosting Views must call the context
+ *    invalidate() from their onUpdate (scrub tails outlive scroll events).
  */
 export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) => {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
@@ -111,7 +118,13 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
   // `ready` alone can go stale: reduced-motion toggled mid-session unmounts
   // the canvas with no onCreated counterpart to flip it back. Expose the
   // conjunction so consumers always fall back when the canvas is gone.
-  const value = useMemo(() => ({ ready: ready && enabled }), [ready, enabled]);
+  const value = useMemo(
+    () => ({
+      ready: ready && enabled,
+      invalidate: () => invalidateRef.current?.(),
+    }),
+    [ready, enabled]
+  );
 
   return (
     <EditorialCanvasContext.Provider value={value}>
