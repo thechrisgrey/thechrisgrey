@@ -23,7 +23,8 @@ const CtaSection = () => {
 
   return (
     <section className="bg-altivum-porcelain px-6 py-24 text-center md:py-36" aria-label="Get in touch">
-      <Eyebrow className="text-altivum-dark/50">NEXT</Eyebrow>
+      {/* /60 not /50: dark at 50% on porcelain computes ~3.5:1 — below AA for the small label */}
+      <Eyebrow className="text-altivum-dark/60">NEXT</Eyebrow>
       <h2 className="mt-8 text-altivum-dark" style={editorialType.displaySection}>
         BUILD SOMETHING
         <br />
