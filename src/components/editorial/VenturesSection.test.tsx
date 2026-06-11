@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import VenturesSection from './VenturesSection';
 
@@ -57,5 +57,27 @@ describe('VenturesSection', () => {
     const { container } = renderSection();
     const track = container.querySelector('[data-ventures-track]');
     expect(track).not.toBeNull();
+  });
+
+  it('updates the active indicator from track scroll position in fallback mode', () => {
+    const { container } = renderSection();
+    const track = container.querySelector('[data-ventures-track]') as HTMLDivElement;
+
+    // jsdom layout is all zeros — stub the scroll geometry of a track scrolled
+    // exactly one third of its travel: 300 / (2000 - 1100) = 1/3 → panel 2.
+    Object.defineProperty(track, 'scrollLeft', { value: 300, configurable: true });
+    Object.defineProperty(track, 'scrollWidth', { value: 2000, configurable: true });
+    Object.defineProperty(track, 'clientWidth', { value: 1100, configurable: true });
+    fireEvent.scroll(track);
+
+    const indicators = screen.getAllByText(/^\(\d\)$/);
+    expect(indicators[1].className).toContain('text-altivum-gold');
+    expect(indicators[0].className).not.toContain('text-altivum-gold');
+
+    // Scroll to the end → last panel active.
+    Object.defineProperty(track, 'scrollLeft', { value: 900, configurable: true });
+    fireEvent.scroll(track);
+    expect(indicators[3].className).toContain('text-altivum-gold');
+    expect(indicators[1].className).not.toContain('text-altivum-gold');
   });
 });

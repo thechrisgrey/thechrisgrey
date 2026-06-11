@@ -74,6 +74,11 @@ const VenturesSection = () => {
     const tween = gsap.to(track, {
       x: () => -distance(),
       ease: 'none',
+      // Consumer contract rule 4: the scrub tail outlives scroll events, and the
+      // tween-level onUpdate ticks through it (ScrollTrigger's config onUpdate
+      // only fires on actual scroll-position change) — so canvas frames track
+      // the moving panels if surfaces ever return.
+      onUpdate: invalidate,
       scrollTrigger: {
         trigger: section,
         start: 'top top',
@@ -81,22 +86,59 @@ const VenturesSection = () => {
         scrub: 1,
         pin: true,
         invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          setActive(Math.min(3, Math.round(self.progress * 3)));
-          // Consumer contract rule 4: scrub tails outlive scroll events, so the
-          // scrubbed track must drive canvas frames itself or the panel Views
-          // freeze while the DOM keeps sliding. Surface={false} means no Views
-          // exist here, but the call is kept for forward-compat and correctness.
-          invalidate();
-        },
+        onUpdate: (self) => setActive(Math.min(3, Math.round(self.progress * 3))),
       },
     });
 
+    // Keyboard operability: when a panel link receives focus, drive the scrub
+    // position to reveal it instead of letting the browser scroll the
+    // overflow-hidden section (which would double-offset against the GSAP
+    // transform).
+    const links = Array.from(track.querySelectorAll<HTMLAnchorElement>('a'));
+    const onFocusIn = (e: FocusEvent) => {
+      const idx = links.indexOf(e.target as HTMLAnchorElement);
+      if (idx < 0) return;
+      // Browsers scroll overflow-hidden ancestors to reveal focus — undo that...
+      section.scrollLeft = 0;
+      // ...and drive the real scrub position to the focused panel instead.
+      const st = tween.scrollTrigger;
+      if (st) window.scrollTo({ top: st.start + (idx / 3) * (st.end - st.start) });
+    };
+    track.addEventListener('focusin', onFocusIn);
+    const onSectionScroll = () => {
+      section.scrollLeft = 0;
+    };
+    section.addEventListener('scroll', onSectionScroll);
+
     return () => {
+      track.removeEventListener('focusin', onFocusIn);
+      section.removeEventListener('scroll', onSectionScroll);
       tween.scrollTrigger?.kill();
       tween.kill();
+      // useMediaQuery is live: toggling OS reduced-motion mid-pin would
+      // otherwise leave the track translated (up to the full travel distance)
+      // under the snap-scroller classes — clear the inline transform.
+      gsap.set(track, { clearProps: 'transform' });
     };
   }, [pinned, invalidate]);
+
+  // Fallback indicator: the native snap scroller derives the active panel
+  // from the track's horizontal scroll position.
+  useEffect(() => {
+    if (pinned) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const onScroll = () => {
+      setActive(
+        Math.min(
+          3,
+          Math.round((track.scrollLeft / (track.scrollWidth - track.clientWidth || 1)) * 3)
+        )
+      );
+    };
+    track.addEventListener('scroll', onScroll, { passive: true });
+    return () => track.removeEventListener('scroll', onScroll);
+  }, [pinned]);
 
   return (
     <section ref={sectionRef} className="overflow-hidden py-24 md:py-0" aria-label="Ventures">
@@ -139,7 +181,7 @@ const VenturesSection = () => {
               stem={venture.stem}
               alt=""
               aspect="16 / 9"
-              sizes="82vw"
+              sizes="(max-width: 768px) 82vw, 60vw"
               surface={false}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/85 via-altivum-dark/20 to-transparent" />
