@@ -1919,16 +1919,16 @@ const CommandGridHero = () => {
           </p>
         </div>
 
-        {/* Stat tile */}
+        {/* Stat tile — sr-only real-text label (aria-label is prohibited on
+            generic roles; see CountUp's Task 6 review) */}
         <div data-cascade className={`${TILE_BASE} col-span-1 bg-altivum-umber p-5 md:col-span-4 md:row-span-2`}>
-          <span aria-label="18D — Special Forces Medical Sergeant">
-            <span aria-hidden="true">
-              <span className="text-altivum-porcelain" style={editorialType.statNumeral}>
-                18
-              </span>
-              <span className="text-altivum-gold" style={editorialType.statSuffix}>
-                D
-              </span>
+          <span className="sr-only">18D — Special Forces Medical Sergeant</span>
+          <span aria-hidden="true">
+            <span className="text-altivum-porcelain" style={editorialType.statNumeral}>
+              18
+            </span>
+            <span className="text-altivum-gold" style={editorialType.statSuffix}>
+              D
             </span>
           </span>
           <p aria-hidden="true" className="mt-2 text-[0.625rem] uppercase tracking-[0.12em] text-altivum-silver">
