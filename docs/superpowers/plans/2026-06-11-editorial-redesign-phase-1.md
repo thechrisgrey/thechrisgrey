@@ -1028,9 +1028,10 @@ export const ridgeFragmentShader = /* glsl */ `
     // Depth fade toward the back edge keeps the horizon airy.
     float fade = mix(1.0, 0.25, smoothstep(0.55, 1.0, vUv.y));
 
-    // Occasional porcelain highlight line for tonal variation.
-    float band = floor(vH * bands);
-    float isHighlight = step(0.5, fract(band * 0.2)) * 0.0 + step(4.5, mod(band, 5.0));
+    // Nearest band (contour lines straddle band boundaries) — every 5th gets
+    // a porcelain highlight for tonal variation.
+    float band = floor(vH * bands + 0.5);
+    float isHighlight = step(3.5, mod(band, 5.0));
     vec3 color = mix(uColorGold, uColorPorcelain, isHighlight * 0.35);
 
     float alpha = line * reveal * fade * 0.85;
@@ -1056,7 +1057,7 @@ const COLOR_PORCELAIN = new THREE.Color('#F2EFE9');
 function RidgeTerrain() {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const { invalidate } = useThree();
-  const startRef = useRef<number | null>(null);
+  const elapsedRef = useRef(0);
 
   const uniforms = useMemo(
     () => ({
@@ -1070,14 +1071,16 @@ function RidgeTerrain() {
 
   // Draw-in once (~1.8s, power3-like curve), then never invalidate again —
   // with frameloop="demand" the settled ridge costs zero per-frame GPU work.
-  useFrame((state) => {
+  // Accumulates clamped frame deltas rather than reading clock.elapsedTime:
+  // R3F resets the clock whenever the provider flips frameloop (tab switch),
+  // which would rewind an absolute-time draw-in.
+  useFrame((_, delta) => {
     const mat = materialRef.current;
     if (!mat) return;
     if (mat.uniforms.uProgress.value >= 1) return;
-    if (startRef.current === null) startRef.current = state.clock.elapsedTime;
-    const t = Math.min((state.clock.elapsedTime - startRef.current) / 1.8, 1);
-    const eased = 1 - Math.pow(1 - t, 3);
-    mat.uniforms.uProgress.value = eased;
+    elapsedRef.current += Math.min(delta, 0.1);
+    const t = Math.min(elapsedRef.current / 1.8, 1);
+    mat.uniforms.uProgress.value = 1 - Math.pow(1 - t, 3);
     if (t < 1) invalidate();
   });
 
@@ -3182,6 +3185,8 @@ Expected: completes — env validation, podcast episodes, lint (0 warnings), tsc
 
 Run: `npm run preview` — at http://localhost:4173 verify:
 - Hero: tiles cascade in, ridge contours draw once (~1.8s), then stillness; name is DOM text immediately
+- Tab-switch during the hero draw-in: hide the tab mid-draw, return — the ridge must resume cleanly (no blank, no restart)
+- SVG fallback ↔ WebGL ridge crossfade: the two horizons should roughly align at the 62% tile crop; no visible jump
 - Reduced motion (toggle in OS/DevTools rendering emulation): static SVG ridge, final stat values, no pin — everything readable
 - Scroll: about reveal, stat roll-ups staggered, ventures pin + horizontal scrub (desktop), parallax break, porcelain CTA
 - Mobile viewport: bento stacks 2-col scene-first, ventures swipe natively, overlay menu works
