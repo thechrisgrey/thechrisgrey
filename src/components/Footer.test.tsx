@@ -24,10 +24,13 @@ describe('Footer', () => {
       </MemoryRouter>
     );
 
-  it('renders the editorial statement line', () => {
+  it('renders the editorial statement line as a sentence-case reprise of the CTA', () => {
     renderFooter();
-    expect(screen.getByText(/BUILD SOMETHING/)).toBeInTheDocument();
-    expect(screen.getByText(/WORTH KEEPING\./)).toBeInTheDocument();
+    expect(screen.getByText(/Build something/)).toBeInTheDocument();
+    expect(screen.getByText(/worth keeping\./)).toBeInTheDocument();
+    // Sentence case distinguishes it from the all-caps Home CTA headline,
+    // which renders directly above the footer on /
+    expect(screen.queryByText(/BUILD SOMETHING/)).not.toBeInTheDocument();
   });
 
   it('renders the parenthesized eyebrow column labels', () => {

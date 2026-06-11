@@ -3,7 +3,7 @@ import ViewTransitionLink from './ViewTransitionLink';
 import NewsletterForm from './NewsletterForm';
 import Eyebrow from './editorial/Eyebrow';
 import { typography } from '../utils/typography';
-import { editorialType, EDITORIAL_FONT_FAMILY } from '../utils/editorialType';
+import { EDITORIAL_FONT_FAMILY } from '../utils/editorialType';
 import { SOCIAL_LINKS } from '../constants/links';
 
 const NAVIGATE = [
@@ -26,12 +26,21 @@ const Footer = () => {
   return (
     <footer data-vt-persist="footer" className="border-t border-altivum-gold/15 bg-altivum-dark">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
-        {/* Editorial statement */}
-        <p className="max-w-2xl text-altivum-porcelain" style={editorialType.displaySection}>
-          BUILD SOMETHING{' '}
-          <span className="italic text-altivum-gold" style={{ fontFamily: EDITORIAL_FONT_FAMILY }}>
-            WORTH KEEPING.
-          </span>
+        {/* Editorial statement — sentence-case reprise of the CTA headline
+            (spec §9); the caps displaySection version collided with the
+            Home CTA, which renders the same line directly above */}
+        <p
+          className="max-w-2xl text-altivum-porcelain"
+          style={{
+            fontFamily: EDITORIAL_FONT_FAMILY,
+            fontWeight: 400,
+            fontSize: 'clamp(1.875rem, 3.5vw, 3rem)',
+            lineHeight: 1.15,
+            letterSpacing: '0.01em',
+          }}
+        >
+          Build something{' '}
+          <span className="italic text-altivum-gold">worth keeping.</span>
         </p>
 
         <div className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-3">
