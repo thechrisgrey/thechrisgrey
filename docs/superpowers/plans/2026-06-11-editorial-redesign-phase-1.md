@@ -2704,7 +2704,18 @@ git commit -m "feat(redesign): parallax image break + porcelain CTA section"
 
 ### Task 17: Rebuild Home + remove the old hero
 
-> **DECISION (from Task 12 review, I2):** `/` is prerendered and Amplify serves the snapshot to everyone — without mitigation, cold loads show the static hero, then React mount hides it and replays the 0.9s cascade (visible die-and-reanimate). Implement in this task: in `src/main.tsx`, before `createRoot(...)`, capture `const hadPrerenderPaint = Boolean(document.getElementById('root')?.hasChildNodes());` and stash it on `window.__HAD_PRERENDER_PAINT__`; `useCascadeReveal` skips when that flag is true. Net behavior: cold loads keep the already-painted hero perfectly still (monumental stillness, clean LCP); client-side navigations back to Home still play the cascade.
+> **DECISION (from Task 12 review, I2; refined per re-review I-1):** `/` is prerendered and Amplify serves the snapshot to everyone — without mitigation, cold loads show the static hero, then React mount hides it and replays the 0.9s cascade (visible die-and-reanimate). Implement in this task, in `src/main.tsx` before `createRoot(...)`:
+>
+> ```ts
+> // The dist/index.html snapshot is BOTH the Home prerender AND the SPA shell
+> // for every other route, so qualify by the initial route — a cold load of
+> > // /chat that later navigates Home never had a static hero paint.
+> (window as { __SKIP_HERO_CASCADE__?: boolean }).__SKIP_HERO_CASCADE__ =
+>   Boolean(document.getElementById('root')?.hasChildNodes()) &&
+>   window.location.pathname === '/';
+> ```
+>
+> `useCascadeReveal` CONSUMES the flag (read it, and if true: clear it and return early) — one-shot, so the first Home mount after a prerendered cold load stays perfectly still (monumental stillness, clean LCP) while every later client-side navigation back to Home plays the cascade.
 
 **Files:**
 - Modify: `src/pages/Home.tsx` (full rewrite)
