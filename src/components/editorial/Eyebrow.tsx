@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { editorialType } from '../../utils/editorialType';
@@ -20,7 +20,10 @@ interface EyebrowProps {
 const Eyebrow = ({ children, className = 'text-altivum-porcelain/55' }: EyebrowProps) => {
   const ref = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
+  // useLayoutEffect so the GSAP from-state (clipped) is applied before first
+  // paint — useEffect would let the label flash fully visible, then clip and
+  // wipe, a perceptible blink above the fold on slow devices.
+  useLayoutEffect(() => {
     if (isPrerender()) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const el = ref.current;
