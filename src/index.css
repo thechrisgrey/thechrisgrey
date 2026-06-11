@@ -152,3 +152,15 @@ select:focus:not(:focus-visible) {
 ::-webkit-scrollbar-thumb:hover {
   background: #9BA6B8;
 }
+
+/* Metrics-tuned local fallback for Playfair Display: while the woff2 loads
+   (font-display: swap), Georgia renders at adjusted metrics so the swap does
+   not shift layout. Keep in sync with EDITORIAL_FONT_FAMILY. */
+@font-face {
+  font-family: 'Playfair Fallback';
+  src: local('Georgia');
+  size-adjust: 112%;
+  ascent-override: 95%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}

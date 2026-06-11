@@ -10,6 +10,7 @@ export default {
         'sans': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
         'serif': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
         'display': ['"SF Pro Display"', '"Helvetica Neue"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        'editorial': ['"Playfair Display"', '"Playfair Fallback"', 'Didot', 'Georgia', 'serif'],
       },
       fontWeight: {
         'ultralight': '200',
@@ -30,6 +31,8 @@ export default {
           'slate': '#4A5A73',
           'silver': '#9BA6B8',
           'gold': '#C5A572',
+          'porcelain': '#F2EFE9',
+          'umber': '#3E3A33',
         },
       },
       keyframes: {
