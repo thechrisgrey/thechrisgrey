@@ -1,63 +1,60 @@
+// src/components/Footer.tsx
 import ViewTransitionLink from './ViewTransitionLink';
+import NewsletterForm from './NewsletterForm';
+import Eyebrow from './editorial/Eyebrow';
 import { typography } from '../utils/typography';
+import { editorialType, EDITORIAL_FONT_FAMILY } from '../utils/editorialType';
 import { SOCIAL_LINKS } from '../constants/links';
+
+const NAVIGATE = [
+  { to: '/about', label: 'About' },
+  { to: '/blog', label: 'Blog' },
+  { to: '/links', label: 'Links' },
+  { to: '/contact', label: 'Contact' },
+];
+
+const VENTURES = [
+  { to: '/altivum', label: 'Altivum Inc.' },
+  { to: '/podcast', label: 'The Vector Podcast' },
+  { to: '/beyond-the-assessment', label: 'Beyond the Assessment' },
+  { to: '/claude', label: 'Claude' },
+];
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer data-vt-persist="footer" className="bg-altivum-navy border-t border-altivum-slate/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-4">
-        {/* Mobile: Compact 2-column layout for links, Desktop: 3-column with brand */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {/* Brand - Hidden on mobile, shown on desktop */}
-          <div className="hidden md:block">
-            <h3 className="text-white mb-2" style={typography.cardTitleSmall}>
-              Christian Perez
-            </h3>
-            <p className="text-altivum-silver" style={typography.smallText}>
-              Founder & CEO of Altivum Inc., Former Green Beret, Bronze Star Recipient,
-              Host of The Vector Podcast, Author of Beyond the Assessment
-            </p>
-          </div>
+    <footer data-vt-persist="footer" className="border-t border-altivum-gold/15 bg-altivum-dark">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
+        {/* Editorial statement */}
+        <p className="max-w-2xl text-altivum-porcelain" style={editorialType.displaySection}>
+          BUILD SOMETHING{' '}
+          <span className="italic text-altivum-gold" style={{ fontFamily: EDITORIAL_FONT_FAMILY }}>
+            WORTH KEEPING.
+          </span>
+        </p>
 
-          {/* Quick Links */}
+        <div className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-3">
           <div>
-            <h4 className="text-white uppercase tracking-wider mb-2 sm:mb-3" style={{ ...typography.smallText, fontWeight: 600 }}>
-              Quick Links
-            </h4>
-            <ul className="space-y-1 sm:space-y-2">
-              <li>
-                <ViewTransitionLink to="/about" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  About
-                </ViewTransitionLink>
-              </li>
-              <li>
-                <ViewTransitionLink to="/altivum" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  Altivum Inc.
-                </ViewTransitionLink>
-              </li>
-              <li>
-                <ViewTransitionLink to="/podcast" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  The Vector Podcast
-                </ViewTransitionLink>
-              </li>
-              <li>
-                <ViewTransitionLink to="/claude" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  Claude
-                </ViewTransitionLink>
-              </li>
-              <li>
-                <ViewTransitionLink to="/blog" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  Blog
-                </ViewTransitionLink>
-              </li>
+            <Eyebrow className="text-altivum-porcelain/40">NAVIGATE</Eyebrow>
+            <ul className="mt-4 space-y-2">
+              {NAVIGATE.map((item) => (
+                <li key={item.to}>
+                  <ViewTransitionLink
+                    to={item.to}
+                    className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold"
+                    style={typography.smallText}
+                  >
+                    {item.label}
+                  </ViewTransitionLink>
+                </li>
+              ))}
               <li>
                 <a
                   href="/rss.xml"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold"
                   style={typography.smallText}
                 >
                   RSS Feed
@@ -66,52 +63,63 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Connect */}
           <div>
-            <h4 className="text-white uppercase tracking-wider mb-2 sm:mb-3" style={{ ...typography.smallText, fontWeight: 600 }}>
-              Connect
-            </h4>
-            <ul className="space-y-1 sm:space-y-2">
+            <Eyebrow className="text-altivum-porcelain/40">VENTURES</Eyebrow>
+            <ul className="mt-4 space-y-2">
+              {VENTURES.map((item) => (
+                <li key={item.to}>
+                  <ViewTransitionLink
+                    to={item.to}
+                    className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold"
+                    style={typography.smallText}
+                  >
+                    {item.label}
+                  </ViewTransitionLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="col-span-2 md:col-span-1">
+            <Eyebrow className="text-altivum-porcelain/40">CONNECT</Eyebrow>
+            <ul className="mt-4 space-y-2">
               <li>
-                <ViewTransitionLink to="/contact" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
-                  Get in Touch
-                </ViewTransitionLink>
+                <a
+                  href={SOCIAL_LINKS.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold"
+                  style={typography.smallText}
+                >
+                  LinkedIn
+                </a>
               </li>
               <li>
                 <a
                   href={SOCIAL_LINKS.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  className="link-underline text-altivum-silver transition-colors hover:text-altivum-gold"
                   style={typography.smallText}
                 >
                   GitHub
                 </a>
               </li>
-              <li>
-                <a
-                  href={SOCIAL_LINKS.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
-                  style={typography.smallText}
-                >
-                  LinkedIn
-                </a>
-              </li>
             </ul>
+            <div id="newsletter" className="mt-6">
+              <NewsletterForm variant="compact" />
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-white/[0.03]" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
-          <p className="text-center text-altivum-silver" style={typography.smallText}>
-            &copy; {currentYear} Christian Perez. All rights reserved.
-            <span className="mx-2">·</span>
-            <ViewTransitionLink to="/privacy" className="hover:text-altivum-gold transition-colors link-underline">
-              Privacy Policy
-            </ViewTransitionLink>
-          </p>
-        </div>
+        <div className="mt-12 h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+        <p className="mt-6 text-center text-altivum-silver" style={typography.smallText}>
+          &copy; {currentYear} Christian Perez. All rights reserved.
+          <span className="mx-2">·</span>
+          <ViewTransitionLink to="/privacy" className="link-underline transition-colors hover:text-altivum-gold">
+            Privacy Policy
+          </ViewTransitionLink>
+        </p>
       </div>
     </footer>
   );
