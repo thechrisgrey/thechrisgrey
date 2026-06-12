@@ -52,7 +52,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded focus:outline-none focus:border-altivum-gold transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors"
             placeholder="Entry title"
           />
         </div>
@@ -64,7 +64,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as KbCategory)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded focus:outline-none focus:border-altivum-gold transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors"
           >
             {KB_CATEGORIES.map((cat) => (
               <option key={cat.value} value={cat.value} className="bg-altivum-navy">
@@ -84,7 +84,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
           onChange={(e) => setContent(e.target.value)}
           required
           rows={8}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded focus:outline-none focus:border-altivum-gold transition-colors resize-y"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors resize-y"
           placeholder="Entry content (plain text)"
         />
       </div>
@@ -98,7 +98,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded focus:outline-none focus:border-altivum-gold transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors"
           />
         </div>
 
@@ -108,7 +108,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
-              className="w-5 h-5 rounded border-white/20 bg-white/5 text-altivum-gold focus:ring-altivum-gold"
+              className="w-5 h-5 rounded-sm border-white/20 bg-white/5 text-altivum-gold focus:ring-altivum-gold"
             />
             <span className="text-altivum-silver text-sm">Active</span>
           </label>
@@ -134,7 +134,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
             onChange={(e) =>
               setSortOrder(e.target.value ? parseInt(e.target.value, 10) : '')
             }
-            className="w-full max-w-xs px-4 py-3 bg-white/5 border border-white/10 text-white rounded focus:outline-none focus:border-altivum-gold transition-colors"
+            className="w-full max-w-xs px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors"
             placeholder="Optional numeric order"
           />
         </div>

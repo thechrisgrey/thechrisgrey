@@ -106,7 +106,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
           maxLength={MAX_GOAL_LENGTH}
           required
           disabled={isGenerating || disabled}
-          className="w-full px-4 py-3 bg-altivum-navy border border-white/10 rounded-md text-white placeholder:text-altivum-silver/60 focus:outline-none focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
+          className="w-full px-4 py-3 bg-altivum-navy border border-white/10 rounded-md text-white placeholder:text-altivum-silver/60 focus:outline-hidden focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
           aria-describedby="goal-help"
         />
         <div id="goal-help" className="mt-1 flex justify-between text-altivum-silver/70" style={typography.smallText}>
@@ -134,7 +134,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
           value={category}
           onChange={(e) => setCategory(e.target.value as BlueprintCategory)}
           disabled={isGenerating || disabled}
-          className="w-full px-4 py-3 bg-altivum-navy border border-white/10 rounded-md text-white focus:outline-none focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
+          className="w-full px-4 py-3 bg-altivum-navy border border-white/10 rounded-md text-white focus:outline-hidden focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
         >
           {BLUEPRINT_CATEGORIES.map((cat) => (
             <option key={cat} value={cat}>
@@ -175,7 +175,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
                 placeholder="1k req/day"
                 maxLength={200}
                 disabled={isGenerating || disabled}
-                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-none focus:border-altivum-gold/50 transition-colors"
+                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold/50 transition-colors"
               />
             </div>
             <div>
@@ -190,7 +190,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
                 placeholder="500MB of markdown"
                 maxLength={200}
                 disabled={isGenerating || disabled}
-                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-none focus:border-altivum-gold/50 transition-colors"
+                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold/50 transition-colors"
               />
             </div>
             <div>
@@ -205,7 +205,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
                 placeholder="first token < 2s"
                 maxLength={200}
                 disabled={isGenerating || disabled}
-                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-none focus:border-altivum-gold/50 transition-colors"
+                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold/50 transition-colors"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
                 onChange={(e) => setMonthlyBudget(e.target.value)}
                 placeholder="30"
                 disabled={isGenerating || disabled}
-                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-none focus:border-altivum-gold/50 transition-colors"
+                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold/50 transition-colors"
               />
             </div>
             <div>
@@ -238,7 +238,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
                 onChange={(e) => setIntegrations(e.target.value)}
                 placeholder="Stripe, Salesforce"
                 disabled={isGenerating || disabled}
-                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-none focus:border-altivum-gold/50 transition-colors"
+                className="w-full px-3 py-2 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold/50 transition-colors"
               />
             </div>
           </div>

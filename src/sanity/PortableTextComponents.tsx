@@ -129,7 +129,7 @@ export const portableTextComponents: PortableTextComponents = {
 
       // Default: line
       return (
-        <hr className="my-10 border-0 h-px bg-gradient-to-r from-transparent via-altivum-gold/40 to-transparent" />
+        <hr className="my-10 border-0 h-px bg-linear-to-r from-transparent via-altivum-gold/40 to-transparent" />
       )
     },
 
@@ -154,14 +154,14 @@ export const portableTextComponents: PortableTextComponents = {
       const content = (
         <div className="my-8 flex gap-5 p-5 bg-altivum-navy/40 border border-altivum-blue/30 rounded-lg hover:border-altivum-gold/40 transition-colors">
           {value.cover?.asset && (
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <SanityResponsiveImage
                 source={value.cover}
                 alt={`Cover of ${value.title}`}
                 aspectRatio={2 / 3}
                 widths={[80, 120, 160]}
                 sizes="(max-width: 768px) 80px, 96px"
-                className="w-20 md:w-24 rounded shadow-lg"
+                className="w-20 md:w-24 rounded-sm shadow-lg"
               />
             </div>
           )}
@@ -233,7 +233,7 @@ export const portableTextComponents: PortableTextComponents = {
       <span className="line-through">{children}</span>
     ),
     code: ({ children }) => (
-      <code className="bg-altivum-navy/50 px-1.5 py-0.5 rounded text-sm font-mono text-altivum-gold">
+      <code className="bg-altivum-navy/50 px-1.5 py-0.5 rounded-sm text-sm font-mono text-altivum-gold">
         {children}
       </code>
     ),

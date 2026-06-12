@@ -56,7 +56,7 @@ const AskTheVector = () => {
   return (
     <section className="py-20 bg-altivum-dark">
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
-        <div className="rounded-2xl border border-altivum-gold/20 bg-gradient-to-b from-white/[0.04] to-transparent p-6 sm:p-8">
+        <div className="rounded-2xl border border-altivum-gold/20 bg-linear-to-b from-white/4 to-transparent p-6 sm:p-8">
           {/* Heading */}
           <div className="flex items-center gap-2 mb-2">
             <span className="material-icons text-altivum-gold/80 text-xl" aria-hidden="true">
@@ -83,7 +83,7 @@ const AskTheVector = () => {
               placeholder="Ask about a topic, guest, or idea..."
               disabled={busy}
               autoComplete="off"
-              className="flex-1 min-h-[48px] px-4 rounded-lg bg-altivum-dark/60 border border-white/15 text-white placeholder:text-altivum-slate focus:outline-none focus-visible:border-altivum-gold/60 focus-visible:ring-1 focus-visible:ring-altivum-gold/40 transition-colors duration-200 disabled:opacity-50"
+              className="flex-1 min-h-[48px] px-4 rounded-lg bg-altivum-dark/60 border border-white/15 text-white placeholder:text-altivum-slate focus:outline-hidden focus-visible:border-altivum-gold/60 focus-visible:ring-1 focus-visible:ring-altivum-gold/40 transition-colors duration-200 disabled:opacity-50"
               style={typography.bodyText}
             />
             <button

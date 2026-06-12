@@ -56,7 +56,7 @@ const ChatContent = () => {
       />
 
       {/* Header */}
-      <div className="border-b border-white/10 bg-altivum-dark/80 backdrop-blur-sm">
+      <div className="border-b border-white/10 bg-altivum-dark/80 backdrop-blur-xs">
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-start justify-between">
           <div>
             <h1 className="text-white mb-2" style={typography.cardTitleLarge}>
@@ -70,7 +70,7 @@ const ChatContent = () => {
             {hasUserMessages && (
               <button
                 onClick={handleClearConversation}
-                className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
+                className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded-sm transition-colors duration-200 text-sm"
                 aria-label="Clear conversation"
               >
                 <span className="material-icons text-base">refresh</span>
@@ -79,7 +79,7 @@ const ChatContent = () => {
             )}
             <button
               onClick={onForget}
-              className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded transition-colors duration-200 text-sm"
+              className="flex items-center gap-2 px-4 py-2 text-altivum-silver hover:text-white border border-white/20 hover:border-white/40 rounded-sm transition-colors duration-200 text-sm"
               aria-label="Forget what I told Alti"
             >
               <span className="material-icons text-base">delete_sweep</span>

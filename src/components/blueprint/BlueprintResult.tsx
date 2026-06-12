@@ -21,7 +21,7 @@ const IAC_TOOL_LABELS: Record<string, string> = {
 function Divider() {
   return (
     <div
-      className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent"
+      className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent"
       aria-hidden="true"
     />
   );

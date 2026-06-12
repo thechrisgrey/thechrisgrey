@@ -103,7 +103,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-white/[0.03]" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
+        <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-white/3" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
           <p className="text-center text-altivum-silver" style={typography.smallText}>
             &copy; {currentYear} Christian Perez. All rights reserved.
             <span className="mx-2">·</span>

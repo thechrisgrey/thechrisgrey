@@ -116,7 +116,7 @@ const Home = () => {
       >
         {/* Base background gradient — also the resting look under reduced motion
             and the color shown before the WebGL backdrop hydrates. */}
-        <div className="absolute inset-0 bg-gradient-to-br from-altivum-dark via-altivum-navy to-altivum-blue opacity-50"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-altivum-dark via-altivum-navy to-altivum-blue opacity-50"></div>
 
         {/* Living "signal field" backdrop. Mounted only when motion is allowed,
             WebGL is supported, and we are not prerendering; its lazy chunk loads
@@ -157,7 +157,7 @@ const Home = () => {
               className="w-full h-full object-cover object-[left_30%] md:object-[center_30%]"
               style={{ transform: 'translate3d(0,0,0)', filter: 'brightness(1.05) contrast(1.1) saturate(1.1)' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-altivum-dark/80 via-altivum-dark/40 to-transparent"></div>
           </div>
 
           {/* Summary Tabs — 4 on left, 4 on right (desktop); stacked (mobile) */}
@@ -175,7 +175,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-altivum-navy to-altivum-blue py-16 sm:py-24 md:py-32 lg:py-[12.5rem]">
+      <section className="bg-linear-to-br from-altivum-navy to-altivum-blue py-16 sm:py-24 md:py-32 lg:py-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-white mb-4 sm:mb-6" style={typography.sectionHeader}>
             Let's Connect
@@ -192,7 +192,7 @@ const Home = () => {
               rel="noopener noreferrer"
               className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.6)] hover:bg-altivum-gold/10 active:bg-altivum-gold/20 transition-all duration-300 touch-manipulation min-h-[48px]"
             >
-              <SocialIcon platform="linkedin" className="w-5 h-5 flex-shrink-0" />
+              <SocialIcon platform="linkedin" className="w-5 h-5 shrink-0" />
               LinkedIn
             </a>
             <a
@@ -201,7 +201,7 @@ const Home = () => {
               rel="noopener noreferrer"
               className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.6)] hover:bg-altivum-gold/10 active:bg-altivum-gold/20 transition-all duration-300 touch-manipulation min-h-[48px]"
             >
-              <SocialIcon platform="instagram" className="w-5 h-5 flex-shrink-0" />
+              <SocialIcon platform="instagram" className="w-5 h-5 shrink-0" />
               Instagram
             </a>
           </div>

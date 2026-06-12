@@ -1,11 +1,11 @@
 const ShimmerBlock = ({ className }: { className: string }) => (
-  <div className={`bg-altivum-navy/50 rounded animate-pulse ${className}`} aria-hidden="true" />
+  <div className={`bg-altivum-navy/50 rounded-sm animate-pulse ${className}`} aria-hidden="true" />
 );
 
 const BlogPostArticleSkeleton = () => (
   <div className="min-h-screen bg-altivum-dark" aria-hidden="true">
     {/* Hero image placeholder */}
-    <div className="w-full aspect-[3/1] bg-altivum-navy/30 animate-pulse" />
+    <div className="w-full aspect-3/1 bg-altivum-navy/30 animate-pulse" />
 
     <div className="max-w-3xl mx-auto px-6 lg:px-8 -mt-12 relative z-10">
       {/* Category + date */}

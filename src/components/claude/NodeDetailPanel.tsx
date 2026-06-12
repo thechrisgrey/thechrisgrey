@@ -68,7 +68,7 @@ export function NodeDetailPanel({ node, onClose }: NodeDetailPanelProps) {
         </div>
         <button
           onClick={handleClose}
-          className="text-altivum-silver hover:text-white transition-colors ml-4 flex-shrink-0"
+          className="text-altivum-silver hover:text-white transition-colors ml-4 shrink-0"
           aria-label="Close detail panel"
         >
           <span className="material-icons text-xl">close</span>

@@ -212,7 +212,7 @@ const Altivum = () => {
         </div>
 
         {/* AWS Partner Logo - Bottom Right */}
-        <div className="absolute bottom-[12.5rem] right-8 z-20">
+        <div className="absolute bottom-50 right-8 z-20">
           <img
             src={awsPartnerLogo}
             alt="AWS Partner"
@@ -225,7 +225,7 @@ const Altivum = () => {
           href="https://www.clarksvilleonline.com/2025/12/12/clarksville-area-chamber-of-commerces-veteran-business-of-the-month-altivum-inc/"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-[12.5rem] left-8 z-20 text-xs text-altivum-silver/60 hover:text-altivum-gold transition-colors"
+          className="absolute bottom-50 left-8 z-20 text-xs text-altivum-silver/60 hover:text-altivum-gold transition-colors"
         >
           Veteran Business of the Month
           <span className="block text-[10px] text-altivum-silver/40">Clarksville Chamber - Dec 2025</span>
@@ -327,7 +327,7 @@ const Altivum = () => {
           className="w-full h-full object-cover block opacity-60"
           style={{ objectPosition: 'center 90%' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-altivum-dark via-transparent to-transparent"></div>
       </section>
 
       {/* Founder Timeline */}
@@ -409,13 +409,13 @@ const Altivum = () => {
               href="https://altivum.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded hover:bg-altivum-gold/90 transition-all duration-200"
+              className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 transition-all duration-200"
             >
               Visit Altivum.ai
             </a>
             <ViewTransitionLink
               to="/contact"
-              className="inline-block px-8 py-4 bg-transparent border border-altivum-gold text-altivum-gold font-semibold rounded hover:bg-altivum-gold/10 transition-all duration-200"
+              className="inline-block px-8 py-4 bg-transparent border border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 transition-all duration-200"
             >
               Get in Touch
             </ViewTransitionLink>

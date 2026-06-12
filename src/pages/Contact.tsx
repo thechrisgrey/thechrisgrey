@@ -171,7 +171,7 @@ const Contact = () => {
       </section>
 
       {/* Speaking & Media Section */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-20 bg-altivum-navy/30">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -242,7 +242,7 @@ const Contact = () => {
           </div>
         </div>
       </section>
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
       {/* Contact Form Section */}
       <section className="py-24 bg-altivum-dark">
@@ -267,7 +267,7 @@ const Contact = () => {
                     required
                     minLength={2}
                     maxLength={100}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="Your name"
                   />
                 </div>
@@ -284,7 +284,7 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     maxLength={255}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -300,7 +300,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     maxLength={200}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="What's this about?"
                   />
                 </div>
@@ -318,7 +318,7 @@ const Contact = () => {
                     minLength={10}
                     maxLength={5000}
                     rows={6}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
                     placeholder="Tell me what you're thinking..."
                   ></textarea>
                 </div>
@@ -340,7 +340,7 @@ const Contact = () => {
                 {/* Status Message */}
                 {formStatus.message && (
                   <div
-                    className={`p-5 rounded-sm backdrop-blur-sm transition-all duration-300 ${
+                    className={`p-5 rounded-xs backdrop-blur-xs transition-all duration-300 ${
                       formStatus.type === 'success'
                         ? 'bg-green-900/30 border-l-4 border-green-500 text-green-300'
                         : formStatus.type === 'error'
@@ -466,7 +466,7 @@ const Contact = () => {
               </div>
 
               {/* Location & Availability */}
-              <div className="pt-8 border-t border-white/[0.03]" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
+              <div className="pt-8 border-t border-white/3" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
                 <h3 className="text-white mb-4" style={typography.cardTitleSmall}>
                   Availability
                 </h3>
@@ -498,7 +498,7 @@ const Contact = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setShowSuccessModal(false)}
           ></div>
           <div
@@ -507,7 +507,7 @@ const Contact = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="contact-modal-title"
-            className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
+            className="relative bg-linear-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
           >
             <button
               onClick={() => setShowSuccessModal(false)}

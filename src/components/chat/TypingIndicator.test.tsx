@@ -39,7 +39,7 @@ describe('TypingIndicator', () => {
     });
   });
 
-  it('should render dots as rounded elements', () => {
+  it('should render dots as rounded-sm elements', () => {
     const { container } = render(<TypingIndicator />);
     const dots = container.querySelectorAll('.rounded-full');
     expect(dots).toHaveLength(3);

@@ -55,7 +55,7 @@ function CopyButton({ value, label }: CopyButtonProps) {
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] text-altivum-gold border border-altivum-gold/40 bg-altivum-gold/5 hover:bg-altivum-gold/15 transition-all active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] text-altivum-gold border border-altivum-gold/40 bg-altivum-gold/5 hover:bg-altivum-gold/15 transition-all active:scale-[0.98] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
       aria-label={buttonLabel}
     >
       <span className="material-icons text-base leading-none" aria-hidden="true">
@@ -104,7 +104,7 @@ export function McpInstallBadge() {
                 {MCP_ENDPOINT}
               </code>
             </div>
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <CopyButton value={MCP_ENDPOINT} label="Copy URL" />
             </div>
           </div>

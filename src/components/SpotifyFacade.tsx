@@ -27,7 +27,7 @@ const SpotifyFacade = ({ embedUrl, title }: SpotifyFacadeProps) => {
     <button
       type="button"
       onClick={() => setIsLoaded(true)}
-      className="relative w-full h-[352px] bg-gradient-to-br from-altivum-navy to-altivum-blue rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-altivum-gold/50 transition-all duration-300"
+      className="relative w-full h-[352px] bg-linear-to-br from-altivum-navy to-altivum-blue rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-altivum-gold/50 transition-all duration-300"
       aria-label={`Play ${title} on Spotify`}
     >
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">

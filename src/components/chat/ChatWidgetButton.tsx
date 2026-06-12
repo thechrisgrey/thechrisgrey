@@ -39,7 +39,7 @@ const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
       onClick={onClick}
       aria-label={isOpen ? 'Close chat' : 'Open chat'}
       aria-expanded={isOpen}
-      className="fixed bottom-6 right-6 z-40 flex items-center justify-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
+      className="fixed bottom-6 right-6 z-40 flex items-center justify-center cursor-pointer bg-transparent border-none p-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
     >
       {showMascot ? (
         <SafeCanvas fallback={<MascotFallback />}>

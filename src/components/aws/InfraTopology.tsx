@@ -87,7 +87,7 @@ export function InfraTopology() {
 
             {/* Interaction hint -- fades out after first interaction or 5s */}
             {hintVisible && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-altivum-navy/70 backdrop-blur-sm border border-altivum-slate/20 rounded-full px-4 py-2 text-altivum-silver text-sm transition-opacity duration-500 pointer-events-none">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-altivum-navy/70 backdrop-blur-xs border border-altivum-slate/20 rounded-full px-4 py-2 text-altivum-silver text-sm transition-opacity duration-500 pointer-events-none">
                 Drag to rotate. Click a cluster to explore.
               </div>
             )}
@@ -106,7 +106,7 @@ export function InfraTopology() {
                   type="button"
                   aria-label={`${btn.label} cluster`}
                   aria-hidden="false"
-                  className="pointer-events-auto w-8 h-8 rounded-full bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
+                  className="pointer-events-auto w-8 h-8 rounded-full bg-transparent focus:outline-hidden focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
                   style={{
                     position: 'absolute',
                     left: btn.left,

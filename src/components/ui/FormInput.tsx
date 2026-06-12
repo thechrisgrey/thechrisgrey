@@ -40,7 +40,7 @@ export const FormInput = ({
       required={required}
       aria-describedby={error ? `${id}-error` : undefined}
       aria-invalid={error ? true : undefined}
-      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-md text-white placeholder-white/70 focus:border-altivum-gold focus:outline-none transition-colors"
+      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-md text-white placeholder-white/70 focus:border-altivum-gold focus:outline-hidden transition-colors"
     />
     {error && (
       <p id={`${id}-error`} className="mt-1 text-sm text-red-400" role="alert">

@@ -43,7 +43,7 @@ function Timeline({ block }: { block: TimelineBlock }) {
         {block.items.map((item, i) => (
           <li key={i} className="relative">
             <span
-              className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-altivum-gold/70"
+              className="absolute left-[-21px] top-1.5 w-2 h-2 rounded-full bg-altivum-gold/70"
               aria-hidden="true"
             />
             <p className="text-altivum-gold" style={typography.smallText}>
@@ -85,7 +85,7 @@ function Comparison({ block }: { block: ComparisonBlock }) {
       {block.title ? <BlockTitle>{block.title}</BlockTitle> : null}
       <div className="flex flex-col sm:flex-row gap-5">
         <Column heading={block.left.heading} points={block.left.points} />
-        <div className="hidden sm:block w-px bg-gradient-to-b from-transparent via-altivum-gold/20 to-transparent" aria-hidden="true" />
+        <div className="hidden sm:block w-px bg-linear-to-b from-transparent via-altivum-gold/20 to-transparent" aria-hidden="true" />
         <Column heading={block.right.heading} points={block.right.points} />
       </div>
     </div>

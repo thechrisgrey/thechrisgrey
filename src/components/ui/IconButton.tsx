@@ -7,7 +7,7 @@ interface IconButtonProps {
 }
 
 export const IconButton = ({ icon, label, onClick, href, className = '' }: IconButtonProps) => {
-  const baseClasses = "p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-altivum-gold";
+  const baseClasses = "p-2 rounded-md transition-colors focus:outline-hidden focus:ring-2 focus:ring-altivum-gold";
 
   if (href) {
     return (

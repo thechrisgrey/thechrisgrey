@@ -95,7 +95,7 @@ export function Waitlist({
 
   return (
     <div
-      className={`rounded-lg border border-altivum-gold/20 bg-gradient-to-br from-altivum-navy/80 to-altivum-blue/40 ${padding}`}
+      className={`rounded-lg border border-altivum-gold/20 bg-linear-to-br from-altivum-navy/80 to-altivum-blue/40 ${padding}`}
     >
       {heading && (
         <h3 className="text-white mb-2" style={compact ? typography.cardTitleSmall : typography.cardTitleLarge}>
@@ -137,7 +137,7 @@ export function Waitlist({
             placeholder="you@example.com"
             disabled={isLoading}
             required
-            className="flex-1 px-4 py-2.5 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/60 focus:outline-none focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
+            className="flex-1 px-4 py-2.5 bg-altivum-dark border border-white/10 rounded-md text-white placeholder:text-altivum-silver/60 focus:outline-hidden focus:border-altivum-gold/50 focus:ring-1 focus:ring-altivum-gold/30 transition-colors disabled:opacity-60"
             aria-invalid={status.kind === 'error'}
             aria-describedby={status.kind === 'error' ? 'blueprint-waitlist-error' : undefined}
           />

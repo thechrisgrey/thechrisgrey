@@ -1,5 +1,5 @@
 const shimmer =
-  'animate-shimmer bg-gradient-to-r from-altivum-navy/50 via-altivum-slate/20 to-altivum-navy/50 bg-[length:400%_100%] rounded';
+  'animate-shimmer bg-linear-to-r from-altivum-navy/50 via-altivum-slate/20 to-altivum-navy/50 bg-size-[400%_100%] rounded-sm';
 
 const BlogPostSkeleton = () => (
   <article aria-hidden="true">

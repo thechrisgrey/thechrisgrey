@@ -42,7 +42,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
                 </h3>
               </div>
 
-              <div className="flex items-center gap-4 flex-shrink-0">
+              <div className="flex items-center gap-4 shrink-0">
                 {/* Duration */}
                 <span className="text-altivum-silver text-xs hidden sm:block">
                   {episode.duration}
@@ -144,7 +144,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
       `}>
         {/* Thumbnail */}
         {isFeatured && (
-          <div className="relative overflow-hidden rounded-lg mb-6 lg:w-2/5 lg:mb-0 aspect-video bg-gradient-to-br from-altivum-navy to-altivum-dark flex items-center justify-center">
+          <div className="relative overflow-hidden rounded-lg mb-6 lg:w-2/5 lg:mb-0 aspect-video bg-linear-to-br from-altivum-navy to-altivum-dark flex items-center justify-center">
             {episode.thumbnail ? (
               <img
                 src={episode.thumbnail}
@@ -160,7 +160,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
                 </div>
               </div>
             )}
-            <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/70 rounded text-sm text-white font-medium">
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/70 rounded-sm text-sm text-white font-medium">
               {episode.duration}
             </div>
           </div>

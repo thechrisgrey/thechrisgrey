@@ -100,7 +100,7 @@ const Links = () => {
           <div className="p-8 md:p-12 rounded-lg border border-white/10 bg-white/5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="inline-block px-3 py-1 bg-altivum-gold/20 rounded text-xs font-medium text-altivum-gold mb-4">
+                <div className="inline-block px-3 py-1 bg-altivum-gold/20 rounded-sm text-xs font-medium text-altivum-gold mb-4">
                   Featured
                 </div>
                 <h2 className="text-white mb-4" style={typography.sectionHeader}>
@@ -138,7 +138,7 @@ const Links = () => {
         </div>
       </section>
 
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
       {/* Websites Section */}
       <section className="py-24 bg-altivum-dark">
@@ -165,14 +165,14 @@ const Links = () => {
                       <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleLarge}>
                         {site.name}
                       </h3>
-                      <span className="px-2 py-1 bg-white/5 rounded text-xs font-medium text-altivum-silver border border-white/10">
+                      <span className="px-2 py-1 bg-white/5 rounded-sm text-xs font-medium text-altivum-silver border border-white/10">
                         {site.category}
                       </span>
                     </div>
                     <p className="text-altivum-silver text-sm mb-2">{site.description}</p>
                     <p className="text-altivum-gold/70 text-xs font-mono">{site.url}</p>
                   </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all flex-shrink-0 ml-4">open_in_new</span>
+                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 ml-4">open_in_new</span>
                 </div>
               </a>
             ))}
@@ -181,7 +181,7 @@ const Links = () => {
       </section>
 
       {/* Personal Social Media Section */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="mb-12">
@@ -201,7 +201,7 @@ const Links = () => {
                 className="block p-6 rounded-lg border border-white/10 hover:border-altivum-gold/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group bg-transparent"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all flex-shrink-0">
+                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all shrink-0">
                     {social.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -210,7 +210,7 @@ const Links = () => {
                     </h3>
                     <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
                   </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all flex-shrink-0 text-sm">arrow_forward</span>
+                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
                 </div>
               </a>
             ))}
@@ -219,7 +219,7 @@ const Links = () => {
       </section>
 
       {/* Company Social Media Section */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="mb-12">
@@ -239,7 +239,7 @@ const Links = () => {
                 className="block p-6 rounded-lg border border-white/10 hover:border-altivum-gold/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group bg-transparent"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all flex-shrink-0">
+                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all shrink-0">
                     {social.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -248,7 +248,7 @@ const Links = () => {
                     </h3>
                     <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
                   </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all flex-shrink-0 text-sm">arrow_forward</span>
+                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
                 </div>
               </a>
             ))}
@@ -257,7 +257,7 @@ const Links = () => {
       </section>
 
       {/* Contact CTA */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-white mb-6" style={typography.sectionHeader}>
