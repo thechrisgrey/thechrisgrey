@@ -261,7 +261,7 @@ export async function generateBlueprint(rawSpec, deps) {
 
   // 5. Haiku quality pass (soft signal)
   emit(onProgress, { type: "status", phase: "validating_output" });
-  let haikuVerdict = null;
+  let haikuVerdict;
   let haikuUsage = { input_tokens: 0, output_tokens: 0 };
   let haikuLatencyMs = 0;
   try {
