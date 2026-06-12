@@ -1,8 +1,10 @@
+import { useCallback, useRef } from 'react';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import ChatMessage from '../components/chat/ChatMessage';
-import ChatInput from '../components/chat/ChatInput';
+import ChatInput, { type ChatInputHandle } from '../components/chat/ChatInput';
 import ChatSuggestions from '../components/chat/ChatSuggestions';
+import CapabilityIntro from '../components/chat/CapabilityIntro';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { ChatErrorFallback } from '../components/ErrorFallbacks';
@@ -23,6 +25,11 @@ const ChatContent = () => {
     handleSuggestionSelect,
     handleForgetMemory,
   } = useChatEngine(pageContext);
+
+  const chatInputRef = useRef<ChatInputHandle>(null);
+  const handleUseExample = useCallback((example: string) => {
+    chatInputRef.current?.prefill(example);
+  }, []);
 
   const onForget = async () => {
     const confirmed = window.confirm('Forget everything you told Alti? This deletes your saved facts and cannot be undone.');
@@ -82,6 +89,14 @@ const ChatContent = () => {
         </div>
       </div>
 
+      {/* Capability rail — surfaces Alti's tool-driven powers without forcing trial-and-error.
+          Initially expanded on cold start (no user messages yet) so first-time visitors
+          discover it; collapses to a one-line chip the moment they engage. */}
+      <CapabilityIntro
+        onUseExample={handleUseExample}
+        initiallyExpanded={showSuggestions}
+      />
+
       {/* Messages Container */}
       <div
         ref={messagesContainerRef}
@@ -121,7 +136,7 @@ const ChatContent = () => {
       </div>
 
       {/* Input Area */}
-      <ChatInput onSend={handleSend} disabled={isTyping || isStreaming} />
+      <ChatInput ref={chatInputRef} onSend={handleSend} disabled={isTyping || isStreaming} />
     </div>
   );
 };

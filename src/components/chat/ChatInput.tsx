@@ -1,13 +1,34 @@
-import { useState, useRef, useEffect, KeyboardEvent, FormEvent } from 'react';
+import { useState, useRef, useEffect, useImperativeHandle, KeyboardEvent, FormEvent, Ref } from 'react';
+
+export interface ChatInputHandle {
+  /** Fill the input with the given text, focus it, and place the caret at the end. Does not send. */
+  prefill: (value: string) => void;
+}
 
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
+  ref?: Ref<ChatInputHandle>;
 }
 
-const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
+const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    prefill: (newValue: string) => {
+      setValue(newValue);
+      // Defer focus + caret-to-end until after React commits the new value to the DOM.
+      requestAnimationFrame(() => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        ta.focus();
+        const len = newValue.length;
+        ta.setSelectionRange(len, len);
+        ta.scrollTop = ta.scrollHeight;
+      });
+    },
+  }), []);
 
   const adjustHeight = () => {
     const textarea = textareaRef.current;
