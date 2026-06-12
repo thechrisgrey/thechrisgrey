@@ -6,9 +6,11 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useLenisContext } from '../../hooks/useLenis';
 import { heroVertexShader, heroFragmentShader } from './heroShader';
 
-// Altivum palette as THREE colors (matches tailwind.config.js).
+// Altivum palette as THREE colors. The mid stop reads as the hero's brand
+// blue (not altivum-navy which is so close to altivum-dark that the canvas
+// covered the gradient with what looked like solid black on most monitors).
 const COLOR_DARK = new THREE.Color('#0A0F1C');
-const COLOR_NAVY = new THREE.Color('#1A2332');
+const COLOR_NAVY = new THREE.Color('#2E4A6B');
 const COLOR_GOLD = new THREE.Color('#C5A572');
 
 /**

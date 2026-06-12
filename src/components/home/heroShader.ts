@@ -93,7 +93,10 @@ export const heroFragmentShader = /* glsl */ `
     field = mix(field, field * 0.82, smoothstep(0.35, 1.0, uv.y));
 
     // --- palette mix: dark -> navy across the field's mid-range ---
-    float navyMix = smoothstep(0.30, 0.78, field);
+    // Wider, lower-anchored smoothstep so the blue mid-stop actually
+    // dominates the canvas (the old (0.30, 0.78) range hit fully-navy so
+    // rarely that the field read as solid #0A0F1C on most monitors).
+    float navyMix = smoothstep(0.18, 0.60, field);
     vec3 color = mix(uColorDark, uColorNavy, navyMix);
 
     // Gold only in the brightest crests, heavily attenuated. Scroll velocity
@@ -102,11 +105,14 @@ export const heroFragmentShader = /* glsl */ `
     float gold = smoothstep(0.72, 0.95, field) * goldCeil;
     color = mix(color, uColorGold, gold);
 
-    // Radial vignette toward the dark base — keeps edges quiet, center subtly lit.
+    // Radial vignette toward the dark base — keeps edges quiet, center
+    // subtly lit. The floor was 0.55 (so edges sat at 55% of the field
+    // color); lifted to 0.78 so the navy reads at full strength almost
+    // everywhere and the vignette only nudges the very corners darker.
     vec2 vc = uv - 0.5;
     vc.x *= uAspect;
     float vig = smoothstep(1.05, 0.25, length(vc));
-    color = mix(uColorDark, color, 0.55 + 0.45 * vig);
+    color = mix(uColorDark, color, 0.78 + 0.22 * vig);
 
     // Faint dithering to defeat banding in the deep navy gradient (no flicker:
     // static per-pixel, not time-varying).
