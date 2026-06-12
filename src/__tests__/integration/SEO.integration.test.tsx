@@ -7,6 +7,31 @@ import { HelmetProvider } from 'react-helmet-async';
 // jsdom lacks (see CLAUDE.md: mock 3D in jsdom tests). SEO assertions don't need it.
 vi.mock('../../components/home/HeroCanvas', () => ({ default: () => null }));
 
+// Mock GSAP — the Home page uses FadeReveal/SplitReveal which register ScrollTrigger
+// at module-eval time. Without this mock, ScrollTrigger's internal _sync setTimeout
+// fires after jsdom teardown and throws "requestAnimationFrame is not defined",
+// surfacing as an Unhandled Error that fails CI even though every test passed.
+// Matches the pattern in FadeReveal.test.tsx and AWS.integration.test.tsx.
+vi.mock('gsap', () => ({
+  default: {
+    registerPlugin: vi.fn(),
+    timeline: vi.fn(() => ({
+      fromTo: vi.fn(),
+      scrollTrigger: { kill: vi.fn() },
+      kill: vi.fn(),
+    })),
+  },
+  gsap: {
+    registerPlugin: vi.fn(),
+    timeline: vi.fn(() => ({
+      fromTo: vi.fn(),
+      scrollTrigger: { kill: vi.fn() },
+      kill: vi.fn(),
+    })),
+  },
+}));
+vi.mock('gsap/ScrollTrigger', () => ({ ScrollTrigger: {} }));
+
 // Mock static image imports
 vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
