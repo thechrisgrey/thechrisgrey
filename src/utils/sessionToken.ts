@@ -80,8 +80,12 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
         inflight = refresh().finally(() => { inflight = null; });
       }
       await inflight;
-    } catch {
-      return ''; // graceful: request goes out unauthenticated → server rejects with a clear path
+    } catch (err) {
+      // Graceful: request goes out unauthenticated → server rejects with a clear
+      // path. Surface the cause so a token-issuance failure (Turnstile, the issuer
+      // endpoint, CORS) is diagnosable instead of a silent "Unable to process request".
+      console.warn('[sessionToken] could not obtain a session token:', err);
+      return '';
     }
     return cache[scope]?.token ?? '';
   }

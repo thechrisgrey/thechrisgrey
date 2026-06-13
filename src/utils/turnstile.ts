@@ -22,7 +22,9 @@ interface TurnstileApi {
       appearance?: 'always' | 'execute' | 'interaction-only';
       execution?: 'render' | 'execute';
       callback?: (token: string) => void;
-      'error-callback'?: () => void;
+      // Cloudflare passes an error code (e.g. "110200" = domain not in the widget's
+      // allowlist) to the error callback — capture it for diagnostics.
+      'error-callback'?: (errorCode?: string) => void;
       'timeout-callback'?: () => void;
     }
   ) => string;
@@ -44,6 +46,17 @@ const SCRIPT_URL =
 // awaiting send/generate forever — the fetch AbortController never covers this.
 const TOKEN_TIMEOUT_MS = 12000;
 
+/**
+ * Surface why a Turnstile token could not be obtained. Without this, a token
+ * failure (most often a misconfigured widget — e.g. the prod domain missing from
+ * the Turnstile allowlist, error 110200) is swallowed and the user just sees a
+ * generic "Unable to process request." Cloudflare error codes:
+ * https://developers.cloudflare.com/turnstile/troubleshooting/client-side-errors/error-codes/
+ */
+function warnTurnstile(reason: string, detail?: unknown): void {
+  console.warn(`[turnstile] token not obtained: ${reason}`, detail ?? '');
+}
+
 let scriptPromise: Promise<void> | null = null;
 
 function loadScript(): Promise<void> {
@@ -57,6 +70,7 @@ function loadScript(): Promise<void> {
       s.onload = () => resolve();
       s.onerror = () => {
         scriptPromise = null; // allow a later retry
+        warnTurnstile('script failed to load', SCRIPT_URL);
         reject(new Error('turnstile script failed to load'));
       };
       document.head.appendChild(s);
@@ -68,7 +82,10 @@ function loadScript(): Promise<void> {
 async function waitForApi(timeoutMs = 5000): Promise<TurnstileApi> {
   const start = Date.now();
   while (!window.turnstile) {
-    if (Date.now() - start > timeoutMs) throw new Error('turnstile api unavailable');
+    if (Date.now() - start > timeoutMs) {
+      warnTurnstile('api unavailable after script load');
+      throw new Error('turnstile api unavailable');
+    }
     await new Promise((r) => setTimeout(r, 50));
   }
   return window.turnstile;
@@ -121,13 +138,22 @@ export async function getTurnstileToken(): Promise<string> {
       appearance: 'interaction-only',
       execution: 'execute',
       callback: (token: string) => succeed(token),
-      'error-callback': () => fail(new Error('turnstile error')),
-      'timeout-callback': () => fail(new Error('turnstile timeout')),
+      'error-callback': (errorCode?: string) => {
+        warnTurnstile('challenge error', errorCode);
+        fail(new Error(`turnstile error: ${errorCode ?? 'unknown'}`));
+      },
+      'timeout-callback': () => {
+        warnTurnstile('challenge timed out');
+        fail(new Error('turnstile timeout'));
+      },
     });
 
     // Outer ceiling: if no callback ever fires, reject (and clean up) so callers
     // don't hang. sessionToken.getToken catches this and returns "".
-    ctl.timer = setTimeout(() => fail(new Error('turnstile token timeout')), TOKEN_TIMEOUT_MS);
+    ctl.timer = setTimeout(() => {
+      warnTurnstile(`no callback within ${TOKEN_TIMEOUT_MS}ms`);
+      fail(new Error('turnstile token timeout'));
+    }, TOKEN_TIMEOUT_MS);
 
     // Invisible widgets run the challenge on demand.
     try { api.execute(ctl.widgetId); } catch { /* some modes auto-execute on render */ }
