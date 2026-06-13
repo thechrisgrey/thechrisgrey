@@ -27,20 +27,21 @@ npm run deploy:lambda -- <name>             # deploy (default region us-east-1; 
 ## Architecture
 
 ### Routing
-- React Router v6, layout: `App.tsx` → ScrollToTop → Navigation → Suspense → Routes → Footer
+- React Router v7, layout: `App.tsx` → ScrollToTop → Navigation → Suspense → Routes → Footer
 - All routes except Home use `React.lazy()`. Home is static (critical path).
-- 15 routes: `/`, `/about`, `/altivum`, `/podcast`, `/beyond-the-assessment`, `/aws`, `/claude`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`, `/admin`, catch-all 404
-- Footer + chat widget hidden on fullscreen pages (`/chat`)
+- **17 routes:** `/`, `/about`, `/altivum`, `/foundation`, `/podcast`, `/beyond-the-assessment`, `/aws`, `/claude`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`, `/admin`, `/blueprint`, catch-all 404
+- **Single source of truth:** `src/routes.ts` exports the canonical `ROUTES` table (path + lazy importer + Alti grounding context + starter suggestions + `noPrefetch` flag). `routeManifest.ts` derives hover-prefetch from it; `pageContext.ts` derives `ROUTE_CONTEXT_MAP` + `PAGE_SUGGESTIONS` from it. App.tsx still has explicit `<Route>` JSX (readable). A drift test in `src/routes.test.ts` asserts the two stay in sync.
+- Footer + chat widget hidden on fullscreen pages (`/chat`, `/admin`)
 
 ### Design System
 
-**Colors** (`tailwind.config.js`): `altivum-dark` #0A0F1C, `altivum-navy` #1A2332, `altivum-blue` #2E4A6B, `altivum-slate` #4A5A73, `altivum-silver` #9BA6B8, `altivum-gold` #C5A572
+**Colors** (`@theme` block in `src/index.css`, Tailwind v4 CSS-first config — no more `tailwind.config.js`): `altivum-dark` #0A0F1C, `altivum-navy` #1A2332, `altivum-blue` #2E4A6B, `altivum-slate` #4A5A73, `altivum-silver` #9BA6B8, `altivum-gold` #C5A572
 
 **Typography** (`src/utils/typography.ts`): SF Pro Display (weight 200), fluid `clamp()` sizing. 7 styles: heroHeader, sectionHeader, cardTitleLarge, cardTitleSmall, subtitle, bodyText, smallText. Usage: `<h1 style={typography.heroHeader}>`. NEVER use Google Fonts.
 
 **Icons:** Material Icons via CDN (`<span className="material-icons">name</span>`). Brand logos = inline SVG.
 
-**Animations** (`tailwind.config.js`): `animate-fade-in` (1.2s), `animate-nav-fade-in` (0.8s, 2s delay), `animate-widget-open` (250ms). `prefers-reduced-motion` override in `index.css` forces opacity:1.
+**Animations** (`@theme` block in `src/index.css`): `animate-fade-in` (1.2s), `animate-nav-fade-in` (0.8s, 2s delay), `animate-widget-open` (250ms). Motion is also disabled at the component level via `isMotionDisabled()` (`src/utils/motion.ts`) which combines `prefers-reduced-motion` and the build-time prerender flag, so reveal components render their final state in the prerendered HTML.
 
 **Smooth Scroll:** Lenis (`src/hooks/useLenis.ts`, `src/components/LenisProvider.tsx`) provides momentum-based inertial scrolling site-wide. Configured at `lerp: 0.1` desktop / `0.07` touch. Disabled entirely when `prefers-reduced-motion: reduce`. Scrollable sub-containers (chat panel) use `data-lenis-prevent`.
 
@@ -157,9 +158,17 @@ Series filtering (`?series=<slug>`), categories from data, Shiki syntax highligh
   - high-cls (>0.25/1hr), kb-failures (>5/hr), rate-limit-surge (>50/hr), csp-violations (>20/hr), kb-sync-failure, bedrock-cost ($25/day)
 - Site Health Dashboard on `/admin` via `useSiteHealth.ts`
 
-### Shared Lambda Utilities (`lambda/shared/`)
+### Lambda Fleet
 
-`checkRateLimit`, `validateCognitoToken`, `respond`. Listed as `"lambda-shared": "file:../shared"` in each Lambda's package.json. AWS SDK clients injected as params.
+Seven services under `lambda/`. All ESM `.mjs`, all on AWS SDK v3 (current `^3.1068` per the dep sweep in #111):
+
+- **`lambda/chat-stream/`** — Alti's brain. Strands SDK + Bedrock Haiku 4.5 + KB retrieval + 8 tools + HMAC + rate limit + Bedrock Guardrail. Streams via `awslambda.streamifyResponse`.
+- **`lambda/blueprint/`** — Architecture generator (Opus 4.6) with golden-example RAG, Zod schema validation, Haiku quality verdict pass. Engine is transport-agnostic (`engine.mjs`).
+- **`lambda/kb-builder/`** — Cognito-auth'd CRUD on Sanity `kbEntry`. Builds `knowledge-base.txt` → S3 → auto-sync. PUT/DELETE both check `_type === 'kbEntry'` before writing.
+- **`lambda/kb-sync/`** — S3 event-triggered `StartIngestionJob` for the Bedrock KB.
+- **`lambda/metrics/`** — Web Vitals + CSP report ingestion → CloudWatch. Cognito-auth'd `/health`.
+- **`lambda/mcp-server/`** — Public MCP server exposing `ask_alti` tool (KB retrieval + Bedrock + Guardrail). Same guardrail as chat-stream.
+- **`lambda/shared/`** — `checkRateLimit` (atomic DynamoDB ADD), `validateCognitoToken` (with email allowlist), `respond`, `hmac`, `metrics` MetricsCollector, `sanityQueries`. Listed as `"lambda-shared": "file:../shared"` in each Lambda's package.json. AWS SDK clients injected as params.
 
 ### Component Patterns
 

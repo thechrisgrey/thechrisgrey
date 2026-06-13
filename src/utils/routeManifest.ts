@@ -1,22 +1,19 @@
-type LazyImport = () => Promise<unknown>;
+import { ROUTES } from '../routes';
 
-const routeImports = new Map<string, LazyImport>([
-  ['/about', () => import('../pages/About')],
-  ['/altivum', () => import('../pages/Altivum')],
-  ['/foundation', () => import('../pages/Foundation')],
-  ['/podcast', () => import('../pages/Podcast')],
-  ['/beyond-the-assessment', () => import('../pages/BeyondTheAssessment')],
-  ['/aws', () => import('../pages/AWS')],
-  ['/claude', () => import('../pages/Claude')],
-  ['/blog', () => import('../pages/Blog')],
-  ['/links', () => import('../pages/Links')],
-  ['/contact', () => import('../pages/Contact')],
-  ['/chat', () => import('../pages/Chat')],
-  ['/privacy', () => import('../pages/Privacy')],
-  ['/blueprint', () => import('../pages/Blueprint')],
-]);
+/**
+ * Hover/focus prefetch map. Derived from the canonical ROUTES table — adding
+ * a route in `src/routes.ts` automatically enables hover prefetch for it
+ * unless the route sets `noPrefetch: true`.
+ */
+const routeImports = new Map<string, () => Promise<unknown>>(
+  ROUTES.filter((r) => !r.noPrefetch).map((r) => [r.path, r.importer])
+);
 
-// Also export the BlogPost chunk import for use by blog card prefetching
+/**
+ * Direct importer for the BlogPost chunk so blog cards can prefetch the post
+ * page on hover. The `/blog/:slug` route in ROUTES is `noPrefetch: true` to
+ * keep this dedicated prefetcher the single owner of that chunk.
+ */
 export const prefetchBlogPostChunk = () => import('../pages/BlogPost');
 
 const prefetched = new Set<string>();
