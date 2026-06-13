@@ -1,0 +1,11 @@
+{
+  "name": "thechrisgrey-session-token",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Mints short-lived, scoped session tokens (chat/blueprint) after a Cloudflare Turnstile check. Server-only signing key.",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1068.0",
+    "@aws-sdk/lib-dynamodb": "^3.1068.0",
+    "lambda-shared": "file:../shared"
+  }
+}

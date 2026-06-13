@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { pipelineNodes, pipelineEdges } from '../../data/architectureNodes';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { typography } from '../../utils/typography';
-import { getSignedHeaders } from '../../utils/chatSigning';
+import { getSessionToken } from '../../utils/sessionToken';
 import { PipelineNode } from './PipelineNode';
 import { PipelineEdge } from './PipelineEdge';
 import { NodeDetailPanel } from './NodeDetailPanel';
@@ -251,11 +251,14 @@ export function ArchitectureXRay() {
     const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
     try {
-      const signedHeaders = await getSignedHeaders(requestBody);
+      const token = await getSessionToken('chat');
 
       const response = await fetch(CHAT_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...signedHeaders },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: requestBody,
         signal: controller.signal,
       });

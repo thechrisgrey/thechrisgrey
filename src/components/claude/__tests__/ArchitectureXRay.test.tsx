@@ -26,9 +26,9 @@ vi.mock('../../../hooks/useMediaQuery', () => ({
   useMediaQuery: () => true,
 }));
 
-// Mock chatSigning
-vi.mock('../../../utils/chatSigning', () => ({
-  getSignedHeaders: vi.fn(),
+// Mock session-token issuance (ArchitectureXRay attaches a bearer token to its live trace)
+vi.mock('../../../utils/sessionToken', () => ({
+  getSessionToken: vi.fn().mockResolvedValue(''),
 }));
 
 // Mock TraceInput (not needed for these tests, simplifies render)

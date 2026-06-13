@@ -13,11 +13,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:lambda": "node --test lambda/shared/__tests__/*.test.mjs lambda/blueprint/__tests__/*.test.mjs lambda/chat-stream/__tests__/*.test.mjs lambda/chat-stream/__tests__/tools/*.test.mjs lambda/mcp-server/__tests__/*.test.mjs lambda/metrics/__tests__/*.test.mjs lambda/kb-builder/__tests__/*.test.mjs",
+    "test:lambda": "node --test lambda/shared/__tests__/*.test.mjs lambda/blueprint/__tests__/*.test.mjs lambda/chat-stream/__tests__/*.test.mjs lambda/chat-stream/__tests__/tools/*.test.mjs lambda/mcp-server/__tests__/*.test.mjs lambda/metrics/__tests__/*.test.mjs lambda/kb-builder/__tests__/*.test.mjs lambda/kb-sync/__tests__/*.test.mjs lambda/session-token/__tests__/*.test.mjs",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:headed": "cypress run --headed",
     "deploy:lambda": "bash scripts/deploy-lambda.sh",
+    "smoke:lambda": "node scripts/smoke-test-lambdas.mjs",
     "iam:drift": "bash scripts/iam-drift.sh"
   },
   "dependencies": {

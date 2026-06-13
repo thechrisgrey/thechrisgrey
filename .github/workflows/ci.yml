@@ -47,7 +47,7 @@ jobs:
           # shared installed first so file:../shared dependents resolve a fresh copy.
           # npm ci from each committed lockfile for reproducibility; fall back to
           # npm install only if a dir ever ships without a lockfile.
-          for dir in lambda/shared lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+          for dir in lambda/shared lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server lambda/session-token; do
             echo "=== Installing $dir ==="
             if [ -f "$dir/package-lock.json" ]; then
               (cd "$dir" && npm ci --no-audit --no-fund)
@@ -72,6 +72,8 @@ jobs:
           VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
           VITE_CHAT_ENDPOINT: https://placeholder.example.com
           VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+          VITE_SESSION_ENDPOINT: https://placeholder.example.com
+          VITE_TURNSTILE_SITE_KEY: ci-placeholder-turnstile
           VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
           VITE_COGNITO_CLIENT_ID: placeholder
           VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
@@ -99,6 +101,8 @@ jobs:
           VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
           VITE_CHAT_ENDPOINT: https://placeholder.example.com
           VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+          VITE_SESSION_ENDPOINT: https://placeholder.example.com
+          VITE_TURNSTILE_SITE_KEY: ci-placeholder-turnstile
           VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
           VITE_COGNITO_CLIENT_ID: placeholder
           VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
@@ -149,7 +153,7 @@ jobs:
         run: |
           set -e
           # Keep this dir list in sync with the "Install Lambda dependencies" step above.
-          for dir in lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+          for dir in lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server lambda/session-token; do
             if [ ! -f "$dir/package.json" ]; then
               echo "=== Skipping $dir (no package.json) ==="
               continue
