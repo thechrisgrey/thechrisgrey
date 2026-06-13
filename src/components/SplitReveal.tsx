@@ -1,6 +1,7 @@
 import { useRef, useEffect, type CSSProperties, type RefObject } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { isMotionDisabled } from '../utils/motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,7 +31,7 @@ const SplitReveal = ({
   const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (isMotionDisabled()) return;
 
     const container = containerRef.current;
     if (!container) return;
@@ -62,10 +63,12 @@ const SplitReveal = ({
     };
   }, [children, direction, stagger, triggerRef, triggerStart, triggerEnd]);
 
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (prefersReducedMotion) {
+  // Render the final post-animation state when motion is disabled — either the
+  // visitor prefers reduced motion, OR the build-time prerender crawl is running
+  // (we never want opacity:0 placeholder markup in the static HTML AI/SEO
+  // crawlers consume; that hides the home page's 8 key points from anything
+  // that doesn't execute JS).
+  if (isMotionDisabled()) {
     return <Tag className={className} style={style}>{children}</Tag>;
   }
 

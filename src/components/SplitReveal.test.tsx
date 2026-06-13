@@ -83,4 +83,19 @@ describe('SplitReveal', () => {
     render(<SplitReveal>Solo</SplitReveal>);
     expect(screen.getByText('Solo')).toBeInTheDocument();
   });
+
+  it('renders the final state (no .split-word-inner shells) when prerendering', () => {
+    // The build-time Puppeteer crawl sets window.__PRERENDER__ before navigating
+    // to each route. The Home page renders its 8 key-point titles via SplitReveal;
+    // if we keep the opacity-0 shells, the static HTML AI/SEO crawlers consume
+    // hides those titles. Render the final plain-text state instead.
+    (window as unknown as { __PRERENDER__: boolean }).__PRERENDER__ = true;
+    try {
+      const { container } = render(<SplitReveal as="h3">Personal Biography</SplitReveal>);
+      expect(container.querySelector('.split-word-inner')).toBeNull();
+      expect(container.querySelector('h3')?.textContent).toBe('Personal Biography');
+    } finally {
+      delete (window as unknown as { __PRERENDER__?: boolean }).__PRERENDER__;
+    }
+  });
 });
