@@ -21,6 +21,17 @@ export function useFocusTrap(isActive: boolean) {
       // Small delay to ensure modal is rendered
       const timer = setTimeout(() => {
         if (containerRef.current) {
+          // Prefer an explicit initial-focus target (e.g. a chat panel's message
+          // input) over the first focusable element. Without this, focus lands on
+          // the first header button — wrong for a11y, and a focus-steal race: this
+          // timer can fire mid-interaction and yank focus off the input the user is
+          // typing into. Honoring [data-autofocus] makes the steal target the input
+          // itself, so it is correct whether it fires before, during, or after.
+          const preferred = containerRef.current.querySelector<HTMLElement>('[data-autofocus]');
+          if (preferred) {
+            preferred.focus();
+            return;
+          }
           const focusableElements = containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS);
           if (focusableElements.length > 0) {
             focusableElements[0].focus();

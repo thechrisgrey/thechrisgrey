@@ -69,6 +69,57 @@ describe('useFocusTrap', () => {
     document.body.removeChild(container);
   });
 
+  it('focuses the [data-autofocus] element in preference to the first focusable', () => {
+    // A panel whose first focusable is a header button but whose intended
+    // initial focus is the message input (data-autofocus). Focusing the button
+    // would let an early keystroke (or a synthetic-fast test) land on the wrong
+    // element — the chat-widget focus-steal bug. The input must win.
+    const container = document.createElement('div');
+    const headerBtn = document.createElement('button');
+    headerBtn.textContent = 'Open full chat';
+    const input = document.createElement('textarea');
+    input.setAttribute('data-autofocus', '');
+    container.appendChild(headerBtn);
+    container.appendChild(input);
+    document.body.appendChild(container);
+
+    const { result, rerender } = renderHook(
+      ({ isActive }) => useFocusTrap(isActive),
+      { initialProps: { isActive: false } }
+    );
+    // Connect the hook's own ref to the container so the effect can find it.
+    result.current.containerRef.current = container;
+    rerender({ isActive: true });
+    act(() => { vi.advanceTimersByTime(20); });
+
+    expect(document.activeElement).toBe(input);
+
+    document.body.removeChild(container);
+  });
+
+  it('falls back to the first focusable element when no [data-autofocus] is present', () => {
+    const container = document.createElement('div');
+    const firstBtn = document.createElement('button');
+    firstBtn.textContent = 'First';
+    const secondBtn = document.createElement('button');
+    secondBtn.textContent = 'Second';
+    container.appendChild(firstBtn);
+    container.appendChild(secondBtn);
+    document.body.appendChild(container);
+
+    const { result, rerender } = renderHook(
+      ({ isActive }) => useFocusTrap(isActive),
+      { initialProps: { isActive: false } }
+    );
+    result.current.containerRef.current = container;
+    rerender({ isActive: true });
+    act(() => { vi.advanceTimersByTime(20); });
+
+    expect(document.activeElement).toBe(firstBtn);
+
+    document.body.removeChild(container);
+  });
+
   it('should handle Tab key to wrap focus from last to first element', () => {
     const container = document.createElement('div');
     const firstBtn = document.createElement('button');
