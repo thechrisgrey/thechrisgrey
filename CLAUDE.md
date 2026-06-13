@@ -6,6 +6,22 @@ Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum 
 
 Check `docs/ideas-to-consider.md` for pending feature ideas.
 
+## Verification — run the real thing, always
+
+**Green tests are NOT proof a feature works.** Before claiming anything works — and especially for anything that touches an external service (AWS/Bedrock, deploys, streaming, APIs, auth) — exercise the REAL deployed path with a real request, not just mocks and unit tests.
+
+- **Distrust fakes:** confirm the live SDK/API actually behaves the way the mock assumes. (A mock that *rejected* on abort hid a real bug where the live `ConverseStream` *ended gracefully* — the test stayed green while the behavior was broken.)
+- This repo shipped a Bedrock guardrail with 1,000+ green tests that **never once fired in production** (wrong API signal, an invalid enum value, output false-blocking) — only signed requests to the live endpoint surfaced it.
+- **Report honestly:** say "tests pass" for passing tests; reserve "it works" for behavior you have watched work end-to-end.
+
+## Shared lessons — the hive-mind vault
+
+When you learn a **project-agnostic** lesson worth carrying to other projects (a gotcha, a pattern, a hard-won fix), record it as a markdown note in the shared Obsidian vault at `~/dev/altivum-dev/hive-mind/`, under `Lessons/`.
+
+- **Write the generalized principle — project-agnostic.** A concrete example is fine as illustration, but the lesson must transfer to any codebase. Do not write project-specific facts as the lesson.
+- **Label every note with the authoring AI — `Claude`** (the vault is AI-agnostic, shared across tools): frontmatter `agent: Claude` and a `#claude` tag. No project label needed.
+- One note per lesson; prefer a new note over editing an unrelated one.
+
 ## Commands
 
 ```bash
