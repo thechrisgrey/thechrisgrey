@@ -122,7 +122,11 @@ export async function applyInputGuardrail(bedrockClient, text, {
 // deadline is available (local runs, the MCP wrapper, tests). HAIKU_TIMEOUT_MS
 // stays fixed; it has its own timer and runs only after a successful Opus pass,
 // inside the buffer reserved below.
-export const OPUS_TIMEOUT_MS = 110_000;
+// 150s (raised from 110s): a full blueprint generates ~5700+ tokens in roughly
+// 110-130s, right at the old per-attempt cap. 150s gives an attempt comfortable
+// headroom. Paired with the Lambda timeout raised to 300s, so the shared Opus
+// deadline (LambdaTimeout - buffer = 280s) no longer clamps an attempt below this.
+export const OPUS_TIMEOUT_MS = 150_000;
 export const HAIKU_TIMEOUT_MS = 15_000;
 
 // Time reserved between the Opus deadline and the Lambda hard-timeout for the
@@ -373,6 +377,21 @@ export async function streamOpus(bedrockClient, {
     }
 
     clearTimeout(timeoutId);
+    // ConverseStream ends the async iterator GRACEFULLY when the request is
+    // aborted (the abortSignal cancels it without rejecting the iteration), so
+    // an abort would otherwise return as a completed-but-truncated generation —
+    // the engine would then try to parse partial JSON and surface a misleading
+    // validation_failed instead of a timeout. Detect the abort explicitly and
+    // surface it as a timeout, matching the blocking path.
+    if (controller.signal.aborted) {
+      if (requestId) {
+        console.error(JSON.stringify({
+          requestId, event: "bedrock_stream_timeout", modelId: OPUS_MODEL_ID,
+          latencyMs: Date.now() - start, timeoutMs, partialChars: accumulated.length,
+        }));
+      }
+      throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
+    }
     return {
       text: accumulated,
       usage: { input_tokens: inputTokens, output_tokens: outputTokens },
@@ -382,6 +401,9 @@ export async function streamOpus(bedrockClient, {
   } catch (error) {
     clearTimeout(timeoutId);
     const latencyMs = Date.now() - start;
+    // Re-throw a timeout raised after the loop (graceful-abort detection) so it
+    // is not re-wrapped as a generic invocation error.
+    if (error instanceof BedrockTimeoutError) throw error;
     if (error?.name === "AbortError") {
       if (requestId) {
         console.error(JSON.stringify({
