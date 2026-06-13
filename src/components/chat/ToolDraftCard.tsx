@@ -23,7 +23,7 @@ function IconButton({
   disabled?: boolean;
 }) {
   const base =
-    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2';
+    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2';
   const styles =
     variant === 'primary'
       ? 'bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20'
@@ -218,7 +218,7 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
           <button
             type="button"
             onClick={playAtTimestamp}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm min-h-[36px] transition-all active:scale-[0.98] bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
           >
             <span className="material-icons text-base leading-none">play_circle</span>
             <span>Play at {action.timestampLabel}</span>
@@ -264,7 +264,7 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
               <button
                 type="button"
                 onClick={() => openPost(result.slug)}
-                className="inline-flex items-center gap-1 text-sm text-altivum-gold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 rounded"
+                className="inline-flex items-center gap-1 text-sm text-altivum-gold hover:underline focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 rounded-sm"
               >
                 <span className="material-icons text-base leading-none">open_in_new</span>
                 <span>Read this post</span>

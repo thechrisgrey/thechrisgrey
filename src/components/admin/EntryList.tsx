@@ -85,7 +85,7 @@ function EntryList({
                             {entry.title}
                           </h3>
                           {entry.date && (
-                            <span className="text-altivum-slate text-xs flex-shrink-0">
+                            <span className="text-altivum-slate text-xs shrink-0">
                               {new Date(entry.date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -93,7 +93,7 @@ function EntryList({
                             </span>
                           )}
                           {!entry.isActive && (
-                            <span className="text-xs text-altivum-slate bg-white/5 px-2 py-0.5 rounded">
+                            <span className="text-xs text-altivum-slate bg-white/5 px-2 py-0.5 rounded-sm">
                               Inactive
                             </span>
                           )}
@@ -103,7 +103,7 @@ function EntryList({
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => onToggleActive(entry)}
                           className="p-1.5 text-altivum-slate hover:text-altivum-gold transition-colors"

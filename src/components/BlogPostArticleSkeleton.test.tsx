@@ -21,7 +21,9 @@ describe('BlogPostArticleSkeleton', () => {
 
   it('should render the hero image placeholder', () => {
     const { container } = render(<BlogPostArticleSkeleton />);
-    const heroPlaceholder = container.querySelector('.aspect-\\[3\\/1\\]');
+    // Tailwind v4 supports `aspect-3/1` natively; the v3 arbitrary-value form
+    // was `aspect-[3/1]`. The `/` in the class name still needs escaping in CSS.
+    const heroPlaceholder = container.querySelector('.aspect-3\\/1');
     expect(heroPlaceholder).toBeInTheDocument();
   });
 });

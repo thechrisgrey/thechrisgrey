@@ -42,7 +42,7 @@ function AdminLogin({ onLogin, isLoading, error }: AdminLoginProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+              className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
               placeholder="your@email.com"
             />
           </div>
@@ -60,7 +60,7 @@ function AdminLogin({ onLogin, isLoading, error }: AdminLoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-all duration-300 rounded-none"
+              className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
               placeholder="Enter password"
             />
           </div>

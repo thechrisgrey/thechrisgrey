@@ -20,7 +20,7 @@ function ControlButton({ label, icon, onClick }: { label: string; icon: string; 
 
 export function TopologyControls({ controlRef }: TopologyControlsProps) {
   return (
-    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-altivum-navy/60 backdrop-blur-sm border border-altivum-slate/20 rounded-full px-2 py-1">
+    <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-altivum-navy/60 backdrop-blur-xs border border-altivum-slate/20 rounded-full px-2 py-1">
       <ControlButton label="Zoom in" icon="add" onClick={() => controlRef.current?.zoomBy(2)} />
       <ControlButton label="Zoom out" icon="remove" onClick={() => controlRef.current?.zoomBy(-2)} />
       <div className="w-px h-4 bg-altivum-slate/30 mx-0.5" />

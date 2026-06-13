@@ -59,7 +59,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
       className="fixed bottom-24 right-6 z-40 w-[calc(100vw-2rem)] h-[calc(100vh-8rem)] sm:w-[400px] sm:h-[560px] bg-altivum-navy border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-widget-open"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-altivum-dark/60 backdrop-blur-sm shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-altivum-dark/60 backdrop-blur-xs shrink-0">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
           <span className="text-white text-sm" style={typography.smallText}>
@@ -70,7 +70,7 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
           {hasUserMessages && (
             <button
               onClick={handleClearConversation}
-              className="p-1.5 text-altivum-silver hover:text-white rounded transition-colors duration-200"
+              className="p-1.5 text-altivum-silver hover:text-white rounded-sm transition-colors duration-200"
               aria-label="Clear conversation"
             >
               <span className="material-icons text-lg">refresh</span>
@@ -78,14 +78,14 @@ const ChatWidgetPanel = ({ onClose }: ChatWidgetPanelProps) => {
           )}
           <button
             onClick={handleExpand}
-            className="p-1.5 text-altivum-silver hover:text-white rounded transition-colors duration-200"
+            className="p-1.5 text-altivum-silver hover:text-white rounded-sm transition-colors duration-200"
             aria-label="Open full chat"
           >
             <span className="material-icons text-lg">open_in_full</span>
           </button>
           <button
             onClick={onClose}
-            className="p-1.5 text-altivum-silver hover:text-white rounded transition-colors duration-200"
+            className="p-1.5 text-altivum-silver hover:text-white rounded-sm transition-colors duration-200"
             aria-label="Close chat"
           >
             <span className="material-icons text-lg">close</span>

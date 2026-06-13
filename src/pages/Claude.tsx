@@ -174,15 +174,15 @@ const Claude = () => {
       </section>
 
       {/* Architecture X-Ray */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <ArchitectureXRay />
 
       {/* MCP Install Badge */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <McpInstallBadge />
 
       {/* Focus Areas */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
@@ -208,7 +208,7 @@ const Claude = () => {
                   >
                     {area.title}
                   </h3>
-                  <p className="text-altivum-silver mb-6 flex-grow" style={typography.bodyText}>
+                  <p className="text-altivum-silver mb-6 grow" style={typography.bodyText}>
                     {area.description}
                   </p>
                   <div className="flex flex-wrap gap-2 border-t border-altivum-slate/20 pt-4">
@@ -229,7 +229,7 @@ const Claude = () => {
       </section>
 
       {/* How I Work */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24 bg-altivum-navy/10">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -288,7 +288,7 @@ const Claude = () => {
       </section>
 
       {/* Anthropic Academy */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -304,7 +304,7 @@ const Claude = () => {
           {/* Featured Certification */}
           <div className="p-6 sm:p-8 rounded-lg border border-white/10 bg-white/5 mb-8">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-              <div className="w-full md:w-1/2 rounded-lg overflow-hidden shadow-lg flex-shrink-0">
+              <div className="w-full md:w-1/2 rounded-lg overflow-hidden shadow-lg shrink-0">
                 <img
                   src={claudeBedrockCert}
                   alt="Certificate of Completion — Claude with Amazon Bedrock"
@@ -312,7 +312,7 @@ const Claude = () => {
                 />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <div className="inline-block px-3 py-1 bg-altivum-gold/20 rounded text-xs font-medium text-altivum-gold mb-3">
+                <div className="inline-block px-3 py-1 bg-altivum-gold/20 rounded-sm text-xs font-medium text-altivum-gold mb-3">
                   Featured
                 </div>
                 <h3 className="text-white mb-1" style={typography.cardTitleLarge}>
@@ -328,7 +328,7 @@ const Claude = () => {
                   href={featuredCert.verifyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-altivum-gold/80 hover:text-altivum-gold border border-altivum-gold/20 hover:border-altivum-gold/40 rounded transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-altivum-gold/80 hover:text-altivum-gold border border-altivum-gold/20 hover:border-altivum-gold/40 rounded-sm transition-all duration-200"
                 >
                   Verify
                   <span className="material-icons text-sm">open_in_new</span>
@@ -356,7 +356,7 @@ const Claude = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`Verify ${cert.name} certification`}
-                        className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-6 py-3.5 px-4 -mx-4 rounded-md group hover:bg-altivum-gold/[0.04] transition-colors duration-200"
+                        className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-6 py-3.5 px-4 -mx-4 rounded-md group hover:bg-altivum-gold/4 transition-colors duration-200"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-4 min-w-0">
                           <h4
@@ -365,11 +365,11 @@ const Claude = () => {
                           >
                             {cert.name}
                           </h4>
-                          <span className="text-altivum-silver/40 text-xs flex-shrink-0">
+                          <span className="text-altivum-silver/40 text-xs shrink-0">
                             Issued {cert.issued}
                           </span>
                         </div>
-                        <span className="text-altivum-gold/50 group-hover:text-altivum-gold transition-colors duration-200 inline-flex items-center gap-1 text-xs flex-shrink-0">
+                        <span className="text-altivum-gold/50 group-hover:text-altivum-gold transition-colors duration-200 inline-flex items-center gap-1 text-xs shrink-0">
                           Verify
                           <span className="material-icons" style={{ fontSize: '12px' }}>open_in_new</span>
                         </span>

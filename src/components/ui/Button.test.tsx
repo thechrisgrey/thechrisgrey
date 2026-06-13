@@ -111,7 +111,7 @@ describe('Button', () => {
       expect(button.className).toContain('bg-altivum-gold');
     });
 
-    it('should apply outline variant classes', () => {
+    it('should apply outline-solid variant classes', () => {
       renderWithRouter(<Button variant="outline">Outline</Button>);
       const button = screen.getByRole('button');
       expect(button.className).toContain('border');

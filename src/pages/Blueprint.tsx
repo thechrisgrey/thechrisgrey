@@ -165,7 +165,7 @@ export default function Blueprint() {
         <BlueprintHero />
         <HighlightsGrid />
 
-        <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+        <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
         {showForm && (
           <section aria-labelledby="form-heading" className="space-y-4">

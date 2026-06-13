@@ -92,7 +92,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
   return (
     <>
       {variant === 'full' ? (
-        <section className="py-32 bg-gradient-to-b from-altivum-dark via-altivum-navy to-altivum-dark border-t border-white/5">
+        <section className="py-32 bg-linear-to-b from-altivum-dark via-altivum-navy to-altivum-dark border-t border-white/5">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
             <div className="mb-8">
               <div className="inline-block px-4 py-1 bg-altivum-gold/10 border border-altivum-gold/20 rounded-full mb-6">
@@ -122,7 +122,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
                   }}
                   required
                   disabled={subscribeStatus.type === 'loading'}
-                  className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-6 py-5 bg-white/5 border-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <button
@@ -145,7 +145,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
 
             {subscribeStatus.message && (
               <div
-                className={`mt-8 p-5 rounded-sm backdrop-blur-sm max-w-2xl mx-auto transition-all duration-300 ${
+                className={`mt-8 p-5 rounded-xs backdrop-blur-xs max-w-2xl mx-auto transition-all duration-300 ${
                   subscribeStatus.type === 'success'
                     ? 'bg-green-900/30 border-l-4 border-green-500 text-green-300'
                     : subscribeStatus.type === 'error'
@@ -180,7 +180,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
                 }}
                 required
                 disabled={subscribeStatus.type === 'loading'}
-                className="w-full px-5 py-3 bg-white/5 border border-white/10 text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="w-full px-5 py-3 bg-white/5 border border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold focus:bg-white/10 transition-all duration-300 rounded-xs disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               />
             </div>
             <button
@@ -198,7 +198,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
 
           {subscribeStatus.message && (
             <div
-              className={`mt-4 p-3 rounded-sm text-sm max-w-lg mx-auto transition-all duration-300 ${
+              className={`mt-4 p-3 rounded-xs text-sm max-w-lg mx-auto transition-all duration-300 ${
                 subscribeStatus.type === 'error'
                   ? 'bg-red-900/30 border-l-4 border-red-500 text-red-300'
                   : 'bg-altivum-blue/30 border-l-4 border-altivum-gold text-altivum-gold'
@@ -215,7 +215,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-xs"
             onClick={() => setShowSuccessModal(false)}
           ></div>
           <div
@@ -224,7 +224,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="newsletter-modal-title"
-            className="relative bg-gradient-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
+            className="relative bg-linear-to-br from-altivum-navy to-altivum-blue max-w-md w-full p-8 border-2 border-altivum-gold/30 shadow-[0_0_60px_rgba(197,165,114,0.2)]"
           >
             <button
               onClick={() => setShowSuccessModal(false)}

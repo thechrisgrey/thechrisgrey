@@ -9,7 +9,7 @@ export interface SiteHealthPanelProps {
 
 function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPanelProps) {
   return (
-    <div className="mb-8 border border-white/5 rounded overflow-hidden">
+    <div className="mb-8 border border-white/5 rounded-sm overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 bg-altivum-navy/30 hover:bg-altivum-navy/50 transition-colors text-left"
@@ -42,7 +42,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                       ? key === 'cls' ? vital.average.toFixed(3) : `${Math.round(vital.average)}ms`
                       : '--';
                     return (
-                      <div key={key} className="p-3 bg-white/5 rounded">
+                      <div key={key} className="p-3 bg-white/5 rounded-sm">
                         <div className="text-lg text-white font-semibold">{value}</div>
                         <div className="text-xs text-altivum-slate uppercase tracking-wider">{label}</div>
                         <div className="text-xs text-altivum-slate mt-1">{vital.count} samples</div>
@@ -55,23 +55,23 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
               <div>
                 <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Chat Pipeline</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 bg-white/5 rounded">
+                  <div className="p-3 bg-white/5 rounded-sm">
                     <div className={`text-lg font-semibold ${data.chat.kbSuccessRate !== null && parseFloat(data.chat.kbSuccessRate) >= 95 ? 'text-green-400' : data.chat.kbSuccessRate !== null ? 'text-amber-400' : 'text-altivum-slate'}`}>
                       {data.chat.kbSuccessRate !== null ? `${data.chat.kbSuccessRate}%` : '--'}
                     </div>
                     <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Success</div>
                   </div>
-                  <div className="p-3 bg-white/5 rounded">
+                  <div className="p-3 bg-white/5 rounded-sm">
                     <div className={`text-lg font-semibold ${data.chat.kbFailures > 0 ? 'text-red-400' : 'text-green-400'}`}>
                       {data.chat.kbFailures}
                     </div>
                     <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Failures</div>
                   </div>
-                  <div className="p-3 bg-white/5 rounded">
+                  <div className="p-3 bg-white/5 rounded-sm">
                     <div className="text-lg text-white font-semibold">{data.chat.guardrailInterventions}</div>
                     <div className="text-xs text-altivum-slate uppercase tracking-wider">Guardrails</div>
                   </div>
-                  <div className="p-3 bg-white/5 rounded">
+                  <div className="p-3 bg-white/5 rounded-sm">
                     <div className="text-lg text-white font-semibold">{data.chat.rateLimitRejections}</div>
                     <div className="text-xs text-altivum-slate uppercase tracking-wider">Rate Limits</div>
                   </div>
@@ -82,7 +82,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                 <div>
                   <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Performance (avg)</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
                         {data.performance.kbRetrievalLatency.average !== null
                           ? `${Math.round(data.performance.kbRetrievalLatency.average)}ms`
@@ -90,7 +90,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                       </div>
                       <div className="text-xs text-altivum-slate uppercase tracking-wider">KB Retrieval</div>
                     </div>
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
                         {data.performance.bedrockInvocationLatency.average !== null
                           ? `${Math.round(data.performance.bedrockInvocationLatency.average)}ms`
@@ -98,7 +98,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                       </div>
                       <div className="text-xs text-altivum-slate uppercase tracking-wider">Bedrock Invoke</div>
                     </div>
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
                         {data.performance.totalRequestLatency.average !== null
                           ? `${Math.round(data.performance.totalRequestLatency.average)}ms`
@@ -114,7 +114,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                 <div>
                   <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Token Usage (24h)</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
                         {data.costs.bedrockInputTokens > 0
                           ? data.costs.bedrockInputTokens.toLocaleString()
@@ -122,7 +122,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                       </div>
                       <div className="text-xs text-altivum-slate uppercase tracking-wider">Input Tokens</div>
                     </div>
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
                         {data.costs.bedrockOutputTokens > 0
                           ? data.costs.bedrockOutputTokens.toLocaleString()
@@ -130,7 +130,7 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                       </div>
                       <div className="text-xs text-altivum-slate uppercase tracking-wider">Output Tokens</div>
                     </div>
-                    <div className="p-3 bg-white/5 rounded">
+                    <div className="p-3 bg-white/5 rounded-sm">
                       <div className={`text-lg font-semibold ${data.costs.malformedRequests > 0 ? 'text-amber-400' : 'text-green-400'}`}>
                         {data.costs.malformedRequests}
                       </div>

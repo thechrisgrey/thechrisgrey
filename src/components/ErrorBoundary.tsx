@@ -92,7 +92,7 @@ class ErrorBoundary extends Component<Props, State> {
                 <summary className="text-altivum-silver cursor-pointer hover:text-white text-sm">
                   Error Details
                 </summary>
-                <pre className="mt-4 p-4 bg-altivum-navy rounded text-xs text-red-400 overflow-auto">
+                <pre className="mt-4 p-4 bg-altivum-navy rounded-sm text-xs text-red-400 overflow-auto">
                   {this.state.error.toString()}
                 </pre>
               </details>

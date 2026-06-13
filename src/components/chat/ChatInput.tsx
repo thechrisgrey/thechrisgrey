@@ -63,7 +63,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
   const hasValue = value.trim().length > 0;
 
   return (
-    <div className="border-t border-white/10 bg-altivum-navy/50 backdrop-blur-sm p-4">
+    <div className="border-t border-white/10 bg-altivum-navy/50 backdrop-blur-xs p-4">
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto"
@@ -79,7 +79,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
             disabled={disabled}
             rows={1}
             maxLength={4000}
-            className="w-full pl-4 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-altivum-silver/50 focus:outline-none focus:border-altivum-gold transition-colors duration-200 resize-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            className="w-full pl-4 pr-12 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-altivum-silver/50 focus:outline-hidden focus:border-altivum-gold transition-colors duration-200 resize-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none"
             style={{
               minHeight: '48px',
               maxHeight: '200px',

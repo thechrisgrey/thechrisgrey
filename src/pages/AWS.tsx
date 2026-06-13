@@ -52,8 +52,8 @@ const AWS = () => {
             alt="Christian Perez - AWS Community Builder"
             className="w-full h-auto block"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-altivum-dark/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-altivum-dark via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-b from-altivum-dark/40 via-transparent to-transparent" />
         </div>
       </section>
 
@@ -101,7 +101,7 @@ const AWS = () => {
       </section>
 
       {/* Infrastructure Topology */}
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
       <InfraTopology />
     </div>
   );

@@ -81,7 +81,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
       {prevPost ? (
         <ViewTransitionLink to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
-          <span className="material-icons text-sm flex-shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <span className="material-icons text-sm shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <div className="min-w-0">
             <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
               {prevPost.seriesOrder != null ? `Part ${prevPost.seriesOrder}` : 'Previous'}
@@ -98,7 +98,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
             </div>
             <div className="truncate">{nextPost.title}</div>
           </div>
-          <span className="material-icons text-sm flex-shrink-0 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="material-icons text-sm shrink-0 group-hover:translate-x-1 transition-transform">arrow_forward</span>
         </ViewTransitionLink>
       ) : <div />}
     </div>
@@ -331,7 +331,7 @@ const BlogPost = () => {
               priority
               className="w-full h-full object-cover opacity-30"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-altivum-dark/50 via-altivum-dark/80 to-altivum-dark"></div>
+            <div className="absolute inset-0 bg-linear-to-b from-altivum-dark/50 via-altivum-dark/80 to-altivum-dark"></div>
           </div>
         )}
 
@@ -375,7 +375,7 @@ const BlogPost = () => {
                 <ViewTransitionLink
                   key={tag._id}
                   to={`/blog?tag=${tag.slug.current}`}
-                  className="px-3 py-1 text-sm bg-altivum-gold/10 text-altivum-gold rounded hover:bg-altivum-gold/20 transition-colors"
+                  className="px-3 py-1 text-sm bg-altivum-gold/10 text-altivum-gold rounded-sm hover:bg-altivum-gold/20 transition-colors"
                 >
                   {tag.title}
                 </ViewTransitionLink>
@@ -388,7 +388,7 @@ const BlogPost = () => {
             <span className="text-altivum-silver text-sm">Share:</span>
             <button
               onClick={copyToClipboard}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-sm hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver text-sm"
               title="Copy link"
             >
               <span className="material-icons text-sm">{copied ? 'check' : 'link'}</span>
@@ -396,14 +396,14 @@ const BlogPost = () => {
             </button>
             <button
               onClick={shareToTwitter}
-              className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver"
+              className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded-sm hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver"
               title="Share on X (Twitter)"
             >
               <SocialIcon platform="twitter" className="w-4 h-4" />
             </button>
             <button
               onClick={shareToLinkedIn}
-              className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver"
+              className="flex items-center justify-center w-10 h-10 bg-white/5 border border-white/10 rounded-sm hover:border-altivum-gold hover:text-altivum-gold transition-colors text-altivum-silver"
               title="Share on LinkedIn"
             >
               <SocialIcon platform="linkedin" className="w-4 h-4" />
@@ -494,7 +494,7 @@ const BlogPost = () => {
             <img
               src={profileImage}
               alt="Christian Perez"
-              className="w-20 h-20 rounded-full object-cover border-2 border-altivum-gold/30 flex-shrink-0"
+              className="w-20 h-20 rounded-full object-cover border-2 border-altivum-gold/30 shrink-0"
             />
             <div>
               <h3 className="text-white font-semibold text-lg mb-1">
@@ -566,7 +566,7 @@ const BlogPost = () => {
       )}
 
       {/* Newsletter & CTA */}
-      <section className="py-16 bg-gradient-to-b from-altivum-dark to-altivum-navy/30 border-t border-white/10">
+      <section className="py-16 bg-linear-to-b from-altivum-dark to-altivum-navy/30 border-t border-white/10">
         <div className="max-w-3xl mx-auto px-6 lg:px-8 text-center">
           <h3 className="text-white mb-4" style={typography.cardTitleLarge}>
             Enjoyed this article?

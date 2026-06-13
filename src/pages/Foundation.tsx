@@ -52,7 +52,7 @@ const Foundation = () => {
             className="w-full h-full object-cover opacity-40"
             fetchPriority="high"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark via-altivum-dark/80 to-altivum-dark/40" />
+          <div className="absolute inset-0 bg-linear-to-t from-altivum-dark via-altivum-dark/80 to-altivum-dark/40" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
@@ -72,7 +72,7 @@ const Foundation = () => {
                 href="https://altivumfoundation.org"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+                className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
               >
                 Visit altivumfoundation.org
               </a>
@@ -80,7 +80,7 @@ const Foundation = () => {
                 href="https://altivumfoundation.org/give"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+                className="inline-block px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
               >
                 Give Now
               </a>
@@ -205,7 +205,7 @@ const Foundation = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 md:py-32 bg-gradient-to-br from-altivum-navy to-altivum-blue">
+      <section className="py-24 md:py-32 bg-linear-to-br from-altivum-navy to-altivum-blue">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-white mb-6" style={typography.sectionHeader}>
             Ready to invest in a veteran's future?
@@ -221,7 +221,7 @@ const Foundation = () => {
               href="https://altivumfoundation.org/give"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-full sm:w-auto px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+              className="inline-block w-full sm:w-auto px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
               Give Now
             </a>
@@ -229,7 +229,7 @@ const Foundation = () => {
               href="https://altivumfoundation.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+              className="inline-block w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
               Visit altivumfoundation.org
             </a>

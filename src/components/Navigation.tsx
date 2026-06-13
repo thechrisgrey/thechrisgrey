@@ -126,7 +126,7 @@ const Navigation = () => {
       {/* Skip link for keyboard navigation */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-altivum-gold focus:text-altivum-dark focus:font-medium focus:rounded"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-altivum-gold focus:text-altivum-dark focus:font-medium focus:rounded-sm"
       >
         Skip to main content
       </a>
@@ -146,7 +146,7 @@ const Navigation = () => {
           </ViewTransitionLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:mr-[-10rem]">
+          <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:-mr-40">
             <ViewTransitionLink
               to="/"
               className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive('/')

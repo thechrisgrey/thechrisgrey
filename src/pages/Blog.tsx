@@ -218,7 +218,7 @@ const Blog = () => {
                   }
                   setSearchParams(params, { replace: true });
                 }}
-                className="w-full px-4 py-2 pl-10 bg-white/5 border border-white/10 rounded-full text-white placeholder-white/70 focus:outline-none focus:border-altivum-gold transition-colors"
+                className="w-full px-4 py-2 pl-10 bg-white/5 border border-white/10 rounded-full text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-colors"
               />
               <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-altivum-silver/50 text-lg">
                 search
@@ -257,7 +257,7 @@ const Blog = () => {
           </div>
         </div>
       </section>
-      <div className="h-px bg-gradient-to-r from-transparent via-altivum-gold/15 to-transparent" />
+      <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
 
       {/* Blog Posts */}
       <section className="py-24 bg-altivum-dark">
@@ -404,7 +404,7 @@ const Blog = () => {
                         </div>
                       )}
                       {post.isFeatured && (
-                        <div className="absolute top-4 left-4 z-20 px-3 py-1 bg-altivum-gold text-altivum-dark text-xs font-semibold uppercase tracking-wider rounded">
+                        <div className="absolute top-4 left-4 z-20 px-3 py-1 bg-altivum-gold text-altivum-dark text-xs font-semibold uppercase tracking-wider rounded-sm">
                           Featured
                         </div>
                       )}
@@ -436,7 +436,7 @@ const Blog = () => {
                         <ViewTransitionLink
                           key={tag._id}
                           to={`/blog?tag=${tag.slug.current}`}
-                          className="px-2 py-1 text-xs bg-altivum-gold/10 text-altivum-gold rounded hover:bg-altivum-gold/20 transition-colors"
+                          className="px-2 py-1 text-xs bg-altivum-gold/10 text-altivum-gold rounded-sm hover:bg-altivum-gold/20 transition-colors"
                         >
                           {tag.title}
                         </ViewTransitionLink>

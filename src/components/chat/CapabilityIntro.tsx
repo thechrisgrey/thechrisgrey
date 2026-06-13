@@ -72,7 +72,7 @@ const CapabilityIntro = memo(function CapabilityIntro({
   return (
     <section
       aria-label="What Alti can do"
-      className="border-b border-white/10 bg-altivum-dark/60 backdrop-blur-sm"
+      className="border-b border-white/10 bg-altivum-dark/60 backdrop-blur-xs"
     >
       <div className="max-w-4xl mx-auto px-6">
         <button
@@ -80,7 +80,7 @@ const CapabilityIntro = memo(function CapabilityIntro({
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
           aria-controls="capability-intro-content"
-          className="w-full flex items-center justify-between py-3 -mx-2 px-2 rounded-md hover:bg-white/[0.02] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+          className="w-full flex items-center justify-between py-3 -mx-2 px-2 rounded-md hover:bg-white/2 transition-colors duration-200 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
         >
           <span className="flex items-center gap-2.5">
             <span
@@ -132,7 +132,7 @@ const CapabilityIntro = memo(function CapabilityIntro({
                     onClick={() => onUseExample(cap.example)}
                     tabIndex={expanded ? 0 : -1}
                     aria-label={`Drop into message: ${cap.example}`}
-                    className="group text-left px-4 py-3.5 rounded-xl border border-white/[0.08] hover:border-altivum-gold/40 hover:bg-white/[0.03] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 active:scale-[0.99]"
+                    className="group text-left px-4 py-3.5 rounded-xl border border-white/8 hover:border-altivum-gold/40 hover:bg-white/3 transition-all duration-200 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-2 mb-1.5">
                       <span
