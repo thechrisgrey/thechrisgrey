@@ -49,8 +49,14 @@ function SignalField({ driver, animate }: SignalFieldProps) {
     [],
   );
 
-  // Keep aspect in sync with the canvas size.
+  // Keep aspect in sync with the canvas size. THREE.Uniform objects are
+  // mutable boxes by design — mutating `.value` is the canonical R3F path
+  // to push state into the GPU without recreating the WebGL program or
+  // re-allocating the uniforms map. The react-hooks/immutability rule
+  // treats useMemo's return as immutable from React's perspective, but
+  // for Three.js uniforms that's the wrong frame.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- THREE.Uniform.value is mutable by design (R3F idiom)
     uniforms.uAspect.value = size.height > 0 ? size.width / size.height : 1;
     invalidate();
   }, [size.width, size.height, uniforms, invalidate]);

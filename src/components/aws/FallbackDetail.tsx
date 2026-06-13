@@ -12,7 +12,7 @@ interface FallbackDetailProps {
 
 export function FallbackDetail({ cluster, allClusters, onClose }: FallbackDetailProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const { containerRef, handleKeyDown: handleFocusTrapKeyDown } = useFocusTrap(cluster !== null);
+  const { setContainerRef, handleKeyDown: handleFocusTrapKeyDown } = useFocusTrap(cluster !== null);
 
   // Height animation on mount
   useEffect(() => {
@@ -46,8 +46,10 @@ export function FallbackDetail({ cluster, allClusters, onClose }: FallbackDetail
     <div
       ref={(el) => {
         panelRef.current = el;
-        // Assign to focus trap ref as well
-        (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        // Wire the focus-trap container through the hook's callback-ref API
+        // instead of mutating its returned ref directly — react-hooks/
+        // immutability treats hook-returned refs as owned by the hook.
+        setContainerRef(el);
       }}
       role="dialog"
       aria-modal="true"

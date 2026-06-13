@@ -38,6 +38,16 @@ export function useFocusTrap(isActive: boolean) {
     }
   }, [isActive]);
 
+  // Callback-ref form for consumers that need to wire multiple refs to the
+  // same DOM element (e.g. FallbackDetail tracks its own panelRef alongside
+  // the focus-trap container). Use this in a JSX `ref={(el) => { ... }}`
+  // callback instead of mutating `containerRef.current` directly — the
+  // react-hooks/immutability rule treats hook-returned refs as owned by the
+  // hook, and writing to `.current` from the consumer trips it.
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el;
+  }, []);
+
   // Handle Tab key to trap focus
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key !== 'Tab' || !containerRef.current) return;
@@ -63,5 +73,5 @@ export function useFocusTrap(isActive: boolean) {
     }
   }, []);
 
-  return { containerRef, handleKeyDown };
+  return { containerRef, setContainerRef, handleKeyDown };
 }
