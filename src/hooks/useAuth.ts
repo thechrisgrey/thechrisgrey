@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
@@ -27,28 +27,25 @@ interface AuthState {
 }
 
 export function useAuth() {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
-    error: null,
-  });
-
-  useEffect(() => {
+  // Lazy initializer runs once on mount. sessionStorage is synchronous, so we
+  // can resolve the auth state during the first render — no need for a mount
+  // useEffect that flips isLoading after the fact (which would also trip
+  // react-hooks/set-state-in-effect).
+  const [state, setState] = useState<AuthState>(() => {
     const stored = sessionStorage.getItem(AUTH_STORAGE_KEY);
     if (stored) {
       try {
         const tokens: AuthTokens = JSON.parse(stored);
         if (tokens.expiresAt > Date.now()) {
-          setState({ isAuthenticated: true, isLoading: false, error: null });
-          return;
+          return { isAuthenticated: true, isLoading: false, error: null };
         }
       } catch {
-        // Invalid stored data, clear it
+        // Invalid stored data — fall through and clear it below.
       }
       sessionStorage.removeItem(AUTH_STORAGE_KEY);
     }
-    setState({ isAuthenticated: false, isLoading: false, error: null });
-  }, []);
+    return { isAuthenticated: false, isLoading: false, error: null };
+  });
 
   const login = useCallback(async (email: string, password: string) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));

@@ -85,6 +85,12 @@ export function useSiteHealth(
 
   useEffect(() => {
     if (!enabled) return;
+    // Canonical fetch-on-mount + interval-refresh pattern. fetchHealth's
+    // internal setState transitions (isLoading → data | error) are the
+    // hook's contract; adopting react-hooks/set-state-in-effect's preferred
+    // shape would require migrating to TanStack Query / SWR (a data-library
+    // dep this project intentionally doesn't take). Suppress with rationale.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchHealth();
     const interval = setInterval(fetchHealth, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);

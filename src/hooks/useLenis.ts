@@ -45,12 +45,18 @@ export function useLenisInstance() {
     gsap.ticker.lagSmoothing(0);
     ScrollTrigger.refresh();
 
+    // Lenis must be constructed in a browser-only context (window-dependent +
+    // matchMedia check above), so this useEffect IS the construction site.
+    // Exposing the instance via context provider requires it in state, not a
+    // ref. The setState here is the API, not an anti-pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLenis(instance);
 
     return () => {
       gsap.ticker.remove(tick);
       instance.off('scroll', ScrollTrigger.update);
       instance.destroy();
+      // Cleanup runs after unmount; rule doesn't flag setState here.
       setLenis(null);
     };
   }, []);
