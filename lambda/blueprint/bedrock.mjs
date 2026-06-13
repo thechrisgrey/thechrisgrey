@@ -52,12 +52,16 @@ function userMessages(text) {
 
 /**
  * Run the Bedrock Guardrail over user-supplied input text BEFORE generation,
- * using the dedicated ApplyGuardrail API. Returns { intervened } — true when the
- * guardrail blocks the input (prompt attack, disallowed content). Fails OPEN
- * (intervened:false) on any guardrail API error so a transient guardrail outage
- * degrades to ungated generation rather than blocking the feature — consistent
- * with the rate limiter's availability-first posture; the model itself still
- * refuses genuinely harmful requests.
+ * using the dedicated ApplyGuardrail API. Returns:
+ *   { intervened: true }                 — guardrail blocked the input
+ *   { intervened: false }                — input is clean, proceed
+ *   { intervened: false, checkFailed: true } — the guardrail check itself failed
+ *
+ * FAILS CLOSED: this guardrail is the ONLY input-abuse control (generation runs
+ * unguarded), so a guardrail outage must not open the gate, and unscreened input
+ * must not reach the most expensive model (Opus, with a cost alarm). Transient
+ * blips are absorbed by retrying once; only a sustained failure declines, which
+ * the handler surfaces as a retriable "temporarily unavailable" message.
  *
  * @param {object} bedrockClient - BedrockRuntimeClient (injected for tests).
  * @param {string} text - The user-supplied input to assess.
@@ -65,37 +69,45 @@ function userMessages(text) {
  * @param {string} [opts.requestId]
  * @param {string} [opts.guardrailId=GUARDRAIL_ID]
  * @param {string} [opts.guardrailVersion=GUARDRAIL_VERSION]
- * @returns {Promise<{ intervened: boolean }>}
+ * @param {number} [opts.maxAttempts=2] - Total attempts (1 retry).
+ * @returns {Promise<{ intervened: boolean, checkFailed?: boolean }>}
  */
 export async function applyInputGuardrail(bedrockClient, text, {
   requestId = null,
   guardrailId = GUARDRAIL_ID,
   guardrailVersion = GUARDRAIL_VERSION,
+  maxAttempts = 2,
 } = {}) {
   if (!guardrailId || !guardrailVersion || !text) return { intervened: false };
-  try {
-    const response = await bedrockClient.send(new ApplyGuardrailCommand({
-      guardrailIdentifier: guardrailId,
-      guardrailVersion,
-      source: "INPUT",
-      content: [{ text: { text } }],
-    }));
-    const intervened = response?.action === "GUARDRAIL_INTERVENED";
-    if (intervened && requestId) {
-      console.warn(JSON.stringify({
-        requestId, event: "blueprint_input_guardrail_intervened",
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await bedrockClient.send(new ApplyGuardrailCommand({
+        guardrailIdentifier: guardrailId,
+        guardrailVersion,
+        source: "INPUT",
+        content: [{ text: { text } }],
       }));
+      const intervened = response?.action === "GUARDRAIL_INTERVENED";
+      if (intervened && requestId) {
+        console.warn(JSON.stringify({
+          requestId, event: "blueprint_input_guardrail_intervened",
+        }));
+      }
+      return { intervened };
+    } catch (error) {
+      lastError = error;
     }
-    return { intervened };
-  } catch (error) {
-    if (requestId) {
-      console.error(JSON.stringify({
-        requestId, event: "blueprint_input_guardrail_error",
-        error: error?.name, message: error?.message,
-      }));
-    }
-    return { intervened: false };
   }
+  // Every attempt failed — decline (fail closed) rather than wave the input
+  // through to Opus unscreened.
+  if (requestId) {
+    console.error(JSON.stringify({
+      requestId, event: "blueprint_input_guardrail_error",
+      error: lastError?.name, message: lastError?.message,
+    }));
+  }
+  return { intervened: false, checkFailed: true };
 }
 
 // Opus's abort budget is anchored to a single ABSOLUTE deadline, derived once

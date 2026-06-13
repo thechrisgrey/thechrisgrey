@@ -43,18 +43,19 @@ export function bedrockResponseBody(text, { inputTokens = 100, outputTokens = 20
  * invocation. Each entry is either a { text } object, an Error to throw, or
  * a { streamText, chunkSize? } object for streaming (InvokeModelWithResponseStream).
  */
-export function scriptedBedrockClient(responses, { guardrailAction = "NONE" } = {}) {
+export function scriptedBedrockClient(responses, { guardrailAction = "NONE", guardrailError = null } = {}) {
   let idx = 0;
   return {
     calls: [],
     guardrailCalls: [],
     async send(command, options) {
       // The input guardrail pre-check (ApplyGuardrailCommand) is answered from
-      // guardrailAction and recorded separately — it does NOT consume a scripted
-      // generation response or appear in `calls`, so generation-call assertions
-      // (counts, indices) are unaffected.
+      // guardrailAction/guardrailError and recorded separately — it does NOT
+      // consume a scripted generation response or appear in `calls`, so
+      // generation-call assertions (counts, indices) are unaffected.
       if (command?.constructor?.name === "ApplyGuardrailCommand") {
         this.guardrailCalls.push({ command, options });
+        if (guardrailError) throw guardrailError;
         return { action: guardrailAction };
       }
       const call = { command, options };

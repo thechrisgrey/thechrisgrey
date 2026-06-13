@@ -12,12 +12,13 @@ import { scriptedBedrockClient } from "./harness.mjs";
 
 // Minimal fake whose send() answers an ApplyGuardrailCommand with a fixed action
 // (or throws). Records the commands it receives.
-function guardrailClient(action, { throwError = null } = {}) {
+function guardrailClient(action, { throwError = null, throwTimes = Infinity } = {}) {
+  let throws = 0;
   return {
     calls: [],
     async send(cmd) {
       this.calls.push(cmd);
-      if (throwError) throw throwError;
+      if (throwError && throws < throwTimes) { throws++; throw throwError; }
       return { action };
     },
   };
@@ -39,10 +40,22 @@ test("applyInputGuardrail reports not-intervened on NONE", async () => {
   assert.equal(res.intervened, false);
 });
 
-test("applyInputGuardrail fails OPEN on a guardrail API error", async () => {
+test("applyInputGuardrail fails CLOSED (checkFailed) after retrying when the API keeps erroring", async () => {
+  // The guardrail is the only input-abuse control — a sustained outage must NOT
+  // wave unscreened input through to Opus.
   const client = guardrailClient(null, { throwError: new Error("guardrail unavailable") });
   const res = await applyInputGuardrail(client, "some spec");
   assert.equal(res.intervened, false);
+  assert.equal(res.checkFailed, true);
+  assert.equal(client.calls.length, 2, "must retry once before declining");
+});
+
+test("applyInputGuardrail retries once and recovers from a transient error", async () => {
+  const client = guardrailClient("NONE", { throwError: new Error("blip"), throwTimes: 1 });
+  const res = await applyInputGuardrail(client, "benign spec");
+  assert.equal(res.intervened, false);
+  assert.equal(res.checkFailed, undefined);
+  assert.equal(client.calls.length, 2);
 });
 
 test("applyInputGuardrail skips the call when text is empty", async () => {

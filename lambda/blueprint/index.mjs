@@ -290,6 +290,10 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
         metrics.record("BlueprintGuardrailIntervention");
         message = "That request couldn't be processed. Try describing a different system to architect.";
         logStructured(requestId, "blueprint_guardrail_intervened", {});
+      } else if (result.error === "guardrail_unavailable") {
+        metrics.record("BlueprintGuardrailUnavailable");
+        message = "We couldn't complete a safety check just now. Please try again in a moment.";
+        logStructured(requestId, "blueprint_guardrail_unavailable", {});
       } else {
         metrics.record("BlueprintGenerationError");
       }

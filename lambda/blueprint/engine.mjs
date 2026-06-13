@@ -159,6 +159,16 @@ export async function generateBlueprint(rawSpec, deps) {
   //     guard only the untrusted input. A blocked input returns a terminal
   //     guardrail_intervened with no Opus spend.
   const inputGuard = await applyInputGuardrail(bedrockClient, user, { requestId });
+  if (inputGuard.checkFailed) {
+    // The guardrail check failed (after retry). Fail closed — decline rather
+    // than send unscreened input to Opus. Surfaced as a retriable error.
+    logger.warn?.("guardrail_unavailable", { requestId });
+    return {
+      ok: false,
+      error: "guardrail_unavailable",
+      meta: { tier, total_ms: Date.now() - start },
+    };
+  }
   if (inputGuard.intervened) {
     logger.warn?.("guardrail_intervened", { requestId });
     return {

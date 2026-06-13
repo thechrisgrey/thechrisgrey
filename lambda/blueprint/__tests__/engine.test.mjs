@@ -334,6 +334,20 @@ test("generateBlueprint blocks malicious input via the guardrail pre-check (no g
   assert.equal(bedrock.guardrailCalls.length, 1, "the input pre-check ran");
 });
 
+test("generateBlueprint fails closed (guardrail_unavailable) when the input guardrail check fails", async () => {
+  // The ApplyGuardrail pre-check errors on every attempt — the engine must
+  // decline rather than send unscreened input to Opus.
+  const bedrock = scriptedBedrockClient([], { guardrailError: new Error("guardrail down") });
+  const res = await generateBlueprint(validBlueprintInput(), {
+    bedrockClient: bedrock,
+    logger: silentLogger(),
+  });
+  assert.equal(res.ok, false);
+  assert.equal(res.error, "guardrail_unavailable");
+  assert.equal(bedrock.calls.length, 0, "must not call Opus/Haiku when the guardrail check fails");
+  assert.equal(bedrock.guardrailCalls.length, 2, "the pre-check retried once before declining");
+});
+
 test("generateBlueprint proceeds to generation when the input guardrail passes", async () => {
   // Default guardrailAction is NONE, so the pre-check passes and generation runs.
   const bedrock = scriptedBedrockClient([
