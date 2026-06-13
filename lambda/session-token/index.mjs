@@ -70,7 +70,6 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
   const {
     signingKey,
     turnstileSecret,
-    corsOrigin,
     allowedOrigins,
     rateLimitTable,
     chatTtl,
@@ -78,16 +77,13 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
     maxIssuancePerHour,
   } = config;
 
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": corsOrigin,
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Max-Age": "3600",
-  };
-
+  // CORS is handled SOLELY by the Lambda Function URL CORS config (single source
+  // of truth). The handler must NOT also emit Access-Control-* headers, or the
+  // response carries DUPLICATE Access-Control-Allow-Origin values and browsers
+  // reject it ("Failed to fetch") — which silently broke token issuance in prod.
   const reply = (statusCode, body) => ({
     statusCode,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
@@ -96,7 +92,9 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
     const method = event.requestContext?.http?.method;
 
     if (method === "OPTIONS") {
-      return { statusCode: 204, headers: corsHeaders, body: "" };
+      // Preflight is normally answered by the Function URL CORS layer (the handler
+      // isn't invoked for OPTIONS when CORS is configured); this is a safe fallback.
+      return { statusCode: 204, body: "" };
     }
     if (method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
