@@ -16,9 +16,12 @@ process.env.AWS_CONFIG_FILE = "/dev/null";
 process.env.AWS_EC2_METADATA_DISABLED = "true";
 process.env.AWS_REGION = "us-east-1";
 
-// Signature verification must be ACTIVE for these assertions.
+// Both auth paths must be ACTIVE for these assertions: legacy HMAC (CHAT_SIGNING_KEY)
+// and server-issued session tokens (SESSION_TOKEN_KEY).
 const KEY = "test-secret-key";
 process.env.CHAT_SIGNING_KEY = KEY;
+const SESSION_KEY = "test-session-key";
+process.env.SESSION_TOKEN_KEY = SESSION_KEY;
 
 // Stub the Lambda streaming runtime global so `awslambda.streamifyResponse`
 // (evaluated at module load, line ~128) returns the bare handler function.
@@ -28,6 +31,7 @@ globalThis.awslambda = {
 };
 
 const { handler } = await import("../index.mjs");
+const { issueSessionToken } = await import("lambda-shared/sessionToken");
 
 const SYS = "\x00SYS\x00";
 
@@ -103,4 +107,23 @@ test("a VALID signature passes verification and does NOT emit the rejection mess
     !stream.output.includes("Unable to process request."),
     `a valid signature must not be rejected; got: ${JSON.stringify(stream.output)}`
   );
+});
+
+test("a VALID chat-scoped bearer session token is admitted past the auth front door", { timeout: 10000 }, async () => {
+  const stream = makeStream();
+  const body = '{"messages":[{"role":"user","content":"hi"}]}';
+  const token = issueSessionToken({ deviceHash: "a".repeat(64), scope: "chat" }, SESSION_KEY, 300);
+  await handler(makeEvent({ headers: { authorization: `Bearer ${token}` }, body }), stream, {});
+  assert.ok(
+    !stream.output.includes("Unable to process request."),
+    `a valid session token must not be rejected; got: ${JSON.stringify(stream.output)}`
+  );
+});
+
+test("a bearer token minted for the WRONG scope (blueprint) is rejected on the chat endpoint", { timeout: 10000 }, async () => {
+  const stream = makeStream();
+  const body = '{"messages":[{"role":"user","content":"hi"}]}';
+  const token = issueSessionToken({ deviceHash: "a".repeat(64), scope: "blueprint" }, SESSION_KEY, 300);
+  await handler(makeEvent({ headers: { authorization: `Bearer ${token}` }, body }), stream, {});
+  assert.equal(stream.output, SYS + "Unable to process request.");
 });

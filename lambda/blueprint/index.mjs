@@ -34,7 +34,7 @@ import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { createClient as createSanityClient } from "@sanity/client";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 
-import { verifySignature } from "lambda-shared/hmac";
+import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
 import { generateBlueprint } from "./engine.mjs";
 import { resolveOpusDeadlineMs } from "./bedrock.mjs";
@@ -43,6 +43,7 @@ import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
 const REGION = process.env.AWS_REGION || "us-east-1";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://thechrisgrey.com";
 const SIGNING_KEY = process.env.BLUEPRINT_SIGNING_KEY || "";
+const SESSION_TOKEN_KEY = process.env.SESSION_TOKEN_KEY || "";
 const RATE_LIMIT_TABLE = process.env.BLUEPRINT_RATE_LIMIT_TABLE
   || process.env.CHAT_RATE_LIMIT_TABLE
   || "thechrisgrey-chat-ratelimit";
@@ -73,10 +74,10 @@ const examplesFetcher = sanityClient
   ? createGoldenExamplesFetcher(sanityClient)
   : null;
 
-if (!SIGNING_KEY) {
+if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
   console.warn(JSON.stringify({
     event: "startup_warning",
-    message: "BLUEPRINT_SIGNING_KEY not set — HMAC verification disabled",
+    message: "Neither SESSION_TOKEN_KEY nor BLUEPRINT_SIGNING_KEY set — request authentication disabled",
   }));
 }
 
@@ -181,17 +182,25 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       return;
     }
 
-    // HMAC verification
-    const sigResult = verifySignature(event, SIGNING_KEY, {
-      signatureHeader: "x-blueprint-signature",
-      timestampHeader: "x-blueprint-timestamp",
+    // Accept EITHER a server-issued blueprint-scoped session token (new model) OR
+    // the legacy request-body HMAC signature (transition window). See requestAuth.
+    const auth = authenticateRequest(event, {
+      sessionKey: SESSION_TOKEN_KEY,
+      scope: "blueprint",
+      legacyKey: SIGNING_KEY,
+      legacySigOptions: {
+        signatureHeader: "x-blueprint-signature",
+        timestampHeader: "x-blueprint-timestamp",
+      },
     });
-    if (!sigResult.valid) {
-      metrics.record("SignatureRejection");
-      logStructured(requestId, "signature_rejection", { reason: sigResult.error });
+    if (!auth.valid) {
+      metrics.record("AuthRejection");
+      logStructured(requestId, "auth_rejection", { method: auth.method, reason: auth.error });
       closeWithJson(401, { error: "unauthorized" });
       return;
     }
+    // Watch the legacy path drain to zero before retiring the bundled HMAC key.
+    metrics.record(auth.method === "token" ? "AuthSessionToken" : "AuthLegacySignature");
 
     // Parse body
     let payload;

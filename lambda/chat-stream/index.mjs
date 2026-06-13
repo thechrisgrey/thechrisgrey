@@ -15,7 +15,7 @@ import { createClient as createSanityClient } from "@sanity/client";
 import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 
-import { verifySignature } from "lambda-shared/hmac";
+import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
 import { validateInput, validatePageContext, getLatestUserMessage } from "./validation.mjs";
 import { buildSystemPrompt } from "./prompts.mjs";
@@ -49,13 +49,14 @@ const GUARDRAIL_ID = "5kofhp46ssob";
 const GUARDRAIL_VERSION = "5";
 const SYSTEM_MESSAGE_PREFIX = "\x00SYS\x00";
 const SIGNING_KEY = process.env.CHAT_SIGNING_KEY || "";
+const SESSION_TOKEN_KEY = process.env.SESSION_TOKEN_KEY || "";
 const BEDROCK_MAX_MESSAGES = 20;
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
 
-if (!SIGNING_KEY) {
+if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
   console.warn(JSON.stringify({
     event: "startup_warning",
-    message: "CHAT_SIGNING_KEY not set — HMAC signature verification is DISABLED",
+    message: "Neither SESSION_TOKEN_KEY nor CHAT_SIGNING_KEY set — request authentication is DISABLED",
   }));
 }
 
@@ -138,14 +139,22 @@ export const handler = awslambda.streamifyResponse(
     const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/SiteMetrics");
     const requestStart = Date.now();
 
-    const sigResult = verifySignature(event, SIGNING_KEY);
-    if (!sigResult.valid) {
-      metrics.record("SignatureRejection");
-      console.log(JSON.stringify({ requestId, event: "signature_rejected", reason: sigResult.error }));
+    // Accept EITHER a server-issued session token (new model) OR the legacy
+    // request-body HMAC signature (transition window). See lambda-shared/requestAuth.
+    const auth = authenticateRequest(event, {
+      sessionKey: SESSION_TOKEN_KEY,
+      scope: "chat",
+      legacyKey: SIGNING_KEY,
+    });
+    if (!auth.valid) {
+      metrics.record("AuthRejection");
+      console.log(JSON.stringify({ requestId, event: "auth_rejected", method: auth.method, reason: auth.error }));
       writeSystemMessage(responseStream, "Unable to process request.");
       await metrics.flush();
       return;
     }
+    // Watch the legacy path drain to zero before retiring the bundled HMAC key.
+    metrics.record(auth.method === "token" ? "AuthSessionToken" : "AuthLegacySignature");
 
     const rawPath = event.rawPath || event.requestContext?.http?.path || "/";
     if (rawPath.endsWith("/forget")) {
