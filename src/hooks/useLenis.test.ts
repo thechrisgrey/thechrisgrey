@@ -15,8 +15,17 @@ const { lenisInstance } = vi.hoisted(() => ({
   },
 }));
 
+// vitest 4 no longer treats `vi.fn(() => obj)` as a constructable function
+// when used with `new` (arrow-function impls have no [[Construct]] slot).
+// Use a class whose constructor explicitly returns the hoisted instance so
+// `new Lenis(...)` in useLenis.ts produces the same shared object the tests
+// inspect for destroy()/off() calls.
 vi.mock('lenis', () => ({
-  default: vi.fn(() => lenisInstance),
+  default: class MockLenis {
+    constructor() {
+      return lenisInstance;
+    }
+  },
 }));
 
 describe('useLenisInstance', () => {
