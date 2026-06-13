@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { createClient as createSanityClient } from "@sanity/client";
 import { BedrockAgentRuntimeClient, RetrieveCommand } from "@aws-sdk/client-bedrock-agent-runtime";
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
@@ -159,7 +159,7 @@ export const handler = async (event) => {
   tools.push(
     buildAskAltiMcpTool({
       bedrockClient,
-      InvokeModelCommand,
+      ConverseCommand,
       agentClient,
       RetrieveCommand,
       kbId: KB_ID,

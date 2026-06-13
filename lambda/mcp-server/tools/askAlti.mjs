@@ -87,7 +87,7 @@ async function retrieveKbContext({
 
 async function invokeBedrock({
   bedrockClient,
-  InvokeModelCommand,
+  ConverseCommand,
   modelId,
   guardrailId,
   guardrailVersion,
@@ -100,33 +100,29 @@ async function invokeBedrock({
   const timeoutId = setTimeout(() => controller.abort(), BEDROCK_TIMEOUT_MS);
   const startedAt = Date.now();
   try {
-    const payload = {
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: MAX_OUTPUT_TOKENS,
-      temperature: TEMPERATURE,
-      system: systemPrompt,
-      messages: [{ role: "user", content: question }],
-    };
-    const cmd = new InvokeModelCommand({
+    const cmd = new ConverseCommand({
       modelId,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify(payload),
+      system: [{ text: systemPrompt }],
+      // Wrap the visitor's question in guardContent so the guardrail evaluates
+      // ONLY the user input (concentrating prompt-attack detection), not the
+      // system prompt or retrieved KB context.
+      messages: [{ role: "user", content: [{ guardContent: { text: { text: question } } }] }],
+      inferenceConfig: { maxTokens: MAX_OUTPUT_TOKENS, temperature: TEMPERATURE },
       ...(guardrailId && guardrailVersion
-        ? { guardrailIdentifier: guardrailId, guardrailVersion }
+        ? { guardrailConfig: { guardrailIdentifier: guardrailId, guardrailVersion } }
         : {}),
     });
     const resp = await bedrockClient.send(cmd, { abortSignal: controller.signal });
-    const bodyText = new TextDecoder().decode(resp.body);
-    const parsed = JSON.parse(bodyText);
-    const text = Array.isArray(parsed?.content)
-      ? parsed.content.filter((c) => c?.type === "text").map((c) => c.text).join("")
-      : "";
+    const blocks = resp?.output?.message?.content ?? [];
+    const text = blocks
+      .filter((c) => typeof c.text === "string")
+      .map((c) => c.text)
+      .join("");
 
     const latencyMs = Date.now() - startedAt;
     metrics?.record("McpBedrockLatency", latencyMs, "Milliseconds");
 
-    if (parsed?.stop_reason === "guardrail_intervened") {
+    if (resp?.stopReason === "guardrail_intervened") {
       metrics?.record("McpGuardrailIntervention");
       return {
         blocked: true,
@@ -158,7 +154,7 @@ async function invokeBedrock({
 
 export function buildAskAltiMcpTool({
   bedrockClient,
-  InvokeModelCommand,
+  ConverseCommand,
   agentClient,
   RetrieveCommand,
   kbId,
@@ -185,7 +181,7 @@ export function buildAskAltiMcpTool({
           content: [{ type: "text", text: "Question must be 3-1000 characters." }],
         };
       }
-      if (!bedrockClient || !InvokeModelCommand || !modelId) {
+      if (!bedrockClient || !ConverseCommand || !modelId) {
         return {
           isError: true,
           content: [{ type: "text", text: "Alti is not configured on this endpoint." }],
@@ -205,7 +201,7 @@ export function buildAskAltiMcpTool({
 
       const outcome = await invokeBedrock({
         bedrockClient,
-        InvokeModelCommand,
+        ConverseCommand,
         modelId,
         guardrailId,
         guardrailVersion,

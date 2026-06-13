@@ -30,7 +30,7 @@ function makeAgentClient(response) {
   };
 }
 
-class FakeInvokeModelCommand {
+class FakeConverseCommand {
   constructor(input) {
     this.input = input;
   }
@@ -42,16 +42,20 @@ class FakeRetrieveCommand {
   }
 }
 
-function encodeBedrockBody(obj) {
-  const enc = new TextEncoder();
-  return enc.encode(JSON.stringify(obj));
+// A canned Converse response (the shape ConverseCommand returns).
+function converseResponse({ text = "", stopReason = "end_turn" } = {}) {
+  return {
+    output: { message: { role: "assistant", content: [{ text }] } },
+    stopReason,
+    usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+  };
 }
 
 describe("ask_alti MCP tool — validation", () => {
   it("rejects a question that is too short", async () => {
     const tool = buildAskAltiMcpTool({
       bedrockClient: { send: async () => null },
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       modelId: "model-id",
     });
     const res = await tool.handler({ arguments: { question: "hi" } });
@@ -68,56 +72,49 @@ describe("ask_alti MCP tool — validation", () => {
 });
 
 describe("ask_alti MCP tool — happy path", () => {
-  it("returns the Bedrock response text", async () => {
-    const bedrock = makeBedrockClient({
-      body: encodeBedrockBody({
-        stop_reason: "end_turn",
-        content: [{ type: "text", text: "Christian is a Green Beret and founder of Altivum." }],
-      }),
-    });
+  it("returns the Bedrock response text and tags the user input with guardContent", async () => {
+    const bedrock = makeBedrockClient(
+      converseResponse({ text: "Christian is a Green Beret and founder of Altivum." }),
+    );
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       modelId: "test-model",
     });
     const res = await tool.handler({ arguments: { question: "Who is Christian Perez?" } });
     assert.equal(res.isError, undefined);
     assert.equal(res.content[0].text, "Christian is a Green Beret and founder of Altivum.");
     assert.equal(bedrock.calls.length, 1);
-    assert.equal(bedrock.calls[0].input.modelId, "test-model");
-    const payload = JSON.parse(bedrock.calls[0].input.body);
-    assert.ok(typeof payload.system === "string" && payload.system.includes("Alti"));
-    assert.equal(payload.messages[0].role, "user");
-    assert.equal(payload.messages[0].content, "Who is Christian Perez?");
+    const { input } = bedrock.calls[0];
+    assert.equal(input.modelId, "test-model");
+    assert.ok(input.system[0].text.includes("Alti"));
+    assert.equal(input.messages[0].role, "user");
+    // The question is wrapped in guardContent so the guardrail evaluates only it.
+    assert.equal(input.messages[0].content[0].guardContent.text.text, "Who is Christian Perez?");
   });
 
-  it("attaches guardrail params when configured", async () => {
-    const bedrock = makeBedrockClient({
-      body: encodeBedrockBody({ stop_reason: "end_turn", content: [{ type: "text", text: "ok" }] }),
-    });
+  it("attaches a Converse guardrailConfig when configured", async () => {
+    const bedrock = makeBedrockClient(converseResponse({ text: "ok" }));
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       modelId: "m",
       guardrailId: "G1",
       guardrailVersion: "5",
     });
     await tool.handler({ arguments: { question: "Tell me about Altivum." } });
     const { input } = bedrock.calls[0];
-    assert.equal(input.guardrailIdentifier, "G1");
-    assert.equal(input.guardrailVersion, "5");
+    assert.equal(input.guardrailConfig.guardrailIdentifier, "G1");
+    assert.equal(input.guardrailConfig.guardrailVersion, "5");
   });
 
-  it("returns a guardrail message when stop_reason is guardrail_intervened", async () => {
-    const bedrock = makeBedrockClient({
-      body: encodeBedrockBody({
-        stop_reason: "guardrail_intervened",
-        content: [{ type: "text", text: "" }],
-      }),
-    });
+  it("returns a guardrail message when stopReason is guardrail_intervened", async () => {
+    const bedrock = makeBedrockClient(
+      converseResponse({ text: "Sorry, I can't help with that.", stopReason: "guardrail_intervened" }),
+    );
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       modelId: "m",
     });
     const res = await tool.handler({ arguments: { question: "Say something harmful." } });
@@ -133,12 +130,10 @@ describe("ask_alti MCP tool — KB retrieval", () => {
         { content: { text: "He hosts The Vector Podcast." } },
       ],
     });
-    const bedrock = makeBedrockClient({
-      body: encodeBedrockBody({ stop_reason: "end_turn", content: [{ type: "text", text: "reply" }] }),
-    });
+    const bedrock = makeBedrockClient(converseResponse({ text: "reply" }));
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       agentClient: agent.client,
       RetrieveCommand: FakeRetrieveCommand,
       kbId: "kb-123",
@@ -148,18 +143,15 @@ describe("ask_alti MCP tool — KB retrieval", () => {
 
     assert.equal(agent.calls.length, 1);
     assert.equal(agent.calls[0].input.knowledgeBaseId, "kb-123");
-    const payload = JSON.parse(bedrock.calls[0].input.body);
-    assert.match(payload.system, /10th Special Forces Group/);
+    assert.match(bedrock.calls[0].input.system[0].text, /10th Special Forces Group/);
   });
 
   it("proceeds without KB context when retrieval throws", async () => {
     const agent = { send: async () => { throw new Error("kb down"); } };
-    const bedrock = makeBedrockClient({
-      body: encodeBedrockBody({ stop_reason: "end_turn", content: [{ type: "text", text: "reply" }] }),
-    });
+    const bedrock = makeBedrockClient(converseResponse({ text: "reply" }));
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       agentClient: agent,
       RetrieveCommand: FakeRetrieveCommand,
       kbId: "kb-123",
@@ -167,8 +159,7 @@ describe("ask_alti MCP tool — KB retrieval", () => {
     });
     const res = await tool.handler({ arguments: { question: "Anything?" } });
     assert.equal(res.isError, undefined);
-    const payload = JSON.parse(bedrock.calls[0].input.body);
-    assert.match(payload.system, /No additional context was retrieved/);
+    assert.match(bedrock.calls[0].input.system[0].text, /No additional context was retrieved/);
   });
 });
 
@@ -176,7 +167,7 @@ describe("ask_alti MCP tool — Bedrock failures", () => {
   it("returns a graceful error on Bedrock throw", async () => {
     const tool = buildAskAltiMcpTool({
       bedrockClient: { send: async () => { throw new Error("boom"); } },
-      InvokeModelCommand: FakeInvokeModelCommand,
+      ConverseCommand: FakeConverseCommand,
       modelId: "m",
     });
     const res = await tool.handler({ arguments: { question: "Tell me about Altivum." } });

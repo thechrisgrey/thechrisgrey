@@ -115,6 +115,11 @@ function abortingBedrockClient() {
   return {
     calls: [],
     async send(command, options) {
+      // The input guardrail pre-check resolves immediately (passes) so the test
+      // reaches the generation call it actually exercises.
+      if (command?.constructor?.name === "ApplyGuardrailCommand") {
+        return { action: "NONE" };
+      }
       this.calls.push({ command, options });
       return await new Promise((_resolve, reject) => {
         const signal = options?.abortSignal;

@@ -26,21 +26,15 @@ export function signBlueprintEvent(body, key, { offsetSeconds = 0 } = {}) {
 }
 
 /**
- * Build a canned Anthropic-on-Bedrock response body shaped like the real
- * InvokeModelCommand response. `text` is the assistant message content.
+ * Build a canned Converse response shaped like the real ConverseCommand
+ * response. `text` is the assistant message content; a guardrail block sets
+ * stopReason "guardrail_intervened".
  */
 export function bedrockResponseBody(text, { inputTokens = 100, outputTokens = 200, stopReason = "end_turn" } = {}) {
-  const payload = {
-    id: "msg_test",
-    type: "message",
-    role: "assistant",
-    model: "claude-test",
-    content: [{ type: "text", text }],
-    stop_reason: stopReason,
-    usage: { input_tokens: inputTokens, output_tokens: outputTokens },
-  };
   return {
-    body: new TextEncoder().encode(JSON.stringify(payload)),
+    output: { message: { role: "assistant", content: [{ text }] } },
+    stopReason,
+    usage: { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens },
   };
 }
 
@@ -49,11 +43,21 @@ export function bedrockResponseBody(text, { inputTokens = 100, outputTokens = 20
  * invocation. Each entry is either a { text } object, an Error to throw, or
  * a { streamText, chunkSize? } object for streaming (InvokeModelWithResponseStream).
  */
-export function scriptedBedrockClient(responses) {
+export function scriptedBedrockClient(responses, { guardrailAction = "NONE", guardrailError = null } = {}) {
   let idx = 0;
   return {
     calls: [],
+    guardrailCalls: [],
     async send(command, options) {
+      // The input guardrail pre-check (ApplyGuardrailCommand) is answered from
+      // guardrailAction/guardrailError and recorded separately — it does NOT
+      // consume a scripted generation response or appear in `calls`, so
+      // generation-call assertions (counts, indices) are unaffected.
+      if (command?.constructor?.name === "ApplyGuardrailCommand") {
+        this.guardrailCalls.push({ command, options });
+        if (guardrailError) throw guardrailError;
+        return { action: guardrailAction };
+      }
       const call = { command, options };
       this.calls.push(call);
       const entry = responses[idx++];
@@ -72,9 +76,10 @@ export function scriptedBedrockClient(responses) {
 }
 
 /**
- * Canned streaming response: turns a target string into Anthropic-on-Bedrock
- * streaming events (message_start → content_block_delta × N → message_delta →
- * message_stop) and exposes them as an async iterable on `.body`.
+ * Canned streaming response: turns a target string into ConverseStream events
+ * (messageStart → contentBlockDelta × N → contentBlockStop → messageStop →
+ * metadata) and exposes them as an async iterable on `.stream`. A guardrail
+ * block sets the messageStop stopReason to "guardrail_intervened".
  */
 export function bedrockStreamResponse(text, {
   chunkSize = 32,
@@ -87,38 +92,31 @@ export function bedrockStreamResponse(text, {
     deltas.push(text.slice(i, i + chunkSize));
   }
   const events = [
-    {
-      type: "message_start",
-      message: { usage: { input_tokens: inputTokens, output_tokens: 0 } },
-    },
+    { messageStart: { role: "assistant" } },
     ...deltas.map((d) => ({
-      type: "content_block_delta",
-      delta: { type: "text_delta", text: d },
+      contentBlockDelta: { delta: { text: d }, contentBlockIndex: 0 },
     })),
+    { contentBlockStop: { contentBlockIndex: 0 } },
+    { messageStop: { stopReason } },
     {
-      type: "message_delta",
-      delta: { stop_reason: stopReason },
-      usage: { output_tokens: outputTokens },
+      metadata: {
+        usage: { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens },
+        metrics: { latencyMs: 1 },
+      },
     },
-    { type: "message_stop" },
   ];
-  const encoder = new TextEncoder();
-  const body = {
+  const stream = {
     [Symbol.asyncIterator]() {
       let i = 0;
       return {
         next() {
           if (i >= events.length) return Promise.resolve({ done: true });
-          const ev = events[i++];
-          return Promise.resolve({
-            value: { chunk: { bytes: encoder.encode(JSON.stringify(ev)) } },
-            done: false,
-          });
+          return Promise.resolve({ value: events[i++], done: false });
         },
       };
     },
   };
-  return { body };
+  return { stream };
 }
 
 /**
