@@ -36,9 +36,9 @@ Personal website for **Christian Perez** ([@thechrisgrey](https://thechrisgrey.c
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | React 18, TypeScript 5, Vite 5 |
-| **Styling** | Tailwind CSS 3.4 (custom design system) |
-| **Routing** | React Router v6 |
+| **Frontend** | React 19, TypeScript 5, Vite 5 (Vitest 4, ESLint 10 flat config) |
+| **Styling** | Tailwind CSS 4 (CSS-first `@theme` config, Oxide engine) |
+| **Routing** | React Router 7 |
 | **CMS** | Sanity.io (blog content) |
 | **AI Chat** | Amazon Bedrock (Claude Haiku 4.5) + RAG |
 | **Auth** | Amazon Cognito (admin panel) |

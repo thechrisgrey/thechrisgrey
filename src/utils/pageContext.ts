@@ -1,3 +1,5 @@
+import { ROUTES, ROUTES_BY_PATH, HOME_CONTEXT } from '../routes';
+
 export interface PageContext {
   currentPage: string;
   pageTitle: string;
@@ -10,90 +12,35 @@ interface RouteMetadata {
   section: string;
 }
 
+/**
+ * Per-route grounding context for Alti. Derived from the canonical ROUTES
+ * table — every route gets a real `pageTitle` + `section` by construction;
+ * the historic drift (where `/foundation` and `/blueprint` fell through to
+ * the `{ pageTitle: 'Page', section: 'General' }` default and produced
+ * useless Alti grounding) is no longer possible.
+ */
 const ROUTE_CONTEXT_MAP: Record<string, RouteMetadata> = {
-  '/': { pageTitle: 'Home', section: 'Home' },
-  '/about': { pageTitle: 'Personal Biography', section: 'Personal Biography' },
-  '/altivum': { pageTitle: 'Altivum Inc', section: 'Altivum Inc' },
-  '/podcast': { pageTitle: 'The Vector Podcast', section: 'The Vector Podcast' },
-  '/beyond-the-assessment': { pageTitle: 'Beyond the Assessment', section: 'Beyond the Assessment' },
-  '/aws': { pageTitle: 'Amazon Web Services', section: 'Amazon Web Services' },
-  '/claude': { pageTitle: 'Claude', section: 'Claude' },
-  '/blog': { pageTitle: 'Blog', section: 'Blog' },
-  '/contact': { pageTitle: 'Contact & Speaking', section: 'Contact & Speaking' },
-  '/links': { pageTitle: 'Links', section: 'Links' },
-  '/chat': { pageTitle: 'AI Chat', section: 'AI Chat' },
-  '/privacy': { pageTitle: 'Privacy Policy', section: 'Privacy Policy' },
-  '/admin': { pageTitle: 'Admin', section: 'Admin' },
+  [HOME_CONTEXT.path]: HOME_CONTEXT.context,
+  ...Object.fromEntries(ROUTES.map((r) => [r.path, r.context])),
 };
 
 const DEFAULT_SUGGESTIONS = [
   "How did he go from Green Beret to tech CEO?",
   "What drives Altivum's mission?",
-  "Why did he write Beyond the Assessment?",
+  'Why did he write Beyond the Assessment?',
   "What's his take on AI and veterans?",
 ];
 
+/**
+ * Per-route starter chips for Alti. Derived from the canonical ROUTES table.
+ * Routes that don't declare their own suggestions fall back to
+ * DEFAULT_SUGGESTIONS at lookup time.
+ */
 export const PAGE_SUGGESTIONS: Record<string, string[]> = {
-  '/': [
-    "What's Christian's story?",
-    "What is Altivum?",
-    "Tell me about the podcast",
-    "What's Beyond the Assessment about?",
-  ],
-  '/about': [
-    "What was his military career like?",
-    "Where did he go to school?",
-    "What's his leadership philosophy?",
-    "How did he transition to tech?",
-  ],
-  '/altivum': [
-    "What does Altivum do?",
-    "What is Altivum Logic?",
-    "What's Vanguard?",
-    "How is Altivum different?",
-  ],
-  '/podcast': [
-    "What's the podcast about?",
-    "Who are some notable guests?",
-    "What topics does it cover?",
-    "How can I listen?",
-  ],
-  '/beyond-the-assessment': [
-    "What's the book about?",
-    "Who should read it?",
-    "What inspired him to write it?",
-    "Where can I buy it?",
-  ],
-  '/aws': [
-    "What does he do as an AWS Community Builder?",
-    "What AWS services does he work with?",
-    "How does he use AI on AWS?",
-    "What is the Community Builder program?",
-  ],
-  '/claude': [
-    "How does he use Claude in production?",
-    "What Anthropic Academy certifications does he have?",
-    "How does he combine Claude with AWS?",
-    "What AI systems has he built with Claude?",
-  ],
-  '/blog': [
-    "What does he write about?",
-    "Any posts on AI strategy?",
-    "What are the most popular posts?",
-    "Does he have a blog series?",
-  ],
-  '/contact': [
-    "What topics does he speak on?",
-    "How do I book him for an event?",
-    "What's in the press kit?",
-    "How can I reach him?",
-  ],
-  '/links': [
-    "Where can I follow him?",
-    "What platforms is he on?",
-    "What's Altivum's website?",
-    "Where's the podcast?",
-  ],
+  [HOME_CONTEXT.path]: HOME_CONTEXT.suggestions,
+  ...Object.fromEntries(
+    ROUTES.filter((r) => r.suggestions).map((r) => [r.path, r.suggestions!])
+  ),
 };
 
 export function getPageContext(pathname: string, visitedPages: string[]): PageContext {
@@ -120,14 +67,9 @@ export function getPageContext(pathname: string, visitedPages: string[]): PageCo
 }
 
 export function getSuggestionsForPage(pathname: string): string[] {
-  // Blog post pages use blog suggestions
+  // Blog post pages share one suggestion set defined on the /blog/:slug route.
   if (pathname.startsWith('/blog/') && pathname !== '/blog') {
-    return [
-      "Can you summarize this post?",
-      "What else has he written on this topic?",
-      "What's his take on this?",
-      "Any related podcast episodes?",
-    ];
+    return ROUTES_BY_PATH.get('/blog/:slug')?.suggestions ?? DEFAULT_SUGGESTIONS;
   }
 
   return PAGE_SUGGESTIONS[pathname] || DEFAULT_SUGGESTIONS;
