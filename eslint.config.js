@@ -75,7 +75,10 @@ export default [
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/refs': 'off',
       'react-hooks/immutability': 'off',
-      'react-hooks/static-components': 'off',
+      // Enabled in this PR (fix/react-hooks-static-components): the only
+      // call site, GenerativeBlocks.tsx's Comparison.Column, has been
+      // hoisted to module scope.
+      'react-hooks/static-components': 'error',
     },
   },
 

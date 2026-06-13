@@ -62,8 +62,13 @@ function Timeline({ block }: { block: TimelineBlock }) {
   );
 }
 
-function Comparison({ block }: { block: ComparisonBlock }) {
-  const Column = ({ heading, points }: { heading: string; points: string[] }) => (
+// Hoisted to module scope — Column has no closure dependencies on its parent
+// (it takes heading/points as props, nothing more). Defining it inside
+// Comparison re-creates the component identity on every render, which trips
+// react-hooks/static-components and (more importantly) defeats React's
+// referential-equality memoization on the column subtrees.
+function ComparisonColumn({ heading, points }: { heading: string; points: string[] }) {
+  return (
     <div className="flex-1">
       <p className="text-altivum-gold mb-2" style={typography.bodyText}>
         {heading}
@@ -80,13 +85,16 @@ function Comparison({ block }: { block: ComparisonBlock }) {
       </ul>
     </div>
   );
+}
+
+function Comparison({ block }: { block: ComparisonBlock }) {
   return (
     <div className={cardShell} role="group" aria-label={block.title || 'Comparison'}>
       {block.title ? <BlockTitle>{block.title}</BlockTitle> : null}
       <div className="flex flex-col sm:flex-row gap-5">
-        <Column heading={block.left.heading} points={block.left.points} />
+        <ComparisonColumn heading={block.left.heading} points={block.left.points} />
         <div className="hidden sm:block w-px bg-linear-to-b from-transparent via-altivum-gold/20 to-transparent" aria-hidden="true" />
-        <Column heading={block.right.heading} points={block.right.points} />
+        <ComparisonColumn heading={block.right.heading} points={block.right.points} />
       </div>
     </div>
   );
