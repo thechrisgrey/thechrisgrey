@@ -22,7 +22,11 @@ vi.mock('gsap', () => ({
 
 // Mock useFocusTrap for FallbackDetail
 vi.mock('../../hooks/useFocusTrap', () => ({
-  useFocusTrap: () => ({ current: null }),
+  useFocusTrap: () => ({
+    containerRef: { current: null },
+    setContainerRef: vi.fn(),
+    handleKeyDown: vi.fn(),
+  }),
 }));
 
 const renderAWS = () => {

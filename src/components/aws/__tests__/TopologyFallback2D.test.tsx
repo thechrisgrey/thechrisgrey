@@ -14,7 +14,7 @@ vi.mock('gsap', () => ({
 
 // Mock useFocusTrap
 vi.mock('../../../hooks/useFocusTrap', () => ({
-  useFocusTrap: () => ({ containerRef: { current: null }, handleKeyDown: vi.fn() }),
+  useFocusTrap: () => ({ containerRef: { current: null }, setContainerRef: vi.fn(), handleKeyDown: vi.fn() }),
 }));
 
 describe('TopologyFallback2D', () => {

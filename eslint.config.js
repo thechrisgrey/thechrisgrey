@@ -77,7 +77,11 @@ export default [
       // messagesRef sync into a useEffect and replaced the render-phase
       // `streamingMessageIdRef.current` read with a parallel useState.
       'react-hooks/refs': 'error',
-      'react-hooks/immutability': 'off',
+      // Enabled in fix/react-hooks-immutability: FallbackDetail no longer
+      // mutates useFocusTrap's returned ref (uses the new setContainerRef
+      // callback instead); HeroCanvas's THREE.Uniform.value mutation is
+      // a documented R3F idiom and carries a targeted eslint-disable.
+      'react-hooks/immutability': 'error',
       // Enabled in this PR (fix/react-hooks-static-components): the only
       // call site, GenerativeBlocks.tsx's Comparison.Column, has been
       // hoisted to module scope.

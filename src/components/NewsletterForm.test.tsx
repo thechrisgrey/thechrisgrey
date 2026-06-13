@@ -7,6 +7,7 @@ import NewsletterForm from './NewsletterForm';
 vi.mock('../hooks', () => ({
   useFocusTrap: () => ({
     containerRef: { current: null },
+    setContainerRef: vi.fn(),
     handleKeyDown: vi.fn(),
   }),
 }));
