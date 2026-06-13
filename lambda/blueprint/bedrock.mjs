@@ -373,6 +373,21 @@ export async function streamOpus(bedrockClient, {
     }
 
     clearTimeout(timeoutId);
+    // ConverseStream ends the async iterator GRACEFULLY when the request is
+    // aborted (the abortSignal cancels it without rejecting the iteration), so
+    // an abort would otherwise return as a completed-but-truncated generation —
+    // the engine would then try to parse partial JSON and surface a misleading
+    // validation_failed instead of a timeout. Detect the abort explicitly and
+    // surface it as a timeout, matching the blocking path.
+    if (controller.signal.aborted) {
+      if (requestId) {
+        console.error(JSON.stringify({
+          requestId, event: "bedrock_stream_timeout", modelId: OPUS_MODEL_ID,
+          latencyMs: Date.now() - start, timeoutMs, partialChars: accumulated.length,
+        }));
+      }
+      throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
+    }
     return {
       text: accumulated,
       usage: { input_tokens: inputTokens, output_tokens: outputTokens },
@@ -382,6 +397,9 @@ export async function streamOpus(bedrockClient, {
   } catch (error) {
     clearTimeout(timeoutId);
     const latencyMs = Date.now() - start;
+    // Re-throw a timeout raised after the loop (graceful-abort detection) so it
+    // is not re-wrapped as a generic invocation error.
+    if (error instanceof BedrockTimeoutError) throw error;
     if (error?.name === "AbortError") {
       if (requestId) {
         console.error(JSON.stringify({

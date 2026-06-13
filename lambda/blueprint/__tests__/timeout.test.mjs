@@ -147,6 +147,47 @@ test("streamOpus honors a passed timeoutMs and reports it on abort", { timeout: 
   );
 });
 
+test("streamOpus surfaces a timeout when ConverseStream ends GRACEFULLY on abort", { timeout: 2000 }, async () => {
+  // The real ConverseStream cancels its async iterator without rejecting when
+  // the abortSignal fires — so an abort looks like a completed (truncated)
+  // generation unless detected explicitly. This fake yields one partial delta,
+  // then ends the stream as soon as the abort signal fires.
+  const client = {
+    async send(command, options) {
+      const signal = options?.abortSignal;
+      return {
+        stream: {
+          [Symbol.asyncIterator]() {
+            let yielded = false;
+            return {
+              async next() {
+                if (signal?.aborted) return { done: true };
+                if (!yielded) {
+                  yielded = true;
+                  return { value: { contentBlockDelta: { delta: { text: "{\"partial\": \"trunc" } } }, done: false };
+                }
+                await new Promise((resolve) => {
+                  if (signal?.aborted) return resolve();
+                  signal?.addEventListener?.("abort", resolve, { once: true });
+                });
+                return { done: true };
+              },
+            };
+          },
+        },
+      };
+    },
+  };
+  await assert.rejects(
+    streamOpus(client, { system: "s", user: "u", timeoutMs: 50, onChunk: () => {} }),
+    (err) => {
+      assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
+      assert.equal(err.timeoutMs, 50);
+      return true;
+    },
+  );
+});
+
 test("invokeOpus honors a passed timeoutMs and reports it on abort", { timeout: 2000 }, async () => {
   const bedrock = abortingBedrockClient();
   await assert.rejects(
