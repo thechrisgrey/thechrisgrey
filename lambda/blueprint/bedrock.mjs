@@ -122,7 +122,11 @@ export async function applyInputGuardrail(bedrockClient, text, {
 // deadline is available (local runs, the MCP wrapper, tests). HAIKU_TIMEOUT_MS
 // stays fixed; it has its own timer and runs only after a successful Opus pass,
 // inside the buffer reserved below.
-export const OPUS_TIMEOUT_MS = 110_000;
+// 150s (raised from 110s): a full blueprint generates ~5700+ tokens in roughly
+// 110-130s, right at the old per-attempt cap. 150s gives an attempt comfortable
+// headroom. Paired with the Lambda timeout raised to 300s, so the shared Opus
+// deadline (LambdaTimeout - buffer = 280s) no longer clamps an attempt below this.
+export const OPUS_TIMEOUT_MS = 150_000;
 export const HAIKU_TIMEOUT_MS = 15_000;
 
 // Time reserved between the Opus deadline and the Lambda hard-timeout for the
