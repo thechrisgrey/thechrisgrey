@@ -1,0 +1,148 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { createHash } from "crypto";
+import { verifySessionToken } from "lambda-shared/sessionToken";
+import { createIssuerHandler, verifyTurnstile } from "../index.mjs";
+
+const SIGNING_KEY = "server-only-signing-secret";
+const ORIGIN = "https://thechrisgrey.com";
+
+// Fake DynamoDBDocumentClient that drives the REAL checkRateLimit logic:
+// returns ALL_NEW Attributes with a scripted requestCount so we exercise the
+// genuine allowed/denied branch rather than mocking the limiter itself.
+function fakeDocClient(requestCount) {
+  return {
+    sent: [],
+    async send(cmd) {
+      this.sent.push(cmd);
+      return { Attributes: { requestCount } };
+    },
+  };
+}
+class FakeUpdateCommand {
+  constructor(input) { this.input = input; }
+}
+
+function baseConfig(overrides = {}) {
+  return {
+    signingKey: SIGNING_KEY,
+    turnstileSecret: "turnstile-secret",
+    corsOrigin: ORIGIN,
+    allowedOrigins: [ORIGIN],
+    rateLimitTable: "thechrisgrey-chat-ratelimit",
+    chatTtl: 1800,
+    blueprintTtl: 600,
+    maxIssuancePerHour: 60,
+    ...overrides,
+  };
+}
+
+function makeHandler({ requestCount = 1, turnstilePass = true, config = {} } = {}) {
+  return createIssuerHandler({
+    docClient: fakeDocClient(requestCount),
+    UpdateCommand: FakeUpdateCommand,
+    verifyTurnstile: async () => turnstilePass,
+    config: baseConfig(config),
+  });
+}
+
+function makeEvent({ method = "POST", origin = ORIGIN, body, ip = "9.9.9.9" } = {}) {
+  return {
+    requestContext: { http: { method, sourceIp: ip } },
+    headers: { origin },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  };
+}
+
+const DEVICE_ID = "device-ABC_123-xyz";
+const deviceHashOf = (id) => createHash("sha256").update(id).digest("hex");
+
+test("OPTIONS preflight returns 204 with CORS headers", async () => {
+  const res = await makeHandler()(makeEvent({ method: "OPTIONS" }));
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.headers["Access-Control-Allow-Origin"], ORIGIN);
+});
+
+test("non-POST is rejected with 405", async () => {
+  const res = await makeHandler()(makeEvent({ method: "GET" }));
+  assert.equal(res.statusCode, 405);
+});
+
+test("a request from a disallowed Origin is rejected with 403", async () => {
+  const res = await makeHandler()(makeEvent({ origin: "https://evil.example", body: { deviceId: DEVICE_ID, turnstileToken: "t" } }));
+  assert.equal(res.statusCode, 403);
+});
+
+test("missing deviceId is rejected with 400", async () => {
+  const res = await makeHandler()(makeEvent({ body: { turnstileToken: "t" } }));
+  assert.equal(res.statusCode, 400);
+});
+
+test("an invalid deviceId shape is rejected with 400", async () => {
+  const res = await makeHandler()(makeEvent({ body: { deviceId: "bad id with spaces!", turnstileToken: "t" } }));
+  assert.equal(res.statusCode, 400);
+});
+
+test("a failing Turnstile check is rejected with 403", async () => {
+  const res = await makeHandler({ turnstilePass: false })(
+    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "bad-token" } })
+  );
+  assert.equal(res.statusCode, 403);
+  assert.equal(JSON.parse(res.body).error, "turnstile_failed");
+});
+
+test("exceeding the per-IP issuance limit is rejected with 429", async () => {
+  // requestCount above maxIssuancePerHour => checkRateLimit returns not allowed
+  const res = await makeHandler({ requestCount: 61 })(
+    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "t" } })
+  );
+  assert.equal(res.statusCode, 429);
+});
+
+test("happy path mints scoped chat + blueprint tokens bound to the device hash", async () => {
+  const res = await makeHandler()(makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "good" } }));
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.ok(body.chatToken, "chatToken present");
+  assert.ok(body.blueprintToken, "blueprintToken present");
+
+  const chat = verifySessionToken(body.chatToken, SIGNING_KEY, { scope: "chat" });
+  assert.equal(chat.valid, true);
+  assert.equal(chat.deviceHash, deviceHashOf(DEVICE_ID));
+
+  const bp = verifySessionToken(body.blueprintToken, SIGNING_KEY, { scope: "blueprint" });
+  assert.equal(bp.valid, true);
+  assert.equal(bp.deviceHash, deviceHashOf(DEVICE_ID));
+
+  // A chat token must NOT be accepted on the blueprint scope and vice versa.
+  assert.equal(verifySessionToken(body.chatToken, SIGNING_KEY, { scope: "blueprint" }).valid, false);
+});
+
+test("when TURNSTILE_SECRET is empty, the Turnstile check is skipped (dev parity)", async () => {
+  const handler = createIssuerHandler({
+    docClient: fakeDocClient(1),
+    UpdateCommand: FakeUpdateCommand,
+    // verifyTurnstile would return false, but an empty secret must short-circuit it.
+    verifyTurnstile: async () => false,
+    config: baseConfig({ turnstileSecret: "" }),
+  });
+  const res = await handler(makeEvent({ body: { deviceId: DEVICE_ID } }));
+  assert.equal(res.statusCode, 200);
+});
+
+// ── verifyTurnstile (real implementation, injected fetch) ───────────────────
+
+test("verifyTurnstile returns true when siteverify reports success", async () => {
+  const fakeFetch = async () => ({ json: async () => ({ success: true }) });
+  assert.equal(await verifyTurnstile("token", "secret", "1.2.3.4", fakeFetch), true);
+});
+
+test("verifyTurnstile returns false when siteverify reports failure", async () => {
+  const fakeFetch = async () => ({ json: async () => ({ success: false, "error-codes": ["invalid-input-response"] }) });
+  assert.equal(await verifyTurnstile("token", "secret", "1.2.3.4", fakeFetch), false);
+});
+
+test("verifyTurnstile fails closed when the network call throws", async () => {
+  const fakeFetch = async () => { throw new Error("network down"); };
+  assert.equal(await verifyTurnstile("token", "secret", "1.2.3.4", fakeFetch), false);
+});
