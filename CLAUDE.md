@@ -32,6 +32,8 @@ npm run deploy:lambda -- <name>             # deploy (default region us-east-1; 
 - **17 routes:** `/`, `/about`, `/altivum`, `/foundation`, `/podcast`, `/beyond-the-assessment`, `/aws`, `/claude`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`, `/admin`, `/blueprint`, catch-all 404
 - **Single source of truth:** `src/routes.ts` exports the canonical `ROUTES` table (path + lazy importer + Alti grounding context + starter suggestions + `noPrefetch` flag). `routeManifest.ts` derives hover-prefetch from it; `pageContext.ts` derives `ROUTE_CONTEXT_MAP` + `PAGE_SUGGESTIONS` from it. App.tsx still has explicit `<Route>` JSX (readable). A drift test in `src/routes.test.ts` asserts the two stay in sync.
 - Footer + chat widget hidden on fullscreen pages (`/chat`, `/admin`)
+- Top-level `<ErrorBoundary>` is keyed by `location.pathname` so a render-time throw (e.g. a stale lazy chunk) clears on client-side navigation instead of trapping the user until a full reload.
+- The chat Lambda mirrors the route table: `VALID_PATHS` (`lambda/chat-stream/validation.mjs`) + the `navigate_to` tool description list the navigable paths; `validation-drift.test.mjs` asserts `VALID_PATHS` stays a superset of `routes.ts` (parsed as text — the Lambda can't import the TS table).
 
 ### Design System
 
@@ -97,7 +99,7 @@ Full-viewport chat at `/chat` + floating 3D widget on all other pages. Powered b
 
 **Event Protocol:** Text streams raw. Events framed: `\x00EVT\x00{json}\x00EVT\x00`. Errors: `\x00SYS\x00` prefix. Client parser: `src/utils/chatEvents.ts`.
 
-**Visitor Memory:** DynamoDB `thechrisgrey-chat-memory`, partitioned by deviceHash (SHA-256 of localStorage UUID from `src/utils/deviceId.ts`). 90-day TTL. PII disallowed.
+**Visitor Memory:** DynamoDB `thechrisgrey-chat-memory`, partitioned by deviceHash (SHA-256 of localStorage UUID from `src/utils/deviceId.ts`). 90-day TTL. PII disallowed — enforced server-side: `sanitizeFactContent` (`memory.mjs`) rejects facts containing emails or phone-shaped digit runs before persistence, not just by prompt instruction.
 
 **Security:**
 - HMAC-SHA256 request signing (`src/utils/chatSigning.ts`): `X-Chat-Timestamp` + `X-Chat-Signature`, 5-min window, timingSafeEqual
@@ -130,7 +132,7 @@ Architecture generator at `/blueprint`. Opus 4.6 generates blueprint from spec; 
 
 **Frontend:** Home scroll tab #8, feature-flagged `VITE_BLUEPRINT_ENABLED`, waitlist reuses newsletter Lambda.
 
-**Env vars:** Lambda: `BLUEPRINT_SIGNING_KEY`, `BLUEPRINT_RATE_LIMIT_TABLE`, `SANITY_*`, `BEDROCK_OPUS_MODEL_ID`, `BEDROCK_HAIKU_MODEL_ID`. Frontend: `VITE_BLUEPRINT_ENDPOINT`, `VITE_BLUEPRINT_SIGNING_KEY`, `VITE_BLUEPRINT_ENABLED`.
+**Env vars:** Lambda: `BLUEPRINT_SIGNING_KEY`, `BLUEPRINT_RATE_LIMIT_TABLE`, `SANITY_*`, `BEDROCK_OPUS_MODEL_ID`, `BEDROCK_HAIKU_MODEL_ID`, `GUARDRAIL_ID`, `GUARDRAIL_VERSION` (default to the live guardrail in code). Frontend: `VITE_BLUEPRINT_ENDPOINT`, `VITE_BLUEPRINT_SIGNING_KEY`, `VITE_BLUEPRINT_ENABLED`.
 
 ### KB Admin (`/admin`)
 
@@ -163,11 +165,11 @@ Series filtering (`?series=<slug>`), categories from data, Shiki syntax highligh
 Seven services under `lambda/`. All ESM `.mjs`, all on AWS SDK v3 (current `^3.1068` per the dep sweep in #111):
 
 - **`lambda/chat-stream/`** — Alti's brain. Strands SDK + Bedrock Haiku 4.5 + KB retrieval + 8 tools + HMAC + rate limit + Bedrock Guardrail. Streams via `awslambda.streamifyResponse`.
-- **`lambda/blueprint/`** — Architecture generator (Opus 4.6) with golden-example RAG, Zod schema validation, Haiku quality verdict pass. Engine is transport-agnostic (`engine.mjs`).
+- **`lambda/blueprint/`** — Architecture generator (Opus 4.6) with golden-example RAG, Zod schema validation, Haiku quality verdict pass. Engine is transport-agnostic (`engine.mjs`). Bedrock Guardrail (`5kofhp46ssob` v5) wraps every Opus + Haiku call (`guardrailParams()` in `bedrock.mjs`); an intervention surfaces the `guardrail_intervened` terminal code + `BlueprintGuardrailIntervention` metric. Requires `bedrock:ApplyGuardrail` in the role (`iam-policy.json`).
 - **`lambda/kb-builder/`** — Cognito-auth'd CRUD on Sanity `kbEntry`. Builds `knowledge-base.txt` → S3 → auto-sync. PUT/DELETE both check `_type === 'kbEntry'` before writing.
 - **`lambda/kb-sync/`** — S3 event-triggered `StartIngestionJob` for the Bedrock KB.
 - **`lambda/metrics/`** — Web Vitals + CSP report ingestion → CloudWatch. Cognito-auth'd `/health`.
-- **`lambda/mcp-server/`** — Public MCP server exposing `ask_alti` tool (KB retrieval + Bedrock + Guardrail). Same guardrail as chat-stream.
+- **`lambda/mcp-server/`** — Public MCP server exposing `ask_alti` tool (KB retrieval + Bedrock + Guardrail). Same guardrail as chat-stream. Imports `checkRateLimit` via the `lambda-shared/rateLimit` subpath (not the barrel) to keep the CloudWatch SDK out of cold start.
 - **`lambda/shared/`** — `checkRateLimit` (atomic DynamoDB ADD), `validateCognitoToken` (with email allowlist), `respond`, `hmac`, `metrics` MetricsCollector, `sanityQueries`. Listed as `"lambda-shared": "file:../shared"` in each Lambda's package.json. AWS SDK clients injected as params.
 
 ### Component Patterns

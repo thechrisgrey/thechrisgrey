@@ -4,7 +4,7 @@ import { BedrockAgentRuntimeClient, RetrieveCommand } from "@aws-sdk/client-bedr
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { checkRateLimit } from "lambda-shared";
+import { checkRateLimit } from "lambda-shared/rateLimit";
 import { buildMcpServer } from "./server.mjs";
 import { buildSearchBlogMcpTool } from "./tools/searchBlog.mjs";
 import { buildGetBlogPostMcpTool } from "./tools/getBlogPost.mjs";

@@ -29,14 +29,14 @@ export function signBlueprintEvent(body, key, { offsetSeconds = 0 } = {}) {
  * Build a canned Anthropic-on-Bedrock response body shaped like the real
  * InvokeModelCommand response. `text` is the assistant message content.
  */
-export function bedrockResponseBody(text, { inputTokens = 100, outputTokens = 200 } = {}) {
+export function bedrockResponseBody(text, { inputTokens = 100, outputTokens = 200, stopReason = "end_turn" } = {}) {
   const payload = {
     id: "msg_test",
     type: "message",
     role: "assistant",
     model: "claude-test",
     content: [{ type: "text", text }],
-    stop_reason: "end_turn",
+    stop_reason: stopReason,
     usage: { input_tokens: inputTokens, output_tokens: outputTokens },
   };
   return {
@@ -66,7 +66,7 @@ export function scriptedBedrockClient(responses) {
       if (typeof entry.streamText === "string") {
         return bedrockStreamResponse(entry.streamText, entry);
       }
-      return bedrockResponseBody(entry.text, entry.usage);
+      return bedrockResponseBody(entry.text, { ...entry.usage, stopReason: entry.stopReason });
     },
   };
 }
@@ -80,6 +80,7 @@ export function bedrockStreamResponse(text, {
   chunkSize = 32,
   inputTokens = 150,
   outputTokens = 300,
+  stopReason = "end_turn",
 } = {}) {
   const deltas = [];
   for (let i = 0; i < text.length; i += chunkSize) {
@@ -96,7 +97,7 @@ export function bedrockStreamResponse(text, {
     })),
     {
       type: "message_delta",
-      delta: { stop_reason: "end_turn" },
+      delta: { stop_reason: stopReason },
       usage: { output_tokens: outputTokens },
     },
     { type: "message_stop" },

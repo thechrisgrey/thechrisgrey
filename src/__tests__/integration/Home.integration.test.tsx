@@ -39,6 +39,13 @@ describe('Home Page Integration', () => {
       expect(heroImage.tagName).toBe('IMG');
     });
 
+    it('reserves the hero image box with intrinsic width and height (CLS)', () => {
+      renderHome();
+      const heroImage = screen.getByAltText('Leadership Forged in Service');
+      expect(heroImage).toHaveAttribute('width', '1500');
+      expect(heroImage).toHaveAttribute('height', '1500');
+    });
+
     it('renders an accessible h1 heading for screen readers', () => {
       renderHome();
       const heading = screen.getByRole('heading', {

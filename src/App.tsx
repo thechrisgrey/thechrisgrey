@@ -43,7 +43,10 @@ function App() {
       <ScrollToTop />
       <Navigation />
       <main id="main-content">
-        <ErrorBoundary>
+        {/* Keyed by pathname so a render-time throw (e.g. a stale lazy chunk)
+            clears on client-side navigation instead of trapping the user until
+            a full reload. React remounts a fresh boundary per path. */}
+        <ErrorBoundary key={location.pathname}>
           <Suspense fallback={<PageLoadingFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />

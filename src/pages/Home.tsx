@@ -139,6 +139,8 @@ const Home = () => {
                 src={heroImage}
                 alt="Leadership Forged in Service"
                 className="w-full max-w-3xl mx-auto"
+                width={1500}
+                height={1500}
                 fetchPriority="high"
               />
               <h1 className="sr-only">Christian Perez - Leadership Forged in Service</h1>

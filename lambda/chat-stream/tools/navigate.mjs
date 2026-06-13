@@ -9,8 +9,8 @@ export function buildNavigateTool({ responseStream, metrics }) {
     description:
       "Suggest that the visitor navigate to a specific page on thechrisgrey.com. " +
       "Use when a dedicated page would answer the visitor's question better than a prose reply. " +
-      "Allowed paths: /, /about, /altivum, /podcast, /beyond-the-assessment, /aws, /claude, " +
-      "/blog, /blog/<slug>, /contact, /links, /privacy. " +
+      "Allowed paths: /, /about, /altivum, /foundation, /podcast, /beyond-the-assessment, /aws, /claude, " +
+      "/blog, /blog/<slug>, /contact, /links, /blueprint, /privacy. " +
       "Do NOT use for /admin or /chat.",
     inputSchema: z.object({
       path: z.string().describe("The route path, e.g. /about or /blog/post-slug"),

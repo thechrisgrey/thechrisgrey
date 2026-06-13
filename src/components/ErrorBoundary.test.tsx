@@ -182,4 +182,44 @@ describe('ErrorBoundary', () => {
       expect(onReset).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('reset on key change (navigation recovery)', () => {
+    // Mirrors App.tsx: <ErrorBoundary key={location.pathname}>. Re-keying the
+    // boundary remounts a fresh instance with hasError=false, so a genuine
+    // render throw on one route is discarded on client-side navigation.
+    it('discards a latched error when the key (pathname) changes', () => {
+      const Harness = ({ path }: { path: string }) => (
+        <MemoryRouter>
+          <ErrorBoundary key={path}>
+            <ThrowingComponent shouldThrow={path === '/throws'} />
+          </ErrorBoundary>
+        </MemoryRouter>
+      );
+
+      const { rerender } = render(<Harness path="/throws" />);
+      // Error UI is shown on the throwing route.
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+
+      // Simulate navigating to a different path: new key -> fresh boundary.
+      rerender(<Harness path="/safe" />);
+      expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+      expect(screen.getByText('Child content rendered')).toBeInTheDocument();
+    });
+
+    it('keeps showing the error UI when the key does not change', () => {
+      const Harness = ({ path }: { path: string }) => (
+        <MemoryRouter>
+          <ErrorBoundary key={path}>
+            <ThrowingComponent shouldThrow />
+          </ErrorBoundary>
+        </MemoryRouter>
+      );
+      const { rerender } = render(<Harness path="/throws" />);
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+      // Same key -> same boundary instance -> error stays latched (proves the
+      // recovery in the previous test comes from re-keying, not a re-render).
+      rerender(<Harness path="/throws" />);
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    });
+  });
 });

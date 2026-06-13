@@ -3,9 +3,9 @@ export const MAX_MESSAGE_LENGTH = 4000;
 export const MAX_MESSAGE_COUNT = 50;
 
 export const VALID_PATHS = new Set([
-  "/", "/about", "/altivum", "/podcast", "/beyond-the-assessment",
+  "/", "/about", "/altivum", "/foundation", "/podcast", "/beyond-the-assessment",
   "/aws", "/claude", "/blog", "/contact", "/links", "/chat",
-  "/privacy", "/admin",
+  "/privacy", "/admin", "/blueprint",
 ]);
 export const BLOG_SLUG_PATTERN = /^\/blog\/[a-z0-9][a-z0-9-]*$/;
 export const SAFE_TEXT_PATTERN = /^[a-zA-Z0-9 ()/:,&'-]+$/;

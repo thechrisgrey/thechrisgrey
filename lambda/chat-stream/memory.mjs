@@ -8,6 +8,17 @@ const BATCH_RETRY_MAX = 5;
 const BATCH_RETRY_BASE_MS = 50;
 const BATCH_RETRY_CAP_MS = 1000;
 const SENTINEL_PATTERN = /={2,}\s*[A-Z0-9 _-]{3,}\s*={2,}/;
+// PII guards — visitor memory must never persist contact identifiers
+// (CLAUDE.md "PII disallowed"). Prompt instructions in rememberFact/prompts ask
+// the model not to store these; these regexes make it a server-side control.
+// Email: a token containing '@' with a dotted domain. Requires a '.' after the
+// '@' so a bare social handle like "@thechrisgrey" (no domain dot) is allowed.
+const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+// Phone / long digit run: 10+ digits joined only by phone-ish separators
+// (space, parens, '.', '-'). The `[\s().-]*` between digits bridges real phone
+// formats like "+1 (512) 555-0199" while letters/commas still break a run, so
+// years (2024), ZIPs (78701), and "18D for 12 years" stay under the threshold.
+const PHONE_PATTERN = /(?:\+?\d[\s().-]*){10,}/;
 
 export function hashDeviceId(deviceId) {
   if (!deviceId || typeof deviceId !== "string") {
@@ -21,6 +32,8 @@ export function sanitizeFactContent(raw) {
   const collapsed = raw.replace(/\s+/g, " ").trim();
   if (!collapsed) return "";
   if (SENTINEL_PATTERN.test(collapsed)) return "";
+  if (EMAIL_PATTERN.test(collapsed)) return "";
+  if (PHONE_PATTERN.test(collapsed)) return "";
   return collapsed.slice(0, MAX_FACT_LENGTH);
 }
 

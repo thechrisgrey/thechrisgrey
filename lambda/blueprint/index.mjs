@@ -286,6 +286,10 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       } else if (result.error === "opus_timeout") {
         metrics.record("BlueprintOpusTimeout");
         message = "Generation took too long. Please try again.";
+      } else if (result.error === "guardrail_intervened") {
+        metrics.record("BlueprintGuardrailIntervention");
+        message = "That request couldn't be processed. Try describing a different system to architect.";
+        logStructured(requestId, "blueprint_guardrail_intervened", {});
       } else {
         metrics.record("BlueprintGenerationError");
       }
