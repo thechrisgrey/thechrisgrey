@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { BlueprintInput, BlueprintOutput } from '../types/blueprint';
 
+// Stub session-token issuance so generate() doesn't invoke the real Turnstile/
+// issuer flow in jsdom. Without this, setting VITE_SESSION_ENDPOINT in the
+// environment (as the Amplify build does) makes getSessionToken try to load the
+// Cloudflare script and time out — the suite was green only when the var was unset.
+vi.mock('../utils/sessionToken', () => ({
+  getSessionToken: vi.fn().mockResolvedValue(''),
+}));
+
 const ENDPOINT = 'https://blueprint.example.com';
 
 const INPUT: BlueprintInput = { goal: 'Build a RAG system', category: 'rag' };

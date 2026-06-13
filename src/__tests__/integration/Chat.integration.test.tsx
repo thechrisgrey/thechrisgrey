@@ -5,6 +5,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Chat from '../../pages/Chat';
 
+// Stub session-token issuance so the chat send path doesn't invoke the real
+// Turnstile/issuer flow in jsdom. Without this, setting VITE_SESSION_ENDPOINT
+// in the environment (as the Amplify build does) makes getSessionToken try to
+// load the Cloudflare script and time out — green only when the var is unset.
+vi.mock('../../utils/sessionToken', () => ({
+  getSessionToken: vi.fn().mockResolvedValue(''),
+}));
+
 // jsdom does not implement scrollTo on elements; polyfill for these tests
 beforeEach(() => {
   Element.prototype.scrollTo = vi.fn();
