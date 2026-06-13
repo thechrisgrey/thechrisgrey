@@ -157,6 +157,11 @@ const BlogPost = () => {
   }, [slug]);
 
   useEffect(() => {
+    // Slug-driven fetch with cache-then-network and AbortController cleanup.
+    // fetchPost owns its setState transitions; migrating to a data-fetching
+    // library to satisfy the strict rule is out of scope. See useSiteHealth /
+    // Blog for the same suppression rationale.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPost();
     return () => { abortControllerRef.current?.abort(); };
   }, [fetchPost]);

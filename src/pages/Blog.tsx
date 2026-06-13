@@ -57,6 +57,11 @@ const Blog = () => {
   };
 
   useEffect(() => {
+    // Cache-then-fetch on mount. fetchBlogData manages its own setState
+    // transitions (cache-hit shortcut, loading, success/error, finally).
+    // Migrating to a data-fetching library to satisfy the strict rule is
+    // out of scope; the pattern is canonical for this codebase.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBlogData();
   }, []);
 

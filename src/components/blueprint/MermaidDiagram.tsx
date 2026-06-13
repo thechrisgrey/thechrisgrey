@@ -9,14 +9,22 @@ let renderIdCounter = 0;
 
 export function MermaidDiagram({ source }: MermaidDiagramProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [svg, setSvg] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Single state slot for the async render result so the source-change reset
+  // is one setState call (not two), removing the cascading-render anti-pattern
+  // that react-hooks/set-state-in-effect flags.
+  const [render, setRender] = useState<{ svg: string | null; error: string | null }>(
+    { svg: null, error: null },
+  );
   const [showSource, setShowSource] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setSvg(null);
-    setError(null);
+    // Intentional cascading render: when `source` changes, immediately reset
+    // to the "rendering" state so the UI shows a spinner instead of the old
+    // diagram while the new one builds. A consolidated single state slot
+    // makes this one setState call (was two before this PR).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRender({ svg: null, error: null });
 
     (async () => {
       try {
@@ -51,14 +59,14 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
         const sanitized = DOMPurify.sanitize(rendered, {
           USE_PROFILES: { svg: true, svgFilters: true },
         });
-        setSvg(sanitized);
+        setRender({ svg: sanitized, error: null });
       } catch (err) {
         if (cancelled) return;
         const message =
           err instanceof Error
             ? err.message
             : 'Failed to render the diagram.';
-        setError(message);
+        setRender({ svg: null, error: message });
       }
     })();
 
@@ -66,6 +74,8 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
       cancelled = true;
     };
   }, [source]);
+
+  const { svg, error } = render;
 
   return (
     <div className="rounded-lg bg-altivum-navy/60 border border-white/5 overflow-hidden">

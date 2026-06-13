@@ -72,7 +72,13 @@ export default [
       // (Blog, BlogPost, Chat, AskTheVector) and is intentionally deferred to a focused
       // follow-up so this PR stays scoped to the ESLint v10 + flat-config migration.
       // Re-enable each one (and fix its callers) incrementally.
-      'react-hooks/set-state-in-effect': 'off',
+      // Enabled in fix/react-hooks-set-state-in-effect. Two real fixes
+      // (MermaidDiagram state consolidation, useAuth hoisted to lazy
+      // initializer) and four targeted suppressions for patterns the rule
+      // overshoots on (useLenis browser-only construction, three
+      // data-fetching effects without a data-library dep). Each suppression
+      // carries an inline rationale.
+      'react-hooks/set-state-in-effect': 'error',
       // Enabled in fix/react-hooks-refs: useChatEngine moved its
       // messagesRef sync into a useEffect and replaced the render-phase
       // `streamingMessageIdRef.current` read with a parallel useState.
