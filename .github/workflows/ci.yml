@@ -42,11 +42,19 @@ jobs:
 
       - name: Install Lambda dependencies
         run: |
-          cd lambda/chat-stream && npm ci --no-audit --no-fund
-          cd ../blueprint && npm ci --no-audit --no-fund
-          cd ../metrics && npm ci --no-audit --no-fund
-          cd ../shared && npm install --no-audit --no-fund
-          cd ../mcp-server && npm install --no-audit --no-fund
+          set -e
+          # Canonical list mirrors the lambda-audit job below — keep in sync.
+          # shared installed first so file:../shared dependents resolve a fresh copy.
+          # npm ci from each committed lockfile for reproducibility; fall back to
+          # npm install only if a dir ever ships without a lockfile.
+          for dir in lambda/shared lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
+            echo "=== Installing $dir ==="
+            if [ -f "$dir/package-lock.json" ]; then
+              (cd "$dir" && npm ci --no-audit --no-fund)
+            else
+              (cd "$dir" && npm install --no-audit --no-fund)
+            fi
+          done
 
       - name: Run Lambda tests
         run: npm run test:lambda
@@ -140,6 +148,7 @@ jobs:
         # (advisory-DB drift). Durable remediation is tracked via Dependabot.
         run: |
           set -e
+          # Keep this dir list in sync with the "Install Lambda dependencies" step above.
           for dir in lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server; do
             if [ ! -f "$dir/package.json" ]; then
               echo "=== Skipping $dir (no package.json) ==="

@@ -30,6 +30,16 @@
       ]
     },
     {
+      "Sid": "BedrockGuardrail",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:ApplyGuardrail"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:us-east-1:205930636302:guardrail/5kofhp46ssob"
+      ]
+    },
+    {
       "Sid": "DynamoDBRateLimit",
       "Effect": "Allow",
       "Action": [

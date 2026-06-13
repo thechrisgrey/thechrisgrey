@@ -29,6 +29,26 @@ export const HAIKU_MODEL_ID =
   process.env.BEDROCK_HAIKU_MODEL_ID ||
   "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 
+// Bedrock Guardrail (the same guardrail chat-stream + mcp-server enforce).
+// Applied to every model call so visitor free-text in the spec is filtered for
+// PROMPT_ATTACK / HATE / INSULTS / SEXUAL / VIOLENCE / MISCONDUCT before it
+// reaches Opus or Haiku. Env-overridable; defaults are the live prod guardrail
+// so the guard is correct even before GUARDRAIL_ID/VERSION are set on the
+// function. Requires bedrock:ApplyGuardrail in the role (iam-policy.json).
+export const GUARDRAIL_ID = process.env.GUARDRAIL_ID || "5kofhp46ssob";
+export const GUARDRAIL_VERSION = process.env.GUARDRAIL_VERSION || "5";
+
+/**
+ * Guardrail config fragment for an InvokeModel*-style command input, or {} when
+ * no guardrail is configured. Both Opus paths and the Haiku path spread this
+ * into their command input (top-level guardrailIdentifier/guardrailVersion).
+ */
+export function guardrailParams(guardrailId = GUARDRAIL_ID, guardrailVersion = GUARDRAIL_VERSION) {
+  return guardrailId && guardrailVersion
+    ? { guardrailIdentifier: guardrailId, guardrailVersion }
+    : {};
+}
+
 // Opus's abort budget is anchored to a single ABSOLUTE deadline, derived once
 // per request from the Lambda's remaining execution time (resolveOpusDeadlineMs)
 // as handlerStart + remaining - buffer. Every Opus attempt re-derives its own
@@ -128,12 +148,25 @@ export class BedrockInvocationError extends Error {
   }
 }
 
+// Thrown when the Bedrock Guardrail intervenes on a model call — either via a
+// `stop_reason: "guardrail_intervened"` in the response/stream, or a pre-call
+// ValidationException whose message mentions the guardrail. The engine maps this
+// to a terminal "guardrail_intervened" code (no retry — it is deterministic for
+// the same input).
+export class BedrockGuardrailError extends Error {
+  constructor(modelId) {
+    super(`Bedrock guardrail intervened (${modelId})`);
+    this.name = "BedrockGuardrailError";
+    this.modelId = modelId;
+  }
+}
+
 /**
  * Parse the Anthropic-on-Bedrock response envelope and pull out the assistant
  * text + token usage.
  *
  * @param {Uint8Array} bodyBytes
- * @returns {{ text: string, usage: { input_tokens: number, output_tokens: number } }}
+ * @returns {{ text: string, usage: { input_tokens: number, output_tokens: number }, stop_reason: string|null }}
  */
 export function parseBedrockResponse(bodyBytes) {
   const raw = new TextDecoder().decode(bodyBytes);
@@ -146,7 +179,7 @@ export function parseBedrockResponse(bodyBytes) {
     input_tokens: payload.usage?.input_tokens ?? 0,
     output_tokens: payload.usage?.output_tokens ?? 0,
   };
-  return { text, usage };
+  return { text, usage, stop_reason: payload.stop_reason ?? null };
 }
 
 /**
@@ -191,15 +224,27 @@ export async function invokeClaude(bedrockClient, {
         contentType: "application/json",
         accept: "application/json",
         body: JSON.stringify(body),
+        ...guardrailParams(),
       }),
       { abortSignal: controller.signal },
     );
     clearTimeout(timeoutId);
-    const { text, usage } = parseBedrockResponse(response.body);
+    const { text, usage, stop_reason } = parseBedrockResponse(response.body);
+    if (stop_reason === "guardrail_intervened") {
+      if (requestId) {
+        console.warn(JSON.stringify({
+          requestId, event: "bedrock_guardrail_intervened", modelId,
+          latencyMs: Date.now() - start,
+        }));
+      }
+      throw new BedrockGuardrailError(modelId);
+    }
     return { text, usage, latencyMs: Date.now() - start };
   } catch (error) {
     clearTimeout(timeoutId);
     const latencyMs = Date.now() - start;
+    // Re-throw the guardrail signal raised inside the try unwrapped.
+    if (error instanceof BedrockGuardrailError) throw error;
     if (error?.name === "AbortError") {
       if (requestId) {
         console.error(JSON.stringify({
@@ -207,6 +252,17 @@ export async function invokeClaude(bedrockClient, {
         }));
       }
       throw new BedrockTimeoutError(modelId, timeoutMs);
+    }
+    // A pre-stream guardrail block can surface as a ValidationException whose
+    // message mentions the guardrail (the form chat-stream handles).
+    if (error?.name === "ValidationException"
+        && error?.message?.toLowerCase().includes("guardrail")) {
+      if (requestId) {
+        console.warn(JSON.stringify({
+          requestId, event: "bedrock_guardrail_intervened", modelId, latencyMs,
+        }));
+      }
+      throw new BedrockGuardrailError(modelId);
     }
     if (requestId) {
       console.error(JSON.stringify({
@@ -284,6 +340,7 @@ export async function streamOpus(bedrockClient, {
         contentType: "application/json",
         accept: "application/json",
         body: JSON.stringify(body),
+        ...guardrailParams(),
       }),
       { abortSignal: controller.signal },
     );
@@ -327,6 +384,21 @@ export async function streamOpus(bedrockClient, {
     }
 
     clearTimeout(timeoutId);
+    // An async-mode guardrail intervention arrives as a message_delta whose
+    // stop_reason is "guardrail_intervened". Any partial deltas already relayed
+    // to the client are superseded by the terminal guardrail_intervened event.
+    if (stopReason === "guardrail_intervened") {
+      if (requestId) {
+        console.warn(JSON.stringify({
+          requestId,
+          event: "bedrock_stream_guardrail_intervened",
+          modelId: OPUS_MODEL_ID,
+          latencyMs: Date.now() - start,
+          partialChars: accumulated.length,
+        }));
+      }
+      throw new BedrockGuardrailError(OPUS_MODEL_ID);
+    }
     return {
       text: accumulated,
       usage: { input_tokens: inputTokens, output_tokens: outputTokens },
@@ -336,6 +408,8 @@ export async function streamOpus(bedrockClient, {
   } catch (error) {
     clearTimeout(timeoutId);
     const latencyMs = Date.now() - start;
+    // Re-throw the guardrail signal raised after the stream loop unwrapped.
+    if (error instanceof BedrockGuardrailError) throw error;
     if (error?.name === "AbortError") {
       if (requestId) {
         console.error(JSON.stringify({
@@ -348,6 +422,19 @@ export async function streamOpus(bedrockClient, {
         }));
       }
       throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
+    }
+    // Rarer pre-stream guardrail block: a ValidationException mentioning it.
+    if (error?.name === "ValidationException"
+        && error?.message?.toLowerCase().includes("guardrail")) {
+      if (requestId) {
+        console.warn(JSON.stringify({
+          requestId,
+          event: "bedrock_stream_guardrail_intervened",
+          modelId: OPUS_MODEL_ID,
+          latencyMs,
+        }));
+      }
+      throw new BedrockGuardrailError(OPUS_MODEL_ID);
     }
     if (requestId) {
       console.error(JSON.stringify({
@@ -385,10 +472,14 @@ export default {
   invokeHaiku,
   invokeClaude,
   parseBedrockResponse,
+  guardrailParams,
   OPUS_MODEL_ID,
   HAIKU_MODEL_ID,
   OPUS_TIMEOUT_MS,
   HAIKU_TIMEOUT_MS,
+  GUARDRAIL_ID,
+  GUARDRAIL_VERSION,
   BedrockTimeoutError,
   BedrockInvocationError,
+  BedrockGuardrailError,
 };

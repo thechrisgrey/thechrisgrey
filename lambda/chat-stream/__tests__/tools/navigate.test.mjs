@@ -27,6 +27,15 @@ test("buildNavigateTool returns a Strands tool with correct name", () => {
   assert.ok(tool.toolSpec);
 });
 
+test("navigate_to description advertises /foundation and /blueprint", () => {
+  // Guards the second (LLM-facing) copy of the path allowlist baked into the
+  // tool description. The drift test guards the VALID_PATHS Set; this guards
+  // the prose the model reads. Both must stay in sync with src/routes.ts.
+  const tool = buildNavigateTool({ responseStream: fakeStream(), metrics: fakeMetrics() });
+  assert.match(tool.description, /\/foundation/);
+  assert.match(tool.description, /\/blueprint/);
+});
+
 test("navigate_to emits draft_action for a valid static path", async () => {
   const stream = fakeStream();
   const metrics = fakeMetrics();

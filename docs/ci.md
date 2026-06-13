@@ -17,7 +17,7 @@ The `.github/workflows/ci.yml` pipeline blocks merges to `main` on the following
 ## Coverage
 
 - Report uploaded as the `coverage-report` artifact on every CI run (kept 14 days).
-- Thresholds live in `vitest.config.ts` under `test.coverage.thresholds`. Current floor is ~5 points below baseline at the time this gate was introduced.
+- Thresholds live in `vitest.config.ts` under `test.coverage.thresholds`. The floor is intentionally held ~5 points below live measured coverage — it is a regression catch, not a high-water mark. Re-tightened 2026-06 from 62/60/59/55 to 66/64/62/60 after coverage organically rose; re-ratchet to ~5 below live when the gap exceeds ~8 points. There is no `autoUpdate` automation (it would erase the buffer and churn the config on every dev run); ratchet manually via `npm run test:coverage`.
 - If you're adding a large file that's intentionally uncovered (e.g., a generated module), add it to `test.coverage.exclude` rather than lowering thresholds for the whole repo.
 
 ## Unblocking `npm audit`

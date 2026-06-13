@@ -28,6 +28,7 @@ import {
   streamOpus,
   opusTimeoutForDeadline,
   BedrockTimeoutError,
+  BedrockGuardrailError,
 } from "./bedrock.mjs";
 import {
   tryParseJson,
@@ -197,7 +198,11 @@ export async function generateBlueprint(rawSpec, deps) {
         });
       }
     } catch (error) {
-      const code = error instanceof BedrockTimeoutError ? "opus_timeout" : "opus_error";
+      // A guardrail block is deterministic for the same input — surface its own
+      // terminal code and do NOT retry (the catch returns rather than continues).
+      let code = "opus_error";
+      if (error instanceof BedrockTimeoutError) code = "opus_timeout";
+      else if (error instanceof BedrockGuardrailError) code = "guardrail_intervened";
       logger.error?.(code, {
         requestId, error: error?.name, message: error?.message, attempt,
       });
@@ -280,10 +285,24 @@ export async function generateBlueprint(rawSpec, deps) {
       });
     }
   } catch (error) {
-    logger.warn?.("haiku_validator_error", {
-      requestId, error: error?.name, message: error?.message,
-    });
-    haikuVerdict = { ok: true, confidence: "low", issues: [] };
+    // A guardrail block on the Haiku verdict call must not be silently
+    // downgraded to a passing verdict — flag it — but the blueprint already
+    // passed the schema and the user is entitled to it, so keep ok=true overall.
+    if (error instanceof BedrockGuardrailError) {
+      logger.warn?.("haiku_guardrail_intervened", { requestId });
+      haikuVerdict = {
+        ok: false,
+        confidence: "low",
+        issues: [
+          { field: "_meta", severity: "warn", note: "Quality check could not complete (content filter)." },
+        ],
+      };
+    } else {
+      logger.warn?.("haiku_validator_error", {
+        requestId, error: error?.name, message: error?.message,
+      });
+      haikuVerdict = { ok: true, confidence: "low", issues: [] };
+    }
   }
 
   emit(onProgress, { type: "status", phase: "done" });
