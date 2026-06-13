@@ -82,4 +82,20 @@ describe('FadeReveal', () => {
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();
   });
+
+  it('renders the final state (no opacity:0) when the prerender flag is set', () => {
+    // The build-time Puppeteer crawl sets window.__PRERENDER__ before navigating
+    // to each route. Components that animate opacity:0 → 1 must render their
+    // final state in that case, otherwise the static HTML AI/SEO crawlers consume
+    // hides the page's actual content.
+    (window as unknown as { __PRERENDER__: boolean }).__PRERENDER__ = true;
+    try {
+      const { container } = render(<FadeReveal>Prerendered content</FadeReveal>);
+      const el = container.firstChild as HTMLElement;
+      expect(el.style.opacity).not.toBe('0');
+      expect(screen.getByText('Prerendered content')).toBeInTheDocument();
+    } finally {
+      delete (window as unknown as { __PRERENDER__?: boolean }).__PRERENDER__;
+    }
+  });
 });

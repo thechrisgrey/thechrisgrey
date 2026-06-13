@@ -1,6 +1,7 @@
 import { useRef, useEffect, type ReactNode, type CSSProperties, type RefObject } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { isMotionDisabled } from '../utils/motion';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -28,7 +29,7 @@ const FadeReveal = ({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (isMotionDisabled()) return;
 
     const el = ref.current;
     if (!el) return;
@@ -57,10 +58,11 @@ const FadeReveal = ({
     };
   }, [direction, delay, triggerRef, triggerStart, triggerEnd]);
 
-  const prefersReducedMotion = typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (prefersReducedMotion) {
+  // Render the final post-animation state when motion is disabled — either the
+  // visitor prefers reduced motion, OR the build-time prerender crawl is running
+  // (rendering `opacity: 0` here would put hidden content in the static HTML
+  // AI/SEO crawlers consume, which is exactly what PR #104 was trying to prevent).
+  if (isMotionDisabled()) {
     return <div className={className} style={style}>{children}</div>;
   }
 
