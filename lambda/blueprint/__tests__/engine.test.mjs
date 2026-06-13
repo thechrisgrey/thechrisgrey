@@ -205,8 +205,8 @@ test("generateBlueprint passes golden examples through when fetcher returns them
   assert.equal(res.meta.examples_used, 1);
   // Verify the system prompt received the example title
   const firstCall = bedrock.calls[0];
-  const body = JSON.parse(firstCall.command.input.body);
-  assert.match(body.system, /Budget RAG/);
+  const systemText = firstCall.command.input.system.map((s) => s.text).join("");
+  assert.match(systemText, /Budget RAG/);
 });
 
 test("generateBlueprint still returns ok=true when Haiku flags issues (soft signal)", async () => {
@@ -320,45 +320,31 @@ test("generateBlueprint stamps tier in meta", async () => {
   assert.equal(res.meta.tier, "pro");
 });
 
-test("generateBlueprint surfaces guardrail_intervened on a streaming Opus guardrail stop (no retry)", async () => {
-  const bedrock = scriptedBedrockClient([
-    { streamText: "partial output before the block", stopReason: "guardrail_intervened" },
-  ]);
-  const events = [];
-  const res = await generateBlueprint(validBlueprintInput(), {
-    bedrockClient: bedrock,
-    logger: silentLogger(),
-    onProgress: (ev) => events.push(ev),
-  });
-  assert.equal(res.ok, false);
-  assert.equal(res.error, "guardrail_intervened");
-  assert.equal(bedrock.calls.length, 1, "a guardrail block is deterministic — must not retry");
-});
-
-test("generateBlueprint surfaces guardrail_intervened on a blocking Opus guardrail stop (no retry)", async () => {
-  const bedrock = scriptedBedrockClient([
-    { text: "blocked", stopReason: "guardrail_intervened" },
-  ]);
+test("generateBlueprint blocks malicious input via the guardrail pre-check (no generation)", async () => {
+  // The ApplyGuardrail input pre-check intervenes; the engine returns the
+  // terminal guardrail_intervened code WITHOUT invoking Opus/Haiku.
+  const bedrock = scriptedBedrockClient([], { guardrailAction: "GUARDRAIL_INTERVENED" });
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),
   });
   assert.equal(res.ok, false);
   assert.equal(res.error, "guardrail_intervened");
-  assert.equal(bedrock.calls.length, 1, "a guardrail block is deterministic — must not retry");
+  assert.equal(bedrock.calls.length, 0, "must not call Opus/Haiku when the input is blocked");
+  assert.equal(bedrock.guardrailCalls.length, 1, "the input pre-check ran");
 });
 
-test("generateBlueprint flags but still returns when the Haiku verdict trips the guardrail", async () => {
+test("generateBlueprint proceeds to generation when the input guardrail passes", async () => {
+  // Default guardrailAction is NONE, so the pre-check passes and generation runs.
   const bedrock = scriptedBedrockClient([
     opusResponseFromOutput(),
-    { text: "blocked", stopReason: "guardrail_intervened" },
+    haikuOkVerdict(),
   ]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),
   });
-  assert.equal(res.ok, true, "a schema-valid blueprint must still return to the user");
-  assert.equal(res.meta.haiku_verdict.ok, false);
-  assert.equal(res.meta.haiku_verdict.confidence, "low");
-  assert.equal(bedrock.calls.length, 2);
+  assert.equal(res.ok, true);
+  assert.equal(bedrock.guardrailCalls.length, 1, "the input pre-check ran");
+  assert.equal(bedrock.calls.length, 2, "Opus + Haiku ran after the pre-check passed");
 });
