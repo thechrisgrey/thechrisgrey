@@ -73,7 +73,10 @@ export default [
       // follow-up so this PR stays scoped to the ESLint v10 + flat-config migration.
       // Re-enable each one (and fix its callers) incrementally.
       'react-hooks/set-state-in-effect': 'off',
-      'react-hooks/refs': 'off',
+      // Enabled in fix/react-hooks-refs: useChatEngine moved its
+      // messagesRef sync into a useEffect and replaced the render-phase
+      // `streamingMessageIdRef.current` read with a parallel useState.
+      'react-hooks/refs': 'error',
       'react-hooks/immutability': 'off',
       // Enabled in this PR (fix/react-hooks-static-components): the only
       // call site, GenerativeBlocks.tsx's Comparison.Column, has been

@@ -90,11 +90,26 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
   );
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  // `streamingMessageId` state is what consumers (ChatWidgetPanel, AskTheVector,
+  // the Chat page) read to highlight the bubble currently streaming. The ref
+  // is the source of truth for handleSend's async closure — it needs the
+  // latest value across `await` boundaries within a single send cycle, which
+  // a state closure cannot give. The two are kept in lockstep: every write to
+  // the ref is paired with setStreamingMessageId in the same statement.
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingMessageIdRef = useRef<string | null>(null);
   const messagesRef = useRef(messages);
-  messagesRef.current = messages;
+
+  // Keep messagesRef in sync with the messages state outside of render
+  // (the prior `messagesRef.current = messages` at module body level was a
+  // ref mutation during render — react-hooks/refs flags it). handleSend
+  // reads messagesRef.current after this commit, so the one-frame lag
+  // between state change and effect commit is invisible in practice.
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     sessionStorage.removeItem('chat-typing');
@@ -162,6 +177,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       const assistantMessageId = `assistant-${crypto.randomUUID()}`;
       const myId = assistantMessageId;
       streamingMessageIdRef.current = assistantMessageId;
+      setStreamingMessageId(assistantMessageId);
       setIsStreaming(true);
 
       const deviceId = getOrCreateDeviceId();
@@ -383,6 +399,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         }
         if (streamingMessageIdRef.current === myId) {
           streamingMessageIdRef.current = null;
+          setStreamingMessageId(null);
         }
       }
     },
@@ -428,8 +445,6 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
     },
     [handleSend]
   );
-
-  const streamingMessageId = isStreaming ? streamingMessageIdRef.current : null;
 
   return {
     messages,
