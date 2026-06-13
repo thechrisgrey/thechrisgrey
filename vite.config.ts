@@ -33,7 +33,10 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        // Drop noisy logs but KEEP console.warn/error so production diagnostics
+        // (e.g. why a Turnstile token couldn't be obtained, ErrorBoundary catches,
+        // fetch failures) stay visible in the browser console for debugging.
+        drop_console: ['log', 'info', 'debug', 'trace'],
       }
     }
   }

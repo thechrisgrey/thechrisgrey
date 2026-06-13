@@ -57,10 +57,12 @@ function makeEvent({ method = "POST", origin = ORIGIN, body, ip = "9.9.9.9" } = 
 const DEVICE_ID = "device-ABC_123-xyz";
 const deviceHashOf = (id) => createHash("sha256").update(id).digest("hex");
 
-test("OPTIONS preflight returns 204 with CORS headers", async () => {
+test("OPTIONS preflight returns 204 (CORS headers come from the Function URL layer, not the handler)", async () => {
   const res = await makeHandler()(makeEvent({ method: "OPTIONS" }));
   assert.equal(res.statusCode, 204);
-  assert.equal(res.headers["Access-Control-Allow-Origin"], ORIGIN);
+  // The handler must NOT emit its own Access-Control-* headers — doing so duplicates
+  // the Function URL CORS headers and browsers reject the response.
+  assert.equal(res.headers?.["Access-Control-Allow-Origin"], undefined);
 });
 
 test("non-POST is rejected with 405", async () => {
