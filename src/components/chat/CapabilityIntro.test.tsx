@@ -1,9 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { MockedFunction } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import CapabilityIntro from './CapabilityIntro';
 
-const renderIntro = (overrides: { onUseExample?: ReturnType<typeof vi.fn>; initiallyExpanded?: boolean } = {}) => {
-  const onUseExample = overrides.onUseExample ?? vi.fn();
+type UseExample = (query: string) => void;
+
+const renderIntro = (overrides: { onUseExample?: MockedFunction<UseExample>; initiallyExpanded?: boolean } = {}) => {
+  // vitest 4 made vi.fn() return Mock<Procedure | Constructable>, which is no
+  // longer structurally assignable to a plain `(q: string) => void`. Use the
+  // explicit MockedFunction<...> type so callers and the prop slot agree.
+  const onUseExample: MockedFunction<UseExample> = overrides.onUseExample ?? vi.fn<UseExample>();
   const utils = render(
     <CapabilityIntro
       onUseExample={onUseExample}
@@ -110,7 +116,7 @@ describe('CapabilityIntro', () => {
     });
 
     it('does not auto-send — onUseExample receives the raw example only', () => {
-      const onUseExample = vi.fn();
+      const onUseExample = vi.fn<UseExample>();
       renderIntro({ initiallyExpanded: true, onUseExample });
       // Tiles have explicit aria-labels of the form `Drop into message: <example>` so
       // screen readers hear the action + payload together; match by the aria-label.

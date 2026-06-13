@@ -3,14 +3,17 @@ import { render, screen } from '@testing-library/react';
 import LenisProvider from './LenisProvider';
 import { useLenisContext } from '../hooks/useLenis';
 
+// vitest 4 no longer treats `vi.fn(() => obj)` as a constructable function
+// when used with `new` (arrow-function impls cannot be construct-called).
+// Use a real class so `new Lenis(...)` in useLenis.ts works under the mock.
 vi.mock('lenis', () => ({
-  default: vi.fn(() => ({
-    destroy: vi.fn(),
-    raf: vi.fn(),
-    scrollTo: vi.fn(),
-    on: vi.fn(),
-    off: vi.fn(),
-  })),
+  default: class MockLenis {
+    destroy = vi.fn();
+    raf = vi.fn();
+    scrollTo = vi.fn();
+    on = vi.fn();
+    off = vi.fn();
+  },
 }));
 
 function TestConsumer() {
