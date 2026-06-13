@@ -186,7 +186,11 @@ export function opusTimeoutForDeadline(deadlineMs, nowMs, {
   return Math.max(floor, Math.min(cap, Math.round(deadlineMs - nowMs)));
 }
 
-export const OPUS_MAX_TOKENS = 6000;
+// 8000 (raised from 6000): a complex blueprint — multi-item claude_artifacts
+// (bodies up to 8000 chars each), a 4000-char IaC snippet, services, cost, etc.
+// — can exceed 6000 output tokens and truncate mid-JSON, surfacing as
+// validation_failed. 8000 gives headroom for typical blueprints + their retry.
+export const OPUS_MAX_TOKENS = 8000;
 export const HAIKU_MAX_TOKENS = 1200;
 
 export class BedrockTimeoutError extends Error {
