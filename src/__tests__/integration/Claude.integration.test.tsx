@@ -28,9 +28,9 @@ vi.mock('../../hooks/useMediaQuery', () => ({
   useMediaQuery: () => true,
 }));
 
-// Mock chatSigning (used by ArchitectureXRay for live trace)
-vi.mock('../../utils/chatSigning', () => ({
-  getSignedHeaders: vi.fn(),
+// Mock session-token issuance (used by ArchitectureXRay for live trace)
+vi.mock('../../utils/sessionToken', () => ({
+  getSessionToken: vi.fn().mockResolvedValue(''),
 }));
 
 // Mock TraceInput and TraceResponseBubble (not needed for page-level structural tests)

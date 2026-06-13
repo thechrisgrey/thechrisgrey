@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSessionStorage } from './useSessionStorage';
 import type { PageContext } from '../utils/pageContext';
-import { getSignedHeaders } from '../utils/chatSigning';
+import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId, clearDeviceId } from '../utils/deviceId';
 import { createChatStreamParser, type DraftAction, type ChatEvent } from '../utils/chatEvents';
 import type { UiBlock } from '../utils/uiBlocks';
@@ -195,11 +195,14 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
             },
           }),
         });
-        const signedHeaders = await getSignedHeaders(requestBody);
+        const token = await getSessionToken('chat');
 
         const response = await fetch(CHAT_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...signedHeaders },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: requestBody,
           signal: controller.signal,
         });
@@ -414,12 +417,15 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       return { ok: true, deleted: 0 };
     }
     const requestBody = JSON.stringify({ deviceId });
-    const signedHeaders = await getSignedHeaders(requestBody);
+    const token = await getSessionToken('chat');
     const forgetUrl = CHAT_ENDPOINT.endsWith('/') ? `${CHAT_ENDPOINT}forget` : `${CHAT_ENDPOINT}/forget`;
     try {
       const response = await fetch(forgetUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...signedHeaders },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: requestBody,
       });
       let json: { ok?: boolean; deleted?: number; error?: string } | null = null;

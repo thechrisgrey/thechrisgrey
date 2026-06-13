@@ -10,9 +10,11 @@ import type { Message } from './useChatEngine';
 // Mock import.meta.env
 vi.stubEnv('VITE_CHAT_ENDPOINT', 'https://test-chat-endpoint.example.com');
 
-// Mock signing so tests don't depend on crypto.subtle or VITE_CHAT_SIGNING_KEY
-vi.mock('../utils/chatSigning', () => ({
-  getSignedHeaders: vi.fn().mockResolvedValue({}),
+// Mock session-token issuance so tests don't depend on Turnstile, the issuer
+// endpoint, or the network. No token => no Authorization header (the unset-endpoint
+// path); request bodies and streaming behavior are unaffected.
+vi.mock('../utils/sessionToken', () => ({
+  getSessionToken: vi.fn().mockResolvedValue(''),
 }));
 
 describe('useChatEngine', () => {
@@ -125,6 +127,43 @@ describe('useChatEngine', () => {
       );
       expect(userMessages).toHaveLength(1);
       expect(userMessages[0].content).toBe('Hello there');
+    });
+
+    it('reassembles text + a framed event from a REAL ReadableStream split across chunk boundaries', async () => {
+      // Drive the hook with a genuine ReadableStream (not a hand-rolled reader mock),
+      // chunked so the \x00EVT\x00 delimiter and the event JSON are split mid-token —
+      // proving createChatStreamParser reassembles across the reader.read() loop, the
+      // exact path a fetch-shape stub never exercises.
+      const EVT = '\x00EVT\x00';
+      const event = JSON.stringify({ kind: 'tool_invocation', tool: 'navigate' });
+      const full = `Hello ${EVT}${event}${EVT}world`;
+      const cut1 = 8; // cuts THROUGH the opening delimiter ("Hello \x00E")
+      const cut2 = full.indexOf('world');
+      const chunks = [full.slice(0, cut1), full.slice(cut1, cut2), full.slice(cut2)];
+
+      const encoder = new TextEncoder();
+      let i = 0;
+      const stream = new ReadableStream({
+        pull(controller) {
+          if (i < chunks.length) controller.enqueue(encoder.encode(chunks[i++]));
+          else controller.close();
+        },
+      });
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: stream }));
+
+      const { result } = renderHook(() => useChatEngine());
+      await act(async () => {
+        await result.current.handleSend('hi');
+      });
+
+      const assistant = result.current.messages.find(
+        (m: Message) => m.role === 'assistant' && !m.isSystem && m.id.startsWith('assistant-')
+      );
+      // Text on both sides of the framed event reassembles cleanly...
+      expect(assistant?.content).toBe('Hello world');
+      // ...and the raw delimiter / event JSON never leaks into the visible content.
+      expect(assistant?.content).not.toContain('\x00');
+      expect(assistant?.content).not.toContain('tool_invocation');
     });
 
     it('should set isTyping to true while waiting for response', async () => {

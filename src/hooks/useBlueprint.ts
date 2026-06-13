@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { getSignedHeaders } from '../utils/blueprintSigning';
+import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId } from '../utils/deviceId';
 import type {
   BlueprintInput,
@@ -134,12 +134,12 @@ export function useBlueprint(): UseBlueprintReturn {
     const body = JSON.stringify({ spec: input, deviceId });
 
     try {
-      const signedHeaders = await getSignedHeaders(body);
+      const token = await getSessionToken('blueprint');
       const response = await fetch(BLUEPRINT_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...signedHeaders,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body,
         signal: controller.signal,
