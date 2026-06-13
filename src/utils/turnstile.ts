@@ -16,7 +16,11 @@ interface TurnstileApi {
     container: HTMLElement,
     opts: {
       sitekey: string;
-      size?: 'invisible' | 'normal' | 'compact' | 'flexible';
+      // Turnstile has no "invisible" size (that's reCAPTCHA). Invisibility is
+      // controlled by `appearance` ('interaction-only' = hidden unless a challenge
+      // needs interaction); `execution: 'execute'` defers the challenge to execute().
+      appearance?: 'always' | 'execute' | 'interaction-only';
+      execution?: 'render' | 'execute';
       callback?: (token: string) => void;
       'error-callback'?: () => void;
       'timeout-callback'?: () => void;
@@ -79,8 +83,12 @@ export async function getTurnstileToken(): Promise<string> {
   await loadScript();
   const api = await waitForApi();
 
+  // Turnstile needs the container in layout to run the challenge — `display:none`
+  // can break it. With appearance:'interaction-only' nothing renders unless a
+  // challenge actually needs interaction; pin it bottom-right so that rare case
+  // is visible and usable rather than hidden.
   const container = document.createElement('div');
-  container.style.display = 'none';
+  container.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:2147483647;';
   document.body.appendChild(container);
 
   // Mutable holder (object props avoid the declare-then-assign / const churn).
@@ -110,7 +118,8 @@ export async function getTurnstileToken(): Promise<string> {
     // The callbacks fire after render() returns, so they safely read ctl.widgetId.
     ctl.widgetId = api.render(container, {
       sitekey: SITE_KEY,
-      size: 'invisible',
+      appearance: 'interaction-only',
+      execution: 'execute',
       callback: (token: string) => succeed(token),
       'error-callback': () => fail(new Error('turnstile error')),
       'timeout-callback': () => fail(new Error('turnstile timeout')),
