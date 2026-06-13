@@ -198,6 +198,18 @@ export const handler = async (event) => {
         return respond(400, { error: validationError }, CORS_ORIGIN);
       }
 
+      // Verify document is a kbEntry before patching. Without this guard,
+      // an authorized admin (or a stolen sessionStorage token) could PUT
+      // kbEntry-shaped fields against any document ID in the dataset and
+      // silently overwrite a blog post's title/content/active flag —
+      // the SANITY_WRITE_TOKEN has full-dataset write scope. Mirrors the
+      // DELETE guard below.
+      const existing = await sanityClient.getDocument(id);
+      if (!existing) return respond(404, { error: "Entry not found" }, CORS_ORIGIN);
+      if (existing._type !== "kbEntry") {
+        return respond(403, { error: "Cannot update non-kbEntry documents" }, CORS_ORIGIN);
+      }
+
       const patch = sanityClient.patch(id);
 
       if (body.title !== undefined) patch.set({ title: body.title });
