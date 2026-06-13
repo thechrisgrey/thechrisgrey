@@ -11,6 +11,8 @@
     "./response": "./response.mjs",
     "./sanityQueries": "./sanityQueries.mjs",
     "./hmac": "./hmac.mjs",
+    "./sessionToken": "./sessionToken.mjs",
+    "./requestAuth": "./requestAuth.mjs",
     "./metrics": "./metrics.mjs"
   },
   "dependencies": {
