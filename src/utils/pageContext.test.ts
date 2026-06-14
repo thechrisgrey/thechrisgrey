@@ -27,6 +27,16 @@ describe('pageContext', () => {
       expect(ctx.section).toBe('AI Chat');
     });
 
+    it('normalizes a trailing slash (Amplify serves /chat/) so currentPage + context match', () => {
+      // Production serves routes with a trailing slash. Without normalization,
+      // currentPage "/chat/" misses ROUTE_CONTEXT_MAP and the server's surface gate
+      // (=== "/chat") — silently disabling generative UI on the dedicated page.
+      const ctx = getPageContext('/chat/', ['/chat/']);
+      expect(ctx.currentPage).toBe('/chat');
+      expect(ctx.pageTitle).toBe('AI Chat');
+      expect(ctx.section).toBe('AI Chat');
+    });
+
     it('should handle blog post slug routes', () => {
       const ctx = getPageContext('/blog/my-post', ['/blog', '/blog/my-post']);
       expect(ctx.pageTitle).toBe('Blog Post');
