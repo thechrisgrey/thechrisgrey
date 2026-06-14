@@ -65,6 +65,15 @@ describe('CapabilityIntro', () => {
       expect(screen.getByText(/I'm preparing for SFAS\./)).toBeInTheDocument();
     });
 
+    it('teaches a concrete trigger verb for visual answers (example uses an explicit verb)', () => {
+      renderIntro({ initiallyExpanded: true });
+      // The visual-answers card must show HOW to trigger it, not just the output —
+      // the example uses an explicit trigger verb ("Compare …").
+      expect(
+        screen.getByText(/Compare Altivum to a traditional consulting firm\./)
+      ).toBeInTheDocument();
+    });
+
     it('renders the agency-reinforcing footer copy', () => {
       renderIntro({ initiallyExpanded: true });
       expect(

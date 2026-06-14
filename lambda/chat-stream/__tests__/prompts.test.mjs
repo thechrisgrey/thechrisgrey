@@ -64,6 +64,25 @@ test("buildSystemPrompt combines visitor + retrieved context", () => {
   assert.match(out, /retrieved info/);
 });
 
+test("buildSystemPrompt: render_ui guidance (page surface) reliably honors EXPLICIT structural asks", () => {
+  const page = buildSystemPrompt(null, null, [], "page");
+  // Scope to the GENERATIVE UI section so we test the render_ui guidance itself,
+  // not "explicit" appearing elsewhere (e.g. the remember_fact etiquette).
+  const genUi = page.slice(page.indexOf("GENERATIVE UI"));
+  assert.match(genUi, /render_ui/);
+  // The card promises "compare / timeline / stats / links" triggers — the render_ui
+  // guidance must render the matching block on an EXPLICIT request, not suppress it
+  // under the "sparingly" rule (which is for unprompted enrichment only).
+  assert.match(genUi, /explicit/i);
+  assert.match(genUi, /compare|comparison/i);
+  assert.match(genUi, /timeline/i);
+});
+
+test("buildSystemPrompt: render_ui guidance is omitted on the floating widget surface", () => {
+  const widget = buildSystemPrompt(null, null, [], "widget");
+  assert.doesNotMatch(widget, /render_ui/);
+});
+
 test("BASE_SYSTEM_PROMPT includes tool etiquette for each tool", () => {
   assert.match(BASE_SYSTEM_PROMPT, /TOOL ETIQUETTE/);
   assert.match(BASE_SYSTEM_PROMPT, /navigate_to/);
