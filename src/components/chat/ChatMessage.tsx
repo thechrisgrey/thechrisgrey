@@ -1,5 +1,5 @@
 import { typography } from '../../utils/typography';
-import { memo, useMemo, ReactNode } from 'react';
+import { memo, useMemo, useState, useRef, useEffect, ReactNode } from 'react';
 import type { DraftAction } from '../../utils/chatEvents';
 import type { UiBlock } from '../../utils/uiBlocks';
 import ToolDraftCard from './ToolDraftCard';
@@ -34,6 +34,65 @@ const TOOL_LABELS: Record<string, string> = {
 
 function toolLabel(tool: string): string {
   return TOOL_LABELS[tool] || tool.replace(/_/g, ' ');
+}
+
+type CopyState = 'idle' | 'copied' | 'error';
+
+/**
+ * Icon-only copy affordance shown beneath a completed assistant message.
+ * Copies the raw message text (not the auto-linked markup). Mirrors the
+ * site's canonical copy pattern (content_copy → check → error_outline,
+ * see McpInstallBadge) but rendered subtly for a dense chat thread.
+ */
+function CopyMessageButton({ text }: { text: string }) {
+  const [state, setState] = useState<CopyState>('idle');
+  const timerRef = useRef<number | undefined>(undefined);
+
+  // Messages unmount on clear / navigation — drop any pending revert timer
+  // so we never setState on an unmounted component.
+  useEffect(() => () => { if (timerRef.current) window.clearTimeout(timerRef.current); }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setState('copied');
+    } catch {
+      setState('error');
+    }
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setState('idle'), 1800);
+  };
+
+  const icon = state === 'copied' ? 'check' : state === 'error' ? 'error_outline' : 'content_copy';
+
+  return (
+    <div className="flex">
+      {/* Accessible name stays static; the polite live region below is the single
+          channel for the transient copied/failed outcome (avoids double-announce). */}
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label="Copy message"
+        title="Copy message"
+        className={`inline-flex items-center justify-center -ml-1 min-h-[32px] min-w-[32px] rounded-md transition-all duration-200 touch-manipulation active:scale-[0.98] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 ${
+          state === 'idle'
+            ? 'text-altivum-silver/40 hover:text-altivum-gold'
+            : 'text-altivum-gold'
+        }`}
+      >
+        <span className="material-icons text-base leading-none" aria-hidden="true">
+          {icon}
+        </span>
+      </button>
+      <span className="sr-only" role="status" aria-live="polite">
+        {state === 'copied'
+          ? 'Message copied to clipboard'
+          : state === 'error'
+          ? 'Copy failed'
+          : ''}
+      </span>
+    </div>
+  );
 }
 
 // Map of keywords to their URLs (ordered by length desc to match longer phrases first).
@@ -168,6 +227,10 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, uiBloc
               )}
             </p>
           </div>
+        ) : null}
+
+        {!isUser && !isStreaming && content.trim().length > 0 ? (
+          <CopyMessageButton text={content} />
         ) : null}
 
         {!isUser && surface === 'page' && uiBlocks && uiBlocks.length > 0 ? (
