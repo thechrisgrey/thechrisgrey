@@ -49,7 +49,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
                 </span>
 
                 {/* Date */}
-                <span className="text-altivum-slate text-xs hidden md:block">
+                <span className="text-altivum-silver text-xs hidden md:block">
                   {formatDate(episode.publishedAt)}
                 </span>
 
@@ -68,14 +68,14 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
             {/* Mobile meta (shown when expanded) */}
             <div className="flex flex-wrap items-center gap-3 text-xs text-altivum-silver mb-4 sm:hidden">
               <span>{episode.duration}</span>
-              <span className="text-altivum-slate">|</span>
+              <span className="text-altivum-silver">|</span>
               <span>{formatDate(episode.publishedAt)}</span>
             </div>
 
             {/* Guests */}
             {episode.guests && episode.guests.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-altivum-slate text-sm">Featuring:</span>
+                <span className="text-altivum-silver text-sm">Featuring:</span>
                 {episode.guests.map((guest, idx) => (
                   <span key={idx} className="text-white text-sm">
                     {guest.name}
@@ -175,11 +175,11 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
                 {episode.seasonNumber ? `S${episode.seasonNumber} ` : ''}Episode {episode.episodeNumber}
               </span>
             )}
-            <span className="text-altivum-slate">|</span>
+            <span className="text-altivum-silver">|</span>
             <span className="text-altivum-silver">{formatDate(episode.publishedAt)}</span>
             {!isFeatured && (
               <>
-                <span className="text-altivum-slate">|</span>
+                <span className="text-altivum-silver">|</span>
                 <span className="text-altivum-silver">{episode.duration}</span>
               </>
             )}
@@ -196,7 +196,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
           {/* Guests */}
           {episode.guests && episode.guests.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-altivum-slate text-sm">Featuring:</span>
+              <span className="text-altivum-silver text-sm">Featuring:</span>
               {episode.guests.map((guest, idx) => (
                 <span key={idx} className="text-white text-sm font-medium">
                   {guest.name}

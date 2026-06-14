@@ -343,7 +343,7 @@ const Blog = () => {
               {filteredPosts[0].series.description && (
                 <p className="text-altivum-silver text-sm ml-9">{filteredPosts[0].series.description}</p>
               )}
-              <p className="text-altivum-slate text-xs ml-9 mt-2">
+              <p className="text-altivum-silver text-xs ml-9 mt-2">
                 {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} in this series
               </p>
             </div>
@@ -357,7 +357,7 @@ const Blog = () => {
             </div>
           ) : fetchError ? (
             <div className="text-center py-20">
-              <span className="material-icons text-5xl text-altivum-slate mb-4 block">cloud_off</span>
+              <span className="material-icons text-5xl text-altivum-silver mb-4 block">cloud_off</span>
               <p className="text-white mb-2" style={typography.cardTitleSmall}>
                 Unable to load posts
               </p>
@@ -378,7 +378,7 @@ const Blog = () => {
             </div>
           ) : filteredPosts.length === 0 ? (
             <div className="text-center py-20">
-              <span className="material-icons text-5xl text-altivum-slate mb-4 block">search_off</span>
+              <span className="material-icons text-5xl text-altivum-silver mb-4 block">search_off</span>
               <p className="text-altivum-silver mb-4">No posts match your filters.</p>
               <button
                 onClick={clearFilters}
@@ -405,7 +405,7 @@ const Blog = () => {
                         />
                       ) : (
                         <div className="w-full h-full bg-altivum-navy flex items-center justify-center">
-                          <span className="material-icons text-4xl text-altivum-slate">article</span>
+                          <span className="material-icons text-4xl text-altivum-silver">article</span>
                         </div>
                       )}
                       {post.isFeatured && (

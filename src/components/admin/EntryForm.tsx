@@ -118,7 +118,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
       <button
         type="button"
         onClick={() => setShowAdvanced(!showAdvanced)}
-        className="text-altivum-slate text-xs uppercase tracking-wider hover:text-altivum-silver transition-colors"
+        className="text-altivum-silver text-xs uppercase tracking-wider hover:text-altivum-silver transition-colors"
       >
         {showAdvanced ? 'Hide' : 'Show'} Advanced
       </button>

@@ -6,8 +6,8 @@ import AWS from '../../pages/AWS';
 
 // Mock static image imports
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
-vi.mock('../../assets/aws-community-builder.png', () => ({
-  default: '/mock-aws-community-builder.png',
+vi.mock('../../assets/aws-community-builder.webp', () => ({
+  default: '/mock-aws-community-builder.webp',
 }));
 
 // Mock WebGL check (jsdom has no WebGL) -- returns false so 2D fallback renders

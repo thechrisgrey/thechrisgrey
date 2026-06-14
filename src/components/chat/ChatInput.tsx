@@ -92,7 +92,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
             className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
               hasValue && !disabled
                 ? 'text-altivum-gold hover:text-white'
-                : 'text-altivum-slate/50 cursor-not-allowed'
+                : 'text-altivum-silver/50 cursor-not-allowed'
             }`}
             aria-label="Send message"
           >
@@ -103,7 +103,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
           <div className="mt-1 text-right pr-1">
             <span
               className={`text-xs tabular-nums transition-colors duration-200 ${
-                value.length > 3600 ? 'text-altivum-gold' : 'text-altivum-slate/50'
+                value.length > 3600 ? 'text-altivum-gold' : 'text-altivum-silver/70'
               }`}
             >
               {value.length}/4,000

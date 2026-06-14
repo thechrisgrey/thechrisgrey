@@ -1,6 +1,6 @@
 import { SEO } from '../components/SEO';
 import awsHero from '../assets/aws-hero.png';
-import awsCommunityBuilder from '../assets/aws-community-builder.png';
+import awsCommunityBuilder from '../assets/aws-community-builder.webp';
 import { typography } from '../utils/typography';
 import { buildWebPageSchema } from '../utils/schemas';
 import { InfraTopology } from '../components/aws/InfraTopology';

@@ -64,7 +64,7 @@ const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCode
         </pre>
       )}
       {language && (
-        <div className="text-right text-xs text-altivum-slate mt-1">
+        <div className="text-right text-xs text-altivum-silver mt-1">
           {language}
         </div>
       )}

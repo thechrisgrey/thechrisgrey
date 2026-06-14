@@ -6,6 +6,10 @@ Personal website for Christian Perez (@thechrisgrey) - Founder & CEO of Altivum 
 
 Check `docs/ideas-to-consider.md` for pending feature ideas.
 
+## Code quality is the standing priority
+
+Quality, correct, secure code is **always** the priority — never "whatever solves the issue the fastest." Unless the user explicitly asks for a quick fix, a spike, or a throwaway prototype, default to the highest-quality implementation: sound architecture, secure by default, well-tested, accessible, and consistent with the patterns already in this codebase. Speed is never a reason to ship something fragile, insecure, or hacky. When the fast path and the clean path diverge, take the clean path — or surface the tradeoff and let the user choose. Never silently optimize for speed at the expense of quality.
+
 ## Verification — run the real thing, always
 
 **Green tests are NOT proof a feature works.** Before claiming anything works — and especially for anything that touches an external service (AWS/Bedrock, deploys, streaming, APIs, auth) — exercise the REAL deployed path with a real request, not just mocks and unit tests.

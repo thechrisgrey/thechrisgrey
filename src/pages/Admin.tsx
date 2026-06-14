@@ -120,15 +120,15 @@ function AdminDashboard() {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="p-4 bg-altivum-navy/30 border border-white/5 rounded-sm">
             <div className="text-2xl text-white font-semibold">{entries.length}</div>
-            <div className="text-xs text-altivum-slate uppercase tracking-wider">Total Entries</div>
+            <div className="text-xs text-altivum-silver uppercase tracking-wider">Total Entries</div>
           </div>
           <div className="p-4 bg-altivum-navy/30 border border-white/5 rounded-sm">
             <div className="text-2xl text-green-400 font-semibold">{activeCount}</div>
-            <div className="text-xs text-altivum-slate uppercase tracking-wider">Active</div>
+            <div className="text-xs text-altivum-silver uppercase tracking-wider">Active</div>
           </div>
           <div className="p-4 bg-altivum-navy/30 border border-white/5 rounded-sm">
-            <div className="text-2xl text-altivum-slate font-semibold">{inactiveCount}</div>
-            <div className="text-xs text-altivum-slate uppercase tracking-wider">Inactive</div>
+            <div className="text-2xl text-altivum-silver font-semibold">{inactiveCount}</div>
+            <div className="text-xs text-altivum-silver uppercase tracking-wider">Inactive</div>
           </div>
         </div>
 

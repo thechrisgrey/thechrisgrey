@@ -42,7 +42,7 @@ export function TraceInput({ onTrace, disabled }: TraceInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Ask Alti something..."
           disabled={disabled}
-          className="flex-1 bg-altivum-navy/30 border border-altivum-slate/30 rounded-lg px-4 py-3 text-altivum-silver text-sm placeholder:text-altivum-slate focus:outline-hidden focus:border-altivum-gold/50 transition-colors disabled:opacity-50"
+          className="flex-1 bg-altivum-navy/30 border border-altivum-slate/30 rounded-lg px-4 py-3 text-altivum-silver text-sm placeholder:text-altivum-silver focus:outline-hidden focus:border-altivum-gold/50 transition-colors disabled:opacity-50"
         />
         <button
           onClick={handleSubmit}

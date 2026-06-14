@@ -206,7 +206,7 @@ const Navigation = () => {
                     ) : (
                       <div
                         key={index}
-                        className="px-4 py-3 text-sm font-medium text-altivum-slate cursor-not-allowed"
+                        className="px-4 py-3 text-sm font-medium text-altivum-silver cursor-not-allowed"
                         role="menuitem"
                         aria-disabled="true"
                       >
@@ -280,7 +280,7 @@ const Navigation = () => {
                     ) : (
                       <div
                         key={index}
-                        className="px-4 py-2 text-sm font-medium text-altivum-slate"
+                        className="px-4 py-2 text-sm font-medium text-altivum-silver"
                       >
                         {item.label}
                       </div>

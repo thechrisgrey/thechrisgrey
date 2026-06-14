@@ -61,9 +61,21 @@ describe('typography', () => {
   });
 
   describe('consistent base values', () => {
-    it('should use weight 200 for all styles', () => {
-      expectedKeys.forEach((key) => {
-        expect(typography[key].fontWeight).toBe(200);
+    // Two-tier weight system: display/heading styles stay ultralight (200) for
+    // the airy brand aesthetic; reading text (body + small/caption) uses 300 so
+    // it's legible at 12–18px on the dark palette. See typography.ts.
+    const displayStyles = ['heroHeader', 'sectionHeader', 'cardTitleLarge', 'cardTitleSmall', 'subtitle'] as const;
+    const readingStyles = ['bodyText', 'smallText'] as const;
+
+    it('should use ultralight weight 200 for display/heading styles', () => {
+      displayStyles.forEach((key) => {
+        expect(typography[key].fontWeight, `${key} should be 200`).toBe(200);
+      });
+    });
+
+    it('should use light weight 300 for reading text (body + small)', () => {
+      readingStyles.forEach((key) => {
+        expect(typography[key].fontWeight, `${key} should be 300`).toBe(300);
       });
     });
 
