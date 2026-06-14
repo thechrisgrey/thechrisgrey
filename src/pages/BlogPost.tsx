@@ -83,7 +83,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
         <ViewTransitionLink to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
           <span className="material-icons text-sm shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
           <div className="min-w-0">
-            <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
+            <div className="text-xs text-altivum-silver uppercase tracking-wider mb-0.5">
               {prevPost.seriesOrder != null ? `Part ${prevPost.seriesOrder}` : 'Previous'}
             </div>
             <div className="truncate">{prevPost.title}</div>
@@ -93,7 +93,7 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
       {nextPost ? (
         <ViewTransitionLink to={`/blog/${nextPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0">
           <div className="min-w-0">
-            <div className="text-xs text-altivum-slate uppercase tracking-wider mb-0.5">
+            <div className="text-xs text-altivum-silver uppercase tracking-wider mb-0.5">
               {nextPost.seriesOrder != null ? `Part ${nextPost.seriesOrder}` : 'Next'}
             </div>
             <div className="truncate">{nextPost.title}</div>
@@ -208,7 +208,7 @@ const BlogPost = () => {
         <SEO title="Error Loading Article" description="An error occurred while loading this article." noindex={true} />
         <div className="pt-32 pb-24">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <span className="material-icons text-6xl text-altivum-slate mb-6">cloud_off</span>
+            <span className="material-icons text-6xl text-altivum-silver mb-6">cloud_off</span>
             <h1 className="text-white mb-4" style={typography.sectionHeader}>
               Unable to Load Article
             </h1>
@@ -249,7 +249,7 @@ const BlogPost = () => {
         />
         <div className="pt-32 pb-24">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <span className="material-icons text-6xl text-altivum-slate mb-6">article</span>
+            <span className="material-icons text-6xl text-altivum-silver mb-6">article</span>
             <h1 className="text-white mb-4" style={typography.sectionHeader}>
               Article Not Found
             </h1>
@@ -353,11 +353,11 @@ const BlogPost = () => {
           {/* Meta info */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-altivum-gold uppercase tracking-wider font-medium mb-6">
             <span>{post.category}</span>
-            <span className="text-altivum-slate">-</span>
+            <span className="text-altivum-silver">-</span>
             <span>{formatDate(post.publishedAt)}</span>
             {post.readingTime && (
               <>
-                <span className="text-altivum-slate">-</span>
+                <span className="text-altivum-silver">-</span>
                 <span>{post.readingTime} min read</span>
               </>
             )}
@@ -553,7 +553,7 @@ const BlogPost = () => {
                       />
                     ) : (
                       <div className="w-full h-full bg-altivum-navy flex items-center justify-center">
-                        <span className="material-icons text-3xl text-altivum-slate">article</span>
+                        <span className="material-icons text-3xl text-altivum-silver">article</span>
                       </div>
                     )}
                   </div>

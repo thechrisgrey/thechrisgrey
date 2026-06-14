@@ -56,7 +56,7 @@ function EntryList({
             <h2 className="text-white text-sm font-semibold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-altivum-gold" />
               {cat.label}
-              <span className="text-altivum-slate font-normal">({items.length})</span>
+              <span className="text-altivum-silver font-normal">({items.length})</span>
             </h2>
 
             <div className="space-y-3">
@@ -85,7 +85,7 @@ function EntryList({
                             {entry.title}
                           </h3>
                           {entry.date && (
-                            <span className="text-altivum-slate text-xs shrink-0">
+                            <span className="text-altivum-silver text-xs shrink-0">
                               {new Date(entry.date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -93,7 +93,7 @@ function EntryList({
                             </span>
                           )}
                           {!entry.isActive && (
-                            <span className="text-xs text-altivum-slate bg-white/5 px-2 py-0.5 rounded-sm">
+                            <span className="text-xs text-altivum-silver bg-white/5 px-2 py-0.5 rounded-sm">
                               Inactive
                             </span>
                           )}
@@ -106,7 +106,7 @@ function EntryList({
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => onToggleActive(entry)}
-                          className="p-1.5 text-altivum-slate hover:text-altivum-gold transition-colors"
+                          className="p-1.5 text-altivum-silver hover:text-altivum-gold transition-colors"
                           aria-label={entry.isActive ? 'Deactivate' : 'Activate'}
                           title={entry.isActive ? 'Deactivate' : 'Activate'}
                         >
@@ -116,7 +116,7 @@ function EntryList({
                         </button>
                         <button
                           onClick={() => onEdit(entry)}
-                          className="p-1.5 text-altivum-slate hover:text-white transition-colors"
+                          className="p-1.5 text-altivum-silver hover:text-white transition-colors"
                           aria-label="Edit"
                         >
                           <span className="material-icons text-lg">edit</span>
@@ -132,7 +132,7 @@ function EntryList({
                             </button>
                             <button
                               onClick={onCancelDelete}
-                              className="p-1.5 text-altivum-slate hover:text-white transition-colors"
+                              className="p-1.5 text-altivum-silver hover:text-white transition-colors"
                               aria-label="Cancel delete"
                             >
                               <span className="material-icons text-lg">close</span>
@@ -141,7 +141,7 @@ function EntryList({
                         ) : (
                           <button
                             onClick={() => onDeleteConfirm(entry._id)}
-                            className="p-1.5 text-altivum-slate hover:text-red-400 transition-colors"
+                            className="p-1.5 text-altivum-silver hover:text-red-400 transition-colors"
                             aria-label="Delete"
                           >
                             <span className="material-icons text-lg">delete</span>
@@ -160,11 +160,11 @@ function EntryList({
       {/* Empty state */}
       {!isLoading && entries.length === 0 && (
         <div className="text-center py-20">
-          <span className="material-icons text-5xl text-altivum-slate mb-4 block">
+          <span className="material-icons text-5xl text-altivum-silver mb-4 block">
             library_books
           </span>
           <p className="text-altivum-silver mb-2">No entries yet</p>
-          <p className="text-altivum-slate text-sm">
+          <p className="text-altivum-silver text-sm">
             Add your first Knowledge Base entry to get started.
           </p>
         </div>

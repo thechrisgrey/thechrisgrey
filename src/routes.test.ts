@@ -95,3 +95,58 @@ describe('ROUTES table — drift detector', () => {
     expect(blueprint?.context.section).toBe('Blueprint');
   });
 });
+
+/**
+ * Sitemap / prerender drift detector.
+ *
+ * The indexable URL set is owned by `scripts/generate-sitemap.js` (`staticPages`,
+ * re-exported as `STATIC_ROUTES`, which `scripts/prerender.js` imports so the
+ * crawl set never diverges from the sitemap). The canonical route table lives in
+ * THIS file. Nothing previously asserted the two stay in sync — which is exactly
+ * how `/aws` and `/claude` (both real, indexable credibility pages with full
+ * `<SEO>` blocks) were silently absent from BOTH the sitemap and the prerender
+ * crawl, shipping as empty CSR shells invisible to search.
+ *
+ * We parse `generate-sitemap.js` as TEXT rather than importing it — same idiom as
+ * `readAppRoutePaths()` above and the Lambda `validation-drift` test — to avoid
+ * coupling a TS test to a build-only ESM script (and its `@sanity/client` import)
+ * across the src/scripts boundary.
+ */
+function readSitemapStaticPaths(): string[] {
+  const src = readFileSync(resolve(HERE, '../scripts/generate-sitemap.js'), 'utf-8');
+  const block = src.match(/const staticPages = \[([\s\S]*?)\];/);
+  if (!block) throw new Error('Could not locate the `staticPages` array in scripts/generate-sitemap.js');
+  const paths = new Set<string>();
+  const re = /url:\s*'([^']+)'/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(block[1]))) paths.add(match[1]);
+  return [...paths];
+}
+
+describe('sitemap/prerender ↔ ROUTES drift detector', () => {
+  const sitemapPaths = readSitemapStaticPaths();
+
+  // The set search engines SHOULD see: Home (static, lives in HOME_CONTEXT, not
+  // ROUTES) plus every route that is neither dynamic (`:param`) nor flagged
+  // noIndex (gated / in-development).
+  const indexableRoutes = [
+    HOME_CONTEXT.path,
+    ...ROUTES.filter((r) => !r.noIndex && !r.path.includes(':')).map((r) => r.path),
+  ].sort();
+
+  it('the sitemap/prerender static set is EXACTLY the indexable route set + Home', () => {
+    expect([...sitemapPaths].sort()).toEqual(indexableRoutes);
+  });
+
+  it('never lists a gated, in-development, or dynamic route in the sitemap', () => {
+    const nonIndexable = ROUTES.filter((r) => r.noIndex || r.path.includes(':')).map((r) => r.path);
+    for (const path of nonIndexable) {
+      expect(sitemapPaths, `${path} must NOT be in the sitemap/prerender set`).not.toContain(path);
+    }
+  });
+
+  it('indexes /aws and /claude (regression: both were silently dropped from sitemap + prerender)', () => {
+    expect(sitemapPaths).toContain('/aws');
+    expect(sitemapPaths).toContain('/claude');
+  });
+});

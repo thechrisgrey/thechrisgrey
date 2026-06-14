@@ -146,7 +146,7 @@ const Podcast = () => {
                     {featuredEpisode.seasonNumber ? `S${featuredEpisode.seasonNumber} ` : ''}Episode {featuredEpisode.episodeNumber}
                   </span>
                 )}
-                <span className="text-altivum-slate">|</span>
+                <span className="text-altivum-silver">|</span>
                 <span className="text-altivum-silver">{featuredEpisode.duration}</span>
               </div>
               <h3 className="text-white mb-4" style={typography.cardTitleLarge}>

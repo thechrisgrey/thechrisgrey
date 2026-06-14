@@ -24,8 +24,13 @@
     <meta name="format-detection" content="telephone=no" />
 
     <!-- Open Graph / Facebook -->
+    <!-- NOTE: og:url / twitter:url and <link rel="canonical"> are intentionally
+         NOT hardcoded here — they are inherently per-page and are emitted by the
+         <SEO> component (react-helmet) for the actual route. A static "/" value
+         here would stamp the wrong URL onto every prerendered page's snapshot
+         (duplicate, conflicting og:url/canonical). The tags below are generic
+         brand defaults that only surface in the CSR-fallback (prerender-failed) state. -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://thechrisgrey.com/" />
     <meta property="og:title" content="Christian Perez - thechrisgrey" />
     <meta property="og:description" content="Founder & CEO of Altivum Inc., Former Green Beret, Bronze Star Recipient, Host of The Vector Podcast, Author of Beyond the Assessment" />
     <meta property="og:image" content="https://thechrisgrey.com/og.png" />
@@ -34,9 +39,8 @@
     <meta property="og:site_name" content="Christian Perez" />
     <meta property="og:locale" content="en_US" />
 
-    <!-- Twitter -->
+    <!-- Twitter (twitter:url omitted — per-page, set by <SEO>; see Open Graph note above) -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://thechrisgrey.com/" />
     <meta property="twitter:title" content="Christian Perez - thechrisgrey" />
     <meta property="twitter:description" content="Founder & CEO of Altivum Inc., Former Green Beret, Bronze Star Recipient, Host of The Vector Podcast, Author of Beyond the Assessment" />
     <meta property="twitter:image" content="https://thechrisgrey.com/og.png" />

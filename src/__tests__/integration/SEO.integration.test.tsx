@@ -35,8 +35,8 @@ vi.mock('gsap/ScrollTrigger', () => ({ ScrollTrigger: {} }));
 // Mock static image imports
 vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
-vi.mock('../../assets/aws-community-builder.png', () => ({
-  default: '/mock-aws-cb.png',
+vi.mock('../../assets/aws-community-builder.webp', () => ({
+  default: '/mock-aws-cb.webp',
 }));
 
 // Mock Sanity client for Blog page
