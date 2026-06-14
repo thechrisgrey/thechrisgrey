@@ -11,6 +11,8 @@
  * Event names are Title Case and configured as goals in the Plausible dashboard.
  * `props` are optional custom dimensions (e.g. which surface drove a signup).
  */
+import { capturePostHogEvent } from './posthog';
+
 export type PlausibleProps = Record<string, string | number | boolean>;
 
 declare global {
@@ -22,6 +24,12 @@ declare global {
   }
 }
 
+/**
+ * Record a conversion goal. Sent to BOTH:
+ *  - Plausible — cookieless, fires for every visitor.
+ *  - PostHog — funnels/replay, but only for visitors who granted consent
+ *    (capturePostHogEvent is a no-op until PostHog is initialized).
+ */
 export function trackEvent(event: string, props?: PlausibleProps): void {
   try {
     if (typeof window !== 'undefined' && typeof window.plausible === 'function') {
@@ -30,4 +38,5 @@ export function trackEvent(event: string, props?: PlausibleProps): void {
   } catch {
     // Intentionally swallowed — a broken analytics call must never break the UI.
   }
+  capturePostHogEvent(event, props);
 }
