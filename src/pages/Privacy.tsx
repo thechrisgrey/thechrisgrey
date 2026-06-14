@@ -1,8 +1,16 @@
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
+import { clearConsent } from '../utils/consent';
+import { disablePostHog } from '../utils/posthog';
 
 const Privacy = () => {
-  const lastUpdated = 'January 25, 2026';
+  const lastUpdated = 'June 14, 2026';
+
+  const resetAnalyticsPreference = () => {
+    clearConsent();
+    disablePostHog();
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen pt-20">
@@ -158,11 +166,27 @@ const Privacy = () => {
                 third-party advertising trackers or sell your data to advertisers.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                We use <strong className="text-white">Cloudflare Web Analytics</strong> to understand how visitors
-                use our Site. This service is privacy-friendly and does not use cookies, does not track
-                individual users across sites, and does not collect personal information. It only provides
-                aggregate data such as page views, visitor counts, and referral sources.
+                We use <strong className="text-white">Cloudflare Web Analytics</strong> and{' '}
+                <strong className="text-white">Plausible</strong> to understand how visitors use our Site.
+                These services are privacy-friendly: they do not use cookies, do not track individual users
+                across sites, and do not collect personal information &mdash; only aggregate data such as page
+                views, visitor counts, and referral sources.
               </p>
+              <p className="text-altivum-silver mt-4" style={typography.bodyText}>
+                With your consent, we additionally use <strong className="text-white">PostHog</strong> for
+                product analytics and session insights that help us improve the Site. PostHog uses cookies and
+                is enabled <em>only</em> if you accept it on the consent banner &mdash; declining keeps the Site
+                completely cookie-free. Form fields you enter (such as your email) are never recorded. You can
+                withdraw your consent at any time:
+              </p>
+              <button
+                type="button"
+                onClick={resetAnalyticsPreference}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-altivum-gold/40 text-altivum-gold text-sm rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-200 touch-manipulation focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+              >
+                <span className="material-icons text-base" aria-hidden="true">tune</span>
+                Reset analytics preference
+              </button>
             </div>
 
             {/* Data Retention */}
