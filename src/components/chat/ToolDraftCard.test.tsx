@@ -93,26 +93,30 @@ describe('ToolDraftCard — contact', () => {
 });
 
 describe('ToolDraftCard — newsletter', () => {
-  it('renders pitch and subscribe button', () => {
+  it('renders the pitch and an inline capture form (subscribe without leaving chat)', () => {
+    let current = '/';
     renderWithRouter(
       <ToolDraftCard
         action={{ kind: 'draft_action', action: 'newsletter', pitch: 'Weekly insights' }}
       />,
+      (loc) => { current = loc; },
     );
     expect(screen.getByText(/Weekly insights/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Subscribe/i })).toBeInTheDocument();
+    // The compact NewsletterForm is rendered inline (the old behavior navigated to
+    // /contact#newsletter — a page with no form — so capture silently failed).
+    expect(screen.getByPlaceholderText('Enter your email address')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /subscribe/i })).toBeInTheDocument();
+    // No navigation away from the conversation.
+    expect(current).toBe('/');
   });
 
-  it('navigates to /contact#newsletter on subscribe', () => {
-    let current = '/';
+  it('offers a dismiss control', () => {
     renderWithRouter(
       <ToolDraftCard
         action={{ kind: 'draft_action', action: 'newsletter', pitch: 'pitch' }}
       />,
-      (loc) => { current = loc; },
     );
-    fireEvent.click(screen.getByRole('button', { name: /Subscribe/i }));
-    expect(current).toBe('/contact#newsletter');
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument();
   });
 });
 

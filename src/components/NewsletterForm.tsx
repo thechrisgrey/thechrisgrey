@@ -2,12 +2,19 @@ import { useState, useEffect, FormEvent } from 'react';
 import { typography } from '../utils/typography';
 import { isValidEmail } from '../utils/validators';
 import { useFocusTrap } from '../hooks';
+import { trackEvent } from '../utils/analytics';
 
 interface NewsletterFormProps {
   variant?: 'full' | 'compact';
+  /**
+   * Which surface the form is mounted on (e.g. 'home', 'about', 'podcast').
+   * Sent as a Plausible prop on the "Newsletter Subscribe" goal so signups can
+   * be attributed to the page that drove them.
+   */
+  source?: string;
 }
 
-const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
+const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState<{
     type: 'idle' | 'loading' | 'success' | 'error';
@@ -58,6 +65,7 @@ const NewsletterForm = ({ variant = 'full' }: NewsletterFormProps) => {
         setSubscribeEmail('');
         setSubscribeStatus({ type: 'idle', message: '' });
         setShowSuccessModal(true);
+        trackEvent('Newsletter Subscribe', source ? { source } : undefined);
       } else if (response.status === 429) {
         setSubscribeStatus({
           type: 'error',

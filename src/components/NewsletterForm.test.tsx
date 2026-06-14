@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import NewsletterForm from './NewsletterForm';
@@ -189,6 +189,43 @@ describe('NewsletterForm', () => {
       render(<NewsletterForm variant="compact" />);
       expect(screen.queryByText('Stay Informed')).not.toBeInTheDocument();
       expect(screen.getByPlaceholderText('Enter your email address')).toBeInTheDocument();
+    });
+  });
+
+  describe('analytics', () => {
+    afterEach(() => {
+      delete (window as unknown as { plausible?: unknown }).plausible;
+    });
+
+    it('fires the "Newsletter Subscribe" goal with its source on success', async () => {
+      const user = userEvent.setup();
+      const plausible = vi.fn();
+      (window as unknown as { plausible: typeof plausible }).plausible = plausible;
+      mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
+
+      render(<NewsletterForm variant="compact" source="home" />);
+      await user.type(screen.getByPlaceholderText('Enter your email address'), 'test@example.com');
+      await user.click(screen.getByRole('button', { name: /subscribe/i }));
+
+      await waitFor(() => {
+        expect(plausible).toHaveBeenCalledWith('Newsletter Subscribe', { props: { source: 'home' } });
+      });
+    });
+
+    it('does not fire the goal on a failed subscription', async () => {
+      const user = userEvent.setup();
+      const plausible = vi.fn();
+      (window as unknown as { plausible: typeof plausible }).plausible = plausible;
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 500, json: () => Promise.resolve({ error: 'nope' }) });
+
+      render(<NewsletterForm variant="compact" source="home" />);
+      await user.type(screen.getByPlaceholderText('Enter your email address'), 'test@example.com');
+      await user.click(screen.getByRole('button', { name: /subscribe/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+      });
+      expect(plausible).not.toHaveBeenCalled();
     });
   });
 });
