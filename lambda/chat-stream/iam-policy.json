@@ -13,6 +13,20 @@
       ]
     },
     {
+      "Sid": "BedrockInvokeOpusGenUi",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-opus-4-6-v1",
+        "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-opus-4-6-v1"
+      ]
+    },
+    {
       "Sid": "BedrockGuardrail",
       "Effect": "Allow",
       "Action": [
