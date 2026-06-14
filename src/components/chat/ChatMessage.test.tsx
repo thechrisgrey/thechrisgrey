@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ChatMessage from './ChatMessage';
 import type { UiBlock } from '../../utils/uiBlocks';
@@ -221,6 +221,157 @@ describe('ChatMessage', () => {
         />
       );
       expect(screen.queryAllByRole('link')).toHaveLength(0);
+    });
+  });
+
+  describe('copy to clipboard', () => {
+    beforeEach(() => {
+      // jsdom does not implement navigator.clipboard; install a spy.
+      // (userEvent.setup() would install its own stub, so these tests use fireEvent.)
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: vi.fn().mockResolvedValue(undefined) },
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    afterEach(() => {
+      // Some tests install fake timers; always restore so they don't leak.
+      vi.useRealTimers();
+      Reflect.deleteProperty(navigator, 'clipboard');
+    });
+
+    it('shows a copy button on a completed assistant message', () => {
+      render(<ChatMessage role="assistant" content="Here is my answer." />);
+      expect(
+        screen.getByRole('button', { name: /copy message/i })
+      ).toBeInTheDocument();
+    });
+
+    it('reveals the copy button on hover/focus (hidden at rest) but keeps it in the a11y tree', () => {
+      render(<ChatMessage role="assistant" content="Hover to reveal me." />);
+      const btn = screen.getByRole('button', { name: /copy message/i });
+      // Still present for keyboard + assistive tech regardless of hover — opacity
+      // hides it visually without removing it from the accessibility tree or layout.
+      expect(btn).toBeInTheDocument();
+      // Hidden at rest; revealed on group hover, keyboard focus-within, and on
+      // touch (no-hover) devices where hover can never fire.
+      expect(btn.className).toContain('opacity-0');
+      expect(btn.className).toContain('group-hover:opacity-100');
+      expect(btn.className).toContain('group-focus-within:opacity-100');
+      expect(btn.className).toContain('[@media(hover:none)]:opacity-100');
+    });
+
+    it('copies the raw message text (not the link-processed markup) to the clipboard', () => {
+      render(
+        <MemoryRouter>
+          <ChatMessage role="assistant" content="Learn about Altivum here." />
+        </MemoryRouter>
+      );
+      fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
+      expect(navigator.clipboard.writeText).toHaveBeenCalledTimes(1);
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        'Learn about Altivum here.'
+      );
+    });
+
+    it('reflects a copied state (icon + polite live-region announcement) after a successful copy', async () => {
+      render(<ChatMessage role="assistant" content="Copied content." />);
+      // The button's accessible name stays static — feedback comes from the icon
+      // swap (visual) and the aria-live status region (screen readers).
+      fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
+      expect(await screen.findByText('check')).toBeInTheDocument();
+      expect(screen.getByText('Message copied to clipboard')).toBeInTheDocument();
+      // While showing the result, the button stays visible even without hover.
+      expect(
+        screen.getByRole('button', { name: /copy message/i }).className
+      ).toContain('opacity-100');
+    });
+
+    it('reverts to the idle copy affordance after the 1800ms window', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      render(<ChatMessage role="assistant" content="Copied content." />);
+      fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
+      await waitFor(() => expect(screen.getByText('check')).toBeInTheDocument());
+
+      act(() => {
+        vi.advanceTimersByTime(1800);
+      });
+
+      await waitFor(() => expect(screen.getByText('content_copy')).toBeInTheDocument());
+      expect(screen.queryByText('check')).not.toBeInTheDocument();
+      // Live region cleared so it won't re-announce stale status.
+      expect(screen.queryByText('Message copied to clipboard')).not.toBeInTheDocument();
+    });
+
+    it('does NOT show a copy button on user messages', () => {
+      render(<ChatMessage role="user" content="My question" />);
+      expect(
+        screen.queryByRole('button', { name: /copy/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('does NOT show a copy button while the assistant message is streaming', () => {
+      render(<ChatMessage role="assistant" content="Partial answer" isStreaming />);
+      expect(
+        screen.queryByRole('button', { name: /copy/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('does NOT show a copy button on an empty (tool-only) assistant message', () => {
+      render(
+        <ChatMessage
+          role="assistant"
+          content=""
+          toolActivity={[{ tool: 'navigate_to', status: 'complete' }]}
+        />
+      );
+      expect(
+        screen.queryByRole('button', { name: /copy/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('does NOT show a copy button when content is only whitespace', () => {
+      // The gate uses content.trim().length > 0 — a visually-empty bubble must
+      // not get a copy affordance. (Spaces and newline-only both count as empty.)
+      const { rerender } = render(<ChatMessage role="assistant" content="   " />);
+      expect(screen.queryByRole('button', { name: /copy/i })).not.toBeInTheDocument();
+      rerender(<ChatMessage role="assistant" content={'\n\n'} />);
+      expect(screen.queryByRole('button', { name: /copy/i })).not.toBeInTheDocument();
+    });
+
+    it('does NOT show a copy button on system messages', () => {
+      render(<ChatMessage role="assistant" content="A system notice." isSystem />);
+      expect(
+        screen.queryByRole('button', { name: /copy/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it('surfaces a failure state (icon + announcement) when the clipboard write rejects', async () => {
+      (navigator.clipboard.writeText as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('denied')
+      );
+      render(<ChatMessage role="assistant" content="Will fail to copy." />);
+      fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
+      await waitFor(() => expect(screen.getByText('error_outline')).toBeInTheDocument());
+      expect(screen.getByText('Copy failed')).toBeInTheDocument();
+    });
+
+    it('reverts to the idle affordance after a failed copy too', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      (navigator.clipboard.writeText as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error('denied')
+      );
+      render(<ChatMessage role="assistant" content="Will fail to copy." />);
+      fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
+      await waitFor(() => expect(screen.getByText('error_outline')).toBeInTheDocument());
+
+      act(() => {
+        vi.advanceTimersByTime(1800);
+      });
+
+      await waitFor(() => expect(screen.getByText('content_copy')).toBeInTheDocument());
+      expect(screen.queryByText('error_outline')).not.toBeInTheDocument();
     });
   });
 

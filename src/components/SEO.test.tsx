@@ -153,8 +153,18 @@ describe('SEO', () => {
     });
   });
 
-  it('should use default OG image when no image provided', async () => {
-    renderSEO({ title: 'Test', description: 'desc' });
+  it('derives the per-route OG card from the url when no image is provided', async () => {
+    renderSEO({ title: 'AWS', description: 'desc', url: 'https://thechrisgrey.com/aws' });
+    await waitFor(() => {
+      const og = document.querySelector('meta[property="og:image"]');
+      expect(og).toHaveAttribute('content', 'https://thechrisgrey.com/og/aws.png');
+      const tw = document.querySelector('meta[name="twitter:image"]');
+      expect(tw).toHaveAttribute('content', 'https://thechrisgrey.com/og/aws.png');
+    });
+  });
+
+  it('falls back to /og.png when the url has no generated card (e.g. a blog post)', async () => {
+    renderSEO({ title: 'Post', description: 'desc', url: 'https://thechrisgrey.com/blog/some-post' });
     await waitFor(() => {
       const meta = document.querySelector('meta[property="og:image"]');
       expect(meta).toHaveAttribute('content', 'https://thechrisgrey.com/og.png');

@@ -1,9 +1,14 @@
 // SF Pro Display Typography System
-// Ultra-light weight (200) with consistent letter-spacing (0.02em) across all text
-// Fluid sizing using clamp() for responsive design
+// Display/heading styles use ultra-light (200) for an elegant, airy feel.
+// Reading text (body + small/caption) uses light (300) instead: at 12–18px,
+// weight 200 on the dark palette is thin and low-contrast, flattening hierarchy
+// and reading "fashion-thin" rather than substantial. 300 keeps the aesthetic
+// while making running text legible and giving it more presence.
+// Consistent letter-spacing (0.02em); fluid sizing via clamp().
 
 const baseFontFamily = '"SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif';
-const baseFontWeight = 200;
+const baseFontWeight = 200; // display / headings — elegant ultralight
+const bodyFontWeight = 300; // reading text — legible at small sizes on dark
 const baseLetterSpacing = '0.02em';
 
 export const typography = {
@@ -55,7 +60,7 @@ export const typography = {
   // Body text - standard paragraph text (14px -> 18px)
   bodyText: {
     fontFamily: baseFontFamily,
-    fontWeight: baseFontWeight,
+    fontWeight: bodyFontWeight,
     letterSpacing: baseLetterSpacing,
     fontSize: 'clamp(0.875rem, 1.5vw, 1.125rem)', // 14px -> 18px
     lineHeight: 1.5,
@@ -64,7 +69,7 @@ export const typography = {
   // Small text - captions, labels, footer text (12px -> 14px)
   smallText: {
     fontFamily: baseFontFamily,
-    fontWeight: baseFontWeight,
+    fontWeight: bodyFontWeight,
     letterSpacing: baseLetterSpacing,
     fontSize: 'clamp(0.75rem, 1vw, 0.875rem)', // 12px -> 14px
     lineHeight: 1.5,

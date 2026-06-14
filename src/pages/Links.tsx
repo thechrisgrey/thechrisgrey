@@ -4,6 +4,7 @@ import builderQR from '../assets/builder-qr.png';
 import { buildProfilePageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
+import NewsletterCTA from '../components/NewsletterCTA';
 
 const Links = () => {
   const websites = [
@@ -93,6 +94,12 @@ const Links = () => {
           </div>
         </div>
       </section>
+
+      <NewsletterCTA
+        source="links"
+        heading="The one link worth keeping"
+        blurb="Social platforms come and go. Join the newsletter and stay connected no matter where the internet moves next."
+      />
 
       {/* AWS Builder Section with QR Code */}
       <section className="py-24 bg-altivum-dark">

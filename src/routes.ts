@@ -53,6 +53,21 @@ export interface RouteDefinition {
    * resident by the time someone navigates).
    */
   noPrefetch?: boolean;
+  /**
+   * Exclude this route from the sitemap AND the build-time prerender crawl.
+   * Used for routes that must NOT be indexed by search engines: `/admin`
+   * (Cognito-gated) and `/blueprint` (feature-flagged, waitlist-only, still in
+   * development). Dynamic routes (`/blog/:slug`) are excluded by their `:param`
+   * regardless of this flag — they're enumerated from Sanity separately.
+   *
+   * The single source of truth for the indexable set is `scripts/generate-sitemap.js`
+   * (`staticPages` -> `STATIC_ROUTES`, which `scripts/prerender.js` imports). A
+   * drift test in `routes.test.ts` asserts that set stays exactly in sync with the
+   * non-`noIndex`, non-dynamic routes here, so a route can never again silently
+   * fall out of the sitemap/prerender (which is how `/aws` and `/claude` went
+   * unindexed).
+   */
+  noIndex?: boolean;
 }
 
 /**
@@ -216,6 +231,7 @@ export const ROUTES: readonly RouteDefinition[] = [
     importer: () => import('./pages/Admin'),
     context: { pageTitle: 'Admin', section: 'Admin' },
     noPrefetch: true,
+    noIndex: true, // Cognito-gated — never index.
   },
   {
     path: '/blueprint',
@@ -227,6 +243,7 @@ export const ROUTES: readonly RouteDefinition[] = [
       'What can it design?',
       'How do I join the waitlist?',
     ],
+    noIndex: true, // Feature-flagged, waitlist-only, still in development — don't index yet.
   },
 ] as const;
 

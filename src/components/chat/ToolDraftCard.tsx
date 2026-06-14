@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { typography } from '../../utils/typography';
 import type { DraftAction } from '../../utils/chatEvents';
+import NewsletterForm from '../NewsletterForm';
 
 interface ToolDraftCardProps {
   action: DraftAction;
@@ -135,10 +136,9 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
   }
 
   if (action.action === 'newsletter') {
-    const openNewsletter = () => {
-      navigate('/contact#newsletter');
-      accepted();
-    };
+    // Render the capture form INLINE so the visitor can subscribe without leaving
+    // the conversation. (Previously this navigated to /contact#newsletter — a page
+    // with no newsletter form — so the agent's primary capture action did nothing.)
     return (
       <div
         className="max-w-[90%] md:max-w-[80%] px-5 py-4 bg-white/5 border border-altivum-gold/30 rounded-2xl animate-fade-in"
@@ -149,11 +149,11 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
           <span className="material-icons text-altivum-gold/70 text-lg mt-0.5 shrink-0">mail</span>
           <span>Subscribe to Christian's updates</span>
         </p>
-        <p className="text-altivum-silver/80 mb-3" style={typography.smallText}>
+        <p className="text-altivum-silver/80 mb-4" style={typography.smallText}>
           {action.pitch}
         </p>
-        <div className="flex gap-2">
-          <IconButton icon="notifications" label="Subscribe" onClick={openNewsletter} />
+        <NewsletterForm variant="compact" source="chat" />
+        <div className="flex gap-2 mt-3">
           <IconButton icon="close" label="Not now" variant="ghost" onClick={dismiss} />
         </div>
       </div>

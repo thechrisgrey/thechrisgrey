@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
@@ -6,6 +6,9 @@ import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import { BlogErrorFallback } from './components/ErrorFallbacks';
 import ChatWidget from './components/chat/ChatWidget';
+import ConsentBanner from './components/ConsentBanner';
+import { getConsent } from './utils/consent';
+import { enablePostHog, capturePostHogPageview } from './utils/posthog';
 
 // Static import — critical first-load path
 import Home from './pages/Home';
@@ -37,6 +40,25 @@ const PageLoadingFallback = () => (
 function App() {
   const location = useLocation();
   const isFullscreenPage = location.pathname === '/chat' || location.pathname === '/admin';
+
+  // Re-enable PostHog on load for visitors who already consented (no-op if PostHog
+  // isn't configured or consent wasn't granted). enablePostHog() captures the entry
+  // pageview itself; the effect below captures subsequent SPA navigations.
+  useEffect(() => {
+    if (getConsent() === 'granted') void enablePostHog();
+  }, []);
+
+  // SPA pageview tracking. Skip the first run (the entry pageview is captured by
+  // enablePostHog) and capture on each subsequent route change. No-op until/unless
+  // PostHog is enabled.
+  const isFirstNavigation = useRef(true);
+  useEffect(() => {
+    if (isFirstNavigation.current) {
+      isFirstNavigation.current = false;
+      return;
+    }
+    capturePostHogPageview();
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-altivum-dark">
@@ -86,6 +108,7 @@ function App() {
       </main>
       {!isFullscreenPage && <Footer />}
       {!isFullscreenPage && <ChatWidget />}
+      <ConsentBanner />
     </div>
   );
 }

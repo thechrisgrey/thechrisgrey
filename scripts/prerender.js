@@ -22,7 +22,7 @@
  * the sitemap.
  */
 import { createServer } from 'http';
-import { createReadStream, existsSync, mkdirSync, writeFileSync, statSync } from 'fs';
+import { createReadStream, readFileSync, existsSync, mkdirSync, writeFileSync, statSync } from 'fs';
 import { resolve, dirname, join, extname, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@sanity/client';
@@ -65,26 +65,34 @@ const MIME = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-function startServer() {
+// `shellHtml` is the PRISTINE raw SPA shell captured by the caller BEFORE the
+// crawl writes any route (see crawl()). It is served for every SPA-shell
+// response so the served shell never carries another route's metadata.
+function startServer(shellHtml) {
   return new Promise((resolveServer, rejectServer) => {
     const server = createServer((req, res) => {
       const urlPath = decodeURIComponent(req.url.split('?')[0]);
-      let filePath = resolve(DIST, `.${urlPath}`);
-      // Defensive path-traversal guard: never resolve outside dist/. Input is
-      // local-only/trusted (only this build's puppeteer hits 127.0.0.1), but a
-      // `..%2f` path would otherwise escape — clamp it to the SPA shell.
-      if (filePath !== DIST && !filePath.startsWith(DIST + sep)) {
-        filePath = join(DIST, 'index.html');
+      const filePath = resolve(DIST, `.${urlPath}`);
+      // Serve a real on-disk asset ONLY when the request maps to an existing
+      // FILE with an extension inside dist/ (js/css/img/glb/etc.). Everything
+      // else — extensionless routes, directories, missing paths, and any
+      // `..%2f` traversal attempt that escapes dist/ — falls through to the
+      // pristine SPA shell below. Input is local-only/trusted (only this
+      // build's puppeteer hits 127.0.0.1); the dist/ clamp is defensive.
+      const isSafe = filePath === DIST || filePath.startsWith(DIST + sep);
+      if (isSafe && extname(filePath) && existsSync(filePath) && statSync(filePath).isFile()) {
+        res.writeHead(200, { 'Content-Type': MIME[extname(filePath)] || 'application/octet-stream' });
+        createReadStream(filePath).pipe(res);
+        return;
       }
-      // Directory or extensionless route -> serve the SPA shell index.html.
-      if (!extname(filePath) || (existsSync(filePath) && statSync(filePath).isDirectory())) {
-        filePath = join(DIST, 'index.html');
-      }
-      if (!existsSync(filePath)) {
-        filePath = join(DIST, 'index.html');
-      }
-      res.writeHead(200, { 'Content-Type': MIME[extname(filePath)] || 'application/octet-stream' });
-      createReadStream(filePath).pipe(res);
+      // SPA shell: ALWAYS the in-memory pristine shell — NEVER re-read
+      // dist/index.html from disk. The '/' route's prerender output IS
+      // dist/index.html, so once it's crawled, reading the shell from disk
+      // would serve Home's <title>/<link rel=canonical>/og tags to every
+      // route crawled afterwards, producing duplicate, conflicting canonical
+      // and Open Graph tags on every other page.
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(shellHtml);
     });
     server.on('error', rejectServer);
     server.listen(0, '127.0.0.1', () => {
@@ -239,7 +247,13 @@ async function crawl() {
     `[prerender] Routes to prerender: ${routes.length} (${STATIC_ROUTES.length} static + ${blogRoutes.length} blog)`,
   );
 
-  const { server, port } = await startServer();
+  // Snapshot the pristine SPA shell NOW, before the loop writes any route. The
+  // '/' route's prerender output overwrites dist/index.html with Home's
+  // metadata, so the shell MUST be captured up front and served from memory —
+  // otherwise every route crawled after '/' inherits Home's <title>/canonical/og.
+  const shellHtml = readFileSync(join(DIST, 'index.html'), 'utf-8');
+
+  const { server, port } = await startServer(shellHtml);
   const base = `http://127.0.0.1:${port}`;
 
   const browser = await puppeteer.launch({

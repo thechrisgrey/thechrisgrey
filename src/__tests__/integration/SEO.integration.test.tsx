@@ -35,8 +35,8 @@ vi.mock('gsap/ScrollTrigger', () => ({ ScrollTrigger: {} }));
 // Mock static image imports
 vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
-vi.mock('../../assets/aws-community-builder.png', () => ({
-  default: '/mock-aws-cb.png',
+vi.mock('../../assets/aws-community-builder.webp', () => ({
+  default: '/mock-aws-cb.webp',
 }));
 
 // Mock Sanity client for Blog page
@@ -302,25 +302,30 @@ describe('SEO Integration Across Pages', () => {
       }
     });
 
-    it('all pages set the default OG image when no custom image is provided', async () => {
+    it('every page sets its per-route generated OG card (not the generic fallback)', async () => {
+      // og:image now derives from the per-route build-time card (/og/<slug>.png)
+      // rather than the shared /og.png. Exact slug mapping is covered by
+      // ogCards.test.ts; here we assert each real page points at a generated card.
       const pages: [React.ComponentType, string][] = [
         [Home, '/'],
         [Blog, '/blog'],
         [Contact, '/contact'],
         [AWS, '/aws'],
       ];
+      const cardUrl = /^https:\/\/thechrisgrey\.com\/og\/[a-z-]+\.png$/;
 
       for (const [Page, route] of pages) {
         document.head
-          .querySelectorAll('meta[property="og:image"]')
+          .querySelectorAll('meta[property="og:image"], meta[name="twitter:image"]')
           .forEach((el) => el.remove());
 
         const { unmount } = renderPage(Page, route);
 
         await waitFor(() => {
           const ogImage = document.querySelector('meta[property="og:image"]');
-          expect(ogImage).toBeTruthy();
-          expect(ogImage?.getAttribute('content')).toBe('https://thechrisgrey.com/og.png');
+          const twImage = document.querySelector('meta[name="twitter:image"]');
+          expect(ogImage?.getAttribute('content')).toMatch(cardUrl);
+          expect(twImage?.getAttribute('content')).toMatch(cardUrl);
         });
 
         unmount();

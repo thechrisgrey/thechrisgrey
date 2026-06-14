@@ -1,5 +1,6 @@
 import { PodcastPlatform } from '../types/podcast';
 import { PlatformIcon } from './PodcastPlatformIcons';
+import { trackEvent } from '../utils/analytics';
 
 interface SubscribePlatformsProps {
   platforms: PodcastPlatform[];
@@ -14,6 +15,7 @@ const SubscribePlatforms = ({ platforms }: SubscribePlatformsProps) => {
           href={platform.url}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent('Podcast Subscribe', { platform: platform.name })}
           className="flex flex-col items-center justify-center p-6 rounded-lg border border-white/10 bg-white/5 hover:border-altivum-gold hover:bg-white/10 transition-all duration-200 group"
         >
           <PlatformIcon

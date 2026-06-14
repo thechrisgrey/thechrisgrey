@@ -83,7 +83,7 @@ const AskTheVector = () => {
               placeholder="Ask about a topic, guest, or idea..."
               disabled={busy}
               autoComplete="off"
-              className="flex-1 min-h-[48px] px-4 rounded-lg bg-altivum-dark/60 border border-white/15 text-white placeholder:text-altivum-slate focus:outline-hidden focus-visible:border-altivum-gold/60 focus-visible:ring-1 focus-visible:ring-altivum-gold/40 transition-colors duration-200 disabled:opacity-50"
+              className="flex-1 min-h-[48px] px-4 rounded-lg bg-altivum-dark/60 border border-white/15 text-white placeholder:text-altivum-silver focus:outline-hidden focus-visible:border-altivum-gold/60 focus-visible:ring-1 focus-visible:ring-altivum-gold/40 transition-colors duration-200 disabled:opacity-50"
               style={typography.bodyText}
             />
             <button
@@ -102,7 +102,7 @@ const AskTheVector = () => {
           {/* Example prompts — shown until the first question */}
           {!hasConversation && (
             <div className="mt-5">
-              <p className="text-altivum-slate uppercase tracking-wider mb-3" style={typography.smallText}>
+              <p className="text-altivum-silver uppercase tracking-wider mb-3" style={typography.smallText}>
                 Try asking
               </p>
               <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
@@ -126,7 +126,7 @@ const AskTheVector = () => {
             <div className="mt-6 pt-6 border-t border-white/10 space-y-4" aria-live="polite">
               {lastUser && (
                 <p className="text-altivum-silver/70 flex items-start gap-2" style={typography.smallText}>
-                  <span className="material-icons text-altivum-slate text-base mt-0.5 shrink-0" aria-hidden="true">
+                  <span className="material-icons text-altivum-silver text-base mt-0.5 shrink-0" aria-hidden="true">
                     help_outline
                   </span>
                   <span>{lastUser.content}</span>

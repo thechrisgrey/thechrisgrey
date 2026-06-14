@@ -257,6 +257,8 @@ export const handler = awslambda.streamifyResponse(
       // Generative UI (render_ui) is gated to the dedicated /chat page only — never
       // the floating widget, which reports the host page's path. The system prompt
       // only advertises render_ui on that surface, matching the registered tools.
+      // currentPage is already trailing-slash-normalized by validatePageContext, so
+      // prod's "/chat/" resolves here as "/chat" (see normalizePath in validation.mjs).
       const surface = pageContext?.currentPage === "/chat" ? "page" : "widget";
 
       // Explicit "gen-ui" command → deterministic visual answer: force the render_ui
