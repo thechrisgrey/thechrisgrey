@@ -9,6 +9,7 @@ import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID
 import EpisodeCard from '../components/EpisodeCard';
 import AskTheVector from '../components/podcast/AskTheVector';
 import SubscribePlatforms from '../components/SubscribePlatforms';
+import NewsletterCTA from '../components/NewsletterCTA';
 import YouTubeFacade from '../components/YouTubeFacade';
 import SpotifyFacade from '../components/SpotifyFacade';
 import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
@@ -244,6 +245,12 @@ const Podcast = () => {
           <SubscribePlatforms platforms={PODCAST_PLATFORMS} />
         </div>
       </section>
+
+      <NewsletterCTA
+        source="podcast"
+        heading="Get new episodes in your inbox"
+        blurb="Prefer email? Subscribe and I'll send a note when a new episode of The Vector Podcast drops."
+      />
 
       {/* Host Section */}
       <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />

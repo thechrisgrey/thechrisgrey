@@ -2,6 +2,7 @@ import mpbLogo from '../assets/mpb.png';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { aboutFAQs, buildProfilePageSchema } from '../utils/schemas';
+import NewsletterCTA from '../components/NewsletterCTA';
 
 const About = () => {
   return (
@@ -104,6 +105,12 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      <NewsletterCTA
+        source="about"
+        heading="Follow the work"
+        blurb="I write about building with AI, the road from the military to tech, and lessons in leadership. Get new pieces in your inbox."
+      />
     </div>
   );
 };

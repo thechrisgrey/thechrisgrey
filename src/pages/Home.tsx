@@ -9,6 +9,7 @@ import { typography } from '../utils/typography';
 import { homeFAQs, buildWebPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
+import NewsletterForm from '../components/NewsletterForm';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import SafeCanvas from '../components/SafeCanvas';
 import { checkWebGLSupport } from '../utils/checkWebGL';
@@ -182,40 +183,61 @@ const Home = () => {
           <h2 className="text-white mb-4 sm:mb-6" style={typography.sectionHeader}>
             Let's Connect
           </h2>
-          <p className="text-altivum-silver mb-6 sm:mb-8" style={typography.subtitle}>
-            I'm always interested in connecting with people working at the intersection of technology, service, and innovation. Let's continue the conversation.
+          <p className="text-altivum-silver mb-8 sm:mb-10 max-w-2xl mx-auto" style={typography.subtitle}>
+            Field notes on AI, cloud, and leadership — plus the occasional dispatch on what I'm building. Straight to your inbox, no noise.
           </p>
 
-          {/* Social Links - Neon Glow Style */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {/* Primary: owned-audience capture */}
+          <div className="mb-10 sm:mb-12">
+            <NewsletterForm variant="compact" source="home" />
+          </div>
+
+          {/* Secondary: explore the work */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10">
+            <ViewTransitionLink
+              to="/podcast"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 bg-altivum-gold text-altivum-dark font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+            >
+              <span className="material-icons text-xl" aria-hidden="true">podcasts</span>
+              Listen to the Podcast
+            </ViewTransitionLink>
+            <ViewTransitionLink
+              to="/beyond-the-assessment"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
+            >
+              <span className="material-icons text-xl" aria-hidden="true">menu_book</span>
+              Get the Book
+            </ViewTransitionLink>
+          </div>
+
+          {/* Tertiary: socials, demoted */}
+          <div className="flex items-center justify-center gap-6">
             <a
               href={SOCIAL_LINKS.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.6)] hover:bg-altivum-gold/10 active:bg-altivum-gold/20 transition-all duration-300 touch-manipulation min-h-[48px]"
+              aria-label="LinkedIn"
+              className="text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
             >
-              <SocialIcon platform="linkedin" className="w-5 h-5 shrink-0" />
-              LinkedIn
+              <SocialIcon platform="linkedin" className="w-6 h-6" />
             </a>
             <a
               href={SOCIAL_LINKS.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.6)] hover:bg-altivum-gold/10 active:bg-altivum-gold/20 transition-all duration-300 touch-manipulation min-h-[48px]"
+              aria-label="Instagram"
+              className="text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
             >
-              <SocialIcon platform="instagram" className="w-5 h-5 shrink-0" />
-              Instagram
+              <SocialIcon platform="instagram" className="w-6 h-6" />
             </a>
+            <ViewTransitionLink
+              to="/links"
+              className="text-altivum-silver hover:text-white underline transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
+              All links
+            </ViewTransitionLink>
           </div>
-
-          {/* Link to all socials */}
-          <ViewTransitionLink
-            to="/links"
-            className="inline-block text-altivum-silver hover:text-white underline transition-colors touch-manipulation"
-            style={typography.bodyText}
-          >
-            Check out the rest of my socials
-          </ViewTransitionLink>
         </div>
       </section>
     </div>

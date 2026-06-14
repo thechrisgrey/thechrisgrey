@@ -126,12 +126,21 @@ describe('Home Page Integration', () => {
       expect(ctaInstagram).toHaveAttribute('target', '_blank');
     });
 
-    it('renders a link to the Links page to see all socials', () => {
+    it('renders a link to the Links page (demoted to "All links")', () => {
       renderHome();
-      const allSocialsLink = screen.getByRole('link', {
-        name: /check out the rest of my socials/i,
-      });
-      expect(allSocialsLink).toHaveAttribute('href', '/links');
+      const allLinks = screen.getByRole('link', { name: /^all links$/i });
+      expect(allLinks).toHaveAttribute('href', '/links');
+    });
+
+    it('leads the CTA with a newsletter capture (owned-audience conversion)', () => {
+      renderHome();
+      expect(screen.getByPlaceholderText('Enter your email address')).toBeInTheDocument();
+    });
+
+    it('offers podcast and book CTAs that route to the right pages', () => {
+      renderHome();
+      expect(screen.getByRole('link', { name: /listen to the podcast/i })).toHaveAttribute('href', '/podcast');
+      expect(screen.getByRole('link', { name: /get the book/i })).toHaveAttribute('href', '/beyond-the-assessment');
     });
   });
 

@@ -6,6 +6,7 @@ import { contactFAQs, buildContactPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import { useFocusTrap } from '../hooks';
 import SocialIcon from '../components/SocialIcon';
+import { trackEvent } from '../utils/analytics';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -99,6 +100,7 @@ const Contact = () => {
         setFormData({ name: '', email: '', subject: '', message: '', website: '' });
         setFormStatus({ type: 'idle', message: '' });
         setShowSuccessModal(true);
+        trackEvent('Contact Submit');
       } else if (response.status === 429) {
         setFormStatus({
           type: 'error',
