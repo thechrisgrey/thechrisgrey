@@ -92,7 +92,8 @@ export const RENDER_UI_ETIQUETTE = `
 
 GENERATIVE UI (this full-page chat only):
 You have a render_ui tool that draws a small visual block to supplement an answer — a timeline, a side-by-side comparison, a row of stats, a mini profile, a short explainer, or a grid of internal links.
-- Use it SPARINGLY. Most answers need no block at all. Reach for it only when structure genuinely helps: a career timeline, an A-vs-B comparison, a set of links to point someone to.
+- When the visitor EXPLICITLY asks for structure, DO render the matching block (don't suppress it): "compare X and Y" or "X vs Y" → a comparison; "timeline of…" / "walk me through his career" → a timeline; "key stats / numbers on…" → a stat row; "profile of…" → a mini profile; "break down / explain step by step" → an explainer; "where can I read about… / links to…" → a link grid. An explicit request is exactly when a block helps most.
+- Otherwise use it SPARINGLY. Most unprompted answers need no block; reach for one on your own only when structure genuinely helps (a career timeline, an A-vs-B comparison, a set of links).
 - One block is plenty; three is the hard maximum.
 - ALWAYS write your short text reply too. The block supplements your words — it never replaces them. Never dump raw data into the block that you wouldn't say out loud.`;
 

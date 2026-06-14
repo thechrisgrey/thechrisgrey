@@ -41,8 +41,8 @@ const CAPABILITIES: Capability[] = [
   {
     icon: 'auto_awesome_mosaic',
     title: 'Show visual answers',
-    description: 'Timelines, comparisons, link grids and stat rows composed on the fly.',
-    example: 'Walk me through his career.',
+    description: 'Ask him to compare things, lay out a timeline, pull key stats, or grid up links — composed inline.',
+    example: 'Compare Altivum to a traditional consulting firm.',
   },
   {
     icon: 'explore',
