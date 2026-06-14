@@ -97,10 +97,13 @@ const ChatContent = () => {
         initiallyExpanded={showSuggestions}
       />
 
-      {/* Messages Container */}
+      {/* Messages Container — data-lenis-prevent lets this inner scroller take the
+          wheel/touch natively; without it site-wide Lenis hijacks the gesture and the
+          conversation can't be scrolled (the page wrapper is overflow-hidden). */}
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto"
+        data-lenis-prevent
       >
         <div className="max-w-4xl mx-auto px-6 py-8">
           <div

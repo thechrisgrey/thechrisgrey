@@ -65,6 +65,18 @@ describe('Chat Page Integration', () => {
       ).toBeInTheDocument();
     });
 
+    it('opts the scrollable messages container out of Lenis so the conversation can scroll', () => {
+      // The page wrapper is h-screen/overflow-hidden, so the conversation lives in
+      // an inner overflow-y-auto container. Site-wide Lenis (smoothWheel) hijacks the
+      // wheel unless the container carries data-lenis-prevent — without it the user
+      // can't scroll the chat at all (matches the widget panel, which has it).
+      renderChat();
+      const log = screen.getByRole('log', { name: /chat messages/i });
+      const scroller = log.closest('.overflow-y-auto');
+      expect(scroller).not.toBeNull();
+      expect(scroller).toHaveAttribute('data-lenis-prevent');
+    });
+
     it('renders the page header with title and subtitle', () => {
       renderChat();
 
