@@ -67,7 +67,12 @@ function CopyMessageButton({ text }: { text: string }) {
 
   return (
     <div className="flex">
-      {/* Accessible name stays static; the polite live region below is the single
+      {/* Hover-revealed (group on the message column): hidden at rest, shown on
+          hover OR keyboard focus-within, and always shown on touch (no-hover)
+          devices where hover never fires. opacity (not display) keeps it in the a11y
+          tree + reserves layout space, so revealing it causes no shift. While showing
+          the copied/failed result it stays visible regardless of hover.
+          Accessible name stays static; the polite live region below is the single
           channel for the transient copied/failed outcome (avoids double-announce). */}
       <button
         type="button"
@@ -76,8 +81,8 @@ function CopyMessageButton({ text }: { text: string }) {
         title="Copy message"
         className={`inline-flex items-center justify-center -ml-1 min-h-[32px] min-w-[32px] rounded-md transition-all duration-200 touch-manipulation active:scale-[0.98] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2 ${
           state === 'idle'
-            ? 'text-altivum-silver/40 hover:text-altivum-gold'
-            : 'text-altivum-gold'
+            ? 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 text-altivum-silver/40 hover:text-altivum-gold'
+            : 'opacity-100 text-altivum-gold'
         }`}
       >
         <span className="material-icons text-base leading-none" aria-hidden="true">
@@ -195,7 +200,7 @@ const ChatMessage = memo(({ role, content, isStreaming, isSystem, drafts, uiBloc
     <div
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}
     >
-      <div className="flex flex-col gap-3 max-w-full" style={{ maxWidth: '100%' }}>
+      <div className="group flex flex-col gap-3 max-w-full" style={{ maxWidth: '100%' }}>
         {!isUser && activeTool ? (
           <div
             className="max-w-[90%] md:max-w-[80%] px-3 py-2 bg-white/5 border border-altivum-gold/20 rounded-xl"

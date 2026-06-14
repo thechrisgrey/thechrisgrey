@@ -248,6 +248,20 @@ describe('ChatMessage', () => {
       ).toBeInTheDocument();
     });
 
+    it('reveals the copy button on hover/focus (hidden at rest) but keeps it in the a11y tree', () => {
+      render(<ChatMessage role="assistant" content="Hover to reveal me." />);
+      const btn = screen.getByRole('button', { name: /copy message/i });
+      // Still present for keyboard + assistive tech regardless of hover — opacity
+      // hides it visually without removing it from the accessibility tree or layout.
+      expect(btn).toBeInTheDocument();
+      // Hidden at rest; revealed on group hover, keyboard focus-within, and on
+      // touch (no-hover) devices where hover can never fire.
+      expect(btn.className).toContain('opacity-0');
+      expect(btn.className).toContain('group-hover:opacity-100');
+      expect(btn.className).toContain('group-focus-within:opacity-100');
+      expect(btn.className).toContain('[@media(hover:none)]:opacity-100');
+    });
+
     it('copies the raw message text (not the link-processed markup) to the clipboard', () => {
       render(
         <MemoryRouter>
@@ -268,6 +282,10 @@ describe('ChatMessage', () => {
       fireEvent.click(screen.getByRole('button', { name: /copy message/i }));
       expect(await screen.findByText('check')).toBeInTheDocument();
       expect(screen.getByText('Message copied to clipboard')).toBeInTheDocument();
+      // While showing the result, the button stays visible even without hover.
+      expect(
+        screen.getByRole('button', { name: /copy message/i }).className
+      ).toContain('opacity-100');
     });
 
     it('reverts to the idle copy affordance after the 1800ms window', async () => {
