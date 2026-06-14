@@ -7,6 +7,7 @@ import { SOCIAL_LINKS } from '../constants/links';
 import { useFocusTrap } from '../hooks';
 import SocialIcon from '../components/SocialIcon';
 import { trackEvent } from '../utils/analytics';
+import Testimonials from '../components/Testimonials';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -495,6 +496,9 @@ const Contact = () => {
           </div>
         </div>
       </section>
+
+      {/* Social proof for speaking/consulting (renders only once real testimonials exist) */}
+      <Testimonials eyebrow="Trusted by" heading="What clients and partners say" />
 
       {/* Success Modal */}
       {showSuccessModal && (
