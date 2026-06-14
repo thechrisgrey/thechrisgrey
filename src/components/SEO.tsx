@@ -7,6 +7,7 @@ import {
     buildFAQSchema,
     buildBreadcrumbSchema
 } from '../utils/schemas';
+import { ogImageForUrl } from '../utils/ogCards';
 
 interface BreadcrumbItem {
     name: string;
@@ -36,7 +37,7 @@ export const SEO = ({
     title,
     description,
     keywords,
-    image = 'https://thechrisgrey.com/og.png',
+    image,
     url = 'https://thechrisgrey.com',
     type = 'website',
     breadcrumbs,
@@ -48,6 +49,11 @@ export const SEO = ({
 }: SEOProps & { structuredData?: Record<string, unknown>[] }) => {
     const siteTitle = 'Christian Perez | thechrisgrey';
     const fullTitle = title === siteTitle ? title : `${title} | Christian Perez`;
+
+    // og:image / twitter:image. An explicit `image` prop wins (e.g. BlogPost
+    // passes the post's Sanity image); otherwise derive the per-route generated
+    // OG card from the canonical url, falling back to the shared /og.png.
+    const ogImage = image ?? ogImageForUrl(url);
 
     // Build default structured data graph
     const defaultGraph: Record<string, unknown>[] = [
@@ -112,7 +118,12 @@ export const SEO = ({
             <meta property="og:url" content={url} />
             <meta property="og:title" content={fullTitle} />
             <meta property="og:description" content={description} />
-            <meta property="og:image" content={image} />
+            <meta property="og:image" content={ogImage} />
+            {/* All OG images (generated route cards, /og.png, and the 1200x630
+                Sanity blog crops) are 1200x630. Emitted here, right after og:image,
+                so the dimensions associate with it per OG structured-property rules. */}
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
 
             {/* Article-specific Open Graph tags */}
             {type === 'article' && datePublished && (
@@ -130,7 +141,7 @@ export const SEO = ({
             <meta name="twitter:creator" content="@thechrisgrey" />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />
-            <meta name="twitter:image" content={image} />
+            <meta name="twitter:image" content={ogImage} />
 
             {/* Structured Data for AI */}
             <script type="application/ld+json">

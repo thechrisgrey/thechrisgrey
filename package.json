@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/validate-env.js && node scripts/generate-podcast-episodes.js && npm run lint && tsc && vite build && node scripts/prerender.js && node scripts/generate-sitemap.js && node scripts/generate-rss.js",
+    "build": "node scripts/validate-env.js && node scripts/generate-podcast-episodes.js && npm run lint && tsc && vite build && node scripts/generate-og-images.mjs && node scripts/prerender.js && node scripts/generate-sitemap.js && node scripts/generate-rss.js",
     "build:analyze": "tsc && vite build && npx vite-bundle-visualizer",
     "lint": "eslint src --max-warnings 0",
     "lint:lambda": "eslint lambda --max-warnings 0",
@@ -59,6 +59,7 @@
     "jsdom": "^29.0.2",
     "postcss": "^8.4.32",
     "puppeteer": "^24.0.0",
+    "satori": "^0.26.0",
     "sharp": "^0.34.5",
     "svgo": "^4.0.0",
     "tailwindcss": "^4.3.1",
