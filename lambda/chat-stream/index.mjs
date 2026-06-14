@@ -2,6 +2,10 @@ import {
   BedrockAgentRuntimeClient,
   RetrieveCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
+import {
+  BedrockRuntimeClient,
+  ConverseCommand,
+} from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
@@ -24,8 +28,10 @@ import { buildBedrockModel, buildAgent, streamAgentResponse } from "./agent.mjs"
 import { buildTools } from "./tools/index.mjs";
 import { getFacts, forgetDevice } from "./memory.mjs";
 import { emitEvent, EVENT_KINDS } from "./events.mjs";
+import { detectGenUiIntent, renderGenUi } from "./genUi.mjs";
 
 const agentClient = new BedrockAgentRuntimeClient({ region: "us-east-1" });
+const bedrockRuntimeClient = new BedrockRuntimeClient({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const cloudwatchClient = new CloudWatchClient({ region: "us-east-1" });
@@ -252,6 +258,36 @@ export const handler = awslambda.streamifyResponse(
       // the floating widget, which reports the host page's path. The system prompt
       // only advertises render_ui on that surface, matching the registered tools.
       const surface = pageContext?.currentPage === "/chat" ? "page" : "widget";
+
+      // Explicit "gen-ui" command → deterministic visual answer: force the render_ui
+      // tool on Opus and emit the block(s), bypassing the conversational agent. The
+      // visitor asked for a visual, so we never leave it to the model's discretion.
+      // Gated to the /chat surface (matches render_ui availability).
+      if (surface === "page" && detectGenUiIntent(latestQuery)) {
+        metrics.record("GenUiRequested");
+        const genUiAbort = new AbortController();
+        const genUiTimer = setTimeout(() => genUiAbort.abort(), 20_000);
+        try {
+          const genUiResult = await renderGenUi({
+            bedrockClient: bedrockRuntimeClient,
+            ConverseCommand,
+            userMessage: latestQuery,
+            retrievedContext: retrievedContext || "",
+            responseStream,
+            metrics,
+            requestId,
+            abortSignal: genUiAbort.signal,
+          });
+          if (!genUiResult.ok) {
+            writeSystemMessage(responseStream, "I couldn't compose that visual just now. Try rephrasing, or ask me to describe it in words instead.");
+          }
+        } finally {
+          clearTimeout(genUiTimer);
+        }
+        responseStream.end();
+        await metrics.flush();
+        return;
+      }
 
       const systemPrompt = buildSystemPrompt(retrievedContext, pageContext, facts, surface);
 

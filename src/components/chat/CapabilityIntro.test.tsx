@@ -65,12 +65,12 @@ describe('CapabilityIntro', () => {
       expect(screen.getByText(/I'm preparing for SFAS\./)).toBeInTheDocument();
     });
 
-    it('teaches a concrete trigger verb for visual answers (example uses an explicit verb)', () => {
+    it('teaches the explicit gen-ui command for visual answers', () => {
       renderIntro({ initiallyExpanded: true });
-      // The visual-answers card must show HOW to trigger it, not just the output —
-      // the example uses an explicit trigger verb ("Compare …").
+      // The visual-answers card must show HOW to trigger it — the deterministic
+      // "gen-ui" command — with an in-domain example that won't trip topic boundaries.
       expect(
-        screen.getByText(/Compare Altivum to a traditional consulting firm\./)
+        screen.getByText(/Use gen-ui to compare his military and tech careers\./)
       ).toBeInTheDocument();
     });
 

@@ -41,8 +41,8 @@ const CAPABILITIES: Capability[] = [
   {
     icon: 'auto_awesome_mosaic',
     title: 'Show visual answers',
-    description: 'Ask him to compare things, lay out a timeline, pull key stats, or grid up links — composed inline.',
-    example: 'Compare Altivum to a traditional consulting firm.',
+    description: 'Start with "gen-ui" and say what you want — a comparison, timeline, stat row, or link grid — and Alti renders it on demand.',
+    example: 'Use gen-ui to compare his military and tech careers.',
   },
   {
     icon: 'explore',
