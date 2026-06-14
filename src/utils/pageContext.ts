@@ -44,6 +44,11 @@ export const PAGE_SUGGESTIONS: Record<string, string[]> = {
 };
 
 export function getPageContext(pathname: string, visitedPages: string[]): PageContext {
+  // Normalize the trailing slash. Production (Amplify) serves routes as "/chat/",
+  // which otherwise misses ROUTE_CONTEXT_MAP (wrong grounding) and the chat
+  // Lambda's surface gate (=== "/chat"), silently disabling generative UI.
+  pathname = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+
   // Handle /blog/:slug routes
   const isBlogPost = pathname.startsWith('/blog/') && pathname !== '/blog';
   const lookupKey = isBlogPost ? '/blog/:slug' : pathname;

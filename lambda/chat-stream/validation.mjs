@@ -15,6 +15,16 @@ export function isValidPath(path) {
 }
 
 /**
+ * Strip a trailing slash so production paths (Amplify serves "/chat/") and any
+ * stale client bundle resolve to the canonical form ("/chat") before validation.
+ * The root path "/" is preserved.
+ */
+export function normalizePath(path) {
+  if (typeof path !== "string") return path;
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
+}
+
+/**
  * Validate a message history array.
  *
  * @param {Array<{role: string, content: string}>} messages
@@ -51,13 +61,18 @@ export function validateInput(messages) {
 export function validatePageContext(pageContext) {
   if (!pageContext || typeof pageContext !== "object") return null;
 
-  const { currentPage, pageTitle, section, visitedPages } = pageContext;
+  const { pageTitle, section, visitedPages } = pageContext;
+  const currentPage = normalizePath(pageContext.currentPage);
 
   if (typeof currentPage !== "string" || !isValidPath(currentPage)) return null;
   if (typeof section !== "string" || section.length > 100 || !SAFE_TEXT_PATTERN.test(section)) return null;
 
   const sanitizedVisitedPages = Array.isArray(visitedPages)
-    ? visitedPages.filter((p) => typeof p === "string" && isValidPath(p)).slice(0, 20)
+    ? visitedPages
+        .filter((p) => typeof p === "string")
+        .map(normalizePath)
+        .filter(isValidPath)
+        .slice(0, 20)
     : [];
 
   return {

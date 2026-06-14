@@ -80,6 +80,26 @@ test("validatePageContext accepts valid blog slug", () => {
   assert.deepEqual(r.visitedPages, ["/"]);
 });
 
+test("validatePageContext normalizes a trailing slash (prod serves /chat/)", () => {
+  // Amplify serves routes with a trailing slash and a stale client bundle may
+  // still send "/chat/". Without normalization isValidPath fails and the whole
+  // context is nulled — silently disabling the /chat-only generative UI surface.
+  const r = validatePageContext({
+    currentPage: "/chat/",
+    section: "AI Chat",
+    visitedPages: ["/about/", "/chat/"],
+  });
+  assert.notEqual(r, null);
+  assert.equal(r.currentPage, "/chat");
+  assert.deepEqual(r.visitedPages, ["/about", "/chat"]);
+});
+
+test("validatePageContext keeps the root path as '/'", () => {
+  const r = validatePageContext({ currentPage: "/", section: "Home", visitedPages: [] });
+  assert.notEqual(r, null);
+  assert.equal(r.currentPage, "/");
+});
+
 test("validatePageContext rejects section with unsafe chars", () => {
   assert.equal(
     validatePageContext({ currentPage: "/", section: "<script>", visitedPages: [] }),
