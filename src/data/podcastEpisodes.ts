@@ -68,6 +68,18 @@ export const PODCAST_EPISODES: PodcastEpisode[] =
 // Latest video ID for YouTube embed (null if using fallback)
 export const LATEST_VIDEO_ID: string | null = generatedData.latestVideoId || null;
 
+// Most recent episode's publish date (ISO 'YYYY-MM-DD'), or null if there are no
+// episodes. Computed by max (not array order) so it's correct regardless of how
+// the source is sorted. Drives the dynamic "Latest episode" stat on /podcast
+// instead of a hardcoded value — it stays truthful as new episodes ship.
+export const LATEST_EPISODE_DATE: string | null =
+  PODCAST_EPISODES.length > 0
+    ? PODCAST_EPISODES.reduce(
+        (latest, ep) => (ep.publishedAt > latest ? ep.publishedAt : latest),
+        PODCAST_EPISODES[0].publishedAt,
+      )
+    : null;
+
 // Podcast platforms for subscription
 export const PODCAST_PLATFORMS: PodcastPlatform[] = [
   {

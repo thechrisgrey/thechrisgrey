@@ -10,6 +10,7 @@ import { homeFAQs, buildWebPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
 import NewsletterForm from '../components/NewsletterForm';
+import Testimonials from '../components/Testimonials';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import SafeCanvas from '../components/SafeCanvas';
 import { checkWebGLSupport } from '../utils/checkWebGL';
@@ -176,6 +177,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Social proof (renders only once real testimonials exist) */}
+      <Testimonials />
 
       {/* CTA Section */}
       <section className="bg-linear-to-br from-altivum-navy to-altivum-blue py-16 sm:py-24 md:py-32 lg:py-50">

@@ -5,7 +5,7 @@ import tvpLogo from '../assets/tvp.png';
 // Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
 import { podcastFAQs, buildPodcastSeriesSchema, buildVideoObjectSchema } from '../utils/schemas';
-import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID } from '../data/podcastEpisodes';
+import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID, LATEST_EPISODE_DATE } from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import AskTheVector from '../components/podcast/AskTheVector';
 import SubscribePlatforms from '../components/SubscribePlatforms';
@@ -15,6 +15,17 @@ import SpotifyFacade from '../components/SpotifyFacade';
 import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
+
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Format an ISO 'YYYY-MM-DD' as 'Mon YYYY' (e.g. 'Feb 2026'). Parsed by string,
+ *  not Date, to avoid any UTC/local timezone month-shift. */
+function formatMonthYear(iso: string): string {
+  const [year, month] = iso.split('-');
+  const monthIndex = parseInt(month, 10) - 1;
+  const label = MONTH_ABBR[monthIndex];
+  return label ? `${label} ${year}` : year;
+}
 
 const Podcast = () => {
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
@@ -78,14 +89,16 @@ const Podcast = () => {
                   Episodes
                 </div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-light text-altivum-gold" style={{ fontWeight: 200 }}>
-                  2025
+              {LATEST_EPISODE_DATE && (
+                <div className="text-center">
+                  <div className="text-4xl font-light text-altivum-gold whitespace-nowrap" style={{ fontWeight: 200 }}>
+                    {formatMonthYear(LATEST_EPISODE_DATE)}
+                  </div>
+                  <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">
+                    Latest episode
+                  </div>
                 </div>
-                <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">
-                  Launched
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

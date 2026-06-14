@@ -4,6 +4,7 @@ import readingImage from '../assets/reading.jpeg';
 import { typography } from '../utils/typography';
 import { bookFAQs, buildBookSchema } from '../utils/schemas';
 import { trackEvent } from '../utils/analytics';
+import Testimonials from '../components/Testimonials';
 
 const BeyondTheAssessment = () => {
   return (
@@ -102,6 +103,9 @@ const BeyondTheAssessment = () => {
           </div>
         </div>
       </section>
+
+      {/* Reader proof (renders only once real testimonials exist) */}
+      <Testimonials eyebrow="From readers" heading="What readers are saying" />
     </div>
   );
 };
