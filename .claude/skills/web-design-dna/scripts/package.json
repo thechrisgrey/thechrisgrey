@@ -1,0 +1,15 @@
+{
+  "name": "web-design-dna-scripts",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Extractor scripts for the web-design-dna skill. Dependencies are isolated from the host repo on purpose — never add these to the website's package.json.",
+  "scripts": {
+    "extract:live": "node extract-live.mjs",
+    "extract:static": "node extract-static.mjs",
+    "test": "node test-static.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.56.1"
+  }
+}
