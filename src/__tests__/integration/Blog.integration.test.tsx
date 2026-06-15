@@ -11,19 +11,26 @@ const { mockFetch, mockGetBlogListingCache, mockSetBlogListingCache } = vi.hoist
   mockSetBlogListingCache: vi.fn(),
 }));
 
-vi.mock('../../sanity', () => ({
-  client: { fetch: mockFetch },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  urlFor: (_source: unknown) => ({
-    width: () => ({ height: () => ({ auto: () => ({ quality: () => ({ url: () => 'https://mock-image.jpg' }) }) }) }),
-  }),
-  BLOG_LISTING_QUERY: 'mock-blog-query',
-  POST_BY_SLUG_QUERY: 'mock-post-query',
-  getBlogListingCache: mockGetBlogListingCache,
-  setBlogListingCache: mockSetBlogListingCache,
-  getPostCache: vi.fn().mockReturnValue(null),
-  setPostCache: vi.fn(),
-}));
+vi.mock('../../sanity', async () => {
+  // Keep the real pure helpers (shape guards + error classification) so the
+  // page's validation logic is exercised for real; stub only client + caches.
+  const actual = await vi.importActual<typeof import('../../sanity')>('../../sanity');
+  return {
+    client: { fetch: mockFetch },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    urlFor: (_source: unknown) => ({
+      width: () => ({ height: () => ({ auto: () => ({ quality: () => ({ url: () => 'https://mock-image.jpg' }) }) }) }),
+    }),
+    BLOG_LISTING_QUERY: 'mock-blog-query',
+    POST_BY_SLUG_QUERY: 'mock-post-query',
+    getBlogListingCache: mockGetBlogListingCache,
+    setBlogListingCache: mockSetBlogListingCache,
+    getPostCache: vi.fn().mockReturnValue(null),
+    setPostCache: vi.fn(),
+    classifySanityError: actual.classifySanityError,
+    isBlogListingResult: actual.isBlogListingResult,
+  };
+});
 
 // Mock SanityResponsiveImage to avoid @sanity/image-url parsing real asset refs
 vi.mock('../../components/SanityResponsiveImage', () => ({

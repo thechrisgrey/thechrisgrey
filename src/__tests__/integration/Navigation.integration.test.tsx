@@ -7,24 +7,6 @@ import Navigation from '../../components/Navigation';
 // Mock static image imports
 vi.mock('../../assets/logo.png', () => ({ default: '/mock-logo.png' }));
 
-// Mock PrefetchLink as a simple forwarded-ref Link (prefetch behavior tested separately)
-vi.mock('../../components/PrefetchLink', async () => {
-  const React = await import('react');
-  const { Link } = await import('react-router-dom');
-
-  const MockPrefetchLink = React.forwardRef<
-    HTMLAnchorElement,
-    React.ComponentProps<typeof Link>
-  >(({ to, children, ...rest }, ref) => (
-    <Link ref={ref} to={to} {...rest}>
-      {children}
-    </Link>
-  ));
-  MockPrefetchLink.displayName = 'MockPrefetchLink';
-
-  return { default: MockPrefetchLink };
-});
-
 const renderNavigation = (route = '/') => {
   return render(
     <MemoryRouter initialEntries={[route]}>

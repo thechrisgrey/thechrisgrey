@@ -254,3 +254,46 @@ export const ROUTES: readonly RouteDefinition[] = [
 export const ROUTES_BY_PATH: ReadonlyMap<string, RouteDefinition> = new Map(
   ROUTES.map((r) => [r.path, r])
 );
+
+/** A single header-nav / About-dropdown entry. */
+export interface NavigationItem {
+  /** Must be a real `ROUTES` path (or Home `'/'`). Enforced by `routes.test.ts`. */
+  path: string;
+  /**
+   * UI label shown in the nav. Intentionally decoupled from
+   * `RouteDefinition.context.pageTitle` (Alti's grounding/log text) — e.g.
+   * `/chat` shows "Alti" here but "AI Chat" to the model, and `/contact` shows
+   * "Contact" here but "Contact & Speaking" to the model. The drift test asserts
+   * the PATHS stay in sync with `ROUTES`, not the labels.
+   */
+  label: string;
+}
+
+/**
+ * Canonical navigation surface — the single source of truth for the header nav
+ * and the About dropdown. `Navigation.tsx` renders straight from this instead of
+ * hardcoding its own arrays, and `routes.test.ts` drift-checks that every path
+ * here is a real route and that no `ROUTES` entry silently falls out of the menu.
+ */
+export const NAVIGATION_CONFIG: {
+  readonly mainNav: readonly NavigationItem[];
+  readonly aboutDropdown: readonly NavigationItem[];
+} = {
+  mainNav: [
+    { path: HOME_CONTEXT.path, label: 'Home' },
+    { path: '/blog', label: 'Blog' },
+    { path: '/chat', label: 'Alti' },
+    { path: '/links', label: 'Links' },
+    { path: '/contact', label: 'Contact' },
+  ],
+  aboutDropdown: [
+    { path: '/about', label: 'Personal Biography' },
+    { path: '/altivum', label: 'Altivum Inc' },
+    { path: '/foundation', label: 'The Altivum Foundation' },
+    { path: '/podcast', label: 'The Vector Podcast' },
+    { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
+    { path: '/aws', label: 'Amazon Web Services' },
+    { path: '/claude', label: 'Claude' },
+    { path: '/blueprint', label: 'thechrisgrey Blueprint' },
+  ],
+} as const;

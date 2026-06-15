@@ -26,6 +26,11 @@ export interface Message {
 }
 
 const CHAT_ENDPOINT = import.meta.env.VITE_CHAT_ENDPOINT;
+// Shared INTENTIONALLY across the floating widget and the full /chat page: it's
+// what carries a conversation from the widget onto /chat (and back). Do NOT split
+// this into per-surface keys — that would break that continuity. There is no
+// write race: sessionStorage is per-tab, and the widget is hidden on /chat, so
+// the two engines never mount at the same time on the same page.
 export const CHAT_STORAGE_KEY = 'chat-messages';
 
 export const initialWelcomeMessage: Message = {

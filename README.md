@@ -1,9 +1,9 @@
 # thechrisgrey.com
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![AWS Amplify](https://img.shields.io/badge/AWS_Amplify-Hosted-FF9900?logo=awsamplify&logoColor=white)](https://aws.amazon.com/amplify/)
 [![Amazon Bedrock](https://img.shields.io/badge/Amazon_Bedrock-Claude_Haiku_4.5-232F3E?logo=amazonaws&logoColor=white)](https://aws.amazon.com/bedrock/)
 [![CI](https://img.shields.io/github/actions/workflow/status/thechrisgrey/thechrisgrey/ci.yml?branch=main&label=CI&logo=github)](https://github.com/thechrisgrey/thechrisgrey/actions)
@@ -185,8 +185,23 @@ validate-env -> podcast-episodes -> lint -> tsc -> vite build -> sitemap -> rss
 | **Vitest** | Coverage report | `npm run test:coverage` |
 | **Cypress** | E2E (headless) | `npm run cy:run` |
 | **Cypress** | E2E (interactive) | `npm run cy:open` |
+| **node:test** | Lambda unit + contract | `npm run test:lambda` |
 
 The test suite includes unit tests for components, hooks, and utilities; integration tests for page-level behavior; and end-to-end tests covering navigation, chat, blog, and contact flows.
+
+### Live-API contract tests (opt-in)
+
+Critical external boundaries — Cognito admin auth, the live Sanity client, Bedrock KB retrieval, and the Bedrock guardrail — are also covered by **opt-in contract tests** that exercise the real services (green mocks alone can drift from reality). They **skip cleanly** during `npm run test:lambda` and CI, and only run when their flag + AWS/Sanity credentials are present:
+
+```bash
+COGNITO_CONTRACT_TESTS=1 COGNITO_CLIENT_ID=… COGNITO_TEST_EMAIL=… COGNITO_TEST_PASSWORD=… \
+  node --test lambda/shared/__tests__/cognito-contract.test.mjs
+SANITY_CONTRACT_TESTS=1      node --test lambda/chat-stream/__tests__/sanity-contract.test.mjs
+KB_RETRIEVE_CONTRACT_TESTS=1 node --test lambda/chat-stream/__tests__/kb-retrieve-contract.test.mjs
+BEDROCK_CONTRACT_TESTS=1     node --test lambda/blueprint/__tests__/guardrail-contract.test.mjs
+```
+
+See `.env.example` for the full list of flags and required permissions. Run these before a release (or on a scheduled job) to catch response-shape/schema drift that unit mocks can't.
 
 ---
 

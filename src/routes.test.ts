@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { ROUTES, ROUTES_BY_PATH, HOME_CONTEXT } from './routes';
+import { ROUTES, ROUTES_BY_PATH, HOME_CONTEXT, NAVIGATION_CONFIG } from './routes';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -148,5 +148,64 @@ describe('sitemap/prerender ↔ ROUTES drift detector', () => {
   it('indexes /aws and /claude (regression: both were silently dropped from sitemap + prerender)', () => {
     expect(sitemapPaths).toContain('/aws');
     expect(sitemapPaths).toContain('/claude');
+  });
+});
+
+/**
+ * Navigation ↔ ROUTES drift detector.
+ *
+ * `NAVIGATION_CONFIG` (in routes.ts) is the single source of truth for the header
+ * nav + About dropdown; `Navigation.tsx` renders straight from it. Labels are
+ * intentionally UI-specific (they differ from `context.pageTitle`, which is Alti's
+ * grounding text — `/chat` is "Alti" here but "AI Chat" to the model), so we don't
+ * assert label equality. We assert the PATHS stay coherent with the canonical
+ * table — the drift that actually breaks navigation:
+ *   - every nav path is a real ROUTES path (or Home), so a renamed/removed route
+ *     can't leave a dead link in the menu, and
+ *   - every ROUTES entry is surfaced in the nav OR explicitly exempt, so a new
+ *     page can't silently fall out of the menu (the bug the hardcoded arrays invited).
+ */
+const NON_NAV_ROUTES = new Set([
+  '/blog/:slug', // dynamic — reached from blog cards, never a top-level nav item
+  '/privacy', // footer-only legal page
+  '/admin', // Cognito-gated, hidden surface
+]);
+
+describe('Navigation ↔ ROUTES drift detector', () => {
+  const navPaths = [
+    ...NAVIGATION_CONFIG.mainNav.map((i) => i.path),
+    ...NAVIGATION_CONFIG.aboutDropdown.map((i) => i.path),
+  ];
+
+  it('every nav path is a real ROUTES path (or Home)', () => {
+    for (const path of navPaths) {
+      const known = path === HOME_CONTEXT.path || ROUTES_BY_PATH.has(path);
+      expect(known, `nav path ${path} is not in ROUTES (or HOME)`).toBe(true);
+    }
+  });
+
+  it('every ROUTES entry is surfaced in the nav or explicitly exempt', () => {
+    const inNav = new Set(navPaths);
+    for (const route of ROUTES) {
+      const surfaced = inNav.has(route.path) || NON_NAV_ROUTES.has(route.path);
+      expect(
+        surfaced,
+        `${route.path} is missing from NAVIGATION_CONFIG — add it to the nav or to NON_NAV_ROUTES`
+      ).toBe(true);
+    }
+  });
+
+  it('no route appears in both mainNav and the About dropdown', () => {
+    expect(new Set(navPaths).size).toBe(navPaths.length);
+  });
+
+  it('every nav item has a non-empty label', () => {
+    for (const item of [...NAVIGATION_CONFIG.mainNav, ...NAVIGATION_CONFIG.aboutDropdown]) {
+      expect(item.label.length, `${item.path} must have a label`).toBeGreaterThan(0);
+    }
+  });
+
+  it('the About dropdown still has its 8 known items (regression guard)', () => {
+    expect(NAVIGATION_CONFIG.aboutDropdown).toHaveLength(8);
   });
 });
