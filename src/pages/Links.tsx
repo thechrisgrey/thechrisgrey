@@ -133,6 +133,10 @@ const Links = () => {
                   <img
                     src={builderQR}
                     alt="AWS Builder Profile QR Code"
+                    width={512}
+                    height={512}
+                    loading="lazy"
+                    decoding="async"
                     className="w-64 h-64 md:w-72 md:h-72"
                   />
                   <p className="text-center text-xs text-altivum-dark mt-4 font-medium uppercase tracking-widest">

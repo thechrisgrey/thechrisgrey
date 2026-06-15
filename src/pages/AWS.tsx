@@ -35,6 +35,8 @@ const AWS = () => {
               <img
                 src={awsHero}
                 alt="AWS - AI Engineering"
+                width={1366}
+                height={768}
                 className="w-full max-w-6xl mx-auto opacity-90"
                 fetchPriority="high"
               />
@@ -50,6 +52,10 @@ const AWS = () => {
           <img
             src={awsCommunityBuilder}
             alt="Christian Perez - AWS Community Builder"
+            width={1920}
+            height={1005}
+            loading="lazy"
+            decoding="async"
             className="w-full h-auto block"
           />
           <div className="absolute inset-0 bg-linear-to-t from-altivum-dark via-transparent to-transparent" />

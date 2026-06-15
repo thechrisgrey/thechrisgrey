@@ -31,6 +31,8 @@ const BeyondTheAssessment = () => {
               <img
                 src={btaLogo}
                 alt="Beyond the Assessment"
+                width={1500}
+                height={1500}
                 className="w-full max-w-3xl mx-auto opacity-90"
                 fetchPriority="high"
               />
@@ -52,6 +54,10 @@ const BeyondTheAssessment = () => {
                 <img
                   src={readingImage}
                   alt="Christian Perez reading Beyond the Assessment"
+                  width={1131}
+                  height={1600}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
               </div>
