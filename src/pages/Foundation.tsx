@@ -1,6 +1,6 @@
 import ViewTransitionLink from '../components/ViewTransitionLink';
 import { SEO } from '../components/SEO';
-import foundationImage from '../assets/foundation.jpg';
+import foundationImage from '../assets/foundation.webp';
 import { typography } from '../utils/typography';
 import { foundationFAQs, buildFoundationOrganizationSchema } from '../utils/schemas';
 

@@ -203,6 +203,8 @@ const Altivum = () => {
               <img
                 src={altivumLogo}
                 alt="Altivum Inc."
+                width={1500}
+                height={1500}
                 className="w-full max-w-3xl mx-auto opacity-90"
                 fetchPriority="high"
               />
