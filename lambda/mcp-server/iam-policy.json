@@ -9,7 +9,7 @@
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      "Resource": "arn:aws:logs:*:*:*"
+      "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-mcp-server:*"
     },
     {
       "Sid": "CloudWatchMetrics",
@@ -52,7 +52,7 @@
       "Action": [
         "bedrock:Retrieve"
       ],
-      "Resource": "arn:aws:bedrock:*:*:knowledge-base/*"
+      "Resource": "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/ARFYABW8HP"
     },
     {
       "Sid": "DynamoDbRateLimit",

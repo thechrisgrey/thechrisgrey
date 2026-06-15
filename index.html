@@ -37,6 +37,8 @@
 
     <!-- Preconnect & DNS Prefetch for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- gstatic serves the Material Icons font binary (CORS) — preconnect with crossorigin -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
     <link rel="preconnect" href="https://plausible.io" crossorigin />
 
@@ -52,8 +54,12 @@
     <!-- RSS Feed -->
     <link rel="alternate" type="application/rss+xml" title="Christian Perez - Blog" href="https://thechrisgrey.com/rss.xml" />
 
-    <!-- Material Icons for UI elements -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <!-- Material Icons for UI elements. display=block (not swap): this is a
+         ligature icon font, so swap would briefly flash the raw ligature text
+         (e.g. "cloud_off") before the font loads; block keeps icons blank until
+         ready. The hosting CSP allowlists fonts.googleapis.com (style-src) and
+         fonts.gstatic.com (font-src) so this loads once headers are enforced. -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

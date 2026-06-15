@@ -14,9 +14,12 @@ import {
   setBlogListingCache,
   getPostCache,
   setPostCache,
+  classifySanityError,
+  isBlogListingResult,
   type SanityPostPreview,
   type SanityPost,
   type BlogListingResult,
+  type SanityError,
 } from '../sanity';
 import BlogPostSkeleton from '../components/BlogPostSkeleton';
 import SanityResponsiveImage from '../components/SanityResponsiveImage';
@@ -25,7 +28,7 @@ import { prefetchBlogPostChunk } from '../utils/routeManifest';
 const Blog = () => {
   const [posts, setPosts] = useState<SanityPostPreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
+  const [fetchError, setFetchError] = useState<SanityError | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Read filter values from URL
@@ -43,14 +46,22 @@ const Blog = () => {
     }
 
     setIsLoading(true);
-    setFetchError(false);
+    setFetchError(null);
     try {
       const result = await client.fetch<BlogListingResult>(BLOG_LISTING_QUERY);
+      // Validate the shape before trusting/caching it — a CMS schema drift would
+      // otherwise enter the cache and render as a blank page.
+      if (!isBlogListingResult(result)) {
+        console.error('Blog listing response failed shape validation');
+        setFetchError({ kind: 'malformed', message: 'We could not load the blog right now. Please try again.' });
+        return;
+      }
       setBlogListingCache(result);
       setPosts(result.posts);
     } catch (error) {
-      console.error('Error fetching blog data:', error);
-      setFetchError(true);
+      const classified = classifySanityError(error, 'Blog listing');
+      console.error('Error fetching blog data:', classified.kind, classified.message, error);
+      setFetchError(classified);
     } finally {
       setIsLoading(false);
     }
@@ -362,7 +373,7 @@ const Blog = () => {
                 Unable to load posts
               </p>
               <p className="text-altivum-silver mb-6" style={typography.bodyText}>
-                Something went wrong while loading blog posts. Please try again.
+                {fetchError.message}
               </p>
               <button
                 onClick={fetchBlogData}

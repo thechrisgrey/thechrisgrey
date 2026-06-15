@@ -11,21 +11,28 @@ const { mockFetch, mockGetPostCache, mockSetPostCache } = vi.hoisted(() => ({
   mockSetPostCache: vi.fn(),
 }));
 
-vi.mock('../../sanity', () => ({
-  client: { fetch: mockFetch },
-  urlFor: () => ({
-    width: () => ({
-      height: () => ({
+vi.mock('../../sanity', async () => {
+  // Keep the real pure helpers (shape guards + error classification) so the
+  // page's validation logic is exercised for real; stub only client + caches.
+  const actual = await vi.importActual<typeof import('../../sanity')>('../../sanity');
+  return {
+    client: { fetch: mockFetch },
+    urlFor: () => ({
+      width: () => ({
+        height: () => ({
+          auto: () => ({ quality: () => ({ url: () => 'https://mock-image.jpg' }) }),
+        }),
         auto: () => ({ quality: () => ({ url: () => 'https://mock-image.jpg' }) }),
       }),
-      auto: () => ({ quality: () => ({ url: () => 'https://mock-image.jpg' }) }),
     }),
-  }),
-  portableTextComponents: {},
-  POST_BY_SLUG_QUERY: 'mock-post-query',
-  getPostCache: mockGetPostCache,
-  setPostCache: mockSetPostCache,
-}));
+    portableTextComponents: {},
+    POST_BY_SLUG_QUERY: 'mock-post-query',
+    getPostCache: mockGetPostCache,
+    setPostCache: mockSetPostCache,
+    classifySanityError: actual.classifySanityError,
+    isSanityPost: actual.isSanityPost,
+  };
+});
 
 // Mock SanityResponsiveImage to avoid @sanity/image-url parsing real asset refs
 vi.mock('../../components/SanityResponsiveImage', () => ({

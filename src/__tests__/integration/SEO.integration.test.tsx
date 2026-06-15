@@ -40,18 +40,25 @@ vi.mock('../../assets/aws-community-builder.webp', () => ({
 }));
 
 // Mock Sanity client for Blog page
-vi.mock('../../sanity', () => ({
-  client: { fetch: vi.fn().mockResolvedValue({ posts: [], tags: [], series: [] }) },
-  urlFor: () => ({
-    width: () => ({ height: () => ({ auto: () => ({ quality: () => ({ url: () => 'https://mock.jpg' }) }) }) }),
-  }),
-  BLOG_LISTING_QUERY: 'mock-query',
-  POST_BY_SLUG_QUERY: 'mock-query',
-  getBlogListingCache: vi.fn().mockReturnValue(null),
-  setBlogListingCache: vi.fn(),
-  getPostCache: vi.fn().mockReturnValue(null),
-  setPostCache: vi.fn(),
-}));
+vi.mock('../../sanity', async () => {
+  // Keep the real pure helpers (shape guards + error classification); stub I/O.
+  const actual = await vi.importActual<typeof import('../../sanity')>('../../sanity');
+  return {
+    client: { fetch: vi.fn().mockResolvedValue({ posts: [], tags: [], series: [] }) },
+    urlFor: () => ({
+      width: () => ({ height: () => ({ auto: () => ({ quality: () => ({ url: () => 'https://mock.jpg' }) }) }) }),
+    }),
+    BLOG_LISTING_QUERY: 'mock-query',
+    POST_BY_SLUG_QUERY: 'mock-query',
+    getBlogListingCache: vi.fn().mockReturnValue(null),
+    setBlogListingCache: vi.fn(),
+    getPostCache: vi.fn().mockReturnValue(null),
+    setPostCache: vi.fn(),
+    classifySanityError: actual.classifySanityError,
+    isBlogListingResult: actual.isBlogListingResult,
+    isSanityPost: actual.isSanityPost,
+  };
+});
 
 vi.mock('../../utils/routeManifest', () => ({
   prefetchBlogPostChunk: vi.fn(),

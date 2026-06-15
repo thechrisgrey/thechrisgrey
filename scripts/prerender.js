@@ -261,8 +261,15 @@ async function crawl() {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
   });
 
+  // Routes whose prerender failure silently degrades SEO/social cards to a CSR
+  // shell (no per-page <title>/canonical/og). Tracked separately so an opt-in
+  // CHECK_PRERENDER_CRITICAL_ROUTES / STRICT_PRERENDER run can make that otherwise
+  // invisible degradation loud. Default: Home only.
+  const CRITICAL_ROUTES = ['/'];
+
   let ok = 0;
   let failed = 0;
+  const skippedCritical = [];
   try {
     for (const route of routes) {
       // One bad route must never abort the whole crawl — isolate each.
@@ -289,6 +296,7 @@ async function crawl() {
         }
       } catch (routeErr) {
         failed += 1;
+        if (CRITICAL_ROUTES.includes(route)) skippedCritical.push(route);
         console.warn(`  [prerender] WARN skipped ${route}: ${routeErr && routeErr.message}`);
       }
     }
@@ -298,18 +306,45 @@ async function crawl() {
   }
 
   console.log(`[prerender] Done: ${ok} prerendered, ${failed} skipped (of ${routes.length}).`);
+
+  // Opt-in visibility: surface degraded CRITICAL routes prominently. Off by
+  // default so normal-build output is unchanged; never fatal here (main() owns
+  // the STRICT exit decision so the non-fatal default is preserved).
+  const checkCritical =
+    process.env.CHECK_PRERENDER_CRITICAL_ROUTES === 'true' ||
+    process.env.STRICT_PRERENDER === 'true';
+  if (checkCritical && skippedCritical.length) {
+    console.error(
+      `[prerender] CRITICAL: ${skippedCritical.length} of ${CRITICAL_ROUTES.length} critical ` +
+        `route(s) degraded to CSR: ${skippedCritical.join(', ')} — each ships without per-page ` +
+        'title/canonical/og. Likely missing <SEO> or never reached __PRERENDER_READY__.' +
+        (process.env.STRICT_PRERENDER === 'true'
+          ? ' (STRICT_PRERENDER set — the build will fail.)'
+          : ' (set STRICT_PRERENDER=true to fail the build on this.)'),
+    );
+  }
+
+  return { ok, failed, skippedCritical };
 }
 
 // Entire crawl wrapped so ANY failure is non-fatal: warn and exit 0 so the
 // "&&"-chained build still proceeds and the site deploys as CSR.
 async function main() {
+  let result;
   try {
-    await crawl();
+    result = await crawl();
   } catch (err) {
     console.warn(
       '[prerender] WARN prerender step failed — continuing build as CSR (this is non-fatal):',
       err && err.message ? err.message : err,
     );
+  }
+  // STRICT opt-in: fail the build ONLY when explicitly requested AND a critical
+  // route degraded. The default path remains strictly non-fatal (exit 0) so a
+  // broken prerender never blocks the Amplify deploy — the #1 SAFETY CONSTRAINT.
+  if (process.env.STRICT_PRERENDER === 'true' && result?.skippedCritical?.length) {
+    console.error('[prerender] STRICT_PRERENDER: exiting 1 due to degraded critical route(s).');
+    process.exit(1);
   }
   // Always succeed.
   process.exit(0);

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { putFact, MAX_FACT_LENGTH } from "../memory.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
-export function buildRememberFactTool({ docClient, PutCommand, deviceId, responseStream, metrics, requestId }) {
+export function buildRememberFactTool({ docClient, PutCommand, deviceId, responseStream, metrics, requestId, timeoutMs }) {
   return tool({
     name: "remember_fact",
     description:
@@ -24,9 +24,11 @@ export function buildRememberFactTool({ docClient, PutCommand, deviceId, respons
         metrics?.record("ToolRejection_RememberFact_NoDevice");
         return { ok: false, error: "No visitor device identified; cannot persist memory." };
       }
+      const startedAt = Date.now();
       try {
-        const saved = await putFact(docClient, PutCommand, deviceId, fact);
+        const saved = await putFact(docClient, PutCommand, deviceId, fact, { timeoutMs });
         metrics?.record("ToolCall_RememberFact");
+        metrics?.record("ToolLatency_RememberFact", Date.now() - startedAt, "Milliseconds");
         emitEvent(responseStream, {
           kind: EVENT_KINDS.MEMORY_UPDATE,
           action: "remembered",
@@ -35,7 +37,10 @@ export function buildRememberFactTool({ docClient, PutCommand, deviceId, respons
         });
         return { ok: true, remembered: saved.content };
       } catch (error) {
-        metrics?.record("ToolFailure_RememberFact");
+        // Distinguish a hung-write timeout from a genuine DynamoDB failure so the
+        // two are separable in CloudWatch and the visitor gets accurate copy.
+        const timedOut = error?.name === "TimeoutError";
+        metrics?.record(timedOut ? "ToolTimeout_RememberFact" : "ToolFailure_RememberFact");
         console.error(JSON.stringify({
           requestId,
           event: "tool_error",
@@ -43,7 +48,12 @@ export function buildRememberFactTool({ docClient, PutCommand, deviceId, respons
           error: error.name,
           message: error.message,
         }));
-        return { ok: false, error: "Unable to save that right now." };
+        return {
+          ok: false,
+          error: timedOut
+            ? "Unable to save that right now — it timed out."
+            : "Unable to save that right now.",
+        };
       }
     },
   });

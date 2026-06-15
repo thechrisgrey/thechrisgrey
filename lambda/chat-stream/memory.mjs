@@ -1,6 +1,11 @@
 import { createHash, randomUUID } from "crypto";
+import { withTimeout } from "./timeout.mjs";
 
 export const MEMORY_TABLE = process.env.CHAT_MEMORY_TABLE || "thechrisgrey-chat-memory";
+// Per-write timeout for the visitor-memory put. Matches the 4s budget the KB and
+// podcast retrieval tools use, and stays well under the 25s agent deadline so a
+// hung DynamoDB write fails fast instead of starving the rest of the turn.
+export const PUT_FACT_TIMEOUT_MS = 4000;
 export const MEMORY_TTL_SECONDS = 90 * 24 * 60 * 60;
 export const MAX_FACTS_RETURNED = 20;
 export const MAX_FACT_LENGTH = 240;
@@ -77,7 +82,7 @@ export async function getFacts(docClient, QueryCommand, deviceId, { limit = MAX_
   return collected;
 }
 
-export async function putFact(docClient, PutCommand, deviceId, content) {
+export async function putFact(docClient, PutCommand, deviceId, content, { timeoutMs = PUT_FACT_TIMEOUT_MS } = {}) {
   if (!deviceId) throw new Error("putFact: deviceId is required");
   if (!content || typeof content !== "string") {
     throw new Error("putFact: content must be a non-empty string");
@@ -90,16 +95,21 @@ export async function putFact(docClient, PutCommand, deviceId, content) {
   const factId = buildFactId(now);
   const ttl = now + MEMORY_TTL_SECONDS;
 
-  await docClient.send(new PutCommand({
-    TableName: MEMORY_TABLE,
-    Item: {
-      deviceHash,
-      factId,
-      content: sanitized,
-      createdAt: now,
-      ttl,
-    },
-  }));
+  // Bound the DynamoDB write so a hung dependency can't block the agent turn.
+  await withTimeout(
+    docClient.send(new PutCommand({
+      TableName: MEMORY_TABLE,
+      Item: {
+        deviceHash,
+        factId,
+        content: sanitized,
+        createdAt: now,
+        ttl,
+      },
+    })),
+    timeoutMs,
+    "putFact",
+  );
 
   return { factId, content: sanitized, createdAt: now };
 }
