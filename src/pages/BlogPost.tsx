@@ -17,9 +17,12 @@ import {
   POST_BY_SLUG_QUERY,
   getPostCache,
   setPostCache,
+  classifySanityError,
+  isSanityPost,
   type SanityPost,
   type SanityPostPreview,
   type SanitySeriesPost,
+  type SanityError,
 } from '../sanity';
 import ReadingProgressBar from '../components/ReadingProgressBar';
 import BlogPostArticleSkeleton from '../components/BlogPostArticleSkeleton';
@@ -110,7 +113,7 @@ const BlogPost = () => {
   const [post, setPost] = useState<SanityPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [fetchError, setFetchError] = useState(false);
+  const [fetchError, setFetchError] = useState<SanityError | null>(null);
   const [copied, setCopied] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -135,22 +138,27 @@ const BlogPost = () => {
     abortControllerRef.current = controller;
 
     setIsLoading(true);
-    setFetchError(false);
+    setFetchError(null);
     setNotFound(false);
 
     try {
       const data = await client.fetch<SanityPost>(POST_BY_SLUG_QUERY, { slug }, { signal: controller.signal });
-      if (data) {
+      if (!data) {
+        setNotFound(true);
+      } else if (!isSanityPost(data)) {
+        // Shape drift — don't cache or render a malformed post.
+        console.error('Post response failed shape validation for slug:', slug);
+        setFetchError({ kind: 'malformed', message: 'We could not load this article right now. Please try again.' });
+      } else {
         setPost(data);
         setPostCache(slug, data);
-      } else {
-        setNotFound(true);
       }
     } catch (error) {
       // Ignore abort errors (expected on unmount or slug change)
       if (error instanceof Error && error.name === 'AbortError') return;
-      console.error('Error fetching post:', error);
-      setFetchError(true);
+      const classified = classifySanityError(error, 'Blog post');
+      console.error('Error fetching post:', classified.kind, classified.message, error);
+      setFetchError(classified);
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +221,7 @@ const BlogPost = () => {
               Unable to Load Article
             </h1>
             <p className="text-altivum-silver mb-8" style={typography.bodyText}>
-              Something went wrong while loading this article. Please try again.
+              {fetchError.message}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button

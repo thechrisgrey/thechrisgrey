@@ -89,3 +89,30 @@ test("remember_fact handles DynamoDB errors gracefully", async () => {
   assert.match(result.error, /Unable to save/i);
   assert.ok(metrics.records.includes("ToolFailure_RememberFact"));
 });
+
+test("remember_fact times out gracefully when the write hangs", async () => {
+  const stream = fakeStream();
+  const metrics = fakeMetrics();
+  // send() never resolves — simulates a hung DynamoDB write. The per-tool timeout
+  // must bound it so the agent turn isn't blocked until the 25s outer deadline.
+  const docClient = fakeDoc(() => new Promise(() => {}));
+  const tool = buildRememberFactTool({
+    docClient,
+    PutCommand,
+    deviceId: "device-1",
+    responseStream: stream,
+    metrics,
+    requestId: "req-1",
+    timeoutMs: 50,
+  });
+  const startedAt = Date.now();
+  const result = await tool.invoke({ fact: "Lives in Austin" });
+  const elapsed = Date.now() - startedAt;
+  assert.equal(result.ok, false);
+  assert.match(result.error, /timed out/i);
+  assert.ok(metrics.records.includes("ToolTimeout_RememberFact"));
+  assert.ok(!metrics.records.includes("ToolFailure_RememberFact"));
+  assert.equal(stream.chunks.length, 0);
+  // Returns well before the 25s outer agent deadline.
+  assert.ok(elapsed < 2000, `expected fast timeout, took ${elapsed}ms`);
+});

@@ -3,25 +3,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import logo from '../assets/logo.png';
 import { typography } from '../utils/typography';
 import ViewTransitionLink from './ViewTransitionLink';
+import { NAVIGATION_CONFIG } from '../routes';
 
-const NAV_ITEMS = [
-  { path: '/', label: 'Home' },
-  { path: '/blog', label: 'Blog' },
-  { path: '/chat', label: 'Alti' },
-  { path: '/links', label: 'Links' },
-  { path: '/contact', label: 'Contact' },
-];
-
-const ABOUT_DROPDOWN_ITEMS = [
-  { path: '/about', label: 'Personal Biography' },
-  { path: '/altivum', label: 'Altivum Inc' },
-  { path: '/foundation', label: 'The Altivum Foundation' },
-  { path: '/podcast', label: 'The Vector Podcast' },
-  { path: '/beyond-the-assessment', label: 'Beyond the Assessment' },
-  { path: '/aws', label: 'Amazon Web Services' },
-  { path: '/claude', label: 'Claude' },
-  { path: '/blueprint', label: 'thechrisgrey Blueprint' },
-];
+// Header nav + About dropdown are derived from the canonical ROUTES table
+// (NAVIGATION_CONFIG in src/routes.ts). A drift test in routes.test.ts keeps the
+// two in sync so a new/renamed route can never silently break the menu.
+const { mainNav: NAV_ITEMS, aboutDropdown: ABOUT_DROPDOWN_ITEMS } = NAVIGATION_CONFIG;
 
 const Navigation = () => {
   const location = useLocation();

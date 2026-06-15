@@ -71,5 +71,10 @@
     "vite-plugin-image-optimizer": "^2.0.3",
     "vitest": "^4.1.8",
     "web-vitals": "^5.1.0"
+  },
+  "overrides": {
+    "stats-gl": {
+      "three": "$three"
+    }
   }
 }

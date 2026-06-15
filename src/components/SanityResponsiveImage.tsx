@@ -1,8 +1,11 @@
 import { urlFor } from '../sanity/client'
+import type { SanityImageSource } from '@sanity/image-url'
 
 interface SanityResponsiveImageProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  source: any
+  // Accepts any source @sanity/image-url can build from (dereferenced or _ref),
+  // plus null/undefined so callers can pass optional fields and rely on the
+  // early `if (!source) return null` guard below.
+  source: SanityImageSource | null | undefined
   alt: string
   sizes: string
   widths?: number[]

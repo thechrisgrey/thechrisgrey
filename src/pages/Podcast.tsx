@@ -12,7 +12,7 @@ import SubscribePlatforms from '../components/SubscribePlatforms';
 import NewsletterCTA from '../components/NewsletterCTA';
 import YouTubeFacade from '../components/YouTubeFacade';
 import SpotifyFacade from '../components/SpotifyFacade';
-import { podcastClient, PODCAST_GUESTS_QUERY } from '../sanity';
+import { podcastClient, PODCAST_GUESTS_QUERY, classifySanityError, isPodcastGuestArray } from '../sanity';
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
 
@@ -33,9 +33,23 @@ const Podcast = () => {
   const [isLoadingGuests, setIsLoadingGuests] = useState(true);
 
   useEffect(() => {
+    // Guests are supplementary — the section degrades gracefully to empty on
+    // failure. We still validate the shape and classify/log errors so a real
+    // outage or schema drift is observable rather than silently swallowed.
     podcastClient.fetch<PodcastGuest[]>(PODCAST_GUESTS_QUERY)
-      .then(setGuests)
-      .catch(() => setGuests([]))
+      .then((data) => {
+        if (isPodcastGuestArray(data)) {
+          setGuests(data);
+        } else {
+          console.error('Podcast guests response failed shape validation');
+          setGuests([]);
+        }
+      })
+      .catch((err) => {
+        const classified = classifySanityError(err, 'Podcast guests');
+        console.error('Failed to fetch podcast guests:', classified.kind, classified.message);
+        setGuests([]);
+      })
       .finally(() => setIsLoadingGuests(false));
   }, []);
 

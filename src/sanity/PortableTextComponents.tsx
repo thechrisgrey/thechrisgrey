@@ -1,5 +1,6 @@
 import { PortableTextComponents } from '@portabletext/react'
 import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types'
+import { isRenderableImageSource } from './guards'
 import YouTubeFacade from '../components/YouTubeFacade'
 import HighlightedCodeBlock from '../components/HighlightedCodeBlock'
 import SanityResponsiveImage from '../components/SanityResponsiveImage'
@@ -37,7 +38,9 @@ export const portableTextComponents: PortableTextComponents = {
   types: {
     // Inline images with CLS fix and responsive srcset
     image: ({ value }) => {
-      if (!value?.asset) return null
+      // Validate the asset is actually renderable before handing it to urlFor —
+      // a malformed/un-dereferenced image would otherwise throw in the builder.
+      if (!isRenderableImageSource(value)) return null
       return (
         <figure className="my-8">
           <div className="relative w-full rounded-lg" style={{ aspectRatio: '4 / 3' }}>
@@ -153,7 +156,7 @@ export const portableTextComponents: PortableTextComponents = {
     bookReference: ({ value }: { value: BookReference }) => {
       const content = (
         <div className="my-8 flex gap-5 p-5 bg-altivum-navy/40 border border-altivum-blue/30 rounded-lg hover:border-altivum-gold/40 transition-colors">
-          {value.cover?.asset && (
+          {isRenderableImageSource(value.cover) && (
             <div className="shrink-0">
               <SanityResponsiveImage
                 source={value.cover}
