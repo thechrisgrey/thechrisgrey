@@ -55,19 +55,8 @@ customHeaders:
         value: 'strict-origin-when-cross-origin'
       - key: Permissions-Policy
         value: 'camera=(), microphone=(), geolocation=()'
-      # CSP (audited 2026-06). IMPORTANT: at audit time these customHeaders were NOT
-      # served in production — thechrisgrey.com responds via CloudFront+S3 with none
-      # of these security headers (no CSP / HSTS / X-Frame-Options / nosniff / etc.).
-      # Getting them applied to the live distribution is an INFRA task (the Amplify
-      # customHeaders aren't reaching production). This policy is kept correct so it
-      # is safe the moment the headers ARE enforced:
-      #  - style-src/font-src allowlist fonts.googleapis.com / fonts.gstatic.com so
-      #    Material Icons (loaded in index.html) won't be blocked once CSP is live.
-      #  - style-src keeps 'unsafe-inline': a per-request nonce can't be injected by
-      #    static customHeaders and the app uses inline styles (typography.ts,
-      #    GSAP/Lenis). Tightening that needs a report-only pass first; deferred.
       - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://plausible.io https://challenges.cloudflare.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com; connect-src 'self' https://cloudflareinsights.com https://plausible.io https://vrs4egsi745nep54y6abvwlcwq0smqak.lambda-url.us-east-2.on.aws https://sf5bejshafrb6t7zbbfw5knu7a0axlyp.lambda-url.us-east-2.on.aws https://mrrpf6f34n7vpkolurdc24c5fu0jruad.lambda-url.us-east-1.on.aws https://*.sanity.io https://*.apicdn.sanity.io https://zk46cokyuwgtdtz2ocdlhtjcji0fnidk.lambda-url.us-east-1.on.aws https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws https://b6u7jlyktwv7wtseebhl45lv4y0byxnl.lambda-url.us-east-1.on.aws https://cognito-idp.us-east-1.amazonaws.com https://challenges.cloudflare.com https://fx6pbx5hkhyrccf6c7pqk6x5fq0idpiv.lambda-url.us-east-1.on.aws https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://www.youtube.com https://open.spotify.com https://www.buzzsprout.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; upgrade-insecure-requests; report-uri https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws/csp-report"
+        value: "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://plausible.io https://challenges.cloudflare.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com; connect-src 'self' https://cloudflareinsights.com https://plausible.io https://vrs4egsi745nep54y6abvwlcwq0smqak.lambda-url.us-east-2.on.aws https://sf5bejshafrb6t7zbbfw5knu7a0axlyp.lambda-url.us-east-2.on.aws https://mrrpf6f34n7vpkolurdc24c5fu0jruad.lambda-url.us-east-1.on.aws https://*.sanity.io https://*.apicdn.sanity.io https://zk46cokyuwgtdtz2ocdlhtjcji0fnidk.lambda-url.us-east-1.on.aws https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws https://b6u7jlyktwv7wtseebhl45lv4y0byxnl.lambda-url.us-east-1.on.aws https://cognito-idp.us-east-1.amazonaws.com https://challenges.cloudflare.com https://fx6pbx5hkhyrccf6c7pqk6x5fq0idpiv.lambda-url.us-east-1.on.aws https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://www.youtube.com https://open.spotify.com https://www.buzzsprout.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; upgrade-insecure-requests; report-uri https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws/csp-report"
   - pattern: '**/*.js'
     headers:
       - key: Cache-Control
