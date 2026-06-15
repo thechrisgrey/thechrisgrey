@@ -1,11 +1,22 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { formatDate, formatDateShort } from './dateFormatter';
 
-// Note: Date-only strings like "2026-01-10" are parsed as UTC midnight by the
-// Date constructor. toLocaleDateString then converts to the local timezone, which
-// can shift the day. We use toLocaleDateString to compute expected values so tests
-// are timezone-agnostic.
+// The off-by-one bug only manifests in negative-offset (e.g. US) timezones, so
+// pin a deterministic one for this suite. Runtime reassignment of process.env.TZ
+// is honored by Intl/Date in Node, so this makes the regression assertions below
+// catch the bug on any machine/CI regardless of its local zone.
+const ORIGINAL_TZ = process.env.TZ;
+beforeAll(() => {
+  process.env.TZ = 'America/Los_Angeles';
+});
+afterAll(() => {
+  process.env.TZ = ORIGINAL_TZ;
+});
 
+// Note: the helpers below intentionally mirror the implementation's own path so
+// the older tests stay timezone-agnostic. They are NOT used by the hard-coded
+// regression assertions further down (those would mask a regression if derived
+// from the same code path they test).
 function expectedFull(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'long',
@@ -33,8 +44,11 @@ describe('dateFormatter', () => {
     });
 
     it('should format a date-only string correctly', () => {
+      // Bare dates render their intended calendar day in every timezone. Asserted
+      // against a hard-coded literal, not the UTC-parse helper (which models the
+      // pre-fix bug and would expect "December 24" under the pinned Pacific TZ).
       const result = formatDate('2025-12-25');
-      expect(result).toBe(expectedFull('2025-12-25'));
+      expect(result).toBe('December 25, 2025');
       expect(result).toContain('2025');
     });
 
@@ -146,5 +160,28 @@ describe('dateFormatter', () => {
       expect(full).toContain('September');
       expect(short).toContain('Sep');
     });
+  });
+});
+
+// Regression coverage for the UTC off-by-one bug. Pinned to America/Los_Angeles
+// (see beforeAll above). Expected values are hard-coded literals — NOT derived
+// from new Date(...).toLocaleDateString(...) — so they remain a true guard even
+// if the implementation path changes.
+describe('dateFormatter — timezone-safe bare dates (regression)', () => {
+  it('renders the intended calendar day for a bare date, not the day before', () => {
+    // Pre-fix in a negative-offset zone this rendered "January 9, 2026".
+    expect(formatDate('2026-01-10')).toBe('January 10, 2026');
+    expect(formatDateShort('2026-01-10')).toBe('Jan 10, 2026');
+  });
+
+  it('handles the first-of-month worst case without rolling to the prior month', () => {
+    // Pre-fix this rendered "February 28, 2026".
+    expect(formatDate('2026-03-01')).toBe('March 1, 2026');
+  });
+
+  it('leaves full ISO timestamps on local rendering (blog behavior unchanged)', () => {
+    // A real instant: 18:30Z is 10:30 local in LA — same calendar day. The fix
+    // must NOT force full timestamps to UTC; this documents that boundary.
+    expect(formatDate('2026-01-10T18:30:00Z')).toBe('January 10, 2026');
   });
 });
