@@ -9,6 +9,24 @@ import SocialIcon from '../components/SocialIcon';
 import { trackEvent } from '../utils/analytics';
 import Testimonials from '../components/Testimonials';
 
+type FieldName = 'name' | 'email' | 'message';
+
+type ContactChannel = {
+  href: string;
+  external?: boolean;
+  title: string;
+  detail: string;
+} & ({ kind: 'icon'; icon: string } | { kind: 'svg'; platform: string });
+
+const CONTACT_CHANNELS: ContactChannel[] = [
+  { kind: 'icon', icon: 'phone', href: SOCIAL_LINKS.phone, title: 'Phone', detail: '(615) 219-9425' },
+  { kind: 'icon', icon: 'email', href: SOCIAL_LINKS.altivumEmail, title: 'General Inquiries', detail: 'info@altivum.ai' },
+  { kind: 'icon', icon: 'business_center', href: SOCIAL_LINKS.altivumLogicEmail, title: 'Altivum Logic Services', detail: 'logic@altivum.ai' },
+  { kind: 'icon', icon: 'person', href: SOCIAL_LINKS.email, title: 'Direct Email', detail: 'christian.perez@altivum.ai' },
+  { kind: 'svg', platform: 'linkedin', href: SOCIAL_LINKS.linkedin, external: true, title: 'LinkedIn', detail: 'Connect professionally' },
+  { kind: 'svg', platform: 'github', href: SOCIAL_LINKS.github, external: true, title: 'GitHub', detail: 'View open-source projects' },
+];
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,9 +36,10 @@ const Contact = () => {
     website: '' // honeypot field
   });
   const [formStatus, setFormStatus] = useState<{
-    type: 'idle' | 'loading' | 'success' | 'error';
+    type: 'idle' | 'loading' | 'error';
     message: string;
   }>({ type: 'idle', message: '' });
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { containerRef: modalRef, handleKeyDown: handleModalKeyDown } = useFocusTrap(showSuccessModal);
 
@@ -52,28 +71,37 @@ const Contact = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showSuccessModal]);
 
-  const validateForm = (): string | null => {
-    if (formData.name.trim().length < 2 || formData.name.trim().length > 100) {
-      return 'Name must be between 2 and 100 characters';
+  const validateForm = (): Partial<Record<FieldName, string>> => {
+    const errors: Partial<Record<FieldName, string>> = {};
+    const name = formData.name.trim();
+    if (name.length < 2 || name.length > 100) {
+      errors.name = 'Name must be between 2 and 100 characters';
     }
     if (!isValidEmail(formData.email)) {
-      return 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email address';
     }
-    if (formData.message.trim().length < 10 || formData.message.trim().length > 5000) {
-      return 'Message must be between 10 and 5000 characters';
+    const message = formData.message.trim();
+    if (message.length < 10 || message.length > 5000) {
+      errors.message = 'Message must be between 10 and 5000 characters';
     }
-    return null;
+    return errors;
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Client-side validation
-    const validationError = validateForm();
-    if (validationError) {
-      setFormStatus({ type: 'error', message: validationError });
+    // Client-side validation — set per-field errors and focus the first invalid field
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const order: FieldName[] = ['name', 'email', 'message'];
+      const firstInvalid = order.find((f) => errors[f]);
+      if (firstInvalid) {
+        document.getElementById(firstInvalid)?.focus();
+      }
       return;
     }
+    setFieldErrors({});
 
     setFormStatus({ type: 'loading', message: 'Sending...' });
 
@@ -132,13 +160,15 @@ const Contact = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-    // Clear error when user starts typing
-    if (formStatus.type === 'error') {
-      setFormStatus({ type: 'idle', message: '' });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear this field's validation error as the user corrects it
+    if (fieldErrors[name as FieldName]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[name as FieldName];
+        return next;
+      });
     }
   };
 
@@ -270,9 +300,16 @@ const Contact = () => {
                     required
                     minLength={2}
                     maxLength={100}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    aria-invalid={fieldErrors.name ? true : undefined}
+                    aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="Your name"
                   />
+                  {fieldErrors.name && (
+                    <p id="name-error" className="mt-2 text-sm text-red-400" role="alert">
+                      {fieldErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div className="group">
@@ -287,9 +324,16 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     maxLength={255}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    aria-invalid={fieldErrors.email ? true : undefined}
+                    aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="your@email.com"
                   />
+                  {fieldErrors.email && (
+                    <p id="email-error" className="mt-2 text-sm text-red-400" role="alert">
+                      {fieldErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div className="group">
@@ -303,7 +347,7 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     maxLength={200}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 rounded-none"
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:border-altivum-gold transition-all duration-300 rounded-none"
                     placeholder="What's this about?"
                   />
                 </div>
@@ -321,9 +365,16 @@ const Contact = () => {
                     minLength={10}
                     maxLength={5000}
                     rows={6}
-                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:outline-hidden focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
+                    aria-invalid={fieldErrors.message ? true : undefined}
+                    aria-describedby={fieldErrors.message ? 'message-error' : undefined}
+                    className="w-full px-0 py-4 bg-transparent border-b-2 border-white/10 text-white placeholder-white/70 focus:border-altivum-gold transition-all duration-300 resize-none rounded-none"
                     placeholder="Tell me what you're thinking..."
                   ></textarea>
+                  {fieldErrors.message && (
+                    <p id="message-error" className="mt-2 text-sm text-red-400" role="alert">
+                      {fieldErrors.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Honeypot field - hidden from users */}
@@ -344,9 +395,7 @@ const Contact = () => {
                 {formStatus.message && (
                   <div
                     className={`p-5 rounded-xs backdrop-blur-xs transition-all duration-300 ${
-                      formStatus.type === 'success'
-                        ? 'bg-green-900/30 border-l-4 border-green-500 text-green-300'
-                        : formStatus.type === 'error'
+                      formStatus.type === 'error'
                         ? 'bg-red-900/30 border-l-4 border-red-500 text-red-300'
                         : 'bg-altivum-blue/30 border-l-4 border-altivum-gold text-altivum-gold'
                     }`}
@@ -389,83 +438,28 @@ const Contact = () => {
 
               {/* Contact Cards */}
               <div className="space-y-6">
-                {/* Phone */}
-                <a href="tel:+16152199425" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <span className="material-icons text-3xl">phone</span>
+                {CONTACT_CHANNELS.map((channel) => (
+                  <a
+                    key={channel.title}
+                    href={channel.href}
+                    {...(channel.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="block group"
+                  >
+                    <div className="flex items-start gap-6">
+                      <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
+                        {channel.kind === 'icon' ? (
+                          <span className="material-icons text-3xl">{channel.icon}</span>
+                        ) : (
+                          <SocialIcon platform={channel.platform} />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>{channel.title}</h3>
+                        <p className="text-altivum-silver text-sm">{channel.detail}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Phone</h3>
-                      <p className="text-altivum-silver text-sm">(615) 219-9425</p>
-                    </div>
-                  </div>
-                </a>
-
-                {/* Altivum Inc. Email */}
-                <a href="mailto:info@altivum.ai" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <span className="material-icons text-3xl">email</span>
-                    </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>General Inquiries</h3>
-                      <p className="text-altivum-silver text-sm">info@altivum.ai</p>
-                    </div>
-                  </div>
-                </a>
-
-                {/* Altivum Logic Email */}
-                <a href="mailto:logic@altivum.ai" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <span className="material-icons text-3xl">business_center</span>
-                    </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Altivum Logic Services</h3>
-                      <p className="text-altivum-silver text-sm">logic@altivum.ai</p>
-                    </div>
-                  </div>
-                </a>
-
-                {/* Personal Email */}
-                <a href="mailto:christian.perez@altivum.ai" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <span className="material-icons text-3xl">person</span>
-                    </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Direct Email</h3>
-                      <p className="text-altivum-silver text-sm">christian.perez@altivum.ai</p>
-                    </div>
-                  </div>
-                </a>
-
-                {/* LinkedIn */}
-                <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <SocialIcon platform="linkedin" />
-                    </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>LinkedIn</h3>
-                      <p className="text-altivum-silver text-sm">Connect professionally</p>
-                    </div>
-                  </div>
-                </a>
-
-                {/* GitHub */}
-                <a href="https://github.com/AltivumInc-Admin" target="_blank" rel="noopener noreferrer" className="block group">
-                  <div className="flex items-start gap-6">
-                    <div className="w-12 h-12 flex items-center justify-center text-altivum-gold/50 group-hover:text-altivum-gold transition-colors">
-                      <SocialIcon platform="github" />
-                    </div>
-                    <div>
-                      <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>GitHub</h3>
-                      <p className="text-altivum-silver text-sm">View open-source projects</p>
-                    </div>
-                  </div>
-                </a>
+                  </a>
+                ))}
               </div>
 
               {/* Location & Availability */}
@@ -532,7 +526,7 @@ const Contact = () => {
                 Thank You!
               </h3>
 
-              <p className="text-altivum-silver mb-8" style={typography.bodyText}>
+              <p className="text-altivum-silver mb-8" style={typography.bodyText} role="status" aria-live="polite">
                 Thanks for contacting me. I'll reach back as soon as possible.
               </p>
 

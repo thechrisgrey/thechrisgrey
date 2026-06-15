@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Contact from '../../pages/Contact';
+import { SOCIAL_LINKS } from '../../constants/links';
 
 const renderContact = () => {
   return render(
@@ -106,9 +107,13 @@ describe('Contact Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        const alert = screen.getByRole('alert');
-        expect(alert).toHaveTextContent('Name must be between 2 and 100 characters');
+        const nameInput = screen.getByLabelText(/name \*/i);
+        expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+        expect(nameInput).toHaveAttribute('aria-describedby', 'name-error');
       });
+      expect(
+        screen.getByText('Name must be between 2 and 100 characters')
+      ).toBeInTheDocument();
     });
 
     it('shows error when email is invalid', async () => {
@@ -127,9 +132,13 @@ describe('Contact Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        const alert = screen.getByRole('alert');
-        expect(alert).toHaveTextContent('Please enter a valid email address');
+        const emailInput = screen.getByLabelText(/email \*/i);
+        expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+        expect(emailInput).toHaveAttribute('aria-describedby', 'email-error');
       });
+      expect(
+        screen.getByText('Please enter a valid email address')
+      ).toBeInTheDocument();
     });
 
     it('shows error when message is too short', async () => {
@@ -143,9 +152,13 @@ describe('Contact Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        const alert = screen.getByRole('alert');
-        expect(alert).toHaveTextContent('Message must be between 10 and 5000 characters');
+        const messageInput = screen.getByLabelText(/message \*/i);
+        expect(messageInput).toHaveAttribute('aria-invalid', 'true');
+        expect(messageInput).toHaveAttribute('aria-describedby', 'message-error');
       });
+      expect(
+        screen.getByText('Message must be between 10 and 5000 characters')
+      ).toBeInTheDocument();
     });
 
     it('clears error when user starts typing after an error', async () => {
@@ -162,15 +175,101 @@ describe('Contact Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
+        expect(
+          screen.getByText('Name must be between 2 and 100 characters')
+        ).toBeInTheDocument();
       });
 
-      // Start typing again - error should clear
+      // Start typing again - the field's error should clear
       await user.type(screen.getByLabelText(/name \*/i), 'B');
 
       await waitFor(() => {
-        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Name must be between 2 and 100 characters')
+        ).not.toBeInTheDocument();
+        expect(screen.getByLabelText(/name \*/i)).not.toHaveAttribute('aria-invalid');
       });
+    });
+
+    it('focuses the first invalid field on submit (name)', async () => {
+      const user = userEvent.setup();
+      renderContact();
+
+      await user.type(screen.getByLabelText(/name \*/i), 'A');
+      await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/message \*/i),
+        'This is a valid message for testing.'
+      );
+
+      await user.click(screen.getByRole('button', { name: /send message/i }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/name \*/i)).toHaveFocus();
+      });
+    });
+
+    it('focuses email when name is valid but email is invalid', async () => {
+      const user = userEvent.setup();
+      renderContact();
+
+      await user.type(screen.getByLabelText(/name \*/i), 'Test User');
+      await user.type(screen.getByLabelText(/email \*/i), 'test@domain');
+      await user.type(
+        screen.getByLabelText(/message \*/i),
+        'This is a valid message for testing.'
+      );
+
+      await user.click(screen.getByRole('button', { name: /send message/i }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/email \*/i)).toHaveFocus();
+      });
+    });
+
+    it('renders all invalid field errors simultaneously', async () => {
+      const user = userEvent.setup();
+      renderContact();
+
+      await user.type(screen.getByLabelText(/name \*/i), 'A');
+      await user.type(screen.getByLabelText(/email \*/i), 'test@domain');
+      await user.type(screen.getByLabelText(/message \*/i), 'Short');
+
+      await user.click(screen.getByRole('button', { name: /send message/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Name must be between 2 and 100 characters')
+        ).toBeInTheDocument();
+      });
+      expect(
+        screen.getByText('Please enter a valid email address')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Message must be between 10 and 5000 characters')
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/name \*/i)).toHaveAttribute('aria-invalid', 'true');
+      expect(screen.getByLabelText(/email \*/i)).toHaveAttribute('aria-invalid', 'true');
+      expect(screen.getByLabelText(/message \*/i)).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('does not mark the un-validated subject field invalid', async () => {
+      const user = userEvent.setup();
+      renderContact();
+
+      await user.type(screen.getByLabelText(/name \*/i), 'A');
+      await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/message \*/i),
+        'This is a valid message for testing.'
+      );
+
+      await user.click(screen.getByRole('button', { name: /send message/i }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText(/name \*/i)).toHaveAttribute('aria-invalid', 'true');
+      });
+      expect(screen.getByLabelText(/subject/i)).not.toHaveAttribute('aria-invalid');
     });
   });
 
@@ -457,6 +556,62 @@ describe('Contact Page Integration', () => {
       await waitFor(() => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       });
+    });
+
+    it('announces the success confirmation via a live region', async () => {
+      const user = userEvent.setup();
+      fetchSpy.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ message: 'Success' }),
+      } as Response);
+      renderContact();
+
+      await user.type(screen.getByLabelText(/name \*/i), 'Test User');
+      await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
+      await user.type(
+        screen.getByLabelText(/message \*/i),
+        'This is a valid message for the contact form.'
+      );
+
+      await user.click(screen.getByRole('button', { name: /send message/i }));
+
+      const dialog = await screen.findByRole('dialog');
+      const status = within(dialog).getByText(
+        "Thanks for contacting me. I'll reach back as soon as possible."
+      );
+      expect(status).toHaveAttribute('role', 'status');
+      expect(status).toHaveAttribute('aria-live', 'polite');
+    });
+  });
+
+  describe('Contact channels', () => {
+    it('sources channel hrefs from SOCIAL_LINKS', () => {
+      renderContact();
+
+      expect(screen.getByRole('link', { name: /linkedin/i })).toHaveAttribute(
+        'href',
+        SOCIAL_LINKS.linkedin
+      );
+      expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute(
+        'href',
+        SOCIAL_LINKS.github
+      );
+      expect(screen.getByRole('link', { name: /general inquiries/i })).toHaveAttribute(
+        'href',
+        SOCIAL_LINKS.altivumEmail
+      );
+    });
+
+    it('opens external channels in a new tab but leaves tel/mailto in place', () => {
+      renderContact();
+
+      const linkedin = screen.getByRole('link', { name: /linkedin/i });
+      expect(linkedin).toHaveAttribute('target', '_blank');
+      expect(linkedin).toHaveAttribute('rel', 'noopener noreferrer');
+
+      const phone = screen.getByRole('link', { name: /\(615\) 219-9425/i });
+      expect(phone).not.toHaveAttribute('target');
     });
   });
 });
