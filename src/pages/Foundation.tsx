@@ -32,8 +32,8 @@ const Foundation = () => {
     <div className="min-h-screen bg-altivum-dark">
       <SEO
         title="The Altivum Foundation"
-        description="The Altivum Foundation is a 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, and robotics — at no cost to the scholar."
-        keywords="The Altivum Foundation, Altivum Foundation, veteran scholarships, 501c3, cloud computing education, AI education, robotics education, Christian Perez Founder"
+        description="The Altivum Foundation is a 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, and cybersecurity — at no cost to the scholar."
+        keywords="The Altivum Foundation, Altivum Foundation, veteran scholarships, 501c3, cloud computing education, AI education, robotics education, cybersecurity education, Christian Perez Founder"
         url="https://thechrisgrey.com/foundation"
         faq={foundationFAQs}
         breadcrumbs={[
@@ -61,7 +61,7 @@ const Foundation = () => {
               The Altivum Foundation
             </p>
             <h1 className="text-white mb-6 sm:mb-8" style={typography.heroHeader}>
-              Veteran scholarships in AI, Cloud &amp; Robotics.
+              Veteran scholarships in AI, Cloud, Robotics &amp; Cybersecurity.
             </h1>
             <div className="h-px w-16 bg-altivum-gold mx-auto mb-6 sm:mb-8" />
             <p className="text-altivum-silver max-w-2xl mx-auto mb-8 sm:mb-10" style={typography.subtitle}>
@@ -100,7 +100,7 @@ const Foundation = () => {
           </h2>
           <div className="h-px w-16 bg-altivum-gold/60 mx-auto mb-8" />
           <p className="text-altivum-silver" style={typography.subtitle}>
-            The men and women who served this country bring discipline, adaptability, and leadership forged under pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics — need exactly those qualities. The Altivum Foundation exists to connect the two.
+            The men and women who served this country bring discipline, adaptability, and leadership forged under pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics, and cybersecurity — need exactly those qualities. The Altivum Foundation exists to connect the two.
           </p>
         </div>
       </section>

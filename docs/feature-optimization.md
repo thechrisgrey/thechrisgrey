@@ -112,7 +112,7 @@
 - [ ] **[Accessibility]** Chamber-recognition anchor needs an `aria-label` with new-tab/destination context (decorative-SVG portion mostly moot). Impact: Low. Effort: Low. (`src/pages/Altivum.tsx:224-232`) — added 2026-06-15
 
 ### 4. The Altivum Foundation
-- [ ] **[Consistency]** Cybersecurity is a 4th funded field (grid + FAQ + schema) but dropped from H1, meta description, keywords, and Vision copy — align the crawlable/snippet copy to the four-field model. Impact: High. Effort: Low. (`src/pages/Foundation.tsx:64,35-36,103`; `src/utils/schemas.ts:531,561`) — added 2026-06-15
+- [x] **[Consistency]** Cybersecurity is a 4th funded field (grid + FAQ + schema) but dropped from H1, meta description, keywords, and Vision copy — align the crawlable/snippet copy to the four-field model. Impact: High. Effort: Low. (`src/pages/Foundation.tsx:64,35-36,103`; `src/utils/schemas.ts:531,561`) — added 2026-06-15 — **completed 2026-06-15 (WP-B; also aligned the JSON-LD `description` at schemas.ts:551)**
 - [ ] **[Performance]** Hero LCP JPEG ships 175 KB un-re-encoded with no WebP variant — convert to q80 WebP (AWS.tsx convention). Impact: Medium. Effort: Low. (`src/pages/Foundation.tsx:3,49-54`) — added 2026-06-15
 - [ ] **[Accessibility]** The four focus areas are a `<div>` grid, not a semantic list — wrap in `<ul>`/`<li>`. Impact: Low. Effort: Low. (`src/pages/Foundation.tsx:149-166`) — added 2026-06-15
 - [ ] **[Cleaner code]** Four near-identical CTA button blocks hand-duplicated — extract local button variants. Impact: Low. Effort: Low. (`src/pages/Foundation.tsx:71-86,220-235`) — added 2026-06-15

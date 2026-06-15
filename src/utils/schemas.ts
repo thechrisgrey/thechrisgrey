@@ -548,7 +548,7 @@ export const buildFoundationOrganizationSchema = () => ({
     "@id": "https://altivumfoundation.org/#organization",
     "name": "The Altivum Foundation",
     "url": "https://altivumfoundation.org",
-    "description": "A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, and robotics — at no cost to the scholar.",
+    "description": "A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, and cybersecurity — at no cost to the scholar.",
     "taxID": "41-4163272",
     "nonprofitStatus": "Nonprofit501c3",
     "founder": {
