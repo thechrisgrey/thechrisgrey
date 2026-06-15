@@ -89,7 +89,7 @@
 
 ### 1. Home
 - [ ] **[Accessibility]** Heading outline skips h1→h3 with the lone h2 out of order — sr-only h1, then 8× `as="h3"` keyPoints, then the CTA h2; primary content has no parent h2. Demote keyPoints to h2 or add a visually-hidden section h2 (`SplitReveal` `as` union needs `'h2'`). Impact: Medium. Effort: Low. (`src/pages/Home.tsx:57-66`, `src/components/SplitReveal.tsx:14`) — added 2026-06-15
-- [ ] **[Performance]** Below-the-fold profile image eager-loads and competes with the LCP hero — add `loading="lazy" decoding="async"`. Impact: Medium. Effort: Low. (`src/pages/Home.tsx:158-163`) — added 2026-06-15
+- [x] **[Performance]** Below-the-fold profile image eager-loads and competes with the LCP hero — add `loading="lazy" decoding="async"`. Impact: Medium. Effort: Low. (`src/pages/Home.tsx:158-163`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 - [ ] **[Cleaner code]** Dead conditional branch — the `point.link` ternary's `<div>` fallback is unreachable (every keyPoint has a link). Impact: Low. Effort: Low. (`src/pages/Home.tsx:89-93`) — added 2026-06-15
 - [ ] **[Architecture]** Static `keyPoints` array and `renderTab` are reconstructed on every render — hoist `keyPoints` to module scope. Impact: Low. Effort: Low. (`src/pages/Home.tsx:30-41`) — added 2026-06-15
 - [ ] **[Consistency]** keyPoint tabs keyed by array index while sibling lists key by content. Impact: Low. Effort: Low. (`src/pages/Home.tsx:84`) — added 2026-06-15
@@ -97,7 +97,7 @@
 
 ### 2. About / Personal Biography
 - [ ] **[Consistency]** "Altivum Inc." and "Beyond the Assessment" are plain text — wrap in `ViewTransitionLink` to `/altivum` and `/beyond-the-assessment`. Impact: Medium. Effort: Low. (`src/pages/About.tsx:52-53,74,83-84`) — added 2026-06-15
-- [ ] **[Performance]** Hero signature image has no width/height/aspect-ratio (CLS risk) — add `width={1500} height={1500}`. Impact: Low. Effort: Low. (`src/pages/About.tsx:34-39`) — added 2026-06-15
+- [x] **[Performance]** Hero signature image has no width/height/aspect-ratio (CLS risk) — add `width={1500} height={1500}`. Impact: Low. Effort: Low. (`src/pages/About.tsx:34-39`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 - [ ] **[Performance]** 1500×1500 hero PNG ships full-res for a ≤768px box (mostly-transparent canvas) — pre-resize/crop the asset. Impact: Low. Effort: Low. (`src/pages/About.tsx:34-39`) — added 2026-06-15
 - [ ] **[Cleaner code]** Italic via inline `style={{ fontStyle: 'italic' }}` instead of the Tailwind `italic` class used everywhere else. Impact: Low. Effort: Low. (`src/pages/About.tsx:74`) — added 2026-06-15
 - [ ] **[Accessibility]** Hero image alt ("My Personal Biography") duplicates the sr-only h1 and misses the mark's text — tighten or set `alt=""`. Impact: Low. Effort: Low. (`src/pages/About.tsx:36,48`) — added 2026-06-15
@@ -108,12 +108,12 @@
 - [ ] **[Cleaner code]** Each `timelineItems` entry defines an `icon` SVG that is never rendered — render it or drop the field. Impact: Medium. Effort: Low. (`src/pages/Altivum.tsx:13-17,344-362`) — added 2026-06-15
 - [ ] **[Cleaner code]** The three "Imperatives" are authored verbatim twice (timeline + Mission) — hoist to one array (cf. Foundation `FOCUS_AREAS`). Impact: Medium. Effort: Low. (`src/pages/Altivum.tsx:52-71,383-396`) — added 2026-06-15
 - [ ] **[UI]** Hero badges positioned with magic `bottom-50` (200px) — can crowd the logo on short viewports; use an intentional corner offset. Impact: Low. Effort: Low. (`src/pages/Altivum.tsx:215,228`) — added 2026-06-15
-- [ ] **[Performance]** LCP hero logo has no width/height (verifier scoped to hero only; AWS logo & full-screen image already reserve boxes). Impact: Low. Effort: Low. (`src/pages/Altivum.tsx:203-208`) — added 2026-06-15
+- [x] **[Performance]** LCP hero logo has no width/height (verifier scoped to hero only; AWS logo & full-screen image already reserve boxes). Impact: Low. Effort: Low. (`src/pages/Altivum.tsx:203-208`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 - [ ] **[Accessibility]** Chamber-recognition anchor needs an `aria-label` with new-tab/destination context (decorative-SVG portion mostly moot). Impact: Low. Effort: Low. (`src/pages/Altivum.tsx:224-232`) — added 2026-06-15
 
 ### 4. The Altivum Foundation
 - [x] **[Consistency]** Cybersecurity is a 4th funded field (grid + FAQ + schema) but dropped from H1, meta description, keywords, and Vision copy — align the crawlable/snippet copy to the four-field model. Impact: High. Effort: Low. (`src/pages/Foundation.tsx:64,35-36,103`; `src/utils/schemas.ts:531,561`) — added 2026-06-15 — **completed 2026-06-15 (WP-B; also aligned the JSON-LD `description` at schemas.ts:551)**
-- [ ] **[Performance]** Hero LCP JPEG ships 175 KB un-re-encoded with no WebP variant — convert to q80 WebP (AWS.tsx convention). Impact: Medium. Effort: Low. (`src/pages/Foundation.tsx:3,49-54`) — added 2026-06-15
+- [x] **[Performance]** Hero LCP JPEG ships 175 KB un-re-encoded with no WebP variant — convert to q80 WebP (AWS.tsx convention). Impact: Medium. Effort: Low. (`src/pages/Foundation.tsx:3,49-54`) — added 2026-06-15 — **completed 2026-06-15 (WP-D; 175 KB → 106 KB, orphaned JPEG removed)**
 - [ ] **[Accessibility]** The four focus areas are a `<div>` grid, not a semantic list — wrap in `<ul>`/`<li>`. Impact: Low. Effort: Low. (`src/pages/Foundation.tsx:149-166`) — added 2026-06-15
 - [ ] **[Cleaner code]** Four near-identical CTA button blocks hand-duplicated — extract local button variants. Impact: Low. Effort: Low. (`src/pages/Foundation.tsx:71-86,220-235`) — added 2026-06-15
 
@@ -126,7 +126,7 @@
 - [ ] **[Consistency]** `SpotifyFacade` iframe lacks the `sandbox` hardening `YouTubeFacade` applies (live-verify Spotify still plays). Impact: Low. Effort: Low. (`src/components/SpotifyFacade.tsx:13`, `src/components/YouTubeFacade.tsx:30`) — added 2026-06-15
 
 ### 6. Beyond the Assessment
-- [ ] **[Performance]** Hero + reading images lack intrinsic width/height — CLS on a tracked metric; add `1500×1500` / `1131×1600` (Home pattern). Impact: High. Effort: Low. (`src/pages/BeyondTheAssessment.tsx:31-36,52-56`) — added 2026-06-15
+- [x] **[Performance]** Hero + reading images lack intrinsic width/height — CLS on a tracked metric; add `1500×1500` / `1131×1600` (Home pattern). Impact: High. Effort: Low. (`src/pages/BeyondTheAssessment.tsx:31-36,52-56`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 - [ ] **[Architecture]** 2.1 MB unused source EPUB committed in `src/assets/` (56 XHTML files, never imported) — remove from repo. Impact: Low. Effort: Low. (`src/assets/Beyond the Assessment FINAL.epub/`) — added 2026-06-15
 - [ ] **[Consistency]** CTA hover uses stock `amber-400` instead of `hover:bg-altivum-gold/90`. Impact: Low. Effort: Low. (`src/pages/BeyondTheAssessment.tsx:94`) — added 2026-06-15
 - [ ] **[Accessibility]** CTA omits touch-target/press-feedback classes; arrow SVG lacks `aria-hidden`. Impact: Low. Effort: Low. (`src/pages/BeyondTheAssessment.tsx:89-100`) — added 2026-06-15
@@ -137,7 +137,7 @@
 - [ ] **[Accessibility]** Overlay buttons are focusable children of an `aria-hidden="true"` wrapper with per-child `aria-hidden="false"` (unreliable anti-pattern) — resolved by removing the overlay. Impact: Medium. Effort: Low. (`src/components/aws/InfraTopology.tsx:99-108`) — added 2026-06-15
 - [ ] **[Cleaner code]** `ClusterDetail.tsx` is dead code (162 lines, exported, never imported; pulls in drei `Html`) — delete. Impact: Medium. Effort: Low. (`src/components/aws/ClusterDetail.tsx:1,98`) — added 2026-06-15
 - [ ] **[Cleaner code]** `flyTo` and `handleClusterClick` (and `reset`/`handleDeselect`) duplicate the camera-fly logic — extract `flyToCluster(id)`. Impact: Medium. Effort: Low. (`src/components/aws/TopologyScene.tsx:137,172`) — added 2026-06-15
-- [ ] **[Performance]** Hero + Community Builder images lack dimensions (CLS); below-fold banner eager-loads — add width/height + `loading="lazy"`. Impact: Medium. Effort: Low. (`src/pages/AWS.tsx:35-40,50-54`) — added 2026-06-15
+- [x] **[Performance]** Hero + Community Builder images lack dimensions (CLS); below-fold banner eager-loads — add width/height + `loading="lazy"`. Impact: Medium. Effort: Low. (`src/pages/AWS.tsx:35-40,50-54`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 - [ ] **[Consistency]** Reduced-motion read via raw `window.matchMedia` (non-reactive) instead of `useMediaQuery`/`isMotionDisabled()`. Impact: Low. Effort: Low. (`src/components/aws/TopologyScene.tsx:58`, `ClusterEdge.tsx:15`) — added 2026-06-15
 
 ### 8. Claude
@@ -151,7 +151,7 @@
 - [ ] **[Architecture]** `SOCIAL_LINKS` imported but bypassed for all but one entry — already caused live drift (`x.com/x_thechrisgrey` vs constant `x.com/thechrisgrey`). Reconcile the X URL, then source all from the constant. Impact: Medium. Effort: Low. (`src/pages/Links.tsx:43-44,5`; `src/constants/links.ts:9`) — added 2026-06-15
 - [ ] **[Consistency]** Contact CTA uses raw `<a href="/contact">` instead of `ViewTransitionLink`. Impact: Medium. Effort: Low. (`src/pages/Links.tsx:278-283`) — added 2026-06-15
 - [ ] **[Cleaner code]** Personal & company social-card grids are byte-identical markup — extract a `SocialCard`/section helper. Impact: Low. Effort: Low. (`src/pages/Links.tsx:201-224,239-262`) — added 2026-06-15
-- [ ] **[Performance]** Featured QR image has no width/height/loading/decoding (below fold) — add them (confirm intrinsic size). Impact: Low. Effort: Low. (`src/pages/Links.tsx:133-137`) — added 2026-06-15
+- [x] **[Performance]** Featured QR image has no width/height/loading/decoding (below fold) — add them (confirm intrinsic size). Impact: Low. Effort: Low. (`src/pages/Links.tsx:133-137`) — added 2026-06-15 — **completed 2026-06-15 (WP-D)**
 
 ### 10. Contact & Speaking
 - [x] **[Accessibility]** Field validation errors aren't associated with the input (one shared alert; no `aria-invalid`/`aria-describedby`/focus) — track per-field errors (reuse `FormInput` pattern). Impact: High. Effort: Medium. (`src/pages/Contact.tsx:55-66,264-326`; `src/components/ui/FormInput.tsx:41-49`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
