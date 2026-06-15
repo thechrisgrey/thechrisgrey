@@ -42,66 +42,11 @@ frontend:
 # fall through on a missing target and would break those routes — do not switch it.
 # To add/change a rule, edit the CustomRules in the console or via the API; editing
 # this file has no effect on hosting behavior.
-customHeaders:
-  - pattern: '**/*'
-    headers:
-      - key: Strict-Transport-Security
-        value: 'max-age=31536000; includeSubDomains'
-      - key: X-Content-Type-Options
-        value: 'nosniff'
-      - key: X-Frame-Options
-        value: 'SAMEORIGIN'
-      - key: Referrer-Policy
-        value: 'strict-origin-when-cross-origin'
-      - key: Permissions-Policy
-        value: 'camera=(), microphone=(), geolocation=()'
-      - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://plausible.io https://challenges.cloudflare.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com; connect-src 'self' https://cloudflareinsights.com https://plausible.io https://vrs4egsi745nep54y6abvwlcwq0smqak.lambda-url.us-east-2.on.aws https://sf5bejshafrb6t7zbbfw5knu7a0axlyp.lambda-url.us-east-2.on.aws https://mrrpf6f34n7vpkolurdc24c5fu0jruad.lambda-url.us-east-1.on.aws https://*.sanity.io https://*.apicdn.sanity.io https://zk46cokyuwgtdtz2ocdlhtjcji0fnidk.lambda-url.us-east-1.on.aws https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws https://b6u7jlyktwv7wtseebhl45lv4y0byxnl.lambda-url.us-east-1.on.aws https://cognito-idp.us-east-1.amazonaws.com https://challenges.cloudflare.com https://fx6pbx5hkhyrccf6c7pqk6x5fq0idpiv.lambda-url.us-east-1.on.aws https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://www.youtube.com https://open.spotify.com https://www.buzzsprout.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; upgrade-insecure-requests; report-uri https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws/csp-report"
-  - pattern: '**/*.js'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=31536000, immutable'
-  - pattern: '**/*.css'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=31536000, immutable'
-  - pattern: 'assets/**/*'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=31536000, immutable'
-  - pattern: '*.html'
-    headers:
-      - key: Cache-Control
-        value: 'no-cache, no-store, must-revalidate'
-  - pattern: 'index.html'
-    headers:
-      - key: Cache-Control
-        value: 'no-cache, no-store, must-revalidate'
-  - pattern: '**/*.png'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
-  - pattern: '**/*.jpg'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
-  - pattern: '**/*.jpeg'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
-  - pattern: '**/*.webp'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
-  - pattern: '**/*.glb'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
-  - pattern: 'sitemap.xml'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=3600'
-  - pattern: 'rss.xml'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=3600'
+#
+# Custom HTTP RESPONSE HEADERS are likewise NOT configured here anymore. Amplify
+# Hosting deprecated the `customHeaders:` key in amplify.yml and no longer applies
+# it — verified 2026-06 that production served NONE of the security or cache headers
+# previously declared here (not even the cache-control rules). They now live in
+# `customHttp.yml` at the repo root, which is the location Amplify actually reads.
+# See customHttp.yml and:
+# https://docs.aws.amazon.com/amplify/latest/userguide/migrate-custom-headers.html
