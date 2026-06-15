@@ -1,14 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import EpisodeCard from './EpisodeCard';
 import type { PodcastEpisode } from '../types/podcast';
 
+// Pin a negative-offset US timezone so the date-rendering assertions below would
+// catch the bare-date off-by-one bug on any machine/CI (runtime process.env.TZ
+// reassignment is honored by Intl in Node). publishedAt uses the bare
+// 'YYYY-MM-DD' shape the real generated episode data ships.
+const ORIGINAL_TZ = process.env.TZ;
+beforeAll(() => {
+  process.env.TZ = 'America/Los_Angeles';
+});
+afterAll(() => {
+  process.env.TZ = ORIGINAL_TZ;
+});
+
 const baseEpisode: PodcastEpisode = {
   id: 'ep-1',
   title: 'Test Episode',
   description: 'A test episode description',
-  publishedAt: '2026-01-10T12:00:00Z',
+  publishedAt: '2026-01-10',
   duration: '45:00',
   episodeNumber: 1,
   seasonNumber: 1,
@@ -135,6 +147,28 @@ describe('EpisodeCard', () => {
       await user.click(screen.getByRole('button'));
       expect(screen.getByText('YouTube')).toBeInTheDocument();
       expect(screen.getByText('Spotify')).toBeInTheDocument();
+    });
+  });
+
+  describe('date rendering (timezone-safe)', () => {
+    it('shows the intended calendar date in the standard variant', () => {
+      render(<EpisodeCard episode={baseEpisode} />);
+      expect(screen.getByText('January 10, 2026')).toBeInTheDocument();
+    });
+
+    it('shows the intended calendar date in the featured variant', () => {
+      render(<EpisodeCard episode={baseEpisode} variant="featured" />);
+      expect(screen.getByText('January 10, 2026')).toBeInTheDocument();
+    });
+
+    it('shows the intended calendar date in the compact variant (collapsed + expanded)', async () => {
+      const user = userEvent.setup();
+      render(<EpisodeCard episode={baseEpisode} variant="compact" />);
+      // Collapsed: the desktop date span is in the DOM (md:block, no real CSS in jsdom).
+      expect(screen.getByText('January 10, 2026')).toBeInTheDocument();
+      // Expanded: the mobile-meta date also mounts, so the date appears twice.
+      await user.click(screen.getByRole('button'));
+      expect(screen.getAllByText('January 10, 2026').length).toBeGreaterThanOrEqual(2);
     });
   });
 });
