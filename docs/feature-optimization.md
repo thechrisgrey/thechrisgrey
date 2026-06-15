@@ -154,11 +154,11 @@
 - [ ] **[Performance]** Featured QR image has no width/height/loading/decoding (below fold) — add them (confirm intrinsic size). Impact: Low. Effort: Low. (`src/pages/Links.tsx:133-137`) — added 2026-06-15
 
 ### 10. Contact & Speaking
-- [ ] **[Accessibility]** Field validation errors aren't associated with the input (one shared alert; no `aria-invalid`/`aria-describedby`/focus) — track per-field errors (reuse `FormInput` pattern). Impact: High. Effort: Medium. (`src/pages/Contact.tsx:55-66,264-326`; `src/components/ui/FormInput.tsx:41-49`) — added 2026-06-15
-- [ ] **[Accessibility]** Inputs use `focus:outline-hidden`, suppressing the global gold focus-visible ring — drop it (mouse case already handled in CSS). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:273,290,306,324`) — added 2026-06-15
-- [ ] **[Accessibility]** Success-modal confirmation text isn't in a live region — add `role="status" aria-live="polite"`. Impact: Low. Effort: Low. (`src/pages/Contact.tsx:531-537`) — added 2026-06-15
-- [ ] **[Cleaner code]** Dead `'success'` status branch — `formStatus` is never set to `'success'` (success path goes `'idle'` + modal). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:20-23,344-352`) — added 2026-06-15
-- [ ] **[Architecture]** Six near-identical contact-info link blocks (~75 lines) should be data-driven (siblings already `.map`). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:391-468`) — added 2026-06-15
+- [x] **[Accessibility]** Field validation errors aren't associated with the input (one shared alert; no `aria-invalid`/`aria-describedby`/focus) — track per-field errors (reuse `FormInput` pattern). Impact: High. Effort: Medium. (`src/pages/Contact.tsx:55-66,264-326`; `src/components/ui/FormInput.tsx:41-49`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
+- [x] **[Accessibility]** Inputs use `focus:outline-hidden`, suppressing the global gold focus-visible ring — drop it (mouse case already handled in CSS). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:273,290,306,324`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
+- [x] **[Accessibility]** Success-modal confirmation text isn't in a live region — add `role="status" aria-live="polite"`. Impact: Low. Effort: Low. (`src/pages/Contact.tsx:531-537`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
+- [x] **[Cleaner code]** Dead `'success'` status branch — `formStatus` is never set to `'success'` (success path goes `'idle'` + modal). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:20-23,344-352`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
+- [x] **[Architecture]** Six near-identical contact-info link blocks (~75 lines) should be data-driven (siblings already `.map`). Impact: Low. Effort: Low. (`src/pages/Contact.tsx:391-468`) — added 2026-06-15 — **completed 2026-06-15 (WP-C)**
 
 ### 11. Privacy Policy
 - [ ] **[Consistency]** "contact form" link is a raw `<a href>` (only raw internal anchor in `src/`) — use `ViewTransitionLink`. Impact: Medium. Effort: Low. (`src/pages/Privacy.tsx:306`) — added 2026-06-15
