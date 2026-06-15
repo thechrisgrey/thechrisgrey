@@ -8,6 +8,19 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
+    groups:
+      # Batch patch + minor updates into ONE PR per group so they stop piling up
+      # as dozens of individual PRs. MAJOR bumps are intentionally NOT grouped —
+      # they arrive as individual PRs so each gets a deliberate, tested review.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -16,6 +29,11 @@ updates:
       day: "monday"
     labels:
       - "dependencies"
+    groups:
+      github-actions:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/chat-stream"
@@ -26,6 +44,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/kb-builder"
@@ -36,6 +59,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/metrics"
@@ -46,6 +74,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/kb-sync"
@@ -56,6 +89,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/blueprint"
@@ -66,6 +104,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/mcp-server"
@@ -76,6 +119,11 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/lambda/shared"
@@ -86,3 +134,8 @@ updates:
     labels:
       - "dependencies"
       - "lambda"
+    groups:
+      lambda-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
