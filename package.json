@@ -60,7 +60,7 @@
     "globals": "^17.6.0",
     "jsdom": "^29.0.2",
     "postcss": "^8.4.32",
-    "puppeteer": "^24.0.0",
+    "puppeteer": "^25.1.0",
     "satori": "^0.26.0",
     "sharp": "^0.35.1",
     "svgo": "^4.0.0",
