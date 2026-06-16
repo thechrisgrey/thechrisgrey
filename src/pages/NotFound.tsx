@@ -16,6 +16,7 @@ const NotFound = () => {
         {/* 404 Number */}
         <div className="mb-8">
           <span
+            aria-hidden="true"
             className="text-altivum-gold opacity-20"
             style={{
               fontSize: 'clamp(120px, 25vw, 200px)',
@@ -40,21 +41,21 @@ const NotFound = () => {
         <div className="flex flex-wrap justify-center gap-4 mb-12">
           <ViewTransitionLink
             to="/"
-            className="px-6 py-3 bg-altivum-gold text-altivum-dark font-medium rounded-lg hover:bg-altivum-gold/90 transition-colors"
+            className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 bg-altivum-gold text-altivum-dark font-medium rounded-lg hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation"
             style={typography.bodyText}
           >
             Go Home
           </ViewTransitionLink>
           <ViewTransitionLink
             to="/blog"
-            className="px-6 py-3 border border-altivum-gold text-altivum-gold rounded-lg hover:bg-altivum-gold/10 transition-colors"
+            className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 border border-altivum-gold text-altivum-gold rounded-lg hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation"
             style={typography.bodyText}
           >
             Read the Blog
           </ViewTransitionLink>
           <ViewTransitionLink
             to="/contact"
-            className="px-6 py-3 border border-white/20 text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="inline-flex items-center justify-center min-h-[48px] px-6 py-3 border border-white/20 text-white rounded-lg hover:bg-white/5 active:scale-[0.98] transition-all duration-300 touch-manipulation"
             style={typography.bodyText}
           >
             Get in Touch
@@ -66,20 +67,20 @@ const NotFound = () => {
           <p className="text-altivum-silver mb-4" style={typography.smallText}>
             Or check out these pages:
           </p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            <ViewTransitionLink to="/about" className="text-altivum-silver hover:text-altivum-gold transition-colors" style={typography.smallText}>
+          <div className="flex flex-wrap justify-center gap-x-6">
+            <ViewTransitionLink to="/about" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
               About
             </ViewTransitionLink>
-            <ViewTransitionLink to="/altivum" className="text-altivum-silver hover:text-altivum-gold transition-colors" style={typography.smallText}>
+            <ViewTransitionLink to="/altivum" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
               Altivum Inc.
             </ViewTransitionLink>
-            <ViewTransitionLink to="/podcast" className="text-altivum-silver hover:text-altivum-gold transition-colors" style={typography.smallText}>
+            <ViewTransitionLink to="/podcast" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
               Podcast
             </ViewTransitionLink>
-            <ViewTransitionLink to="/beyond-the-assessment" className="text-altivum-silver hover:text-altivum-gold transition-colors" style={typography.smallText}>
+            <ViewTransitionLink to="/beyond-the-assessment" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
               Book
             </ViewTransitionLink>
-            <ViewTransitionLink to="/chat" className="text-altivum-silver hover:text-altivum-gold transition-colors" style={typography.smallText}>
+            <ViewTransitionLink to="/chat" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
               AI Chat
             </ViewTransitionLink>
           </div>

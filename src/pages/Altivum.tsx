@@ -6,15 +6,28 @@ import altivumLogo from '../assets/altivum.png';
 import { typography } from '../utils/typography';
 import { altivumFAQs, buildAltivumServicesSchemas } from '../utils/schemas';
 
+const IMPERATIVES = [
+  {
+    title: 'Advance AI through real-world application',
+    description:
+      'We deploy AI into high-stakes, real-world environments, not just to test performance, but to expand its frontier by solving problems that matter.',
+  },
+  {
+    title: 'Strengthen human-machine integration',
+    description:
+      'We integrate AI with the decisiveness, adaptability, and mission-first mindset of veterans, creating systems that think fast, act smart, and align with human intent.',
+  },
+  {
+    title: 'Position veterans as strategic leaders',
+    description:
+      'We equip veterans to lead the charge, not just as users of autonomous technology, but as architects, commanders, and ethical stewards of the AI-driven future.',
+  },
+];
+
 const Altivum = () => {
   const timelineItems = [
     {
       title: "The Vision",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      ),
       preview: "Why Altivum exists and the future I'm building",
       content: (
         <div className="space-y-4">
@@ -37,11 +50,6 @@ const Altivum = () => {
     },
     {
       title: "Building for Impact",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
       preview: "Three imperatives that drive everything we build",
       content: (
         <div className="space-y-4">
@@ -50,24 +58,14 @@ const Altivum = () => {
           </p>
           <h4 className="text-white mt-6" style={typography.cardTitleSmall}>Our Imperatives</h4>
           <ul className="space-y-3">
-            <li className="flex items-start text-altivum-silver" style={typography.bodyText}>
-              <span className="text-altivum-gold mr-3 mt-1">→</span>
-              <div>
-                <span className="font-semibold text-white">Advance AI through real-world application:</span> We deploy AI into high-stakes, real-world environments, not just to test performance, but to expand its frontier by solving problems that matter.
-              </div>
-            </li>
-            <li className="flex items-start text-altivum-silver" style={typography.bodyText}>
-              <span className="text-altivum-gold mr-3 mt-1">→</span>
-              <div>
-                <span className="font-semibold text-white">Strengthen human-machine integration:</span> We integrate AI with the decisiveness, adaptability, and mission-first mindset of veterans, creating systems that think fast, act smart, and align with human intent.
-              </div>
-            </li>
-            <li className="flex items-start text-altivum-silver" style={typography.bodyText}>
-              <span className="text-altivum-gold mr-3 mt-1">→</span>
-              <div>
-                <span className="font-semibold text-white">Position veterans as strategic leaders:</span> We equip veterans to lead the charge, not just as users of autonomous technology, but as architects, commanders, and ethical stewards of the AI-driven future.
-              </div>
-            </li>
+            {IMPERATIVES.map((imperative) => (
+              <li key={imperative.title} className="flex items-start text-altivum-silver" style={typography.bodyText}>
+                <span className="text-altivum-gold mr-3 mt-1">→</span>
+                <div>
+                  <span className="font-semibold text-white">{imperative.title}:</span> {imperative.description}
+                </div>
+              </li>
+            ))}
           </ul>
           <p className="text-altivum-silver mt-6" style={typography.bodyText}>
             These imperatives guide every line of code, every deployment, and every partnership. They define who we are and what we're building.
@@ -77,11 +75,6 @@ const Altivum = () => {
     },
     {
       title: "The Road Ahead",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
       preview: "Operational excellence criteria that define our standard",
       content: (
         <div className="space-y-4">
@@ -214,7 +207,7 @@ const Altivum = () => {
         </div>
 
         {/* AWS Partner Logo - Bottom Right */}
-        <div className="absolute bottom-50 right-8 z-20">
+        <div className="absolute bottom-8 right-8 z-20">
           <img
             src={awsPartnerLogo}
             alt="AWS Partner"
@@ -227,7 +220,8 @@ const Altivum = () => {
           href="https://www.clarksvilleonline.com/2025/12/12/clarksville-area-chamber-of-commerces-veteran-business-of-the-month-altivum-inc/"
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-50 left-8 z-20 text-xs text-altivum-silver/60 hover:text-altivum-gold transition-colors"
+          aria-label="Veteran Business of the Month — Clarksville Chamber, December 2025 (opens in new tab)"
+          className="absolute bottom-8 left-8 z-20 text-xs text-altivum-silver/60 hover:text-altivum-gold transition-colors"
         >
           Veteran Business of the Month
           <span className="block text-[10px] text-altivum-silver/40">Clarksville Chamber - Dec 2025</span>
@@ -254,8 +248,8 @@ const Altivum = () => {
             {/* HQ Node */}
             <div className="flex justify-center mb-16 md:mb-24 relative z-10">
               <div className="bg-altivum-dark border border-altivum-gold/50 px-8 py-6 rounded-lg text-center min-w-[200px] shadow-[0_0_30px_rgba(197,165,114,0.1)]">
-                <h3 className="text-altivum-gold font-semibold tracking-widest uppercase text-lg">Altivum HQ</h3>
-                <p className="text-altivum-silver text-sm mt-2">Strategic Core</p>
+                <h3 className="text-altivum-gold font-semibold tracking-widest uppercase" style={typography.cardTitleSmall}>Altivum HQ</h3>
+                <p className="text-altivum-silver mt-2" style={typography.smallText}>Strategic Core</p>
               </div>
             </div>
 
@@ -265,11 +259,11 @@ const Altivum = () => {
               <div className="flex flex-col items-center opacity-0 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <div className="hidden md:block w-px h-12 bg-altivum-gold/30 mb-4"></div>
                 <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-6 rounded-lg w-full max-w-sm hover:border-altivum-gold/30 transition-colors duration-300 group">
-                  <h4 className="text-white text-xl mb-3 group-hover:text-altivum-gold transition-colors">Altivum Vanguard</h4>
-                  <p className="text-altivum-silver text-sm leading-relaxed mb-4">
+                  <h4 className="text-white mb-3 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Altivum Vanguard</h4>
+                  <p className="text-altivum-silver mb-4" style={typography.bodyText}>
                     Serving the <span className="text-white">veteran population</span>. Empowering those who served with technology and opportunity.
                   </p>
-                  <ul className="text-xs text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3">
+                  <ul className="text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3" style={typography.smallText}>
                     <li className="flex items-center">
                       <span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>
                       <a href="https://vetroi.altivum.ai" target="_blank" rel="noopener noreferrer" className="hover:text-altivum-gold transition-colors">VetROI™</a>
@@ -287,11 +281,11 @@ const Altivum = () => {
               <div className="flex flex-col items-center opacity-0 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <div className="hidden md:block w-px h-12 bg-altivum-gold/30 mb-4"></div>
                 <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-6 rounded-lg w-full max-w-sm hover:border-altivum-gold/30 transition-colors duration-300 group">
-                  <h4 className="text-white text-xl mb-3 group-hover:text-altivum-gold transition-colors">Altivum Logic</h4>
-                  <p className="text-altivum-silver text-sm leading-relaxed mb-4">
+                  <h4 className="text-white mb-3 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Altivum Logic</h4>
+                  <p className="text-altivum-silver mb-4" style={typography.bodyText}>
                     Serving <span className="text-white">small businesses</span>. Democratizing access to enterprise-grade cloud & AI solutions.
                   </p>
-                  <ul className="text-xs text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3">
+                  <ul className="text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3" style={typography.smallText}>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Web Design</li>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>SEO and AEO</li>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Cloud Migration</li>
@@ -304,11 +298,11 @@ const Altivum = () => {
               <div className="flex flex-col items-center opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
                 <div className="hidden md:block w-px h-12 bg-altivum-gold/30 mb-4"></div>
                 <div className="bg-altivum-navy/30 border border-altivum-slate/30 p-6 rounded-lg w-full max-w-sm hover:border-altivum-gold/30 transition-colors duration-300 group">
-                  <h4 className="text-white text-xl mb-3 group-hover:text-altivum-gold transition-colors">Altivum Press</h4>
-                  <p className="text-altivum-silver text-sm leading-relaxed mb-4">
+                  <h4 className="text-white mb-3 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>Altivum Press</h4>
+                  <p className="text-altivum-silver mb-4" style={typography.bodyText}>
                     The media arm amplifying our message.
                   </p>
-                  <ul className="text-xs text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3">
+                  <ul className="text-altivum-silver/70 space-y-1 border-t border-altivum-slate/20 pt-3" style={typography.smallText}>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Social Media</li>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Publications & Books</li>
                     <li className="flex items-center"><span className="w-1 h-1 bg-altivum-gold rounded-full mr-2"></span>Blogs</li>
@@ -383,18 +377,12 @@ const Altivum = () => {
           <div className="max-w-4xl mx-auto mb-16">
             <h3 className="text-white mb-8 text-center" style={typography.cardTitleLarge}>Our Imperatives</h3>
             <div className="space-y-6">
-              <div className="p-6 border border-altivum-slate/20 rounded-lg hover:border-altivum-gold/30 transition-colors duration-300">
-                <h4 className="text-white mb-3" style={typography.cardTitleSmall}>Advance AI through real-world application</h4>
-                <p className="text-altivum-silver/70" style={typography.smallText}>We deploy AI into high-stakes, real-world environments, not just to test performance, but to expand its frontier by solving problems that matter.</p>
-              </div>
-              <div className="p-6 border border-altivum-slate/20 rounded-lg hover:border-altivum-gold/30 transition-colors duration-300">
-                <h4 className="text-white mb-3" style={typography.cardTitleSmall}>Strengthen human-machine integration</h4>
-                <p className="text-altivum-silver/70" style={typography.smallText}>We integrate AI with the decisiveness, adaptability, and mission-first mindset of veterans, creating systems that think fast, act smart, and align with human intent.</p>
-              </div>
-              <div className="p-6 border border-altivum-slate/20 rounded-lg hover:border-altivum-gold/30 transition-colors duration-300">
-                <h4 className="text-white mb-3" style={typography.cardTitleSmall}>Position veterans as strategic leaders</h4>
-                <p className="text-altivum-silver/70" style={typography.smallText}>We equip veterans to lead the charge, not just as users of autonomous technology, but as architects, commanders, and ethical stewards of the AI-driven future.</p>
-              </div>
+              {IMPERATIVES.map((imperative) => (
+                <div key={imperative.title} className="p-6 border border-altivum-slate/20 rounded-lg hover:border-altivum-gold/30 transition-colors duration-300">
+                  <h4 className="text-white mb-3" style={typography.cardTitleSmall}>{imperative.title}</h4>
+                  <p className="text-altivum-silver/70" style={typography.smallText}>{imperative.description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -411,13 +399,13 @@ const Altivum = () => {
               href="https://altivum.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 transition-all duration-200"
+              className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
               Visit Altivum.ai
             </a>
             <ViewTransitionLink
               to="/contact"
-              className="inline-block px-8 py-4 bg-transparent border border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 transition-all duration-200"
+              className="inline-block px-8 py-4 bg-transparent border border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
               Get in Touch
             </ViewTransitionLink>
