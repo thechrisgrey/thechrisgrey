@@ -63,7 +63,9 @@ export const pipelineNodes: PipelineNodeData[] = [
     description: 'Screens the user message against content policies before it reaches the model. Blocks prompt attacks, hate speech, and off-topic requests.',
     config: {
       'Guardrail ID': '5kofhp46ssob',
-      'Version': '2',
+      // Source of truth: GUARDRAIL_VERSION in lambda/chat-stream/index.mjs. Keep in
+      // sync when the live guardrail version is bumped.
+      'Version': '5',
       'Filters': 'PROMPT_ATTACK, HATE, SEXUAL, VIOLENCE, MISCONDUCT',
       'Denied Topics': 'Code assistance, general trivia, other public figures',
     },

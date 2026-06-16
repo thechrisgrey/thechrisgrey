@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import { pipelineNodes, pipelineEdges } from '../../data/architectureNodes';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { isMotionDisabled } from '../../utils/motion';
 import { typography } from '../../utils/typography';
 import { getSessionToken } from '../../utils/sessionToken';
 import { PipelineNode } from './PipelineNode';
@@ -22,26 +23,15 @@ const SYSTEM_MESSAGE_PREFIX = '\x00SYS\x00';
 
 type NodeState = 'dim' | 'active' | 'warning';
 
-function buildInitialNodeStates(): Record<string, NodeState> {
-  const initial: Record<string, NodeState> = {};
-  for (const node of pipelineNodes) {
-    initial[node.id] = 'dim';
-  }
-  return initial;
-}
-
-function resetAllNodeStates(): Record<string, NodeState> {
-  const reset: Record<string, NodeState> = {};
-  for (const node of pipelineNodes) {
-    reset[node.id] = 'dim';
-  }
-  return reset;
+/** Every pipeline node set to its 'dim' resting state. */
+function allDim(): Record<string, NodeState> {
+  return Object.fromEntries(pipelineNodes.map((n) => [n.id, 'dim' as const]));
 }
 
 export function ArchitectureXRay() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [expandedNodeId, setExpandedNodeId] = useState<string | null>(null);
-  const [nodeStates, setNodeStates] = useState<Record<string, NodeState>>(buildInitialNodeStates);
+  const [nodeStates, setNodeStates] = useState<Record<string, NodeState>>(allDim);
 
   // Trace state
   const [traceState, setTraceState] = useState<'idle' | 'tracing' | 'complete' | 'error'>('idle');
@@ -106,22 +96,13 @@ export function ArchitectureXRay() {
       });
     } else {
       setExpandedNodeId(nodeId);
-      setNodeStates((prev) => {
-        const next: Record<string, NodeState> = {};
-        for (const key of Object.keys(prev)) {
-          next[key] = 'dim';
-        }
-        next[nodeId] = 'active';
-        return next;
-      });
+      setNodeStates(() => ({ ...allDim(), [nodeId]: 'active' }));
     }
   }
 
   // Run the GSAP pipeline animation, optionally stopping at a specific node
   const runPipelineAnimation = useCallback((stopAtNodeId?: string) => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (prefersReducedMotion) {
+    if (isMotionDisabled()) {
       // Set all nodes/edges active instantly
       setNodeStates(() => {
         const states: Record<string, NodeState> = {};
@@ -150,7 +131,7 @@ export function ArchitectureXRay() {
     timelineRef.current = tl;
 
     // Reset all to dim first
-    setNodeStates(resetAllNodeStates());
+    setNodeStates(allDim());
 
     for (let i = 0; i < pipelineNodes.length; i++) {
       const nodeId = pipelineNodes[i].id;
@@ -193,8 +174,7 @@ export function ArchitectureXRay() {
     setIsSystemMessage(isSys);
 
     // Under reduced motion, show the full response instantly — no streaming interval
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
+    if (isMotionDisabled()) {
       setResponseContent(fullText);
       setTraceState('complete');
       return;
@@ -227,9 +207,7 @@ export function ArchitectureXRay() {
     setResponseContent('');
     setIsSystemMessage(false);
     setExpandedNodeId(null);
-    setNodeStates(
-      Object.fromEntries(pipelineNodes.map((n) => [n.id, 'dim' as const]))
-    );
+    setNodeStates(allDim());
 
     // Start the pipeline animation
     runPipelineAnimation();
@@ -244,8 +222,7 @@ export function ArchitectureXRay() {
       },
     });
 
-    // Abort any previous request
-    abortControllerRef.current?.abort();
+    // (Any previous in-flight request was already aborted at the top of this callback.)
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const timeoutId = setTimeout(() => controller.abort(), 30_000);
@@ -445,13 +422,7 @@ export function ArchitectureXRay() {
           node={expandedNode}
           onClose={() => {
             setExpandedNodeId(null);
-            setNodeStates((prev) => {
-              const next: Record<string, NodeState> = {};
-              for (const key of Object.keys(prev)) {
-                next[key] = 'dim';
-              }
-              return next;
-            });
+            setNodeStates(allDim());
           }}
         />
       </div>

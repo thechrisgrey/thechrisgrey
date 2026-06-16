@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { typography } from '../../utils/typography';
 import { checkWebGLSupport } from '../../utils/checkWebGL';
 import { isPrerender } from '../../utils/prerender';
@@ -10,20 +10,6 @@ import type { TopologyControlHandle } from './TopologyScene';
 import { TopologyFallback2D } from './TopologyFallback2D';
 import { TopologyControls } from './TopologyControls';
 import { FallbackDetail } from './FallbackDetail';
-
-/**
- * Map a cluster's 3D position to approximate 2D percentages for the
- * keyboard-accessible overlay buttons.
- *
- * X range in cluster data: roughly -3 to 3 → mapped over an 8-unit span centered at 0.
- * Y range: roughly -1.5 to 1.5 → mapped over a 4-unit span centered at 0.
- * Y is inverted (higher Y in 3D = closer to top in CSS).
- */
-function projectTo2D(position: [number, number, number]) {
-  const left = ((position[0] + 4) / 8) * 100 + '%';
-  const top = ((2 - position[1]) / 4) * 100 + '%';
-  return { left, top };
-}
 
 export function InfraTopology() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
@@ -48,16 +34,6 @@ export function InfraTopology() {
     setSelectedClusterId(id);
     setHintVisible(false);
   };
-
-  const overlayButtons = useMemo(
-    () =>
-      clusters.map((cluster) => ({
-        id: cluster.id,
-        label: cluster.label,
-        ...projectTo2D(cluster.position),
-      })),
-    [],
-  );
 
   return (
     <section className="h-screen flex flex-col">
@@ -94,33 +70,6 @@ export function InfraTopology() {
 
             {/* Manual controls */}
             <TopologyControls controlRef={controlRef} />
-
-            {/* Keyboard-accessible overlay: real HTML buttons over the Canvas */}
-            <div
-              className="absolute inset-0 pointer-events-none overflow-hidden"
-              aria-hidden="true"
-            >
-              {overlayButtons.map((btn) => (
-                <button
-                  key={btn.id}
-                  type="button"
-                  aria-label={`${btn.label} cluster`}
-                  aria-hidden="false"
-                  className="pointer-events-auto w-8 h-8 rounded-full bg-transparent focus:outline-hidden focus-visible:ring-2 focus-visible:ring-altivum-gold focus-visible:ring-offset-2 focus-visible:ring-offset-altivum-dark"
-                  style={{
-                    position: 'absolute',
-                    left: btn.left,
-                    top: btn.top,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                  onClick={() =>
-                    handleSelectCluster(
-                      selectedClusterId === btn.id ? null : btn.id,
-                    )
-                  }
-                />
-              ))}
-            </div>
           </div>
 
           {/* Detail card -- rendered as regular HTML below the canvas so it's never clipped */}
