@@ -76,9 +76,7 @@ const Links = () => {
     { name: 'Linktree', handle: '@thechrisgrey', url: SOCIAL_LINKS.linktree, icon: <SocialIcon platform="linktree" /> },
     { name: 'Arizona State University', handle: 'ASU Search Profile', url: SOCIAL_LINKS.asu, icon: <SocialIcon platform="asu" /> },
     { name: 'Facebook', handle: '@thechrisgrey', url: SOCIAL_LINKS.facebook, icon: <SocialIcon platform="facebook" /> },
-    // CONFLICT: page shows x.com/x_thechrisgrey but SOCIAL_LINKS.twitter is x.com/thechrisgrey.
-    // Left exactly as the page currently has it \u2014 owner must resolve which handle is canonical.
-    { name: 'X (Twitter)', handle: '@x_thechrisgrey', url: 'https://x.com/x_thechrisgrey', icon: <SocialIcon platform="twitter" /> },
+    { name: 'X (Twitter)', handle: '@thechrisgrey', url: SOCIAL_LINKS.twitter, icon: <SocialIcon platform="twitter" /> },
     { name: 'LinkedIn', handle: 'Christian Perez', url: SOCIAL_LINKS.linkedin, icon: <SocialIcon platform="linkedin" /> },
     { name: 'GitHub', handle: '@AltivumInc-Admin', url: SOCIAL_LINKS.github, icon: <SocialIcon platform="github" /> },
     { name: 'DEV Community', handle: '@thechrisgrey', url: SOCIAL_LINKS.devto, icon: <SocialIcon platform="devto" /> },

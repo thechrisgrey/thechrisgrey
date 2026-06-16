@@ -98,7 +98,7 @@ export const buildPersonSchema = () => ({
     ],
     "sameAs": [
         "https://www.linkedin.com/in/thechrisgrey/",
-        "https://x.com/x_thechrisgrey",
+        "https://x.com/thechrisgrey",
         "https://github.com/AltivumInc-Admin",
         "https://substack.com/@thechrisgrey",
         "https://dev.to/thechrisgrey",
