@@ -59,7 +59,10 @@ describe('Home Page Integration', () => {
   describe('Summary section with key points', () => {
     it('renders all 5 key points with correct titles', () => {
       renderHome();
-      const headings = screen.getAllByRole('heading', { level: 3 });
+      // Key-point titles render as h2 (demoted from h3 to fix the heading
+      // outline, which previously skipped h1 -> h3). The CTA "Let's Connect"
+      // h2 is also at this level; assertions below only check membership.
+      const headings = screen.getAllByRole('heading', { level: 2 });
       const titles = headings.map(h => h.textContent?.replace(/\s+/g, ' ').trim());
       expect(titles).toContain('Personal Biography');
       expect(titles).toContain('Altivum Inc');

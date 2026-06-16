@@ -29,7 +29,7 @@ export const heroFragmentShader = /* glsl */ `
   uniform float uScroll;      // normalized + clamped Lenis velocity, [0, 1]
   uniform float uAspect;      // viewport aspect (w / h)
   uniform vec3  uColorDark;   // #0A0F1C
-  uniform vec3  uColorNavy;   // #1A2332
+  uniform vec3  uColorNavy;   // #2E4A6B
   uniform vec3  uColorGold;   // #C5A572
 
   // ---- value noise + fbm -------------------------------------------------
