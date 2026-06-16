@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
-import { clearConsent } from '../utils/consent';
-import { disablePostHog } from '../utils/posthog';
+import ViewTransitionLink from '../components/ViewTransitionLink';
+import { buildWebPageSchema } from '../utils/schemas';
+import { clearConsent, getConsent } from '../utils/consent';
+import { disablePostHog, isPostHogConfigured } from '../utils/posthog';
+import { isPrerender } from '../utils/prerender';
 
 const Privacy = () => {
   const lastUpdated = 'June 14, 2026';
+
+  // The reset control is only meaningful once the visitor has actually opted in
+  // to PostHog. Computed once at mount (lazy initializer, no effect). isPrerender()
+  // short-circuits before any localStorage access so the button never serializes
+  // into the prerendered HTML — same client-only pattern as ConsentBanner.
+  const [showResetPreference] = useState(
+    () => !isPrerender() && isPostHogConfigured() && getConsent() === 'granted',
+  );
 
   const resetAnalyticsPreference = () => {
     clearConsent();
@@ -21,6 +33,17 @@ const Privacy = () => {
         breadcrumbs={[
           { name: "Home", url: "https://thechrisgrey.com" },
           { name: "Privacy Policy", url: "https://thechrisgrey.com/privacy" }
+        ]}
+        structuredData={[
+          buildWebPageSchema({
+            name: "Privacy Policy - Christian Perez",
+            description: "Privacy policy for thechrisgrey.com - how we collect, use, and protect your personal information.",
+            url: "https://thechrisgrey.com/privacy",
+            breadcrumbs: [
+              { name: "Home", url: "https://thechrisgrey.com" },
+              { name: "Privacy Policy", url: "https://thechrisgrey.com/privacy" }
+            ],
+          }),
         ]}
       />
 
@@ -69,15 +92,15 @@ const Privacy = () => {
                   </h3>
                   <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3">•</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                       <span><strong className="text-white">Contact Form:</strong> Name, email address, subject, and message content when you reach out to us.</span>
                     </li>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3">•</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                       <span><strong className="text-white">Newsletter:</strong> Email address if you subscribe to updates.</span>
                     </li>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3">•</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                       <span><strong className="text-white">AI Chat:</strong> Messages you send when using the chat feature. These are processed to generate responses but are not permanently stored.</span>
                     </li>
                   </ul>
@@ -102,23 +125,23 @@ const Privacy = () => {
               </h2>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span>Respond to your inquiries and messages</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span>Send newsletter updates if you have subscribed</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span>Provide AI-powered chat responses about my background and work</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span>Improve the Site's functionality and user experience</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span>Protect against spam and abuse</span>
                 </li>
               </ul>
@@ -134,19 +157,19 @@ const Privacy = () => {
               </p>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Amazon Web Services (AWS):</strong> Cloud hosting, serverless functions, and AI processing via Amazon Bedrock.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">AWS Amplify:</strong> Website hosting and deployment.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Sanity.io:</strong> Content management system for blog content.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Cloudflare:</strong> DNS, security, and privacy-friendly web analytics.</span>
                 </li>
               </ul>
@@ -177,16 +200,18 @@ const Privacy = () => {
                 product analytics and session insights that help us improve the Site. PostHog uses cookies and
                 is enabled <em>only</em> if you accept it on the consent banner &mdash; declining keeps the Site
                 completely cookie-free. Form fields you enter (such as your email) are never recorded. You can
-                withdraw your consent at any time:
+                withdraw your consent at any time.
               </p>
-              <button
-                type="button"
-                onClick={resetAnalyticsPreference}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-altivum-gold/40 text-altivum-gold text-sm rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-200 touch-manipulation focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
-              >
-                <span className="material-icons text-base" aria-hidden="true">tune</span>
-                Reset analytics preference
-              </button>
+              {showResetPreference && (
+                <button
+                  type="button"
+                  onClick={resetAnalyticsPreference}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-altivum-gold/40 text-altivum-gold text-sm rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-200 touch-manipulation focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
+                >
+                  <span className="material-icons text-base" aria-hidden="true">tune</span>
+                  Reset analytics preference
+                </button>
+              )}
             </div>
 
             {/* Data Retention */}
@@ -196,19 +221,19 @@ const Privacy = () => {
               </h2>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Contact submissions:</strong> Retained for business communication purposes.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Newsletter subscriptions:</strong> Retained until you unsubscribe.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">AI chat messages:</strong> Processed in real-time and not permanently stored.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Server logs:</strong> Retained according to standard AWS practices.</span>
                 </li>
               </ul>
@@ -224,19 +249,19 @@ const Privacy = () => {
               </p>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Access:</strong> Request a copy of the personal data we hold about you.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Deletion:</strong> Request that we delete your personal data.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Correction:</strong> Request that we correct inaccurate data.</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
                   <span><strong className="text-white">Opt-out:</strong> Unsubscribe from marketing communications at any time.</span>
                 </li>
               </ul>
@@ -303,7 +328,7 @@ const Privacy = () => {
                   Email: <a href="mailto:admin@altivum.ai" className="text-altivum-gold hover:underline">admin@altivum.ai</a>
                 </p>
                 <p className="text-altivum-silver mt-2" style={typography.bodyText}>
-                  Or use our <a href="/contact" className="text-altivum-gold hover:underline">contact form</a>.
+                  Or use our <ViewTransitionLink to="/contact" className="text-altivum-gold hover:underline">contact form</ViewTransitionLink>.
                 </p>
               </div>
             </div>

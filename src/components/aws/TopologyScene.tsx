@@ -4,6 +4,7 @@ import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import gsap from 'gsap';
 import * as THREE from 'three';
 import { clusters } from '../../data/infrastructureTopology';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ServiceCluster } from './ServiceCluster';
 import { ClusterEdge } from './ClusterEdge';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -55,7 +56,66 @@ function SceneContent({
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera, invalidate } = useThree();
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Reactive — re-renders if the visitor toggles the OS reduced-motion setting.
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+  // Shared camera-fly: select a cluster, switch to on-demand rendering, and move
+  // the camera toward it (25% lerp, clamped to keep the cluster visible). Used by
+  // both the imperative `flyTo` handle and the in-scene cluster click handler.
+  const flyToCluster = useCallback(
+    (clusterId: string) => {
+      const cluster = clusters.find((c) => c.id === clusterId);
+      if (!cluster) return;
+
+      onSelectCluster(clusterId);
+      setFrameloopMode('demand');
+
+      const target = new THREE.Vector3(...cluster.position);
+      const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.25);
+      // Keep a minimum distance from the cluster so it remains visible
+      dest.z = Math.max(dest.z, target.z + 2);
+
+      if (reducedMotion) {
+        // Instant camera jump — no tween
+        camera.position.set(dest.x, dest.y, dest.z);
+        invalidate();
+      } else {
+        gsap.to(camera.position, {
+          x: dest.x,
+          y: dest.y,
+          z: dest.z,
+          duration: 0.8,
+          ease: 'power2.out',
+          onUpdate: () => invalidate(),
+          onComplete: () => invalidate(),
+        });
+      }
+    },
+    [camera, invalidate, reducedMotion, onSelectCluster, setFrameloopMode],
+  );
+
+  // Shared camera-return: clear the selection, resume auto-rotation, and move the
+  // camera back to its default position. Used by the `reset` handle, the Escape
+  // key, and clicks on empty space.
+  const returnToDefault = useCallback(() => {
+    onSelectCluster(null);
+    setFrameloopMode('always');
+
+    if (reducedMotion) {
+      // Instant camera return — no tween
+      camera.position.set(DEFAULT_CAMERA_POS.x, DEFAULT_CAMERA_POS.y, DEFAULT_CAMERA_POS.z);
+      invalidate();
+    } else {
+      gsap.to(camera.position, {
+        x: DEFAULT_CAMERA_POS.x,
+        y: DEFAULT_CAMERA_POS.y,
+        z: DEFAULT_CAMERA_POS.z,
+        duration: 0.8,
+        ease: 'power2.out',
+        onUpdate: () => invalidate(),
+      });
+    }
+  }, [camera, invalidate, reducedMotion, onSelectCluster, setFrameloopMode]);
 
   // Expose control handle for external rotate/reset buttons
   useEffect(() => {
@@ -117,46 +177,10 @@ function SceneContent({
           });
         }
       },
-      reset: () => {
-        onSelectCluster(null);
-        setFrameloopMode('always');
-        if (reducedMotion) {
-          camera.position.set(DEFAULT_CAMERA_POS.x, DEFAULT_CAMERA_POS.y, DEFAULT_CAMERA_POS.z);
-          invalidate();
-        } else {
-          gsap.to(camera.position, {
-            x: DEFAULT_CAMERA_POS.x,
-            y: DEFAULT_CAMERA_POS.y,
-            z: DEFAULT_CAMERA_POS.z,
-            duration: 0.8,
-            ease: 'power2.out',
-            onUpdate: () => invalidate(),
-          });
-        }
-      },
-      flyTo: (clusterId: string) => {
-        const cluster = clusters.find((c) => c.id === clusterId);
-        if (!cluster) return;
-        onSelectCluster(clusterId);
-        setFrameloopMode('demand');
-        const target = new THREE.Vector3(...cluster.position);
-        const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.25);
-        dest.z = Math.max(dest.z, target.z + 2);
-        if (reducedMotion) {
-          camera.position.set(dest.x, dest.y, dest.z);
-          invalidate();
-        } else {
-          gsap.to(camera.position, {
-            x: dest.x, y: dest.y, z: dest.z,
-            duration: 0.8,
-            ease: 'power2.out',
-            onUpdate: () => invalidate(),
-            onComplete: () => invalidate(),
-          });
-        }
-      },
+      reset: returnToDefault,
+      flyTo: flyToCluster,
     };
-  }, [controlRef, camera, invalidate, reducedMotion, onSelectCluster, setFrameloopMode]);
+  }, [controlRef, camera, invalidate, reducedMotion, flyToCluster, returnToDefault]);
 
   // Track whether auto-rotate should be active (disabled under reduced motion)
   const autoRotate = !reducedMotion && selectedClusterId === null;
@@ -169,70 +193,17 @@ function SceneContent({
     }
   });
 
-  const handleClusterClick = useCallback(
-    (id: string) => {
-      const cluster = clusters.find((c) => c.id === id);
-      if (!cluster) return;
-
-      onSelectCluster(id);
-      setFrameloopMode('demand');
-
-      // Animate camera toward the selected cluster (60% lerp toward it)
-      const target = new THREE.Vector3(...cluster.position);
-      const dest = new THREE.Vector3().lerpVectors(DEFAULT_CAMERA_POS, target, 0.25);
-      // Keep a minimum distance from the cluster so it remains visible
-      dest.z = Math.max(dest.z, target.z + 2);
-
-      if (reducedMotion) {
-        // Instant camera jump — no tween
-        camera.position.set(dest.x, dest.y, dest.z);
-        invalidate();
-      } else {
-        gsap.to(camera.position, {
-          x: dest.x,
-          y: dest.y,
-          z: dest.z,
-          duration: 0.8,
-          ease: 'power2.out',
-          onUpdate: () => invalidate(),
-          onComplete: () => invalidate(),
-        });
-      }
-    },
-    [camera.position, onSelectCluster, setFrameloopMode, invalidate, reducedMotion],
-  );
-
-  const handleDeselect = useCallback(() => {
-    onSelectCluster(null);
-    setFrameloopMode('always');
-
-    if (reducedMotion) {
-      // Instant camera return — no tween
-      camera.position.set(DEFAULT_CAMERA_POS.x, DEFAULT_CAMERA_POS.y, DEFAULT_CAMERA_POS.z);
-      invalidate();
-    } else {
-      gsap.to(camera.position, {
-        x: DEFAULT_CAMERA_POS.x,
-        y: DEFAULT_CAMERA_POS.y,
-        z: DEFAULT_CAMERA_POS.z,
-        duration: 0.8,
-        ease: 'power2.out',
-        onUpdate: () => invalidate(),
-      });
-    }
-  }, [camera.position, onSelectCluster, setFrameloopMode, invalidate, reducedMotion]);
-
   // Escape key to deselect
   useEffect(() => {
     if (!selectedClusterId) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleDeselect();
+      if (e.key === 'Escape') returnToDefault();
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [selectedClusterId, handleDeselect]);
+  }, [selectedClusterId, returnToDefault]);
 
   // Invalidate on demand mode so the scene still renders after state changes
   useEffect(() => {
@@ -254,7 +225,7 @@ function SceneContent({
       />
 
       {/* Click on empty space to deselect */}
-      <mesh visible={false} onPointerDown={handleDeselect}>
+      <mesh visible={false} onPointerDown={returnToDefault}>
         <sphereGeometry args={[50, 8, 8]} />
         <meshBasicMaterial side={THREE.BackSide} />
       </mesh>
@@ -270,7 +241,7 @@ function SceneContent({
           key={cluster.id}
           cluster={cluster}
           isSelected={selectedClusterId === cluster.id}
-          onClick={() => handleClusterClick(cluster.id)}
+          onClick={() => flyToCluster(cluster.id)}
         />
       ))}
 

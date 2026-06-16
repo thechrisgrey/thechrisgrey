@@ -37,6 +37,19 @@ describe('SpotifyFacade', () => {
     expect(iframe).toHaveAttribute('src', defaultProps.embedUrl);
   });
 
+  it('should sandbox the loaded iframe (consistent with YouTubeFacade)', async () => {
+    const user = userEvent.setup();
+    render(<SpotifyFacade {...defaultProps} />);
+
+    await user.click(screen.getByRole('button'));
+
+    const iframe = screen.getByTitle('The Vector Podcast');
+    expect(iframe).toHaveAttribute(
+      'sandbox',
+      'allow-scripts allow-same-origin allow-popups allow-presentation',
+    );
+  });
+
   it('should not show the facade button after loading', async () => {
     const user = userEvent.setup();
     render(<SpotifyFacade {...defaultProps} />);

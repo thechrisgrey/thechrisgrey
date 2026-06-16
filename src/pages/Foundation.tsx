@@ -27,6 +27,37 @@ const FOCUS_AREAS = [
   },
 ];
 
+const FOUNDATION_URL = 'https://altivumfoundation.org';
+const GIVE_URL = 'https://altivumfoundation.org/give';
+
+// Shared external CTA button — used in both the hero and the closing CTA. The
+// gold/outline variants share every style except color treatment; `fullWidth`
+// adds the mobile full-bleed sizing the closing CTA uses.
+const ctaButtonBase =
+  'inline-block px-8 py-4 font-semibold rounded-sm active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]';
+const ctaButtonVariant = {
+  gold: 'bg-altivum-gold text-altivum-dark hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)]',
+  outline: 'bg-transparent border-2 border-altivum-gold text-altivum-gold hover:bg-altivum-gold/10',
+} as const;
+
+interface FoundationCtaButtonProps {
+  href: string;
+  variant: keyof typeof ctaButtonVariant;
+  fullWidth?: boolean;
+  children: string;
+}
+
+const FoundationCtaButton = ({ href, variant, fullWidth = false, children }: FoundationCtaButtonProps) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${fullWidth ? 'w-full sm:w-auto ' : ''}${ctaButtonBase} ${ctaButtonVariant[variant]}`}
+  >
+    {children}
+  </a>
+);
+
 const Foundation = () => {
   return (
     <div className="min-h-screen bg-altivum-dark">
@@ -68,22 +99,12 @@ const Foundation = () => {
               A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in the technologies defining the next economy. At no cost to the scholar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="https://altivumfoundation.org"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
-              >
+              <FoundationCtaButton href={FOUNDATION_URL} variant="gold">
                 Visit altivumfoundation.org
-              </a>
-              <a
-                href="https://altivumfoundation.org/give"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
-              >
+              </FoundationCtaButton>
+              <FoundationCtaButton href={GIVE_URL} variant="outline">
                 Give Now
-              </a>
+              </FoundationCtaButton>
             </div>
           </div>
         </div>
@@ -146,9 +167,9 @@ const Foundation = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 list-none">
             {FOCUS_AREAS.map((area) => (
-              <div
+              <li
                 key={area.ordinal}
                 className="p-8 bg-altivum-navy/30 border border-altivum-slate/30 rounded-lg hover:border-altivum-gold/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group"
               >
@@ -161,9 +182,9 @@ const Foundation = () => {
                 <p className="text-altivum-silver" style={typography.bodyText}>
                   {area.description}
                 </p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
@@ -217,22 +238,12 @@ const Foundation = () => {
             501(c)(3) &middot; EIN 41-4163272
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="https://altivumfoundation.org/give"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block w-full sm:w-auto px-8 py-4 bg-altivum-gold text-altivum-dark font-semibold rounded-sm hover:bg-altivum-gold/90 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
-            >
+            <FoundationCtaButton href={GIVE_URL} variant="gold" fullWidth>
               Give Now
-            </a>
-            <a
-              href="https://altivumfoundation.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-sm hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
-            >
+            </FoundationCtaButton>
+            <FoundationCtaButton href={FOUNDATION_URL} variant="outline" fullWidth>
               Visit altivumfoundation.org
-            </a>
+            </FoundationCtaButton>
           </div>
         </div>
       </section>

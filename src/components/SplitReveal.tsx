@@ -11,7 +11,7 @@ interface SplitRevealProps {
   stagger?: number;
   className?: string;
   style?: CSSProperties;
-  as?: 'h3' | 'p' | 'span';
+  as?: 'h2' | 'h3' | 'p' | 'span';
   triggerRef?: RefObject<HTMLElement | null>;
   triggerStart?: string;
   triggerEnd?: string;

@@ -2,6 +2,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 interface ClusterEdgeProps {
   start: [number, number, number];
@@ -12,7 +13,8 @@ const PARTICLE_COUNT = 10;
 
 export function ClusterEdge({ start, end }: ClusterEdgeProps) {
   const pointsRef = useRef<THREE.Points>(null);
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Reactive — re-renders if the visitor toggles the OS reduced-motion setting.
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   // Each particle gets a phase offset so they spread along the line
   const phases = useMemo(

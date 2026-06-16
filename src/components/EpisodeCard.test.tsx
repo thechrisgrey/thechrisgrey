@@ -68,24 +68,23 @@ describe('EpisodeCard', () => {
       expect(screen.queryByText('YouTube')).not.toBeInTheDocument();
     });
 
-    it('should render guests when provided', () => {
+    // NOTE: `guests` and `topics` rendering branches were removed from
+    // EpisodeCard — the generator emits topics:[] and never emits guests
+    // (podcast guests come from a separate Sanity model rendered elsewhere).
+    // The previously-dead "Featuring:" and topic-chip branches are unreachable
+    // for production data, so they no longer render even when those fields are
+    // present on the episode object.
+    it('should not render a guests/topics section even when those fields are present', () => {
       const episode = {
         ...baseEpisode,
         guests: [{ name: 'John Doe', title: 'CEO' }],
-      };
-      render(<EpisodeCard episode={episode} />);
-      expect(screen.getByText('Featuring:')).toBeInTheDocument();
-      expect(screen.getByText(/John Doe/)).toBeInTheDocument();
-    });
-
-    it('should render topics when provided', () => {
-      const episode = {
-        ...baseEpisode,
         topics: ['AI', 'Leadership'],
       };
       render(<EpisodeCard episode={episode} />);
-      expect(screen.getByText('AI')).toBeInTheDocument();
-      expect(screen.getByText('Leadership')).toBeInTheDocument();
+      expect(screen.queryByText('Featuring:')).not.toBeInTheDocument();
+      expect(screen.queryByText(/John Doe/)).not.toBeInTheDocument();
+      expect(screen.queryByText('AI')).not.toBeInTheDocument();
+      expect(screen.queryByText('Leadership')).not.toBeInTheDocument();
     });
   });
 
@@ -147,6 +146,22 @@ describe('EpisodeCard', () => {
       await user.click(screen.getByRole('button'));
       expect(screen.getByText('YouTube')).toBeInTheDocument();
       expect(screen.getByText('Spotify')).toBeInTheDocument();
+    });
+
+    it('associates the toggle button with its revealed panel via aria-controls', async () => {
+      const user = userEvent.setup();
+      render(<EpisodeCard episode={baseEpisode} variant="compact" />);
+
+      const button = screen.getByRole('button');
+      const panelId = button.getAttribute('aria-controls');
+      expect(panelId).toBeTruthy();
+
+      await user.click(button);
+
+      // The revealed panel must carry the id the button references.
+      const panel = document.getElementById(panelId as string);
+      expect(panel).toBeInTheDocument();
+      expect(panel).toContainElement(screen.getByText('A test episode description'));
     });
   });
 

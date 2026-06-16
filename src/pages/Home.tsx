@@ -1,4 +1,4 @@
-import { lazy, useRef } from 'react';
+import { lazy, useRef, type RefObject } from 'react';
 import ViewTransitionLink from '../components/ViewTransitionLink';
 import SplitReveal from '../components/SplitReveal';
 import FadeReveal from '../components/FadeReveal';
@@ -21,46 +21,50 @@ import { isPrerender } from '../utils/prerender';
 // LCP element; the backdrop fades in behind it once its chunk resolves.
 const HeroCanvas = lazy(() => import('../components/home/HeroCanvas'));
 
-const Home = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
-  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const webglOk = checkWebGLSupport();
+const keyPoints = [
+  { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
+  { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
+  { title: "The Altivum Foundation", subtitle: "Founder & President", link: "/foundation" },
+  { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
+  { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
+  { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
+  { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" },
+  { title: "thechrisgrey Blueprint", subtitle: "Architect", link: "/blueprint" }
+] as const;
 
-  const keyPoints = [
-    { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
-    { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
-    { title: "The Altivum Foundation", subtitle: "Founder & President", link: "/foundation" },
-    { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
-    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" },
-    { title: "thechrisgrey Blueprint", subtitle: "Architect", link: "/blueprint" }
-  ];
+type KeyPoint = (typeof keyPoints)[number];
 
-  const renderTab = (point: typeof keyPoints[number], index: number, mirrored = false) => {
-    const direction = mirrored ? 'right' as const : 'left' as const;
-    const cardClass = mirrored
-      ? 'border-l-4 md:border-l-0 md:border-r-4 border-altivum-gold pl-4 sm:pl-6 md:pl-0 md:pr-6 py-3 sm:py-4 md:text-right transition-all duration-300'
-      : 'border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 transition-all duration-300';
-    const linkHover = mirrored
-      ? 'block cursor-pointer group md:hover:pr-8 active:pl-6 sm:active:pl-8 touch-manipulation'
-      : 'block cursor-pointer group md:hover:pl-8 active:pl-6 sm:active:pl-8 touch-manipulation';
+interface KeyPointTabProps {
+  point: KeyPoint;
+  index: number;
+  triggerRef: RefObject<HTMLElement | null>;
+  mirrored?: boolean;
+}
 
-    const startPct = 5 + index * 11;
-    const endPct = startPct + 8;
-    const triggerStart = `${startPct}% bottom`;
-    const triggerEnd = `${endPct}% bottom`;
+const KeyPointTab = ({ point, index, triggerRef, mirrored = false }: KeyPointTabProps) => {
+  const direction = mirrored ? 'right' as const : 'left' as const;
+  const cardClass = mirrored
+    ? 'border-l-4 md:border-l-0 md:border-r-4 border-altivum-gold pl-4 sm:pl-6 md:pl-0 md:pr-6 py-3 sm:py-4 md:text-right transition-all duration-300'
+    : 'border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 transition-all duration-300';
+  const linkHover = mirrored
+    ? 'block cursor-pointer group md:hover:pr-8 active:pl-6 sm:active:pl-8 touch-manipulation'
+    : 'block cursor-pointer group md:hover:pl-8 active:pl-6 sm:active:pl-8 touch-manipulation';
 
-    const content = (
-      <>
+  const startPct = 5 + index * 11;
+  const endPct = startPct + 8;
+  const triggerStart = `${startPct}% bottom`;
+  const triggerEnd = `${endPct}% bottom`;
+
+  return (
+    <div className="pointer-events-auto">
+      <ViewTransitionLink to={point.link} className={`${cardClass} ${linkHover}`}>
         <SplitReveal
-          as="h3"
+          as="h2"
           direction={direction}
           stagger={0.04}
           className="text-white mb-1 sm:mb-2"
           style={typography.cardTitleLarge}
-          triggerRef={sectionRef}
+          triggerRef={triggerRef}
           triggerStart={triggerStart}
           triggerEnd={triggerEnd}
         >
@@ -69,7 +73,7 @@ const Home = () => {
         <FadeReveal
           direction={direction}
           delay={0.15}
-          triggerRef={sectionRef}
+          triggerRef={triggerRef}
           triggerStart={triggerStart}
           triggerEnd={triggerEnd}
         >
@@ -77,23 +81,16 @@ const Home = () => {
             {point.subtitle}
           </p>
         </FadeReveal>
-      </>
-    );
+      </ViewTransitionLink>
+    </div>
+  );
+};
 
-    return (
-      <div key={index} className="pointer-events-auto">
-        {point.link ? (
-          <ViewTransitionLink to={point.link} className={`${cardClass} ${linkHover}`}>
-            {content}
-          </ViewTransitionLink>
-        ) : (
-          <div className={cardClass}>
-            {content}
-          </div>
-        )}
-      </div>
-    );
-  };
+const Home = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const webglOk = checkWebGLSupport();
 
   return (
     <div className="min-h-screen">
@@ -170,10 +167,14 @@ const Home = () => {
           <div className="absolute inset-0 flex items-center pointer-events-none">
             <div className="w-full max-w-xl md:max-w-none px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-16">
               <div className="space-y-3 sm:space-y-4 md:space-y-5">
-                {keyPoints.slice(0, 4).map((point, i) => renderTab(point, i))}
+                {keyPoints.slice(0, 4).map((point, i) => (
+                  <KeyPointTab key={point.link} point={point} index={i} triggerRef={sectionRef} />
+                ))}
               </div>
               <div className="space-y-3 sm:space-y-4 md:space-y-5 mt-3 sm:mt-4 md:mt-0">
-                {keyPoints.slice(4).map((point, i) => renderTab(point, i + 4, true))}
+                {keyPoints.slice(4).map((point, i) => (
+                  <KeyPointTab key={point.link} point={point} index={i + 4} triggerRef={sectionRef} mirrored />
+                ))}
               </div>
             </div>
           </div>

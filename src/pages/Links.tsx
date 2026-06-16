@@ -1,32 +1,68 @@
+import type { ReactNode } from 'react';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import builderQR from '../assets/builder-qr.png';
 import { buildProfilePageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
 import NewsletterCTA from '../components/NewsletterCTA';
 
+interface SocialLink {
+  name: string;
+  handle: string;
+  url: string;
+  icon: ReactNode;
+}
+
+/**
+ * A single social/contact card. Shared by the Personal and Company grids, which
+ * were previously byte-identical markup.
+ */
+const SocialCard = ({ social }: { social: SocialLink }) => (
+  <a
+    href={social.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block p-6 rounded-lg border border-white/10 hover:border-altivum-gold/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group bg-transparent"
+  >
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all shrink-0">
+        {social.icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>
+          {social.name}
+        </h3>
+        <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
+      </div>
+      <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
+    </div>
+  </a>
+);
+
 const Links = () => {
   const websites = [
     {
       name: 'Altivum Inc.',
-      url: 'https://altivum.ai',
+      url: SOCIAL_LINKS.altivum,
       description: 'Cloud-native AI integration for small businesses',
       category: 'Company',
     },
     {
       name: 'Altivum Logic',
-      url: 'https://logic.altivum.ai',
+      url: SOCIAL_LINKS.altivumLogic,
       description: 'Multicloud infrastructure & web development services',
       category: 'Product',
     },
     {
       name: 'VetROI',
-      url: 'https://vetroi.altivum.ai',
+      url: SOCIAL_LINKS.vetroi,
       description: 'AI-powered veteran career transition tool',
       category: 'Product',
     },
     {
+      // No SOCIAL_LINKS entry for Elo \u2014 keep literal until one is added.
       name: 'Elo\u2122',
       url: 'https://elo.altivum.ai',
       description: 'Eloquence & articulation coach for career transition',
@@ -34,25 +70,27 @@ const Links = () => {
     },
   ];
 
-  const personalSocials = [
-    { name: 'AWS Builder', handle: 'AWS Community Builder Profile', url: 'https://builder.aws.com/profile', icon: <SocialIcon platform="aws" /> },
-    { name: 'Substack', handle: '@thechrisgrey', url: 'https://substack.com/@thechrisgrey', icon: <SocialIcon platform="substack" /> },
-    { name: 'Linktree', handle: '@thechrisgrey', url: 'https://linktr.ee/thechrisgrey', icon: <SocialIcon platform="linktree" /> },
-    { name: 'Arizona State University', handle: 'ASU Search Profile', url: 'https://search.asu.edu/profile/3714457', icon: <SocialIcon platform="asu" /> },
-    { name: 'Facebook', handle: '@thechrisgrey', url: 'https://www.facebook.com/thechrisgrey', icon: <SocialIcon platform="facebook" /> },
+  const personalSocials: SocialLink[] = [
+    { name: 'AWS Builder', handle: 'AWS Community Builder Profile', url: SOCIAL_LINKS.awsBuilder, icon: <SocialIcon platform="aws" /> },
+    { name: 'Substack', handle: '@thechrisgrey', url: SOCIAL_LINKS.substack, icon: <SocialIcon platform="substack" /> },
+    { name: 'Linktree', handle: '@thechrisgrey', url: SOCIAL_LINKS.linktree, icon: <SocialIcon platform="linktree" /> },
+    { name: 'Arizona State University', handle: 'ASU Search Profile', url: SOCIAL_LINKS.asu, icon: <SocialIcon platform="asu" /> },
+    { name: 'Facebook', handle: '@thechrisgrey', url: SOCIAL_LINKS.facebook, icon: <SocialIcon platform="facebook" /> },
+    // CONFLICT: page shows x.com/x_thechrisgrey but SOCIAL_LINKS.twitter is x.com/thechrisgrey.
+    // Left exactly as the page currently has it \u2014 owner must resolve which handle is canonical.
     { name: 'X (Twitter)', handle: '@x_thechrisgrey', url: 'https://x.com/x_thechrisgrey', icon: <SocialIcon platform="twitter" /> },
     { name: 'LinkedIn', handle: 'Christian Perez', url: SOCIAL_LINKS.linkedin, icon: <SocialIcon platform="linkedin" /> },
-    { name: 'GitHub', handle: '@AltivumInc-Admin', url: 'https://github.com/AltivumInc-Admin', icon: <SocialIcon platform="github" /> },
-    { name: 'DEV Community', handle: '@thechrisgrey', url: 'https://dev.to/thechrisgrey', icon: <SocialIcon platform="devto" /> },
-    { name: 'Email', handle: 'christian.perez@altivum.ai', url: 'mailto:christian.perez@altivum.ai', icon: <SocialIcon platform="email" /> },
+    { name: 'GitHub', handle: '@AltivumInc-Admin', url: SOCIAL_LINKS.github, icon: <SocialIcon platform="github" /> },
+    { name: 'DEV Community', handle: '@thechrisgrey', url: SOCIAL_LINKS.devto, icon: <SocialIcon platform="devto" /> },
+    { name: 'Email', handle: 'christian.perez@altivum.ai', url: SOCIAL_LINKS.email, icon: <SocialIcon platform="email" /> },
   ];
 
-  const companySocials = [
-    { name: 'Facebook', handle: 'Altivum Inc.', url: 'https://www.facebook.com/profile.php?id=61576915349985', icon: <SocialIcon platform="facebook" /> },
-    { name: 'X (Twitter)', handle: '@AltivumAI', url: 'https://x.com/AltivumAI', icon: <SocialIcon platform="twitter" /> },
-    { name: 'LinkedIn', handle: 'Altivum Inc.', url: 'https://www.linkedin.com/company/altivuminc', icon: <SocialIcon platform="linkedin" /> },
-    { name: 'YouTube', handle: '@AltivumPress', url: 'https://www.youtube.com/@AltivumPress', icon: <SocialIcon platform="youtube" /> },
-    { name: 'Email', handle: 'info@altivum.ai', url: 'mailto:info@altivum.ai', icon: <SocialIcon platform="email" /> },
+  const companySocials: SocialLink[] = [
+    { name: 'Facebook', handle: 'Altivum Inc.', url: SOCIAL_LINKS.altivumFacebook, icon: <SocialIcon platform="facebook" /> },
+    { name: 'X (Twitter)', handle: '@AltivumAI', url: SOCIAL_LINKS.altivumTwitter, icon: <SocialIcon platform="twitter" /> },
+    { name: 'LinkedIn', handle: 'Altivum Inc.', url: SOCIAL_LINKS.altivumLinkedIn, icon: <SocialIcon platform="linkedin" /> },
+    { name: 'YouTube', handle: '@AltivumPress', url: SOCIAL_LINKS.altivumYouTube, icon: <SocialIcon platform="youtube" /> },
+    { name: 'Email', handle: 'info@altivum.ai', url: SOCIAL_LINKS.altivumEmail, icon: <SocialIcon platform="email" /> },
   ];
 
   return (
@@ -204,26 +242,7 @@ const Links = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {personalSocials.map((social) => (
-              <a
-                key={social.name + social.handle}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-6 rounded-lg border border-white/10 hover:border-altivum-gold/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group bg-transparent"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all shrink-0">
-                    {social.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>
-                      {social.name}
-                    </h3>
-                    <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
-                  </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
-                </div>
-              </a>
+              <SocialCard key={social.name + social.handle} social={social} />
             ))}
           </div>
         </div>
@@ -242,26 +261,7 @@ const Links = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {companySocials.map((social) => (
-              <a
-                key={social.name + social.handle}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-6 rounded-lg border border-white/10 hover:border-altivum-gold/50 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300 group bg-transparent"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 flex items-center justify-center text-altivum-gold/70 group-hover:text-altivum-gold transition-all shrink-0">
-                    {social.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>
-                      {social.name}
-                    </h3>
-                    <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
-                  </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
-                </div>
-              </a>
+              <SocialCard key={social.name + social.handle} social={social} />
             ))}
           </div>
         </div>
@@ -279,12 +279,12 @@ const Links = () => {
             let's connect.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <a
-              href="/contact"
+            <ViewTransitionLink
+              to="/contact"
               className="inline-block px-10 py-4 bg-white text-altivum-dark font-medium hover:bg-altivum-gold transition-all duration-200"
             >
               Get in Touch
-            </a>
+            </ViewTransitionLink>
             <a
               href="tel:+16152199425"
               className="inline-block px-10 py-4 bg-transparent border border-white/20 text-white font-medium hover:border-altivum-gold hover:text-altivum-gold transition-all duration-200"

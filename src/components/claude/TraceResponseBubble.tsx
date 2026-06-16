@@ -8,7 +8,11 @@ export function TraceResponseBubble({ content, isStreaming, isSystemMessage }: T
   return (
     <div
       className="mt-4 bg-altivum-navy/30 border border-altivum-slate/30 rounded-lg p-4"
-      aria-live="polite"
+      // Only announce once the response has settled. A live region that updates on
+      // every streamed chunk re-announces partial text repeatedly, which is noise
+      // for screen-reader users; `off` while streaming, `polite` when complete
+      // announces the final content a single time.
+      aria-live={isStreaming ? 'off' : 'polite'}
     >
       {isSystemMessage && (
         <span className="inline-flex items-center gap-1.5 text-amber-400 text-xs font-light mb-2">
