@@ -1,4 +1,5 @@
 import mpbLogo from '../assets/mpb.png';
+import ViewTransitionLink from '../components/ViewTransitionLink';
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { aboutFAQs, buildProfilePageSchema } from '../utils/schemas';
@@ -33,7 +34,7 @@ const About = () => {
             <div className="mb-6 sm:mb-8">
               <img
                 src={mpbLogo}
-                alt="My Personal Biography"
+                alt=""
                 width={1500}
                 height={1500}
                 className="w-full max-w-3xl mx-auto opacity-90"
@@ -52,7 +53,7 @@ const About = () => {
           <div className="mb-24 md:mb-32 text-center">
             <p className="text-white" style={typography.sectionHeader}>
               My name is <span className="text-altivum-gold">Christian Perez</span>, and I'm the Founder & CEO of{' '}
-              <span className="text-altivum-gold">Altivum Inc.</span>
+              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">Altivum Inc.</ViewTransitionLink>
             </p>
           </div>
 
@@ -73,7 +74,7 @@ const About = () => {
               I was then assigned to 1st Special Forces Group and soon thereafter deployed to{' '}
               <span className="text-white">Afghanistan</span> with SFOD-A 1236, where I was awarded a{' '}
               <span className="text-altivum-gold">Bronze Star</span>. After receiving an Honorable Discharge,
-              I wrote <span className="text-white" style={{ fontStyle: 'italic' }}>Beyond the Assessment</span>—a reflection on modern
+              I wrote <ViewTransitionLink to="/beyond-the-assessment" className="text-altivum-gold italic link-underline">Beyond the Assessment</ViewTransitionLink>—a reflection on modern
               masculinity and a dedication to my son, <span className="text-white">Elijah</span>.
             </p>
           </div>
@@ -83,7 +84,7 @@ const About = () => {
             <p className="text-white/80" style={typography.subtitle}>
               Throughout my military career, I watched the rapid evolution of computing and artificial intelligence.
               In <span className="text-white">February 2025</span>, I founded{' '}
-              <span className="text-altivum-gold">Altivum Inc.</span>, a public benefit corporation
+              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">Altivum Inc.</ViewTransitionLink>, a public benefit corporation
               dedicated to engineering AI systems that <span className="text-white">empower people and
                 organizations to adapt and excel</span>.
             </p>

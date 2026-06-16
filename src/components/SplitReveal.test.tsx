@@ -37,6 +37,12 @@ describe('SplitReveal', () => {
     expect(container.querySelector('h3')).not.toBeNull();
   });
 
+  it('renders as an h2 when as="h2" (home key-point titles)', () => {
+    const { container } = render(<SplitReveal as="h2">Key Point</SplitReveal>);
+    expect(container.querySelector('h2')).not.toBeNull();
+    expect(container.querySelector('h2')?.textContent).toBe('Key Point');
+  });
+
   it('applies className and style props', () => {
     const { container } = render(
       <SplitReveal className="test-class" style={{ fontSize: '20px' }}>Word</SplitReveal>
