@@ -17,6 +17,7 @@ const SpotifyFacade = ({ embedUrl, title }: SpotifyFacadeProps) => {
         frameBorder="0"
         allowFullScreen
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
         title={title}
         className="rounded-xl"
       />
