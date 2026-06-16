@@ -16,12 +16,14 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
 
   // Compact collapsible variant
   if (isCompact) {
+    const panelId = `episode-panel-${episode.id}`;
     return (
       <article className="group">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full text-left"
           aria-expanded={isExpanded}
+          aria-controls={panelId}
         >
           <div className={`
             px-5 py-4 border border-white/10 bg-white/5
@@ -64,25 +66,13 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
 
         {/* Expanded content */}
         {isExpanded && (
-          <div className="px-5 py-5 border border-t-0 border-white/10 bg-white/5 rounded-b-lg">
+          <div id={panelId} className="px-5 py-5 border border-t-0 border-white/10 bg-white/5 rounded-b-lg">
             {/* Mobile meta (shown when expanded) */}
             <div className="flex flex-wrap items-center gap-3 text-xs text-altivum-silver mb-4 sm:hidden">
               <span>{episode.duration}</span>
               <span className="text-altivum-silver">|</span>
               <span>{formatDate(episode.publishedAt)}</span>
             </div>
-
-            {/* Guests */}
-            {episode.guests && episode.guests.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-altivum-silver text-sm">Featuring:</span>
-                {episode.guests.map((guest, idx) => (
-                  <span key={idx} className="text-white text-sm">
-                    {guest.name}
-                  </span>
-                ))}
-              </div>
-            )}
 
             {/* Description */}
             <p className="text-altivum-silver text-sm mb-4 leading-relaxed">
@@ -193,21 +183,6 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
             {episode.title}
           </h3>
 
-          {/* Guests */}
-          {episode.guests && episode.guests.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-altivum-silver text-sm">Featuring:</span>
-              {episode.guests.map((guest, idx) => (
-                <span key={idx} className="text-white text-sm font-medium">
-                  {guest.name}
-                  {guest.title && (
-                    <span className="text-altivum-silver font-normal"> - {guest.title}</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Description */}
           <p
             className={`text-altivum-silver mb-5 ${isFeatured ? '' : 'line-clamp-3'}`}
@@ -215,20 +190,6 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
           >
             {episode.description}
           </p>
-
-          {/* Topics */}
-          {episode.topics && episode.topics.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {episode.topics.map((topic, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 text-xs bg-altivum-gold/10 text-altivum-gold rounded-full"
-                >
-                  {topic}
-                </span>
-              ))}
-            </div>
-          )}
 
           {/* Listen Links */}
           <div className="flex flex-wrap gap-3">

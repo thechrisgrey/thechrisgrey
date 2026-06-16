@@ -15,6 +15,7 @@ import SpotifyFacade from '../components/SpotifyFacade';
 import { podcastClient, PODCAST_GUESTS_QUERY, classifySanityError, isPodcastGuestArray } from '../sanity';
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
+import { SpotifyIcon, ApplePodcastIcon, YouTubeIcon } from '../components/PodcastPlatformIcons';
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -183,6 +184,45 @@ const Podcast = () => {
               <p className="text-altivum-silver" style={typography.bodyText}>
                 {featuredEpisode.description}
               </p>
+
+              {/* Listen Links — match the per-episode card link row */}
+              {(featuredEpisode.links.spotify || featuredEpisode.links.apple || featuredEpisode.links.youtube) && (
+                <div className="flex flex-wrap gap-3 mt-6">
+                  {featuredEpisode.links.spotify && (
+                    <a
+                      href={featuredEpisode.links.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#1DB954]/10 text-[#1DB954] rounded-full text-sm font-medium hover:bg-[#1DB954]/20 transition-colors"
+                    >
+                      <SpotifyIcon className="w-4 h-4" />
+                      Spotify
+                    </a>
+                  )}
+                  {featuredEpisode.links.apple && (
+                    <a
+                      href={featuredEpisode.links.apple}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#872EC4]/10 text-[#872EC4] rounded-full text-sm font-medium hover:bg-[#872EC4]/20 transition-colors"
+                    >
+                      <ApplePodcastIcon className="w-4 h-4" />
+                      Apple
+                    </a>
+                  )}
+                  {featuredEpisode.links.youtube && (
+                    <a
+                      href={featuredEpisode.links.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF0000]/10 text-[#FF0000] rounded-full text-sm font-medium hover:bg-[#FF0000]/20 transition-colors"
+                    >
+                      <YouTubeIcon className="w-4 h-4" />
+                      YouTube
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
