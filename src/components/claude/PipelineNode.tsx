@@ -51,7 +51,9 @@ export function PipelineNode({ node, state, isExpanded, onClick, x, y }: Pipelin
       aria-label={node.label}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      style={{ cursor: 'pointer', outline: 'none' }}
+      // No inline `outline: none` — that would override the global
+      // `[tabindex]:focus-visible` gold ring (index.css) and hide keyboard focus.
+      style={{ cursor: 'pointer' }}
     >
       <rect
         x={x - NODE_WIDTH / 2}

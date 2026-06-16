@@ -59,4 +59,18 @@ describe('PipelineNode', () => {
     fireEvent.keyDown(button, { key: ' ' });
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  it('is keyboard-focusable (tabIndex=0)', () => {
+    renderNode();
+    const button = screen.getByRole('button', { name: 'Test Label' });
+    expect(button).toHaveAttribute('tabindex', '0');
+  });
+
+  it('does not inline-suppress the outline, so the global focus-visible ring shows', () => {
+    // An inline `outline: none` would override the global `[tabindex]:focus-visible`
+    // gold ring (index.css) and hide keyboard focus. Assert it is not set inline.
+    renderNode();
+    const button = screen.getByRole('button', { name: 'Test Label' });
+    expect(button.style.outline).toBe('');
+  });
 });
