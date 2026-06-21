@@ -102,10 +102,36 @@ function startServer(shellHtml) {
   });
 }
 
-// route '/' -> dist/index.html ; route '/blog/x' -> dist/blog/x/index.html
-function outPathFor(route) {
-  if (route === '/') return join(DIST, 'index.html');
-  return join(DIST, route.replace(/^\//, ''), 'index.html');
+// Map a route to the dist file(s) that hold its prerendered HTML. We write TWO
+// artifacts per route (except '/'), the SAME serialized DOM to both:
+//
+//   /blog       -> dist/blog.html        (FILE form)
+//   /blog       -> dist/blog/index.html  (DIRECTORY form)
+//   /blog/slug  -> dist/blog/slug.html   +  dist/blog/slug/index.html
+//
+// WHY BOTH — Amplify Hosting's documented static-file resolution
+// (https://docs.aws.amazon.com/amplify/latest/userguide/redirect-rewrite-examples.html
+//  → "Trailing slashes and clean URLs"):
+//   * Request `/blog` when `blog.html` EXISTS       -> serves blog.html, the URL
+//     stays `/blog`, status 200, NO redirect.
+//   * Request `/blog` when ONLY `blog/index.html`   -> Amplify appends a trailing
+//     slash and 301-redirects `/blog` -> `/blog/`.
+//
+// The directory-only form (what this script wrote before) meant the bare `/blog`
+// — the EXACT URL in the sitemap, in `<link rel=canonical>`, and in every in-app
+// link — 301-redirected to `/blog/`. Google Search Console flagged those bare
+// URLs (sitemap + self-canonical pointing at a URL that redirects is a
+// conflicting signal) and indexing decayed: the prerendered routes surfaced as
+// "Not found (404)" / "Page with redirect" instead of indexing cleanly. Writing
+// the FILE form makes the canonical `/blog` return 200 directly and
+// self-referentially (no redirect). We ALSO keep the DIRECTORY form so any
+// `/blog/` URL Google already indexed under the old behavior keeps returning 200
+// (its canonical -> `/blog` consolidates it) rather than turning into a fresh
+// 404. '/' is special — it is only ever dist/index.html.
+function outPathsFor(route) {
+  if (route === '/') return [join(DIST, 'index.html')];
+  const rel = route.replace(/^\//, '');
+  return [join(DIST, `${rel}.html`), join(DIST, rel, 'index.html')];
 }
 
 // --- Sanity CORS proxy via request interception ------------------------------
@@ -286,11 +312,18 @@ async function crawl() {
           // Wait for React commit + react-helmet-async flush (deterministic signal).
           await page.waitForFunction('window.__PRERENDER_READY__ === true', { timeout: 15000 });
           const html = await page.content();
-          const outFile = outPathFor(route);
-          mkdirSync(dirname(outFile), { recursive: true });
-          writeFileSync(outFile, html, 'utf-8');
+          // Write the file form AND the directory form (see outPathsFor) so the
+          // canonical bare URL returns 200 directly while the trailing-slash URL
+          // keeps resolving — no 301 on the URL that crawlers actually index.
+          const outFiles = outPathsFor(route);
+          for (const outFile of outFiles) {
+            mkdirSync(dirname(outFile), { recursive: true });
+            writeFileSync(outFile, html, 'utf-8');
+          }
           ok += 1;
-          console.log(`  [prerender] ok ${route} -> ${outFile.replace(DIST, 'dist')}`);
+          console.log(
+            `  [prerender] ok ${route} -> ${outFiles.map((f) => f.replace(DIST, 'dist')).join(' , ')}`,
+          );
         } finally {
           await page.close();
         }

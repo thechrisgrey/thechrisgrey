@@ -37,13 +37,20 @@ frontend:
 #   source "/<*>"  target "/index.html"  status "404-200"
 #
 # `404-200` is a "404 rewrite": Amplify serves the requested file when it exists and
-# only rewrites to /index.html when the target 404s. Combined with Amplify's native
-# clean-URL resolution (a request for /blog/foo whose /blog/foo.html 404s is served
-# from /blog/foo/index.html), this serves the per-route HTML written by
-# scripts/prerender.js to crawlers AND falls through to the SPA shell for
-# un-prerendered routes (/admin, /blueprint, /aws, /claude) and unknown paths so
-# React Router's NotFound (404) page still renders. A plain `200` rewrite would NOT
-# fall through on a missing target and would break those routes — do not switch it.
+# only rewrites to /index.html when the target 404s. Per Amplify's documented
+# clean-URL resolution
+# (https://docs.aws.amazon.com/amplify/latest/userguide/redirect-rewrite-examples.html
+#  → "Trailing slashes and clean URLs"), a request for /blog is served from
+# dist/blog.html with status 200 and NO redirect WHEN that file exists, and only
+# 301-redirects to /blog/ when blog.html is absent. scripts/prerender.js therefore
+# writes BOTH dist/blog.html (so the bare /blog — the canonical + sitemap URL —
+# returns 200 directly, no redirect) AND dist/blog/index.html (so a /blog/ already
+# indexed under the old directory-only behavior keeps returning 200). For routes
+# with NO prerendered file (the noIndex routes /admin and /blueprint) and for
+# genuinely unknown paths, the rule falls through to the SPA shell, which Amplify
+# serves with a 404 STATUS so React Router's NotFound page renders as a correct
+# hard 404 (not a soft 404). A plain `200` rewrite would NOT fall through on a
+# missing target — it would turn every unknown URL into a soft-200 — do not switch it.
 # To add/change a rule, edit the CustomRules in the console or via the API; editing
 # this file has no effect on hosting behavior.
 #
