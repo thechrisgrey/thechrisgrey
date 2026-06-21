@@ -5,7 +5,7 @@
 > functionality. Every item makes an existing feature cleaner, faster, safer,
 > more accessible, or otherwise better.
 >
-> Maintained by the `/optimize-features` command. Last full inventory: 2026-06-20
+> Maintained by the `/optimize-features` command. Last full inventory: 2026-06-21
 
 ## Feature Inventory
 
@@ -78,6 +78,7 @@
 | 38 | OG image generation | Build-time Open Graph image assets | `scripts/generate-og-images.mjs`, `scripts/og-assets/` | 2026-06-20 |
 | 39 | Podcast transcription & ingestion | Transcribe episodes + ingest transcripts into KB | `scripts/transcribe-podcast.mjs`, `transcribe-youtube.mjs`, `ingest-podcast-transcripts.mjs` | 2026-06-20 |
 | 40 | Lambda deploy & verification tooling | Verified deploy + import smoke check + IAM drift | `scripts/deploy-lambda.sh`, `smoke-test-lambdas.mjs`, `iam-drift.sh` | 2026-06-20 |
+| 41 | CI/CD & dependency security | GitHub Actions: PR/push test+build gate + per-PR npm audit; weekly scheduled audit opens tracked issues; Dependabot; greptile AI PR review | `.github/workflows/ci.yml`, `.github/workflows/security-audit.yml`, `.github/dependabot.yml` | 2026-06-21 |
 
 ## Optimization Opportunities
 
