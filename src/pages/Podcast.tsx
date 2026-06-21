@@ -72,10 +72,11 @@ const Podcast = () => {
         ]}
         structuredData={[
           buildPodcastSeriesSchema(),
-          ...(LATEST_VIDEO_ID ? [buildVideoObjectSchema({
+          ...(LATEST_VIDEO_ID && LATEST_EPISODE_DATE ? [buildVideoObjectSchema({
             videoId: LATEST_VIDEO_ID,
             title: featuredEpisode?.title || 'The Vector Podcast',
             description: featuredEpisode?.description,
+            uploadDate: LATEST_EPISODE_DATE,
           })] : [])
         ]}
       />

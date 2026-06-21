@@ -302,12 +302,12 @@ const BlogPost = () => {
             "datePublished": post.publishedAt,
             "dateModified": post._updatedAt || post.publishedAt,
             "wordCount": post.body ? getWordCount(post.body) : undefined,
+            // Reference the canonical Person node (emitted in the default @graph by
+            // buildPersonSchema) rather than re-declaring a partial Person with a
+            // colliding @id, which would leak per-post tag titles onto the global
+            // Person identity.
             "author": {
-              "@type": "Person",
-              "@id": "https://thechrisgrey.com/#person",
-              "name": "Christian Perez",
-              "jobTitle": "Founder & CEO, Altivum Inc.",
-              "knowsAbout": post.tags?.map(t => t.title) || ["AI", "Cloud Architecture", "Leadership"]
+              "@id": "https://thechrisgrey.com/#person"
             },
             "publisher": {
               "@id": "https://altivum.ai/#organization"

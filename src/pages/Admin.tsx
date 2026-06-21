@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { typography } from '../utils/typography';
+import { SEO } from '../components/SEO';
 import { useAuth } from '../hooks/useAuth';
 import { useKbAdmin, useSiteHealth } from '../hooks';
 import type { KbEntry } from '../hooks';
@@ -184,19 +185,30 @@ function AdminDashboard() {
 const Admin = () => {
   const { isAuthenticated, isLoading, error, login } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-altivum-dark flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <AdminLogin onLogin={login} isLoading={isLoading} error={error} />;
-  }
-
-  return <AdminDashboard />;
+  // /admin is Cognito-gated and excluded from the sitemap/prerender, but the
+  // route's `noIndex` flag (routes.ts) only drives that build-time exclusion — it
+  // does NOT emit a runtime robots tag, so without this <SEO> the CSR-served shell
+  // inherits index.html's `index, follow`. Render an authoritative noindex +
+  // self-canonical for every admin state (loading / login / dashboard).
+  return (
+    <>
+      <SEO
+        title="Admin"
+        description="Administrative console for thechrisgrey.com."
+        url="https://thechrisgrey.com/admin"
+        noindex
+      />
+      {isLoading ? (
+        <div className="min-h-screen bg-altivum-dark flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin" />
+        </div>
+      ) : !isAuthenticated ? (
+        <AdminLogin onLogin={login} isLoading={isLoading} error={error} />
+      ) : (
+        <AdminDashboard />
+      )}
+    </>
+  );
 };
 
 export default Admin;
