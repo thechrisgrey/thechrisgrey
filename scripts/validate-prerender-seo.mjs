@@ -35,10 +35,11 @@ function fileForRoute(route) {
   return join(DIST, `${route.replace(/^\//, '')}.html`);
 }
 
-// Compare two absolute URLs ignoring a single trailing slash (Home's canonical is
-// the bare origin; Amplify serves some routes with a trailing slash).
+// Compare two absolute URLs ignoring a trailing slash (Home's canonical is the
+// bare origin; Amplify serves some routes with a trailing slash). Stripping is
+// unconditional — no real canonical is short enough for it to matter.
 function sameUrl(a, b) {
-  const norm = (u) => (u.length > 'https://x'.length ? u.replace(/\/+$/, '') : u);
+  const norm = (u) => u.replace(/\/+$/, '');
   return norm(a) === norm(b);
 }
 

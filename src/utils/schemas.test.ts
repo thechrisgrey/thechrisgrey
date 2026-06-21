@@ -100,6 +100,14 @@ describe('schemas', () => {
       expect(schema.sameAs).toContain('https://www.linkedin.com/company/altivuminc');
       expect(schema.sameAs).not.toContain('https://www.linkedin.com/company/altivum-inc');
     });
+
+    it('claims the AltivumInc-Admin GitHub on the Organization, not the Person (no entity ambiguity)', () => {
+      // github.com/AltivumInc-Admin is Altivum's account (the site's GitHub everywhere);
+      // the same sameAs URL on both Person and Org is an ambiguous entity signal.
+      const GH = 'https://github.com/AltivumInc-Admin';
+      expect(buildOrganizationSchema().sameAs).toContain(GH);
+      expect(buildPersonSchema().sameAs).not.toContain(GH);
+    });
   });
 
   describe('buildWebSiteSchema', () => {
