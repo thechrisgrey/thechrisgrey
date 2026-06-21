@@ -136,57 +136,7 @@ const Altivum = () => {
           { name: "Home", url: "https://thechrisgrey.com" },
           { name: "Altivum", url: "https://thechrisgrey.com/altivum" }
         ]}
-        structuredData={[
-          {
-            "@type": "Corporation",
-            "@id": "https://altivum.ai/#organization",
-            "name": "Altivum Inc.",
-            "legalName": "Altivum Inc.",
-            "url": "https://altivum.ai",
-            "logo": "https://altivum.ai/logo.png",
-            "image": "https://altivum.ai/logo.png",
-            "description": "A veteran-founded public benefit corporation building intelligent, cloud-native architectures that integrate AI at the core of operations.",
-            "slogan": "Intelligence. Structure. Impact.",
-            "foundingDate": "2025-02",
-            "foundingLocation": {
-              "@type": "Place",
-              "name": "Clarksville, Tennessee",
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "Clarksville",
-                "addressRegion": "TN",
-                "addressCountry": "US"
-              }
-            },
-            "founder": {
-              "@id": "https://thechrisgrey.com/#person"
-            },
-            "numberOfEmployees": {
-              "@type": "QuantitativeValue",
-              "value": 1
-            },
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "email": "info@altivum.ai",
-              "telephone": "+1-615-219-9425",
-              "contactType": "customer service"
-            },
-            "knowsAbout": ["Cloud Architecture", "AI Integration", "Veteran Services", "Web Development"],
-            "award": {
-              "@type": "Award",
-              "name": "Veteran Business of the Month",
-              "description": "Recognized by Clarksville Area Chamber of Commerce, December 2025",
-              "url": "https://www.clarksvilleonline.com/2025/12/12/clarksville-area-chamber-of-commerces-veteran-business-of-the-month-altivum-inc/"
-            },
-            "sameAs": [
-              "https://www.linkedin.com/company/altivum-inc",
-              "https://github.com/AltivumInc-Admin",
-              "https://logic.altivum.ai",
-              "https://vector.altivum.ai"
-            ]
-          },
-          ...buildAltivumServicesSchemas()
-        ]}
+        structuredData={[...buildAltivumServicesSchemas()]}
       />
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden opacity-0 animate-fade-in">

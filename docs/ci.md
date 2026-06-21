@@ -12,7 +12,7 @@ The `.github/workflows/ci.yml` pipeline blocks merges to `main` on the following
 | `Run Lambda tests` | `node --test lambda/chat-stream/__tests__/*.test.mjs` | Fix the broken test or the Lambda module it covers. |
 | `Audit production dependencies` | `npm audit --audit-level=high --omit=dev` on the root | See "Unblocking npm audit" below. |
 | `lambda-audit` (matrix job) | Same audit gate, per Lambda directory | Same as above, but run `npm audit` inside the affected `lambda/<fn>/` directory. |
-| `Build project` | `npm run build` (env validation → podcast fetch → lint → tsc → vite build → sitemap + RSS) | Build errors surface the failing step in logs. |
+| `Build project` | `npm run build` (env validation → podcast fetch → lint → tsc → vite build → OG images → prerender → prerender SEO gate → sitemap + RSS) | Build errors surface the failing step in logs. |
 
 ## Coverage
 
@@ -36,6 +36,15 @@ Never re-add `continue-on-error: true` to the audit step globally.
 - `.github/dependabot.yml` scans root `/` plus the six Lambda directories (`lambda/chat-stream`, `lambda/kb-builder`, `lambda/metrics`, `lambda/kb-sync`, `lambda/blueprint`, `lambda/mcp-server`) and the shared `lambda/shared` package weekly on Mondays.
 - Lambda PRs carry both `dependencies` and `lambda` labels.
 - Root is limited to 10 open PRs; each Lambda is limited to 3.
+
+## Prerender SEO gate
+
+`scripts/validate-prerender-seo.mjs` runs in the build chain immediately after `scripts/prerender.js` (and before sitemap/RSS). It parses each prerendered static route's `dist/*.html` and asserts the SEO surface that crawlers actually read — exactly one valid JSON-LD `@graph`, exactly one self-referential `<link rel="canonical">`, and that any same-origin `og:image` (`/og/<slug>.png`) resolves to a file in `dist/`. The route set is the same `STATIC_ROUTES` SSOT as the sitemap/prerender, so it can never drift.
+
+- **Non-fatal by default** — mirrors `prerender.js`'s #1 safety constraint. A route that degraded to a CSR shell (no prerendered file) is reported, never failed; violations are logged but the build still exits 0, so a broken validation never blocks the Amplify deploy.
+- **Strict mode** — set `STRICT_PRERENDER=true` (reused from `prerender.js`) or `STRICT_SEO_VALIDATION=true` to make any violation fail the build with exit 1. Use this in a pre-release check when you want a hard gate on the indexed HTML.
+
+This is the build-artifact complement to the jsdom unit tests (`src/components/SEO.test.tsx`, `src/utils/schemas.test.ts`), which validate the JSON-LD generation logic but not the final shipped file.
 
 ## Amplify
 

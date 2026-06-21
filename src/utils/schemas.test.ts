@@ -12,6 +12,9 @@ import {
   buildServiceSchema,
   buildAltivumServicesSchemas,
   buildContactPageSchema,
+  buildVideoObjectSchema,
+  buildItemListSchema,
+  buildFoundationOrganizationSchema,
   homeFAQs,
   aboutFAQs,
   altivumFAQs,
@@ -89,6 +92,13 @@ describe('schemas', () => {
     it('should include award info', () => {
       const schema = buildOrganizationSchema();
       expect(schema.award.name).toBe('Veteran Business of the Month');
+    });
+
+    it('should use the live (no-hyphen) LinkedIn company URL from SOCIAL_LINKS', () => {
+      const schema = buildOrganizationSchema();
+      // The hyphenated /company/altivum-inc 404s; the canonical profile is /altivuminc.
+      expect(schema.sameAs).toContain('https://www.linkedin.com/company/altivuminc');
+      expect(schema.sameAs).not.toContain('https://www.linkedin.com/company/altivum-inc');
     });
   });
 
@@ -272,6 +282,33 @@ describe('schemas', () => {
     });
   });
 
+  describe('buildVideoObjectSchema', () => {
+    it('emits the Google-required uploadDate, name, and thumbnailUrl', () => {
+      const schema = buildVideoObjectSchema({ videoId: 'abc123', title: 'Episode 1', uploadDate: '2026-02-20' });
+      expect(schema['@type']).toBe('VideoObject');
+      expect(schema.name).toBe('Episode 1');
+      expect(schema.uploadDate).toBe('2026-02-20');
+      expect(schema.thumbnailUrl).toBe('https://img.youtube.com/vi/abc123/hqdefault.jpg');
+      expect(schema.contentUrl).toBe('https://www.youtube.com/watch?v=abc123');
+    });
+
+    it('defaults the thumbnail to the always-generated hqdefault, never maxresdefault', () => {
+      const schema = buildVideoObjectSchema({ videoId: 'xyz', title: 't', uploadDate: '2026-01-01' });
+      expect(schema.thumbnailUrl).toContain('/hqdefault.jpg');
+      expect(schema.thumbnailUrl).not.toContain('maxresdefault');
+    });
+
+    it('honors an explicit thumbnailUrl override', () => {
+      const schema = buildVideoObjectSchema({
+        videoId: 'xyz',
+        title: 't',
+        uploadDate: '2026-01-01',
+        thumbnailUrl: 'https://example.com/custom.jpg',
+      });
+      expect(schema.thumbnailUrl).toBe('https://example.com/custom.jpg');
+    });
+  });
+
   describe('pre-built FAQ arrays', () => {
     it('should have non-empty FAQ arrays for all pages', () => {
       expect(homeFAQs.length).toBeGreaterThan(0);
@@ -297,6 +334,57 @@ describe('schemas', () => {
         expect(faq.question).toBeTruthy();
         expect(faq.answer).toBeTruthy();
       });
+    });
+  });
+
+  // Per-@type required-field contracts. Substring (toContain) tests cannot catch a
+  // builder that silently drops a schema.org / Google REQUIRED property (the project's
+  // own documented "green tests over broken behavior" failure mode). This harness
+  // asserts every builder emits the fields its rich-result eligibility depends on.
+  describe('JSON-LD required-field contracts', () => {
+    const REQUIRED_FIELDS_BY_TYPE: Record<string, string[]> = {
+      Person: ['@type', '@id', 'name', 'url'],
+      Corporation: ['@type', '@id', 'name', 'url'],
+      WebSite: ['@type', '@id', 'url', 'name'],
+      WebPage: ['@type', '@id', 'url', 'name'],
+      ProfilePage: ['@type', '@id', 'url', 'name', 'mainEntity'],
+      Book: ['@type', 'name', 'author'],
+      PodcastSeries: ['@type', 'name', 'url'],
+      FAQPage: ['@type', 'mainEntity'],
+      BreadcrumbList: ['@type', 'itemListElement'],
+      VideoObject: ['@type', 'name', 'thumbnailUrl', 'uploadDate', 'contentUrl'],
+      ItemList: ['@type', 'itemListElement', 'numberOfItems'],
+      NonprofitOrganization: ['@type', '@id', 'name', 'url'],
+      Service: ['@type', 'name', 'provider'],
+      ContactPage: ['@type', '@id', 'name', 'url'],
+    };
+
+    const assertRequiredFields = (node: Record<string, unknown>) => {
+      const type = node['@type'] as string;
+      const required = REQUIRED_FIELDS_BY_TYPE[type];
+      expect(required, `no required-field contract registered for @type "${type}"`).toBeDefined();
+      for (const field of required) {
+        expect(node[field], `${type} is missing required field "${field}"`).toBeDefined();
+      }
+    };
+
+    it('every builder emits its schema.org / Google-required fields', () => {
+      assertRequiredFields(buildPersonSchema());
+      assertRequiredFields(buildOrganizationSchema());
+      assertRequiredFields(buildWebSiteSchema());
+      assertRequiredFields(buildBookSchema());
+      assertRequiredFields(buildPodcastSeriesSchema());
+      assertRequiredFields(buildVideoObjectSchema({ videoId: 'x', title: 't', uploadDate: '2026-02-20' }));
+      assertRequiredFields(buildFoundationOrganizationSchema());
+      assertRequiredFields(buildContactPageSchema());
+      assertRequiredFields(buildWebPageSchema({ name: 'n', description: 'd', url: 'https://thechrisgrey.com/x' }));
+      assertRequiredFields(
+        buildProfilePageSchema({ name: 'n', description: 'd', url: 'https://thechrisgrey.com/about' })
+      );
+      assertRequiredFields(buildFAQSchema([{ question: 'q', answer: 'a' }]));
+      assertRequiredFields(buildBreadcrumbSchema([{ name: 'Home', url: 'https://thechrisgrey.com' }]));
+      assertRequiredFields(buildItemListSchema({ name: 'l', items: [{ name: 'a', url: 'https://x' }] }));
+      buildAltivumServicesSchemas().forEach((s) => assertRequiredFields(s));
     });
   });
 });

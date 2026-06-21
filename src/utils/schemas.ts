@@ -3,6 +3,8 @@
  * These utilities generate JSON-LD schemas for AI discoverability
  */
 
+import { SOCIAL_LINKS } from '../constants/links';
+
 // Base URLs
 const SITE_URL = 'https://thechrisgrey.com';
 const ALTIVUM_URL = 'https://altivum.ai';
@@ -165,9 +167,9 @@ export const buildOrganizationSchema = () => ({
         "url": "https://www.clarksvilleonline.com/2025/12/12/clarksville-area-chamber-of-commerces-veteran-business-of-the-month-altivum-inc/"
     },
     "sameAs": [
-        "https://www.linkedin.com/company/altivum-inc",
-        "https://github.com/AltivumInc-Admin",
-        "https://logic.altivum.ai"
+        SOCIAL_LINKS.altivumLinkedIn,
+        SOCIAL_LINKS.github,
+        SOCIAL_LINKS.altivumLogic
     ]
 });
 
@@ -380,15 +382,18 @@ export const buildContactPageSchema = () => ({
 export const buildVideoObjectSchema = (options: {
     videoId: string;
     title: string;
+    uploadDate: string; // Google REQUIRES uploadDate for video rich results — was optional
     description?: string;
     thumbnailUrl?: string;
-    uploadDate?: string;
 }) => ({
     "@type": "VideoObject",
     "name": options.title,
     "description": options.description || options.title,
-    "thumbnailUrl": options.thumbnailUrl || `https://img.youtube.com/vi/${options.videoId}/maxresdefault.jpg`,
-    ...(options.uploadDate ? { "uploadDate": options.uploadDate } : {}),
+    // hqdefault.jpg is generated for EVERY YouTube video (480x360, within Google's
+    // thumbnail minimums); maxresdefault.jpg 404s for SD/third-party videos and the
+    // thumbnailUrl is a REQUIRED VideoObject field, so the default must always resolve.
+    "thumbnailUrl": options.thumbnailUrl || `https://img.youtube.com/vi/${options.videoId}/hqdefault.jpg`,
+    "uploadDate": options.uploadDate,
     "contentUrl": `https://www.youtube.com/watch?v=${options.videoId}`,
     "embedUrl": `https://www.youtube.com/embed/${options.videoId}`,
     "publisher": {

@@ -193,4 +193,55 @@ describe('SEO', () => {
       ).toBe(true);
     });
   });
+
+  it('emits a parseable @graph containing the default Person, Organization, and WebSite nodes', async () => {
+    renderSEO({ title: 'Test', description: 'desc' });
+    await waitFor(() => {
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
+    });
+    const json = JSON.parse(
+      document.querySelector('script[type="application/ld+json"]')!.textContent!
+    );
+    expect(json['@context']).toBe('https://schema.org');
+    expect(Array.isArray(json['@graph'])).toBe(true);
+    const types = json['@graph'].map((n: Record<string, unknown>) => n['@type']);
+    expect(types).toContain('Person');
+    expect(types).toContain('Corporation');
+    expect(types).toContain('WebSite');
+  });
+
+  it('emits no duplicate @id among top-level @graph nodes (guards @id node collisions)', async () => {
+    // The finding this guards: two NODES sharing one @id within a single @graph
+    // (e.g. /altivum re-declaring the Organization, or a blog post re-declaring the
+    // Person as a partial author). The invariant is on top-level @graph MEMBERS —
+    // nested { "@id": ... } references (worksFor, author, publisher) legitimately
+    // repeat an @id and are not graph members, so we only inspect the array members.
+    const customData = [
+      {
+        '@type': 'BlogPosting',
+        '@id': 'https://thechrisgrey.com/blog/x/#article',
+        headline: 'X',
+        author: { '@id': 'https://thechrisgrey.com/#person' },
+        publisher: { '@id': 'https://altivum.ai/#organization' },
+      },
+    ];
+    renderSEO({
+      title: 'Post',
+      description: 'desc',
+      url: 'https://thechrisgrey.com/blog/x',
+      structuredData: customData,
+    });
+    await waitFor(() => {
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
+    });
+    const graph = JSON.parse(
+      document.querySelector('script[type="application/ld+json"]')!.textContent!
+    );
+
+    const memberIds = (graph['@graph'] as Array<Record<string, unknown>>)
+      .map((node) => node['@id'])
+      .filter((id): id is string => typeof id === 'string');
+
+    expect(new Set(memberIds).size).toBe(memberIds.length);
+  });
 });
