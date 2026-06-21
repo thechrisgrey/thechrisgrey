@@ -71,3 +71,9 @@ podcast-transcripts/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
+
+# Local Claude Code tooling scratch (screenshots, workflow scripts, local settings)
+.claude/
+
+# Raw source images — input for the not-yet-run editorial redesign (kept on disk, not versioned)
+scripts/editorial-raw/
