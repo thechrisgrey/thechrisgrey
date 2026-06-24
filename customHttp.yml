@@ -16,13 +16,12 @@
 # trigger an Amplify release for `main`, then verify with:
 #   curl -sI https://thechrisgrey.com/ | grep -i 'content-security\|strict-transport\|x-frame'
 #
-# CSP ROLLOUT — REPORT-ONLY FIRST
-# The CSP has never been enforced on the live site, so it ships as
-# `Content-Security-Policy-Report-Only`: browsers REPORT violations to the
-# report-uri (the metrics Lambda /csp-report endpoint) without blocking anything.
-# Watch those reports for a clean window, fix any missing origin, THEN enforce by
-# renaming the key to `Content-Security-Policy` (drop `-Report-Only`). All the
-# other security headers are safe and are enforced immediately.
+# CSP ROLLOUT — NOW ENFORCED
+# The CSP shipped as `Content-Security-Policy-Report-Only` (PR #143, ~2026-06-15)
+# to collect violation reports without blocking anything. After a clean reporting
+# window the key was renamed to `Content-Security-Policy` to enforce it.
+# Violations are still reported to the report-uri for ongoing monitoring.
+# All other security headers have been enforced since PR #143.
 
 customHeaders:
   - pattern: '**/*'
@@ -37,13 +36,11 @@ customHeaders:
         value: 'strict-origin-when-cross-origin'
       - key: 'Permissions-Policy'
         value: 'camera=(), microphone=(), geolocation=()'
-      # REPORT-ONLY: logs violations, blocks nothing. Rename to
-      # 'Content-Security-Policy' to enforce once the report-uri is quiet.
       # style-src/font-src allow fonts.googleapis.com / fonts.gstatic.com for
       # Material Icons (loaded in index.html); 'unsafe-inline' is retained because
       # the app uses inline styles (typography.ts, GSAP/Lenis) and a nonce can't be
       # injected by static hosting — tighten that in a later report-only pass.
-      - key: 'Content-Security-Policy-Report-Only'
+      - key: 'Content-Security-Policy'
         value: "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://plausible.io https://challenges.cloudflare.com https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn.sanity.io https://i.ytimg.com; connect-src 'self' https://cloudflareinsights.com https://plausible.io https://vrs4egsi745nep54y6abvwlcwq0smqak.lambda-url.us-east-2.on.aws https://sf5bejshafrb6t7zbbfw5knu7a0axlyp.lambda-url.us-east-2.on.aws https://mrrpf6f34n7vpkolurdc24c5fu0jruad.lambda-url.us-east-1.on.aws https://*.sanity.io https://*.apicdn.sanity.io https://zk46cokyuwgtdtz2ocdlhtjcji0fnidk.lambda-url.us-east-1.on.aws https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws https://b6u7jlyktwv7wtseebhl45lv4y0byxnl.lambda-url.us-east-1.on.aws https://cognito-idp.us-east-1.amazonaws.com https://challenges.cloudflare.com https://fx6pbx5hkhyrccf6c7pqk6x5fq0idpiv.lambda-url.us-east-1.on.aws https://us.i.posthog.com https://us-assets.i.posthog.com; frame-src https://www.youtube.com https://open.spotify.com https://www.buzzsprout.com https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; upgrade-insecure-requests; report-uri https://dnsio2ypcuxamxgzjpxr7knwpe0ybbuq.lambda-url.us-east-1.on.aws/csp-report"
   # --- Caching (also previously ignored in amplify.yml; restored here) ----------
   - pattern: '**/*.js'
