@@ -1,0 +1,229 @@
+openapi: 3.1.0
+info:
+  title: KB Builder Admin API
+  version: "1.0.0"
+  description: |
+    Cognito-protected CRUD over Sanity `kbEntry` documents, plus a publish action
+    that assembles `knowledge-base.txt` and uploads it to S3 (which triggers a
+    Bedrock Knowledge Base ingestion). Backs the `/admin` KB editor.
+
+    All routes require a Cognito access token via `Authorization: Bearer <token>`
+    and are rate limited to 30 requests / 60s per source IP. CORS is scoped to
+    https://thechrisgrey.com. PUT/DELETE guard `_type === 'kbEntry'` before
+    mutating, so admin tokens cannot overwrite arbitrary documents.
+servers:
+  - url: https://kb-builder.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL (region us-east-1)
+tags:
+  - name: entries
+  - name: publish
+security:
+  - cognito: []
+paths:
+  /entries:
+    get:
+      tags: [entries]
+      operationId: listEntries
+      summary: List all knowledge base entries
+      responses:
+        "200":
+          description: All entries, ordered by category, sortOrder, then date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/KbEntry"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+    post:
+      tags: [entries]
+      operationId: createEntry
+      summary: Create a knowledge base entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KbEntryInput"
+      responses:
+        "201":
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entry:
+                    $ref: "#/components/schemas/KbEntry"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+    options:
+      operationId: entriesPreflight
+      summary: CORS preflight
+      responses:
+        "200": { description: OK }
+  /entries/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-zA-Z0-9._-]+$"
+    put:
+      tags: [entries]
+      operationId: updateEntry
+      summary: Update a knowledge base entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KbEntryPatch"
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entry:
+                    $ref: "#/components/schemas/KbEntry"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: Target document is not a kbEntry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+    delete:
+      tags: [entries]
+      operationId: deleteEntry
+      summary: Delete a knowledge base entry
+      responses:
+        "200":
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: boolean
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403":
+          description: Target document is not a kbEntry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /publish:
+    post:
+      tags: [publish]
+      operationId: publishKnowledgeBase
+      summary: Assemble active entries and publish knowledge-base.txt to S3
+      responses:
+        "200":
+          description: Publish result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  entryCount: { type: integer }
+                  documentSize: { type: integer }
+                  publishedAt: { type: string, format: date-time }
+        "400":
+          description: No active entries to publish.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+components:
+  securitySchemes:
+    cognito:
+      type: http
+      scheme: bearer
+      description: Cognito access token (thechrisgrey-admin-pool), validated server-side.
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid Cognito token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Entry not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Rate limit exceeded (30 req / 60s per IP)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Category:
+      type: string
+      enum: [biography, military, education, career, business, skills, awards, philosophy, podcast, book]
+    KbEntryInput:
+      type: object
+      required: [title, category, content]
+      properties:
+        title: { type: string, maxLength: 200 }
+        category: { $ref: "#/components/schemas/Category" }
+        content: { type: string, maxLength: 50000 }
+        date: { type: string, description: "Parseable date string, max 20 chars." }
+        sortOrder: { type: number, minimum: 0, maximum: 1000 }
+        isActive: { type: boolean, default: true }
+    KbEntryPatch:
+      type: object
+      description: All fields optional; only supplied fields are patched.
+      properties:
+        title: { type: string, maxLength: 200 }
+        category: { $ref: "#/components/schemas/Category" }
+        content: { type: string, maxLength: 50000 }
+        date: { type: string }
+        sortOrder: { type: number, minimum: 0, maximum: 1000 }
+        isActive: { type: boolean }
+    KbEntry:
+      type: object
+      properties:
+        _id: { type: string }
+        _type: { type: string, const: kbEntry }
+        _createdAt: { type: string, format: date-time }
+        _updatedAt: { type: string, format: date-time }
+        title: { type: string }
+        category: { $ref: "#/components/schemas/Category" }
+        content: { type: string }
+        date: { type: string }
+        sortOrder: { type: number }
+        isActive: { type: boolean }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }

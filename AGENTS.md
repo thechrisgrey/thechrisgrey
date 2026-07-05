@@ -151,6 +151,21 @@ npm run deploy:lambda -- <name> --dry-run   # build + verify, no upload
 npm run deploy:lambda -- <name>             # deploy (default region us-east-1)
 ```
 
+## API contracts
+
+Each HTTP Lambda ships an OpenAPI 3.1 spec (`lambda/<service>/openapi.yaml`)
+documenting its routes, auth, request/response schemas, and status codes:
+
+- `lambda/chat-stream/openapi.yaml` - streaming chat + `/forget` (framed events)
+- `lambda/blueprint/openapi.yaml` - NDJSON blueprint generation
+- `lambda/kb-builder/openapi.yaml` - Cognito-auth'd kbEntry CRUD + publish
+- `lambda/metrics/openapi.yaml` - Web Vitals / CSP ingestion + Cognito health
+- `lambda/mcp-server/openapi.yaml` - JSON-RPC 2.0 MCP endpoint + health
+- `lambda/session-token/openapi.yaml` - Turnstile-gated token issuer
+
+`kb-sync` is S3-event-triggered and has no HTTP API. When you change a handler's
+routes or payloads, update its spec so the contract stays accurate.
+
 ## Where to look next
 
 - `CLAUDE.md`: full architecture, design system, subsystem internals.

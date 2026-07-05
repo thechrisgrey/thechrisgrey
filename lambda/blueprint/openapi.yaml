@@ -1,0 +1,243 @@
+openapi: 3.1.0
+info:
+  title: Blueprint Generator API
+  version: "1.0.0"
+  description: |
+    Architecture-blueprint generator. Opus generates a blueprint from a project
+    spec; Haiku 4.5 grades it for quality. Deployed as an AWS Lambda Function URL
+    invoked with `awslambda.streamifyResponse`.
+
+    Authentication accepts EITHER a server-issued session token
+    (`Authorization: Bearer <token>`, scope `blueprint`) OR the legacy HMAC
+    signature (`x-blueprint-timestamp` + `x-blueprint-signature`).
+
+    On success the response is newline-delimited JSON (`application/x-ndjson`):
+    each line is one event (`ready`, `status`, `token`, `complete`, or `error`).
+    The HTTP status locks at 200 once the stream opens; the terminal event
+    (`complete` vs `error`) distinguishes outcomes. Pre-stream failures (auth,
+    validation, rate limit) return a normal JSON body with the appropriate status.
+
+    Rate limited to 1 blueprint per 30-day window, keyed by device hash.
+servers:
+  - url: https://blueprint.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL (region us-east-1)
+tags:
+  - name: blueprint
+paths:
+  /:
+    post:
+      tags: [blueprint]
+      operationId: generateBlueprint
+      summary: Generate an architecture blueprint from a spec
+      security:
+        - sessionToken: []
+        - legacyHmac: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlueprintRequest"
+      responses:
+        "200":
+          description: |
+            NDJSON event stream. Terminal event is `complete` (ok=true, carries
+            `output`) or `error` (carries `error` code + `message`).
+          content:
+            application/x-ndjson:
+              schema:
+                $ref: "#/components/schemas/BlueprintEvent"
+        "400":
+          description: Pre-stream rejection (invalid_json, missing_spec, invalid_device_id)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "405":
+          description: method_not_allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: rate_limited (1 blueprint / 30-day window)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: internal_error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    options:
+      tags: [blueprint]
+      operationId: blueprintPreflight
+      summary: CORS preflight
+      security: []
+      responses:
+        "204":
+          description: No content
+components:
+  securitySchemes:
+    sessionToken:
+      type: http
+      scheme: bearer
+      description: Server-issued session token with scope `blueprint`.
+    legacyHmac:
+      type: apiKey
+      in: header
+      name: x-blueprint-signature
+      description: Legacy HMAC-SHA256 signature; paired with `x-blueprint-timestamp`.
+  schemas:
+    BlueprintRequest:
+      type: object
+      required: [spec, deviceId]
+      properties:
+        deviceId:
+          type: string
+          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+        spec:
+          $ref: "#/components/schemas/BlueprintSpec"
+    BlueprintSpec:
+      type: object
+      required: [goal, category]
+      description: Validated by Zod (BlueprintInputSchema in schema.mjs) before generation.
+      properties:
+        goal:
+          type: string
+          minLength: 20
+          maxLength: 500
+        category:
+          type: string
+          enum: [ai-agent, rag, data-pipeline, realtime-app, batch-etl, web-api, iot-ingest, ml-training]
+        scale:
+          type: object
+          properties:
+            traffic: { type: string, maxLength: 200 }
+            data_volume: { type: string, maxLength: 200 }
+            latency_budget: { type: string, maxLength: 200 }
+        constraints:
+          type: object
+          properties:
+            monthly_budget_usd: { type: integer, minimum: 1, maximum: 100000 }
+            compliance:
+              type: array
+              items:
+                type: string
+                enum: [hipaa, pci, soc2, fedramp, gdpr, ccpa]
+            region_restriction: { type: string, maxLength: 50 }
+            team_size: { type: integer, minimum: 1, maximum: 1000 }
+        preferred_languages:
+          type: array
+          items:
+            type: string
+            enum: [typescript, javascript, python, go, rust, java]
+        integrations:
+          type: array
+          maxItems: 20
+          items: { type: string, maxLength: 50 }
+    BlueprintEvent:
+      type: object
+      description: One NDJSON line. `type` discriminates the event shape.
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [ready, status, token, complete, error]
+        requestId: { type: string }
+        text:
+          type: string
+          description: Present on `token` events (Opus output delta).
+        phase: { type: string }
+        attempt: { type: integer }
+        ok:
+          type: boolean
+          description: Present on `complete` (true).
+        output:
+          $ref: "#/components/schemas/BlueprintOutput"
+        error:
+          type: string
+          description: Error code on `error` events (invalid_input, validation_failed, opus_timeout, guardrail_intervened, guardrail_unavailable, internal_error).
+        message: { type: string }
+        meta:
+          type: object
+          additionalProperties: true
+    BlueprintOutput:
+      type: object
+      description: Blueprint payload (BlueprintOutputSchema in schema.mjs), Haiku-validated.
+      required:
+        - architecture_summary
+        - services
+        - diagram_mermaid
+        - iac_scaffold
+        - iam_highlights
+        - cost_estimate
+        - claude_artifacts
+        - next_steps
+        - caveats
+      properties:
+        architecture_summary: { type: string }
+        services:
+          type: array
+          minItems: 2
+          maxItems: 15
+          items:
+            type: object
+            required: [service, purpose, rationale, cost_signal]
+            properties:
+              service: { type: string }
+              purpose: { type: string }
+              rationale: { type: string }
+              cost_signal: { type: string, enum: [free-tier, low, medium, high] }
+        diagram_mermaid: { type: string }
+        iac_scaffold:
+          type: object
+          required: [tool, rationale, snippet]
+          properties:
+            tool: { type: string, enum: [cdk, sam, terraform] }
+            rationale: { type: string }
+            snippet: { type: string }
+        iam_highlights:
+          type: array
+          items: { type: string }
+        cost_estimate:
+          type: object
+          required: [monthly_low_usd, monthly_high_usd, assumptions]
+          properties:
+            monthly_low_usd: { type: number }
+            monthly_high_usd: { type: number }
+            assumptions:
+              type: array
+              items: { type: string }
+        claude_artifacts:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            type: object
+            required: [kind, name, description, body]
+            properties:
+              kind: { type: string, enum: [skill, slash_command, subagent, mcp_tool] }
+              name: { type: string }
+              description: { type: string }
+              body: { type: string }
+        next_steps:
+          type: array
+          items: { type: string }
+        caveats:
+          type: array
+          items: { type: string }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        message: { type: string }

@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  title: Alti MCP Server
+  version: "1.0.0"
+  description: |
+    Public Model Context Protocol (MCP) server exposing Alti's tools
+    (`ask_alti`, `search_blog`, `get_blog_post`) over Streamable HTTP.
+    Transport is JSON-RPC 2.0 over a single `POST /` endpoint; a `GET /health`
+    probe is also provided. Deployed as an AWS Lambda Function URL.
+
+    CORS is open (`*`). Rate limited to 60 requests/hour per source IP (hashed).
+    JSON-RPC notifications (requests without an `id`) return `202 Accepted` with
+    an empty body per MCP guidance.
+servers:
+  - url: https://mcp-server.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL (region us-east-1)
+tags:
+  - name: mcp
+  - name: health
+paths:
+  /:
+    post:
+      tags: [mcp]
+      operationId: handleJsonRpc
+      summary: JSON-RPC 2.0 MCP request
+      security: []
+      description: |
+        Standard MCP methods (`initialize`, `tools/list`, `tools/call`, ...).
+        Requests are dispatched by the MCP server (`server.mjs`). Notifications
+        return 202 with no body.
+      parameters:
+        - name: Mcp-Protocol-Version
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JsonRpcRequest"
+      responses:
+        "200":
+          description: JSON-RPC result or error envelope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+        "202":
+          description: Notification accepted (no response body)
+        "400":
+          description: Parse error (-32700) or invalid request (-32600)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+        "405":
+          description: Method not allowed on this endpoint (-32600)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+        "429":
+          description: Rate limit exceeded (-32000)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonRpcResponse"
+    options:
+      tags: [mcp]
+      operationId: mcpPreflight
+      summary: CORS preflight
+      security: []
+      responses:
+        "204":
+          description: No content
+  /health:
+    get:
+      tags: [health]
+      operationId: mcpHealth
+      summary: Liveness probe
+      security: []
+      responses:
+        "200":
+          description: Server is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  server: { type: string }
+                  version: { type: string }
+components:
+  schemas:
+    JsonRpcRequest:
+      type: object
+      required: [jsonrpc, method]
+      properties:
+        jsonrpc:
+          type: string
+          const: "2.0"
+        id:
+          type: [string, number, "null"]
+          description: Omit for notifications (server replies 202 with no body).
+        method:
+          type: string
+          examples: [initialize, tools/list, tools/call]
+        params:
+          type: object
+          additionalProperties: true
+    JsonRpcResponse:
+      type: object
+      required: [jsonrpc]
+      properties:
+        jsonrpc:
+          type: string
+          const: "2.0"
+        id:
+          type: [string, number, "null"]
+        result:
+          type: object
+          additionalProperties: true
+        error:
+          $ref: "#/components/schemas/JsonRpcError"
+    JsonRpcError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: JSON-RPC error code (e.g. -32700, -32600, -32000).
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true

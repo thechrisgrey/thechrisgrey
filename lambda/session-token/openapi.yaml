@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: Session Token Issuer API
+  version: "1.0.0"
+  description: |
+    Mints short-lived, device-bound, scoped session tokens (chat + blueprint)
+    that the chat and blueprint Lambdas verify. Replaces the old model of
+    shipping a shared HMAC key in the browser bundle; the signing key now lives
+    only server-side.
+
+    Flow: origin allowlist -> per-IP issuance rate limit -> Cloudflare Turnstile
+    verification -> issue tokens. CORS is handled solely by the Function URL CORS
+    config, so the handler emits no `Access-Control-*` headers itself.
+servers:
+  - url: https://session-token.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL
+tags:
+  - name: token
+paths:
+  /:
+    post:
+      tags: [token]
+      operationId: issueTokens
+      summary: Issue chat + blueprint session tokens
+      security: []
+      description: |
+        The `Origin` header must be in the allowlist. Rate limited per source IP
+        (default 60 issuances/hour). Turnstile is verified when a secret is
+        configured (fails closed).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssueRequest"
+      responses:
+        "200":
+          description: Tokens issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IssueResponse"
+        "400":
+          description: invalid_json or invalid_device_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: forbidden_origin or turnstile_failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "405":
+          description: method_not_allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: rate_limited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    options:
+      tags: [token]
+      operationId: tokenPreflight
+      summary: CORS preflight (normally answered by the Function URL CORS layer)
+      security: []
+      responses:
+        "204":
+          description: No content
+components:
+  schemas:
+    IssueRequest:
+      type: object
+      required: [deviceId]
+      properties:
+        deviceId:
+          type: string
+          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+        turnstileToken:
+          type: string
+          description: Cloudflare Turnstile response token (required when Turnstile is enabled).
+    IssueResponse:
+      type: object
+      required: [chatToken, blueprintToken, chatExpiresIn, blueprintExpiresIn]
+      properties:
+        chatToken:
+          type: string
+          description: Session token scoped to `chat`.
+        blueprintToken:
+          type: string
+          description: Session token scoped to `blueprint`.
+        chatExpiresIn:
+          type: integer
+          description: Chat token TTL in seconds (default 1800).
+        blueprintExpiresIn:
+          type: integer
+          description: Blueprint token TTL in seconds (default 600).
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum: [invalid_json, invalid_device_id, forbidden_origin, turnstile_failed, method_not_allowed, rate_limited]

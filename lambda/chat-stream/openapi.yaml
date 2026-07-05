@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: Alti Chat Stream API
+  version: "1.0.0"
+  description: |
+    Streaming chat endpoint powering Alti, the site's AI agent (Bedrock Claude
+    Haiku 4.5 + Strands SDK + Knowledge Base RAG). Deployed as an AWS Lambda
+    Function URL invoked with `awslambda.streamifyResponse`.
+
+    Authentication accepts EITHER a server-issued session token
+    (`Authorization: Bearer <token>`, scope `chat`) OR the legacy request-body
+    HMAC signature (`X-Chat-Timestamp` + `X-Chat-Signature`) during the
+    transition window. See `lambda/shared/requestAuth.mjs`.
+
+    Responses are NOT JSON: `POST /` streams raw assistant text interleaved with
+    framed control payloads. Events are framed as `\x00EVT\x00{json}\x00EVT\x00`
+    and fatal/system messages are prefixed with `\x00SYS\x00`. The client parser
+    lives in `src/utils/chatEvents.ts`.
+servers:
+  - url: https://chat-stream.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL (region us-east-1)
+tags:
+  - name: chat
+  - name: memory
+paths:
+  /:
+    post:
+      tags: [chat]
+      operationId: streamChat
+      summary: Stream an assistant response for a conversation
+      description: |
+        Rate limited to 20 requests/hour per source IP. Validates the message
+        history, loads visitor memory (if `deviceId` supplied), retrieves
+        Knowledge Base context, then streams the agent response.
+      security:
+        - sessionToken: []
+        - legacyHmac: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: |
+            Streamed response. Raw assistant text plus framed events. May instead
+            carry a single `\x00SYS\x00`-prefixed system message on validation,
+            rate-limit, guardrail, or error conditions.
+          content:
+            text/plain:
+              schema:
+                type: string
+    options:
+      tags: [chat]
+      operationId: chatPreflight
+      summary: CORS preflight
+      security: []
+      responses:
+        "200":
+          description: Empty body
+  /forget:
+    post:
+      tags: [memory]
+      operationId: forgetDevice
+      summary: Erase all stored visitor memory for a device
+      security:
+        - sessionToken: []
+        - legacyHmac: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgetRequest"
+      responses:
+        "200":
+          description: Forget result (streamed as a JSON string)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForgetResponse"
+components:
+  securitySchemes:
+    sessionToken:
+      type: http
+      scheme: bearer
+      description: Server-issued session token with scope `chat` (see session-token API).
+    legacyHmac:
+      type: apiKey
+      in: header
+      name: X-Chat-Signature
+      description: Legacy HMAC-SHA256 signature; paired with the `X-Chat-Timestamp` header.
+  schemas:
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 4000
+    PageContext:
+      type: object
+      description: |
+        Optional visitor context. Server-sanitized; returns null (ignored) on any
+        validation failure. `currentPage`/`visitedPages` must be known app routes.
+      properties:
+        currentPage:
+          type: string
+          example: /about
+        pageTitle:
+          type: string
+          maxLength: 100
+        section:
+          type: string
+          maxLength: 100
+        visitedPages:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+    ChatRequest:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        pageContext:
+          $ref: "#/components/schemas/PageContext"
+        deviceId:
+          type: string
+          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+          description: Opaque device identifier; enables visitor memory when present.
+    ForgetRequest:
+      type: object
+      required: [deviceId]
+      properties:
+        deviceId:
+          type: string
+          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+    ForgetResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+        deleted:
+          type: integer
+          description: Number of memory records removed (present when ok=true).
+        error:
+          type: string

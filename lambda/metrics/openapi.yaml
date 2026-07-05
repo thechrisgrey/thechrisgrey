@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Site Metrics API
+  version: "1.0.0"
+  description: |
+    Ingests Web Vitals and CSP violation reports into CloudWatch
+    (namespace `TheChrisGrey/SiteMetrics`) and exposes an authenticated health
+    aggregate for the `/admin` dashboard. Deployed as an AWS Lambda Function URL.
+servers:
+  - url: https://metrics.lambda-url.us-east-1.on.aws
+    description: Lambda Function URL (region us-east-1)
+tags:
+  - name: vitals
+  - name: csp
+  - name: health
+paths:
+  /vitals:
+    post:
+      tags: [vitals]
+      operationId: reportVitals
+      summary: Report a single Web Vital measurement
+      description: Rate limited to 200 requests / 60s per source IP.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vital"
+      responses:
+        "200":
+          description: Metric received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received: { type: boolean }
+        "202":
+          description: Accepted but the CloudWatch write was deferred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received: { type: boolean }
+                  note: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /csp-report:
+    post:
+      tags: [csp]
+      operationId: reportCsp
+      summary: Ingest a Content-Security-Policy violation report
+      description: |
+        Rate limited to 100 requests / 60s per source IP. Accepts either a
+        `{ "csp-report": {...} }` envelope or a bare report object.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CspReport"
+      responses:
+        "200":
+          description: Report received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received: { type: boolean }
+        "400":
+          description: Invalid blocked-uri format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /health:
+    get:
+      tags: [health]
+      operationId: getHealth
+      summary: Aggregated 24h site health snapshot
+      description: Requires a Cognito access token.
+      security:
+        - cognito: []
+      responses:
+        "200":
+          description: Health aggregate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthReport"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+components:
+  securitySchemes:
+    cognito:
+      type: http
+      scheme: bearer
+      description: Cognito access token, validated server-side.
+  responses:
+    BadRequest:
+      description: Validation error (invalid JSON or field values)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid Cognito token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Vital:
+      type: object
+      required: [name, value]
+      properties:
+        name:
+          type: string
+          enum: [CLS, INP, FCP, LCP, TTFB]
+        value:
+          type: number
+          minimum: 0
+          maximum: 60000
+        rating:
+          type: string
+          enum: [good, needs-improvement, poor]
+          description: Optional; recorded as a CloudWatch dimension when valid.
+    CspReport:
+      type: object
+      description: Browser CSP report. Fields vary by user agent.
+      properties:
+        csp-report:
+          type: object
+          additionalProperties: true
+        blocked-uri:
+          type: string
+        blockedURL:
+          type: string
+    HealthReport:
+      type: object
+      properties:
+        vitals:
+          type: object
+          additionalProperties: true
+        chat:
+          type: object
+          properties:
+            kbSuccessRate: { type: [string, "null"] }
+            kbFailures: { type: number }
+            kbSuccesses: { type: number }
+            guardrailInterventions: { type: number }
+            rateLimitRejections: { type: number }
+        performance:
+          type: object
+          additionalProperties: true
+        costs:
+          type: object
+          additionalProperties: true
+        security:
+          type: object
+          properties:
+            cspViolations: { type: number }
+        periodHours: { type: integer }
+        timestamp: { type: string, format: date-time }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
