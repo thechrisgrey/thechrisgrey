@@ -14,7 +14,7 @@
       "Resource": "*",
       "Condition": {
         "StringEquals": {
-          "cloudwatch:namespace": "TheChrisGrey/Mcp"
+          "cloudwatch:namespace": "TheChrisGrey/McpServer"
         }
       }
     },
