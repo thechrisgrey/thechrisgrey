@@ -9,6 +9,7 @@
     "build:analyze": "tsc && vite build && npx vite-bundle-visualizer",
     "lint": "eslint src --max-warnings 0",
     "lint:lambda": "eslint lambda --max-warnings 0",
+    "validate:agents": "node scripts/validate-agents-md.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

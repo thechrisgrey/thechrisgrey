@@ -20,6 +20,11 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      - name: Validate AGENTS.md consistency
+        # Fails fast (no deps needed) if AGENTS.md drifts from the code:
+        # documented npm scripts, file references, and Node version must all match.
+        run: node scripts/validate-agents-md.mjs
+
       - name: Install dependencies
         run: npm ci
 
