@@ -6,9 +6,9 @@ interface ChatSuggestionsProps {
 }
 
 const DEFAULT_SUGGESTIONS = [
-  "How did he go from Green Beret to tech CEO?",
+  'How did he go from Green Beret to tech CEO?',
   "What drives Altivum's mission?",
-  "Why did he write Beyond the Assessment?",
+  'Why did he write Beyond the Assessment?',
   "What's his take on AI and veterans?",
 ];
 

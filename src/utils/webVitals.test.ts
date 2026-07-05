@@ -61,9 +61,7 @@ describe('webVitals', () => {
         navigationType: 'navigate',
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[Web Vitals] CLS: 0.05')
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[Web Vitals] CLS: 0.05'));
 
       consoleSpy.mockRestore();
     });

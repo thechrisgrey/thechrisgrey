@@ -31,21 +31,22 @@ Christian has launched a seventh pillar — **The Altivum Foundation**, a 501(c)
 **Approach A — pointer page**, matching the `/altivum` → `altivum.ai` pattern. A short, curated introduction on thechrisgrey.com with all deep CTAs pointing at `altivumfoundation.org`. Low-maintenance (single source of truth remains the foundation site), on-brand for a personal site.
 
 Considered and rejected:
-- *Full informational page* — duplicates the foundation site; creates two sources of truth that will drift.
-- *Personal-lens essay only* — loses the concrete proof points (stats, focus areas) that communicate what the foundation actually funds.
+
+- _Full informational page_ — duplicates the foundation site; creates two sources of truth that will drift.
+- _Personal-lens essay only_ — loses the concrete proof points (stats, focus areas) that communicate what the foundation actually funds.
 
 ### Page structure (`/foundation`)
 
 Six sections, in order. All section styling reuses existing Tailwind utilities and `src/utils/typography.ts` tokens.
 
-| # | Section | Purpose |
-|---|---------|---------|
-| 1 | Hero | Foundation image backdrop (darkened), kicker "The Altivum Foundation", headline "Veteran scholarships in AI, Cloud & Robotics.", subtitle, two CTAs: primary "Visit altivumfoundation.org" + secondary "Give Now" (both `target="_blank"`). |
-| 2 | Vision | Centered copy with the foundation's core framing: "The military trains the operators the AI economy is looking for." + supporting paragraph adapted from the foundation site's HomeMission. |
-| 3 | Stats band | 3-column layout on navy tint. Gold numerals: `200K+` veterans transitioning annually, `3.5M` unfilled US tech jobs, `$0` cost to scholars. |
-| 4 | Focus Areas | 2×2 grid of four cards: Cloud Computing, Artificial Intelligence, Robotics, Cybersecurity. Ordinal (01–04) + name + short description per card. |
-| 5 | Founder tie-in | Left gold-rule block: kicker "Founder & President" → headline "Why I built this." → three first-person paragraphs → "More about Christian →" link back to `/about`. This is the section that justifies the page living on a personal site. |
-| 6 | CTA band | Gradient navy → blue. Headline "Ready to invest in a veteran's future?", subtitle "Every contribution is tax-deductible.", micro-line "501(c)(3) · EIN 41-4163272", two buttons: Give Now + Visit altivumfoundation.org. |
+| #   | Section        | Purpose                                                                                                                                                                                                                                     |
+| --- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Hero           | Foundation image backdrop (darkened), kicker "The Altivum Foundation", headline "Veteran scholarships in AI, Cloud & Robotics.", subtitle, two CTAs: primary "Visit altivumfoundation.org" + secondary "Give Now" (both `target="_blank"`). |
+| 2   | Vision         | Centered copy with the foundation's core framing: "The military trains the operators the AI economy is looking for." + supporting paragraph adapted from the foundation site's HomeMission.                                                 |
+| 3   | Stats band     | 3-column layout on navy tint. Gold numerals: `200K+` veterans transitioning annually, `3.5M` unfilled US tech jobs, `$0` cost to scholars.                                                                                                  |
+| 4   | Focus Areas    | 2×2 grid of four cards: Cloud Computing, Artificial Intelligence, Robotics, Cybersecurity. Ordinal (01–04) + name + short description per card.                                                                                             |
+| 5   | Founder tie-in | Left gold-rule block: kicker "Founder & President" → headline "Why I built this." → three first-person paragraphs → "More about Christian →" link back to `/about`. This is the section that justifies the page living on a personal site.  |
+| 6   | CTA band       | Gradient navy → blue. Headline "Ready to invest in a veteran's future?", subtitle "Every contribution is tax-deductible.", micro-line "501(c)(3) · EIN 41-4163272", two buttons: Give Now + Visit altivumfoundation.org.                    |
 
 **File:** `src/pages/Foundation.tsx`
 
@@ -139,6 +140,7 @@ No changes. Existing props (`faq`, `breadcrumbs`, `structuredData`) are sufficie
 ## Verification
 
 Local, pre-commit:
+
 - `npm run lint` — TS + ESLint clean.
 - `npm run build` — full pipeline passes (env validation, podcast fetch, tsc, vite, sitemap, RSS). Confirms the new route compiles, the Foundation chunk is emitted, and `/foundation` appears in the generated sitemap.
 - `npm run dev` — manual walk-through:

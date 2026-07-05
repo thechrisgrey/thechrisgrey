@@ -6,10 +6,7 @@
  * of spinning on a never-idle render loop.
  */
 export function isPrerender(): boolean {
-  if (
-    typeof window !== 'undefined' &&
-    (window as unknown as { __PRERENDER__?: boolean }).__PRERENDER__
-  ) {
+  if (typeof window !== 'undefined' && (window as unknown as { __PRERENDER__?: boolean }).__PRERENDER__) {
     return true;
   }
   if (typeof location !== 'undefined' && location.search) {

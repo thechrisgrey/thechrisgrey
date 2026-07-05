@@ -8,12 +8,7 @@
 // guidance that actually matches the failure (retryable timeout vs. offline vs.
 // a malformed payload).
 
-export type SanityErrorKind =
-  | 'timeout'
-  | 'network'
-  | 'not_found'
-  | 'malformed'
-  | 'unknown';
+export type SanityErrorKind = 'timeout' | 'network' | 'not_found' | 'malformed' | 'unknown';
 
 export interface SanityError {
   kind: SanityErrorKind;

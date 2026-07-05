@@ -32,7 +32,9 @@ const ChatContent = () => {
   }, []);
 
   const onForget = async () => {
-    const confirmed = window.confirm('Forget everything you told Alti? This deletes your saved facts and cannot be undone.');
+    const confirmed = window.confirm(
+      'Forget everything you told Alti? This deletes your saved facts and cannot be undone.',
+    );
     if (!confirmed) return;
     const result = await handleForgetMemory();
     if (result.ok) {
@@ -50,8 +52,8 @@ const ChatContent = () => {
         keywords="Alti, AI agent, Christian Perez, conversation, Altivum, veteran entrepreneur"
         url="https://thechrisgrey.com/chat"
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Alti", url: "https://thechrisgrey.com/chat" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Alti', url: 'https://thechrisgrey.com/chat' },
         ]}
       />
 
@@ -92,26 +94,14 @@ const ChatContent = () => {
       {/* Capability rail — surfaces Alti's tool-driven powers without forcing trial-and-error.
           Initially expanded on cold start (no user messages yet) so first-time visitors
           discover it; collapses to a one-line chip the moment they engage. */}
-      <CapabilityIntro
-        onUseExample={handleUseExample}
-        initiallyExpanded={showSuggestions}
-      />
+      <CapabilityIntro onUseExample={handleUseExample} initiallyExpanded={showSuggestions} />
 
       {/* Messages Container — data-lenis-prevent lets this inner scroller take the
           wheel/touch natively; without it site-wide Lenis hijacks the gesture and the
           conversation can't be scrolled (the page wrapper is overflow-hidden). */}
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto"
-        data-lenis-prevent
-      >
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto" data-lenis-prevent>
         <div className="max-w-4xl mx-auto px-6 py-8">
-          <div
-            className="space-y-6"
-            role="log"
-            aria-live="polite"
-            aria-label="Chat messages"
-          >
+          <div className="space-y-6" role="log" aria-live="polite" aria-label="Chat messages">
             {messages.map((message) => (
               <ChatMessage
                 key={message.id}

@@ -14,12 +14,8 @@ describe('cache', () => {
         publishedAt: '2026-01-01',
       },
     ],
-    tags: [
-      { _id: 'tag-1', title: 'Tech', slug: { current: 'tech' } },
-    ],
-    series: [
-      { _id: 'series-1', title: 'Test Series', slug: { current: 'test-series' } },
-    ],
+    tags: [{ _id: 'tag-1', title: 'Tech', slug: { current: 'tech' } }],
+    series: [{ _id: 'series-1', title: 'Test Series', slug: { current: 'test-series' } }],
   };
 
   beforeEach(() => {

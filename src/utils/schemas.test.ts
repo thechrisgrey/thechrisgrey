@@ -42,9 +42,7 @@ describe('schemas', () => {
     it('should include job title and employer', () => {
       const schema = buildPersonSchema();
       expect(schema.jobTitle).toBe('Founder & CEO');
-      expect(schema.worksFor).toEqual(
-        expect.objectContaining({ '@type': 'Organization', name: 'Altivum Inc.' })
-      );
+      expect(schema.worksFor).toEqual(expect.objectContaining({ '@type': 'Organization', name: 'Altivum Inc.' }));
     });
 
     it('should include credentials and awards', () => {
@@ -387,7 +385,7 @@ describe('schemas', () => {
       assertRequiredFields(buildContactPageSchema());
       assertRequiredFields(buildWebPageSchema({ name: 'n', description: 'd', url: 'https://thechrisgrey.com/x' }));
       assertRequiredFields(
-        buildProfilePageSchema({ name: 'n', description: 'd', url: 'https://thechrisgrey.com/about' })
+        buildProfilePageSchema({ name: 'n', description: 'd', url: 'https://thechrisgrey.com/about' }),
       );
       assertRequiredFields(buildFAQSchema([{ question: 'q', answer: 'a' }]));
       assertRequiredFields(buildBreadcrumbSchema([{ name: 'Home', url: 'https://thechrisgrey.com' }]));

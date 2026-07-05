@@ -1,16 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  createGoldenExamplesFetcher,
-  GOLDEN_EXAMPLES_QUERY,
-} from "../goldenExamples.mjs";
+import { createGoldenExamplesFetcher, GOLDEN_EXAMPLES_QUERY } from "../goldenExamples.mjs";
 
 function countingSanityClient(results, { failFirst = false } = {}) {
   let calls = 0;
   let shouldFail = failFirst;
   return {
     callCount: () => calls,
-    setFail(v) { shouldFail = v; },
+    setFail(v) {
+      shouldFail = v;
+    },
     async fetch(_query) {
       calls++;
       if (shouldFail) {
@@ -68,7 +67,9 @@ test("fetcher dedupes concurrent requests (single in-flight promise)", async () 
     calls: 0,
     async fetch() {
       this.calls++;
-      await new Promise((r) => { resolveFetch = r; });
+      await new Promise((r) => {
+        resolveFetch = r;
+      });
       return [{ _id: "x" }];
     },
   };

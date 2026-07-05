@@ -3,16 +3,30 @@ import assert from "node:assert/strict";
 import { buildTools } from "../../tools/index.mjs";
 
 class PutCommand {
-  constructor(input) { this.input = input; }
+  constructor(input) {
+    this.input = input;
+  }
 }
 class RetrieveCommand {
-  constructor(input) { this.input = input; }
+  constructor(input) {
+    this.input = input;
+  }
 }
-function fakeStream() { return { write: () => {} }; }
-function fakeMetrics() { return { record: () => {} }; }
-function fakeDoc() { return { send: async () => ({}) }; }
-function fakeSanity() { return { fetch: async () => null }; }
-function fakeAgentClient() { return { send: async () => ({ retrievalResults: [] }) }; }
+function fakeStream() {
+  return { write: () => {} };
+}
+function fakeMetrics() {
+  return { record: () => {} };
+}
+function fakeDoc() {
+  return { send: async () => ({}) };
+}
+function fakeSanity() {
+  return { fetch: async () => null };
+}
+function fakeAgentClient() {
+  return { send: async () => ({ retrievalResults: [] }) };
+}
 
 test("buildTools returns three tools by default (no sanity, no memory)", () => {
   const tools = buildTools({ responseStream: fakeStream(), metrics: fakeMetrics() });
@@ -38,7 +52,10 @@ test("buildTools includes render_ui ONLY on the page surface", () => {
     metrics: fakeMetrics(),
     surface: "page",
   });
-  assert.ok(onPage.some((t) => t.name === "render_ui"), "render_ui present on /chat page");
+  assert.ok(
+    onPage.some((t) => t.name === "render_ui"),
+    "render_ui present on /chat page",
+  );
 
   const onWidget = buildTools({
     responseStream: fakeStream(),

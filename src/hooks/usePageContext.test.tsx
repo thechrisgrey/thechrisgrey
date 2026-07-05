@@ -10,9 +10,7 @@ describe('usePageContext', () => {
 
   const renderWithRouter = (initialPath: string) => {
     return renderHook(() => usePageContext(), {
-      wrapper: ({ children }) => (
-        <MemoryRouter initialEntries={[initialPath]}>{children}</MemoryRouter>
-      ),
+      wrapper: ({ children }) => <MemoryRouter initialEntries={[initialPath]}>{children}</MemoryRouter>,
     });
   };
 

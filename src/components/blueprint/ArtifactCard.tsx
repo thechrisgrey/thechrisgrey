@@ -27,11 +27,12 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
     }
   };
 
-  const downloadFilename = artifact.kind === 'skill' || artifact.kind === 'subagent'
-    ? `${artifact.name}.md`
-    : artifact.kind === 'slash_command'
-    ? `${artifact.name}.md`
-    : `${artifact.name}.json`;
+  const downloadFilename =
+    artifact.kind === 'skill' || artifact.kind === 'subagent'
+      ? `${artifact.name}.md`
+      : artifact.kind === 'slash_command'
+        ? `${artifact.name}.md`
+        : `${artifact.name}.json`;
 
   const handleDownload = () => {
     const blob = new Blob([artifact.body], { type: 'text/plain;charset=utf-8' });
@@ -49,10 +50,7 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
     <article className="p-5 rounded-lg bg-altivum-navy/60 border border-white/5 hover:border-altivum-gold/20 transition-colors">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 min-w-0">
-          <span
-            className="material-icons text-altivum-gold shrink-0 mt-0.5"
-            aria-hidden="true"
-          >
+          <span className="material-icons text-altivum-gold shrink-0 mt-0.5" aria-hidden="true">
             {kindIcon[artifact.kind] ?? 'auto_awesome'}
           </span>
           <div className="min-w-0">
@@ -60,10 +58,7 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
               <h4 className="text-white truncate" style={typography.cardTitleSmall}>
                 {artifact.name}
               </h4>
-              <span
-                className="text-altivum-gold uppercase tracking-wider"
-                style={typography.smallText}
-              >
+              <span className="text-altivum-gold uppercase tracking-wider" style={typography.smallText}>
                 {ARTIFACT_LABELS[artifact.kind] ?? artifact.kind}
               </span>
             </div>

@@ -19,7 +19,7 @@ export async function validateCognitoToken(
   cognitoClient,
   GetUserCommand,
   authHeader,
-  { allowlist = process.env.ADMIN_ALLOWLIST } = {}
+  { allowlist = process.env.ADMIN_ALLOWLIST } = {},
 ) {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
 
@@ -38,7 +38,10 @@ export async function validateCognitoToken(
     const response = await cognitoClient.send(command);
 
     const attrs = response.UserAttributes || [];
-    const email = attrs.find((a) => a.Name === "email")?.Value?.trim().toLowerCase();
+    const email = attrs
+      .find((a) => a.Name === "email")
+      ?.Value?.trim()
+      .toLowerCase();
     const emailVerified = attrs.find((a) => a.Name === "email_verified")?.Value === "true";
 
     if (!email || !emailVerified || !allowed.includes(email)) {

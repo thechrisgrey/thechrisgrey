@@ -12,14 +12,14 @@
 
 ## File Structure
 
-| Action | File | Responsibility |
-|--------|------|---------------|
-| Modify | `src/__tests__/integration/BlogPost.integration.test.tsx` | Fix `SanityResponsiveImage` mock |
-| Modify | `src/__tests__/integration/Blog.integration.test.tsx` | Fix same `SanityResponsiveImage` mock |
-| Modify | `.github/workflows/ci.yml` | Add test step, npm audit, pin Node 20, remove `develop` branch |
-| Create | `.github/dependabot.yml` | Automated dependency vulnerability scanning |
-| Create | `LICENSE` | Repository license file |
-| Modify | `amplify.yml` | Add `npm run test` before build, remove dead `develop` reference if present |
+| Action | File                                                      | Responsibility                                                              |
+| ------ | --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Modify | `src/__tests__/integration/BlogPost.integration.test.tsx` | Fix `SanityResponsiveImage` mock                                            |
+| Modify | `src/__tests__/integration/Blog.integration.test.tsx`     | Fix same `SanityResponsiveImage` mock                                       |
+| Modify | `.github/workflows/ci.yml`                                | Add test step, npm audit, pin Node 20, remove `develop` branch              |
+| Create | `.github/dependabot.yml`                                  | Automated dependency vulnerability scanning                                 |
+| Create | `LICENSE`                                                 | Repository license file                                                     |
+| Modify | `amplify.yml`                                             | Add `npm run test` before build, remove dead `develop` reference if present |
 
 ---
 
@@ -30,6 +30,7 @@
 **Context:** `SanityResponsiveImage` (added recently) calls `urlFor(source).width(w).height(h).auto('format').quality(q).url()` and also `.blur(50)` for the LQIP placeholder. The existing `urlFor` mock in both Blog and BlogPost integration tests returns a shallow chain that doesn't include `.height()` or `.blur()`, causing `@sanity/image-url` to throw `"Malformed asset _ref"` when the real `urlFor` tries to parse the mock asset ID (`img-1`). The cleanest fix is to mock `SanityResponsiveImage` itself at the module level so these integration tests don't exercise the Sanity image URL builder at all.
 
 **Files:**
+
 - Modify: `src/__tests__/integration/BlogPost.integration.test.tsx:14-28`
 - Modify: `src/__tests__/integration/Blog.integration.test.tsx:14-26`
 
@@ -94,6 +95,7 @@ level instead of trying to replicate the full image-url builder chain."
 **Context:** The existing `.github/workflows/ci.yml` runs lint + build but not tests. It also targets a `develop` branch that doesn't exist, uses a Node 18.x/20.x matrix (but `.nvmrc` pins Node 20), and has `continue-on-error: true` on lint (which swallows failures).
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Rewrite the CI workflow**
@@ -150,6 +152,7 @@ jobs:
 ```
 
 **Key changes from the original:**
+
 - Removed `develop` branch (doesn't exist)
 - Removed Node 18.x from matrix (`.nvmrc` pins 20, no reason to test 18)
 - Uses `node-version-file: '.nvmrc'` instead of hardcoded version
@@ -186,6 +189,7 @@ git commit -m "ci: add test execution, npm audit, and pin Node 20
 **Context:** The Amplify build pipeline (`amplify.yml`) runs `npm run build` but doesn't run tests. Since Amplify is the production deployment path, tests should gate the build there too.
 
 **Files:**
+
 - Modify: `amplify.yml:8-9`
 
 - [ ] **Step 1: Add test step to amplify.yml build phase**
@@ -193,10 +197,10 @@ git commit -m "ci: add test execution, npm audit, and pin Node 20
 In `amplify.yml`, add `- npm run test` as the first command in the build phase, before `npm run build`:
 
 ```yaml
-    build:
-      commands:
-        - npm run test
-        - npm run build
+build:
+  commands:
+    - npm run test
+    - npm run build
 ```
 
 The full build commands section (lines 8-9) becomes lines 8-10.
@@ -220,6 +224,7 @@ the build from proceeding and the deploy from happening."
 **Context:** No dependency vulnerability scanning is configured. Dependabot will automatically open PRs when vulnerabilities are found in npm dependencies and GitHub Actions versions.
 
 **Files:**
+
 - Create: `.github/dependabot.yml`
 
 - [ ] **Step 1: Create the Dependabot configuration**
@@ -229,25 +234,26 @@ Create `.github/dependabot.yml`:
 ```yaml
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 10
     labels:
-      - "dependencies"
+      - 'dependencies'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     labels:
-      - "dependencies"
+      - 'dependencies'
 ```
 
 **Notes:**
+
 - Only scans the root `package.json`. Lambda dirs have their own `package.json` files but are not npm workspaces, so Dependabot won't auto-detect them. Adding Lambda dirs would require separate `directory` entries — consider adding these later if Lambda dependency drift becomes a concern.
 - Weekly on Monday keeps noise manageable.
 - `github-actions` ecosystem catches outdated action versions (e.g., `actions/checkout@v4`).
@@ -271,11 +277,13 @@ package.json and GitHub Actions versions."
 **Context:** The repo is public on GitHub but has no license file, which legally means "all rights reserved." Since this is a personal brand site (not a reusable template), an all-rights-reserved notice with a viewing permission clause is appropriate — it lets people read and learn from the code without granting permission to copy or redistribute the brand/content.
 
 **Files:**
+
 - Create: `LICENSE`
 
 - [ ] **Step 1: Confirm license choice with the user (MANDATORY HUMAN CHECKPOINT)**
 
 This step blocks execution until the user responds. Before creating the file, confirm with the user which license they want. Present the options:
+
 - **Option A: MIT** — permissive, anyone can fork/reuse
 - **Option B: CC BY-NC 4.0** — attribution required, no commercial use
 - **Option C: All Rights Reserved** — explicit notice that code may be viewed but not copied

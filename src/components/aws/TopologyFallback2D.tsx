@@ -21,9 +21,7 @@ export function TopologyFallback2D() {
   };
 
   // Pre-compute positions for connection line lookup
-  const positionMap = new Map(
-    clusters.map((c) => [c.id, toSvg(c.position)])
-  );
+  const positionMap = new Map(clusters.map((c) => [c.id, toSvg(c.position)]));
 
   // Collect unique connection pairs to avoid duplicate lines
   const drawnPairs = new Set<string>();
@@ -45,12 +43,7 @@ export function TopologyFallback2D() {
 
   return (
     <div>
-      <svg
-        viewBox="0 0 500 400"
-        className="w-full"
-        role="img"
-        aria-label="AWS infrastructure topology diagram"
-      >
+      <svg viewBox="0 0 500 400" className="w-full" role="img" aria-label="AWS infrastructure topology diagram">
         {/* Connection lines */}
         {connectionLines.map((line) => (
           <line
@@ -82,11 +75,7 @@ export function TopologyFallback2D() {
       </svg>
 
       {/* Detail panel below SVG */}
-      <FallbackDetail
-        cluster={expandedCluster}
-        allClusters={clusters}
-        onClose={() => setExpandedClusterId(null)}
-      />
+      <FallbackDetail cluster={expandedCluster} allClusters={clusters} onClose={() => setExpandedClusterId(null)} />
     </div>
   );
 }

@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  getPageContext,
-  getSuggestionsForPage,
-  PAGE_SUGGESTIONS,
-} from './pageContext';
+import { getPageContext, getSuggestionsForPage, PAGE_SUGGESTIONS } from './pageContext';
 
 describe('pageContext', () => {
   describe('getPageContext', () => {

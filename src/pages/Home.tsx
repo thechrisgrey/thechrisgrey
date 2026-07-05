@@ -22,14 +22,14 @@ import { isPrerender } from '../utils/prerender';
 const HeroCanvas = lazy(() => import('../components/home/HeroCanvas'));
 
 const keyPoints = [
-  { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
-  { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
-  { title: "The Altivum Foundation", subtitle: "Founder & President", link: "/foundation" },
-  { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-  { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-  { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
-  { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" },
-  { title: "thechrisgrey Blueprint", subtitle: "Architect", link: "/blueprint" }
+  { title: 'Personal Biography', subtitle: 'Christian Perez', link: '/about' },
+  { title: 'Altivum Inc', subtitle: 'Founder & CEO', link: '/altivum' },
+  { title: 'The Altivum Foundation', subtitle: 'Founder & President', link: '/foundation' },
+  { title: 'The Vector Podcast', subtitle: 'Host', link: '/podcast' },
+  { title: 'Beyond the Assessment', subtitle: 'Author', link: '/beyond-the-assessment' },
+  { title: 'Amazon Web Services', subtitle: 'AWS Community Builder (AI Engineering)', link: '/aws' },
+  { title: 'Claude', subtitle: 'Applied AI Engineer', link: '/claude' },
+  { title: 'thechrisgrey Blueprint', subtitle: 'Architect', link: '/blueprint' },
 ] as const;
 
 type KeyPoint = (typeof keyPoints)[number];
@@ -42,7 +42,7 @@ interface KeyPointTabProps {
 }
 
 const KeyPointTab = ({ point, index, triggerRef, mirrored = false }: KeyPointTabProps) => {
-  const direction = mirrored ? 'right' as const : 'left' as const;
+  const direction = mirrored ? ('right' as const) : ('left' as const);
   const cardClass = mirrored
     ? 'border-l-4 md:border-l-0 md:border-r-4 border-altivum-gold pl-4 sm:pl-6 md:pl-0 md:pr-6 py-3 sm:py-4 md:text-right transition-all duration-300'
     : 'border-l-4 border-altivum-gold pl-4 sm:pl-6 py-3 sm:py-4 transition-all duration-300';
@@ -102,10 +102,11 @@ const Home = () => {
         faq={homeFAQs}
         structuredData={[
           buildWebPageSchema({
-            name: "Christian Perez - thechrisgrey",
-            description: "Personal website of Christian Perez, Founder & CEO of Altivum Inc., Former Green Beret, and Host of The Vector Podcast.",
-            url: "https://thechrisgrey.com"
-          })
+            name: 'Christian Perez - thechrisgrey',
+            description:
+              'Personal website of Christian Perez, Founder & CEO of Altivum Inc., Former Green Beret, and Host of The Vector Podcast.',
+            url: 'https://thechrisgrey.com',
+          }),
         ]}
       />
       {/* Hero Section with fade-in animation */}
@@ -191,7 +192,8 @@ const Home = () => {
             Let's Connect
           </h2>
           <p className="text-altivum-silver mb-8 sm:mb-10 max-w-2xl mx-auto" style={typography.subtitle}>
-            Field notes on AI, cloud, and leadership — plus the occasional dispatch on what I'm building. Straight to your inbox, no noise.
+            Field notes on AI, cloud, and leadership — plus the occasional dispatch on what I'm building. Straight to
+            your inbox, no noise.
           </p>
 
           {/* Primary: owned-audience capture */}
@@ -205,14 +207,18 @@ const Home = () => {
               to="/podcast"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 bg-altivum-gold text-altivum-dark font-semibold rounded-md hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
-              <span className="material-icons text-xl" aria-hidden="true">podcasts</span>
+              <span className="material-icons text-xl" aria-hidden="true">
+                podcasts
+              </span>
               Listen to the Podcast
             </ViewTransitionLink>
             <ViewTransitionLink
               to="/beyond-the-assessment"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 bg-transparent border-2 border-altivum-gold text-altivum-gold font-semibold rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-300 touch-manipulation min-h-[48px]"
             >
-              <span className="material-icons text-xl" aria-hidden="true">menu_book</span>
+              <span className="material-icons text-xl" aria-hidden="true">
+                menu_book
+              </span>
               Get the Book
             </ViewTransitionLink>
           </div>

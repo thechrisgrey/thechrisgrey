@@ -45,10 +45,7 @@ test("OUTPUT_FORMAT_INSTRUCTIONS enumerates every required field", () => {
     "next_steps",
     "caveats",
   ]) {
-    assert.ok(
-      OUTPUT_FORMAT_INSTRUCTIONS.includes(field),
-      `expected OUTPUT_FORMAT_INSTRUCTIONS to mention ${field}`,
-    );
+    assert.ok(OUTPUT_FORMAT_INSTRUCTIONS.includes(field), `expected OUTPUT_FORMAT_INSTRUCTIONS to mention ${field}`);
   }
 });
 
@@ -98,9 +95,7 @@ test("selectExamples prefers category matches", () => {
 });
 
 test("selectExamples honors the limit", () => {
-  const examples = Array.from({ length: 10 }, (_, i) =>
-    makeExample({ _id: `e${i}`, category: "rag", sortOrder: i }),
-  );
+  const examples = Array.from({ length: 10 }, (_, i) => makeExample({ _id: `e${i}`, category: "rag", sortOrder: i }));
   assert.equal(selectExamples(examples, { category: "rag" }, 2).length, 2);
 });
 

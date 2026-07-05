@@ -1,12 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId } from '../utils/deviceId';
-import type {
-  BlueprintInput,
-  BlueprintOutput,
-  BlueprintResponse,
-  BlueprintSuccessResponse,
-} from '../types/blueprint';
+import type { BlueprintInput, BlueprintOutput, BlueprintResponse, BlueprintSuccessResponse } from '../types/blueprint';
 
 const BLUEPRINT_ENDPOINT = import.meta.env.VITE_BLUEPRINT_ENDPOINT || '';
 const REQUEST_TIMEOUT_MS = 90_000; // Opus generation can take a while
@@ -42,11 +37,8 @@ export interface UseBlueprintReturn extends UseBlueprintState {
 }
 
 function classifyError(res: Response, body: BlueprintResponse | null): BlueprintError {
-  const errorCode =
-    body && !body.ok && 'error' in body ? (body as { error?: string }).error : undefined;
-  const message =
-    (body && !body.ok && 'message' in body && (body as { message?: string }).message) ||
-    undefined;
+  const errorCode = body && !body.ok && 'error' in body ? (body as { error?: string }).error : undefined;
+  const message = (body && !body.ok && 'message' in body && (body as { message?: string }).message) || undefined;
 
   switch (res.status) {
     case 429:
@@ -65,8 +57,7 @@ function classifyError(res: Response, body: BlueprintResponse | null): Blueprint
       if (errorCode === 'invalid_device_id') {
         return {
           kind: 'invalid_device_id',
-          message:
-            'Your browser session is missing an identifier. Refresh the page and try again.',
+          message: 'Your browser session is missing an identifier. Refresh the page and try again.',
         };
       }
       return {
@@ -77,9 +68,7 @@ function classifyError(res: Response, body: BlueprintResponse | null): Blueprint
     case 502:
       return {
         kind: 'validation_failed',
-        message:
-          message ||
-          "The model returned a blueprint that didn't meet our quality bar. Please try again.",
+        message: message || "The model returned a blueprint that didn't meet our quality bar. Please try again.",
       };
     case 504:
       return {
@@ -114,8 +103,7 @@ export function useBlueprint(): UseBlueprintReturn {
     if (!BLUEPRINT_ENDPOINT) {
       setError({
         kind: 'not_configured',
-        message:
-          'Blueprint endpoint not configured. Set VITE_BLUEPRINT_ENDPOINT in your environment.',
+        message: 'Blueprint endpoint not configured. Set VITE_BLUEPRINT_ENDPOINT in your environment.',
       });
       return;
     }
@@ -171,14 +159,12 @@ export function useBlueprint(): UseBlueprintReturn {
       if ((err as Error)?.name === 'AbortError') {
         setError({
           kind: 'timeout',
-          message:
-            'Generation took longer than expected. The model may still be warming up — please try again.',
+          message: 'Generation took longer than expected. The model may still be warming up — please try again.',
         });
       } else {
         setError({
           kind: 'network',
-          message:
-            "We couldn't reach the blueprint service. Check your connection and try again.",
+          message: "We couldn't reach the blueprint service. Check your connection and try again.",
         });
       }
     } finally {

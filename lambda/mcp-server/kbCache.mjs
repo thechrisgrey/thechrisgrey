@@ -10,11 +10,7 @@
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_MAX_ENTRIES = 100;
 
-export function createKbCache({
-  ttlMs = DEFAULT_TTL_MS,
-  maxEntries = DEFAULT_MAX_ENTRIES,
-  now = Date.now,
-} = {}) {
+export function createKbCache({ ttlMs = DEFAULT_TTL_MS, maxEntries = DEFAULT_MAX_ENTRIES, now = Date.now } = {}) {
   const store = new Map();
 
   function evictIfFull() {

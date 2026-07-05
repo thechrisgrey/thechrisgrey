@@ -17,7 +17,7 @@ const renderAltivum = () =>
       <MemoryRouter initialEntries={['/altivum']}>
         <Altivum />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 
 describe('Altivum Page Integration', () => {
@@ -34,15 +34,9 @@ describe('Altivum Page Integration', () => {
     renderAltivum();
     // Each imperative title appears once in the founder-journey list and once in
     // the mission-statement grid — proving the hoisted IMPERATIVES const drives both.
-    expect(
-      screen.getAllByText(/Advance AI through real-world application/)
-    ).toHaveLength(2);
-    expect(
-      screen.getAllByText(/Strengthen human-machine integration/)
-    ).toHaveLength(2);
-    expect(
-      screen.getAllByText(/Position veterans as strategic leaders/)
-    ).toHaveLength(2);
+    expect(screen.getAllByText(/Advance AI through real-world application/)).toHaveLength(2);
+    expect(screen.getAllByText(/Strengthen human-machine integration/)).toHaveLength(2);
+    expect(screen.getAllByText(/Position veterans as strategic leaders/)).toHaveLength(2);
   });
 
   it('applies the standard button recipe to the learn-more CTAs', () => {

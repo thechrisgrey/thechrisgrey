@@ -9,6 +9,7 @@
 **Tech Stack:** React 19, TypeScript, Tailwind 3, GSAP 3 + ScrollTrigger (already wired to Lenis via `useLenis.ts`), @react-three/fiber 9 + drei 10 + three 0.183 (already installed), @fontsource/playfair-display (new), sharp (already a devDependency, used by the grading script).
 
 **Existing infrastructure to reuse (do NOT reinvent):**
+
 - `src/components/SafeCanvas.tsx` — ErrorBoundary+Suspense wrapper for WebGL trees
 - `src/utils/checkWebGL.ts` — cached WebGL support probe
 - `src/utils/prerender.ts` — `isPrerender()`; ALL GSAP/WebGL effects must early-return when true
@@ -58,6 +59,7 @@ git commit -m "feat(redesign): add self-hosted Playfair Display via fontsource"
 ### Task 2: Design tokens + font wiring
 
 **Files:**
+
 - Modify: `tailwind.config.js:25-34` (colors) and `:9-13` (fontFamily)
 - Modify: `src/main.tsx` (font CSS imports)
 
@@ -140,6 +142,7 @@ git commit -m "feat(redesign): Gallery palette tokens (porcelain, umber) + edito
 ### Task 3: `editorialType` module (TDD)
 
 **Files:**
+
 - Create: `src/utils/editorialType.ts`
 - Test: `src/utils/editorialType.test.ts`
 
@@ -203,8 +206,7 @@ Expected: FAIL — "Cannot find module './editorialType'"
 // Accent rule: within any display headline exactly one word may be italic gold;
 // hierarchy comes from scale and italics — never bold (max weight 500).
 
-export const EDITORIAL_FONT_FAMILY =
-  '"Playfair Display", "Playfair Fallback", Didot, Georgia, serif';
+export const EDITORIAL_FONT_FAMILY = '"Playfair Display", "Playfair Fallback", Didot, Georgia, serif';
 
 export const editorialType = {
   // Hero display — the bento scene-tile name (44px -> 104px)
@@ -285,6 +287,7 @@ git commit -m "feat(redesign): editorialType display typography module"
 ### Task 4: `Eyebrow` component (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/Eyebrow.tsx`
 - Test: `src/components/editorial/Eyebrow.test.tsx`
 
@@ -374,7 +377,7 @@ const Eyebrow = ({ children, className = 'text-altivum-porcelain/55' }: EyebrowP
         duration: 0.8,
         ease: 'power3.out',
         scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
-      }
+      },
     );
 
     return () => {
@@ -410,6 +413,7 @@ git commit -m "feat(redesign): Eyebrow parenthetical section label"
 ### Task 5: `EditorialPill` component (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/EditorialPill.tsx`
 - Test: `src/components/editorial/EditorialPill.test.tsx`
 
@@ -427,7 +431,7 @@ describe('EditorialPill', () => {
     render(
       <MemoryRouter>
         <EditorialPill to="/contact">CONTACT</EditorialPill>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     const link = screen.getByRole('link', { name: 'CONTACT' });
     expect(link).toHaveAttribute('href', '/contact');
@@ -449,7 +453,7 @@ describe('EditorialPill', () => {
     render(
       <EditorialPill onClick={() => {}} variant="dark-solid">
         START
-      </EditorialPill>
+      </EditorialPill>,
     );
     expect(screen.getByRole('button')).toHaveClass('bg-altivum-dark');
   });
@@ -484,10 +488,8 @@ const VARIANT_CLASSES: Record<PillVariant, string> = {
   'gold-outline':
     'border-altivum-gold text-altivum-gold hover:bg-altivum-gold/10 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)]',
   // On the porcelain CTA section
-  'dark-solid':
-    'border-altivum-dark bg-altivum-dark text-altivum-porcelain hover:bg-altivum-navy',
-  'dark-outline':
-    'border-altivum-dark/30 text-altivum-dark hover:border-altivum-dark hover:bg-altivum-dark/5',
+  'dark-solid': 'border-altivum-dark bg-altivum-dark text-altivum-porcelain hover:bg-altivum-navy',
+  'dark-outline': 'border-altivum-dark/30 text-altivum-dark hover:border-altivum-dark hover:bg-altivum-dark/5',
 };
 
 const BASE_CLASSES =
@@ -551,6 +553,7 @@ git commit -m "feat(redesign): EditorialPill CTA component"
 ### Task 6: `CountUp` stat numeral (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/CountUp.tsx`
 - Test: `src/components/editorial/CountUp.test.tsx`
 
@@ -586,9 +589,7 @@ describe('CountUp', () => {
 
   it('exposes one combined accessible label', () => {
     render(<CountUp value={60} suffix="+" caption="podcast episodes" />);
-    expect(
-      screen.getByLabelText('60+ — podcast episodes')
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('60+ — podcast episodes')).toBeInTheDocument();
   });
 
   it('renders the caption', () => {
@@ -658,7 +659,7 @@ const CountUp = ({ value, suffix = '', caption, className = '' }: CountUpProps) 
           el.textContent = String(Math.round(counter.n));
         },
         scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
-      }
+      },
     );
 
     return () => {
@@ -710,6 +711,7 @@ git commit -m "feat(redesign): CountUp serif stat numeral with roll-up animation
 ### Task 7: Shared editorial canvas (provider + context)
 
 **Files:**
+
 - Create: `src/components/editorial/EditorialCanvas.tsx`
 - Test: `src/components/editorial/EditorialCanvas.test.tsx`
 
@@ -740,7 +742,7 @@ describe('EditorialCanvasProvider', () => {
     render(
       <EditorialCanvasProvider>
         <p>page content</p>
-      </EditorialCanvasProvider>
+      </EditorialCanvasProvider>,
     );
     expect(screen.getByText('page content')).toBeInTheDocument();
   });
@@ -749,7 +751,7 @@ describe('EditorialCanvasProvider', () => {
     render(
       <EditorialCanvasProvider>
         <Probe />
-      </EditorialCanvasProvider>
+      </EditorialCanvasProvider>,
     );
     expect(screen.getByTestId('probe')).toHaveTextContent('fallback');
   });
@@ -770,13 +772,7 @@ Expected: FAIL — "Cannot find module './EditorialCanvas'"
 
 ```tsx
 // src/components/editorial/EditorialCanvas.tsx
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { View } from '@react-three/drei';
 import SafeCanvas from '../SafeCanvas';
@@ -810,11 +806,7 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
   const [idle, setIdle] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const enabled =
-    !reducedMotion &&
-    typeof document !== 'undefined' &&
-    checkWebGLSupport() &&
-    !isPrerender();
+  const enabled = !reducedMotion && typeof document !== 'undefined' && checkWebGLSupport() && !isPrerender();
 
   useEffect(() => {
     if (!enabled) return;
@@ -827,9 +819,7 @@ export const EditorialCanvasProvider = ({ children }: { children: ReactNode }) =
   }, [enabled]);
 
   // Pause rendering entirely when the tab is hidden (same policy as AltiMascot).
-  const [docVisible, setDocVisible] = useState(() =>
-    typeof document === 'undefined' ? true : !document.hidden
-  );
+  const [docVisible, setDocVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden));
   useEffect(() => {
     const onVisibility = () => setDocVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
@@ -876,6 +866,7 @@ git commit -m "feat(redesign): shared editorial WebGL canvas with View multiplex
 ### Task 8: Ridge — shader, fallback SVG, View (TDD on fallback)
 
 **Files:**
+
 - Create: `src/components/editorial/ridgeShader.ts`
 - Create: `src/components/editorial/RidgeFallback.tsx`
 - Create: `src/components/editorial/RidgeView.tsx`
@@ -929,12 +920,7 @@ const RidgeFallback = ({ hidden = false }: RidgeFallbackProps) => (
       hidden ? 'opacity-0' : 'opacity-100'
     }`}
   >
-    <svg
-      viewBox="0 0 500 200"
-      preserveAspectRatio="none"
-      className="h-full w-full"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 500 200" preserveAspectRatio="none" className="h-full w-full" aria-hidden="true">
       <g fill="none" stroke="#C5A572" strokeWidth="0.7">
         <path d="M0,160 Q80,90 150,125 T290,80 T420,115 T500,60" opacity="0.9" />
         <path d="M0,172 Q90,110 160,140 T300,100 T430,130 T500,82" opacity="0.6" />
@@ -1065,7 +1051,7 @@ function RidgeTerrain() {
       uColorGold: { value: COLOR_GOLD.clone() },
       uColorPorcelain: { value: COLOR_PORCELAIN.clone() },
     }),
-    []
+    [],
   );
 
   // Draw-in once (~1.8s, power3-like curve), then never invalidate again —
@@ -1130,6 +1116,7 @@ git commit -m "feat(redesign): procedural contour ridge — shader, WebGL view, 
 ### Task 9: Atmosphere particles
 
 **Files:**
+
 - Create: `src/components/editorial/AtmosphereView.tsx`
 - Test: `src/components/editorial/atmosphere.test.ts` (pure-math helper test)
 
@@ -1262,6 +1249,7 @@ git commit -m "feat(redesign): gold-dust atmosphere view with 30fps demand cap"
 ### Task 10: Imagery — sourcing, grading script, assets
 
 **Files:**
+
 - Create: `scripts/grade-editorial-images.mjs`
 - Create: `scripts/editorial-raw/` (working dir, gitignored)
 - Create: `src/assets/editorial/` (graded outputs, committed)
@@ -1269,14 +1257,14 @@ git commit -m "feat(redesign): gold-dust atmosphere view with 30fps demand cap"
 
 Needed images (6 total) — subjects per spec §8 (abstract textures + architectural minimalism), each must read at 60% darkness with type over it, no busy mid-tones:
 
-| File stem | Subject | Used by |
-|---|---|---|
-| `portrait` | existing `public/profile1.jpeg` | (ABOUT) center |
-| `venture-altivum` | concrete architectural curve | Ventures panel 1 |
-| `venture-podcast` | dark fabric / smoke texture | Ventures panel 2 |
-| `venture-book` | paper / linen texture, moody light | Ventures panel 3 |
-| `venture-aws` | glass facade light study | Ventures panel 4 |
-| `break-interior` | minimal interior or stair shadow, wide | Image break |
+| File stem         | Subject                                | Used by          |
+| ----------------- | -------------------------------------- | ---------------- |
+| `portrait`        | existing `public/profile1.jpeg`        | (ABOUT) center   |
+| `venture-altivum` | concrete architectural curve           | Ventures panel 1 |
+| `venture-podcast` | dark fabric / smoke texture            | Ventures panel 2 |
+| `venture-book`    | paper / linen texture, moody light     | Ventures panel 3 |
+| `venture-aws`     | glass facade light study               | Ventures panel 4 |
+| `break-interior`  | minimal interior or stair shadow, wide | Image break      |
 
 - [ ] **Step 1: Gitignore the raw working dir**
 
@@ -1327,11 +1315,7 @@ for (const file of files) {
 
   for (const width of WIDTHS) {
     if (srcWidth && srcWidth < width) continue;
-    const resized = await src
-      .clone()
-      .resize(width)
-      .modulate({ saturation: 0.78, brightness: 0.92 })
-      .toBuffer();
+    const resized = await src.clone().resize(width).modulate({ saturation: 0.78, brightness: 0.92 }).toBuffer();
     const { width: w, height: h } = await sharp(resized).metadata();
     // Warm umber multiply wash (#3E3A33 at 30%) pulls every image into the palette.
     const wash = await sharp({
@@ -1374,6 +1358,7 @@ git commit -m "feat(redesign): graded editorial image set + sharp grading pipeli
 ### Task 11: `EditorialImage` + displacement surface (TDD on DOM path)
 
 **Files:**
+
 - Create: `src/components/editorial/surfaceShader.ts`
 - Create: `src/components/editorial/EditorialImage.tsx`
 - Test: `src/components/editorial/EditorialImage.test.tsx`
@@ -1411,9 +1396,7 @@ describe('EditorialImage', () => {
   });
 
   it('builds avif/webp sources and jpg fallback from the stem', () => {
-    const { container } = render(
-      <EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" />
-    );
+    const { container } = render(<EditorialImage stem={stem} alt="Concrete curve" aspect="4 / 3" />);
     const sources = container.querySelectorAll('source');
     expect(sources[0].getAttribute('type')).toBe('image/avif');
     expect(sources[1].getAttribute('type')).toBe('image/webp');
@@ -1688,6 +1671,7 @@ git commit -m "feat(redesign): EditorialImage with WebGL displacement surface + 
 ### Task 12: `useCascadeReveal` + Command Grid hero (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/useCascadeReveal.ts`
 - Create: `src/components/editorial/CommandGridHero.tsx`
 - Test: `src/components/editorial/CommandGridHero.test.tsx`
@@ -1726,7 +1710,7 @@ const renderHero = () =>
   render(
     <MemoryRouter>
       <CommandGridHero />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 describe('CommandGridHero', () => {
@@ -1749,19 +1733,13 @@ describe('CommandGridHero', () => {
 
   it('links the wayfinding tiles to their routes', () => {
     renderHero();
-    expect(screen.getByRole('link', { name: /The Vector Podcast/i })).toHaveAttribute(
-      'href',
-      '/podcast'
-    );
+    expect(screen.getByRole('link', { name: /The Vector Podcast/i })).toHaveAttribute('href', '/podcast');
     expect(screen.getByRole('link', { name: /Beyond the Assessment/i })).toHaveAttribute(
       'href',
-      '/beyond-the-assessment'
+      '/beyond-the-assessment',
     );
     expect(screen.getByRole('link', { name: /Altivum Inc/i })).toHaveAttribute('href', '/altivum');
-    expect(screen.getByRole('link', { name: /Start a conversation/i })).toHaveAttribute(
-      'href',
-      '/contact'
-    );
+    expect(screen.getByRole('link', { name: /Start a conversation/i })).toHaveAttribute('href', '/contact');
   });
 
   it('renders the static ridge fallback in jsdom (no WebGL)', () => {
@@ -1802,7 +1780,7 @@ export function useCascadeReveal(containerRef: RefObject<HTMLElement | null>) {
     const tween = gsap.fromTo(
       tiles,
       { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, ease: 'power3.out' }
+      { opacity: 1, y: 0, duration: 0.7, stagger: 0.06, ease: 'power3.out' },
     );
     return () => {
       tween.kill();
@@ -1833,7 +1811,13 @@ const TILE_BASE =
 
 const WAYFINDING = [
   { eyebrow: 'PODCAST', title: 'The Vector', italic: 'Podcast', to: '/podcast', label: 'The Vector Podcast' },
-  { eyebrow: 'BOOK', title: 'Beyond the', italic: 'Assessment', to: '/beyond-the-assessment', label: 'Beyond the Assessment' },
+  {
+    eyebrow: 'BOOK',
+    title: 'Beyond the',
+    italic: 'Assessment',
+    to: '/beyond-the-assessment',
+    label: 'Beyond the Assessment',
+  },
   { eyebrow: 'VENTURE', title: 'Altivum', italic: 'Inc.', to: '/altivum', label: 'Altivum Inc.' },
 ];
 
@@ -1884,8 +1868,8 @@ const CommandGridHero = () => {
         {/* Intro tile */}
         <div data-cascade className={`${TILE_BASE} col-span-2 p-5 md:col-span-4 md:row-span-2`}>
           <p className="relative z-30 text-sm leading-relaxed text-altivum-silver">
-            Special Forces medic turned founder. Building AI-native systems at Altivum,
-            asking better questions on The Vector Podcast.
+            Special Forces medic turned founder. Building AI-native systems at Altivum, asking better questions on The
+            Vector Podcast.
           </p>
         </div>
 
@@ -1912,7 +1896,8 @@ const CommandGridHero = () => {
           className={`${TILE_BASE} col-span-1 flex flex-col items-start justify-between gap-3 p-5 md:col-span-4 md:row-span-2 md:flex-row md:items-center`}
         >
           <span className="relative z-30 text-[0.625rem] uppercase tracking-[0.15em] text-altivum-porcelain">
-            Start a<br />conversation
+            Start a<br />
+            conversation
           </span>
           <EditorialPill to="/contact" className="!px-5 !py-2.5 !min-h-0 text-[0.625rem]">
             <span className="sr-only">Start a conversation — </span>Contact
@@ -1929,9 +1914,11 @@ const CommandGridHero = () => {
             className={`${TILE_BASE} group col-span-1 block p-5 md:col-span-3 md:row-span-2`}
           >
             <Eyebrow className="text-altivum-porcelain/40">{item.eyebrow}</Eyebrow>
-            <p className="relative z-30 mt-2 text-altivum-porcelain" style={{ fontFamily: EDITORIAL_FONT_FAMILY, fontSize: '1rem' }}>
-              {item.title}{' '}
-              <span className="italic text-altivum-gold group-hover:underline">{item.italic}</span>
+            <p
+              className="relative z-30 mt-2 text-altivum-porcelain"
+              style={{ fontFamily: EDITORIAL_FONT_FAMILY, fontSize: '1rem' }}
+            >
+              {item.title} <span className="italic text-altivum-gold group-hover:underline">{item.italic}</span>
             </p>
           </ViewTransitionLink>
         ))}
@@ -1942,9 +1929,7 @@ const CommandGridHero = () => {
           className={`${TILE_BASE} col-span-1 flex items-center justify-center p-5 md:col-span-3 md:row-span-2`}
           aria-hidden="true"
         >
-          <span className="text-[0.625rem] uppercase tracking-[0.25em] text-altivum-porcelain/50">
-            Scroll ↓
-          </span>
+          <span className="text-[0.625rem] uppercase tracking-[0.25em] text-altivum-porcelain/50">Scroll ↓</span>
         </div>
       </div>
     </section>
@@ -1971,6 +1956,7 @@ git commit -m "feat(redesign): Command Grid bento hero with live ridge scene til
 ### Task 13: (ABOUT) section (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/AboutSection.tsx`
 - Test: `src/components/editorial/AboutSection.test.tsx`
 
@@ -2019,7 +2005,7 @@ describe('AboutSection', () => {
     render(
       <MemoryRouter>
         <AboutSection />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
   it('renders the (ABOUT) eyebrow', () => {
@@ -2035,10 +2021,7 @@ describe('AboutSection', () => {
 
   it('links to the full story', () => {
     renderSection();
-    expect(screen.getByRole('link', { name: /THE FULL STORY/i })).toHaveAttribute(
-      'href',
-      '/about'
-    );
+    expect(screen.getByRole('link', { name: /THE FULL STORY/i })).toHaveAttribute('href', '/about');
   });
 
   it('renders the graded portrait', () => {
@@ -2100,9 +2083,8 @@ const AboutSection = () => (
 
       <FadeReveal direction="right" className="relative z-30 md:pt-8">
         <p className="text-sm leading-relaxed text-altivum-silver">
-          Eighteen years from Special Forces medic to founder &amp; CEO. Every venture —
-          Altivum, The Vector Podcast, Beyond the Assessment — runs on the same operating
-          system: assess honestly, decide fast, execute completely.
+          Eighteen years from Special Forces medic to founder &amp; CEO. Every venture — Altivum, The Vector Podcast,
+          Beyond the Assessment — runs on the same operating system: assess honestly, decide fast, execute completely.
         </p>
         <div className="mt-8">
           <EditorialPill to="/about">The Full Story</EditorialPill>
@@ -2132,6 +2114,7 @@ git commit -m "feat(redesign): (ABOUT) editorial split section"
 ### Task 14: (THE RECORD) stats section (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/RecordSection.tsx`
 - Test: `src/components/editorial/RecordSection.test.tsx`
 
@@ -2164,9 +2147,7 @@ describe('RecordSection', () => {
   it('renders all four stats with accessible labels', () => {
     render(<RecordSection />);
     expect(screen.getByLabelText('18D — Special Forces Medical Sergeant')).toBeInTheDocument();
-    expect(
-      screen.getByLabelText('60+ — podcast episodes & conversations')
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('60+ — podcast episodes & conversations')).toBeInTheDocument();
     expect(screen.getByLabelText('1 — book — Beyond the Assessment')).toBeInTheDocument();
     expect(screen.getByLabelText('3x — ventures built and operating')).toBeInTheDocument();
   });
@@ -2191,9 +2172,24 @@ import CountUp from './CountUp';
  * editable content; the layout supports 3-5 stats.
  */
 const STATS = [
-  { value: 18, suffix: 'D', caption: 'Special Forces Medical Sergeant', desktop: 'md:absolute md:left-[8%] md:top-[10%]' },
-  { value: 60, suffix: '+', caption: 'podcast episodes & conversations', desktop: 'md:absolute md:right-[12%] md:top-0' },
-  { value: 1, suffix: '', caption: 'book — Beyond the Assessment', desktop: 'md:absolute md:bottom-[18%] md:left-[34%]' },
+  {
+    value: 18,
+    suffix: 'D',
+    caption: 'Special Forces Medical Sergeant',
+    desktop: 'md:absolute md:left-[8%] md:top-[10%]',
+  },
+  {
+    value: 60,
+    suffix: '+',
+    caption: 'podcast episodes & conversations',
+    desktop: 'md:absolute md:right-[12%] md:top-0',
+  },
+  {
+    value: 1,
+    suffix: '',
+    caption: 'book — Beyond the Assessment',
+    desktop: 'md:absolute md:bottom-[18%] md:left-[34%]',
+  },
   { value: 3, suffix: 'x', caption: 'ventures built and operating', desktop: 'md:absolute md:bottom-0 md:right-[8%]' },
 ];
 
@@ -2234,6 +2230,7 @@ git commit -m "feat(redesign): (THE RECORD) asymmetric stat section"
 ### Task 15: (VENTURES) pinned horizontal carousel (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/VenturesSection.tsx`
 - Test: `src/components/editorial/VenturesSection.test.tsx`
 
@@ -2277,7 +2274,7 @@ describe('VenturesSection', () => {
     render(
       <MemoryRouter>
         <VenturesSection />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
   it('renders the (VENTURES) eyebrow and numbered indicator', () => {
@@ -2291,10 +2288,7 @@ describe('VenturesSection', () => {
     renderSection();
     expect(screen.getByRole('link', { name: /Altivum/i })).toHaveAttribute('href', '/altivum');
     expect(screen.getByRole('link', { name: /Vector/i })).toHaveAttribute('href', '/podcast');
-    expect(screen.getByRole('link', { name: /Assessment/i })).toHaveAttribute(
-      'href',
-      '/beyond-the-assessment'
-    );
+    expect(screen.getByRole('link', { name: /Assessment/i })).toHaveAttribute('href', '/beyond-the-assessment');
     expect(screen.getByRole('link', { name: /Cloud & AI/i })).toHaveAttribute('href', '/aws');
   });
 
@@ -2402,7 +2396,10 @@ const VenturesSection = () => {
     <section ref={sectionRef} className="overflow-hidden py-24 md:py-0" aria-label="Ventures">
       <div className="flex items-center justify-between px-6 pb-10 md:pt-28 lg:px-12">
         <Eyebrow>VENTURES</Eyebrow>
-        <div className="relative z-30 flex gap-3 text-[0.625rem] tracking-[0.2em] text-altivum-silver" aria-hidden="true">
+        <div
+          className="relative z-30 flex gap-3 text-[0.625rem] tracking-[0.2em] text-altivum-silver"
+          aria-hidden="true"
+        >
           {VENTURES.map((v, i) => (
             <span key={v.to} className={i === active ? 'text-altivum-gold' : ''}>
               ({i + 1})
@@ -2426,12 +2423,7 @@ const VenturesSection = () => {
             to={venture.to}
             className="group relative min-w-[82vw] snap-start overflow-hidden rounded-md md:min-w-[60vw]"
           >
-            <EditorialImage
-              stem={venture.stem}
-              alt=""
-              aspect="16 / 9"
-              sizes="82vw"
-            />
+            <EditorialImage stem={venture.stem} alt="" aspect="16 / 9" sizes="82vw" />
             <div className="absolute inset-0 bg-gradient-to-t from-altivum-dark/85 via-altivum-dark/20 to-transparent" />
             <div className="absolute bottom-8 left-8 z-30">
               <h3 className="text-altivum-porcelain" style={editorialType.displaySection}>
@@ -2440,11 +2432,12 @@ const VenturesSection = () => {
                   {venture.italic}
                 </span>
               </h3>
-              <p className="mt-3 max-w-xs text-xs uppercase tracking-[0.12em] text-altivum-silver">
-                {venture.desc}
-              </p>
+              <p className="mt-3 max-w-xs text-xs uppercase tracking-[0.12em] text-altivum-silver">{venture.desc}</p>
             </div>
-            <span className="absolute right-8 top-8 z-30 text-altivum-gold opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" aria-hidden="true">
+            <span
+              className="absolute right-8 top-8 z-30 text-altivum-gold opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100"
+              aria-hidden="true"
+            >
               →
             </span>
           </ViewTransitionLink>
@@ -2474,6 +2467,7 @@ git commit -m "feat(redesign): (VENTURES) pinned horizontal carousel with touch 
 ### Task 16: Image break + porcelain CTA (TDD)
 
 **Files:**
+
 - Create: `src/components/editorial/ImageBreak.tsx`
 - Create: `src/components/editorial/CtaSection.tsx`
 - Test: `src/components/editorial/CtaSection.test.tsx`
@@ -2509,7 +2503,7 @@ describe('CtaSection', () => {
     render(
       <MemoryRouter>
         <CtaSection />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
   it('renders the porcelain section with the display headline', () => {
@@ -2520,10 +2514,7 @@ describe('CtaSection', () => {
 
   it('links the primary pill to /contact', () => {
     renderSection();
-    expect(screen.getByRole('link', { name: /Start a conversation/i })).toHaveAttribute(
-      'href',
-      '/contact'
-    );
+    expect(screen.getByRole('link', { name: /Start a conversation/i })).toHaveAttribute('href', '/contact');
   });
 
   it('scrolls to the footer newsletter on secondary pill click', () => {
@@ -2575,7 +2566,7 @@ const ImageBreak = () => {
         y: '7.5%',
         ease: 'none',
         scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
-      }
+      },
     );
     return () => {
       tween.scrollTrigger?.kill();
@@ -2586,13 +2577,7 @@ const ImageBreak = () => {
   return (
     <div ref={wrapRef} className="relative overflow-hidden" aria-label="Interlude">
       <div ref={imageRef} className="scale-110">
-        <EditorialImage
-          stem="break-interior"
-          alt=""
-          aspect="21 / 9"
-          sizes="100vw"
-          className="w-full"
-        />
+        <EditorialImage stem="break-interior" alt="" aspect="21 / 9" sizes="100vw" className="w-full" />
       </div>
       <div className="absolute inset-0 flex items-center justify-center bg-altivum-dark/35">
         <p className="relative z-30 max-w-3xl px-6 text-center text-altivum-porcelain" style={editorialType.pullQuote}>
@@ -2636,10 +2621,7 @@ const CtaSection = () => {
         <EditorialPill to="/contact" variant="dark-solid">
           Start a conversation
         </EditorialPill>
-        <EditorialPill
-          onClick={() => scrollTo('#newsletter', { offset: -120 })}
-          variant="dark-outline"
-        >
+        <EditorialPill onClick={() => scrollTo('#newsletter', { offset: -120 })} variant="dark-outline">
           Newsletter
         </EditorialPill>
       </div>
@@ -2667,6 +2649,7 @@ git commit -m "feat(redesign): parallax image break + porcelain CTA section"
 ### Task 17: Rebuild Home + remove the old hero
 
 **Files:**
+
 - Modify: `src/pages/Home.tsx` (full rewrite)
 - Delete: `src/components/home/HeroCanvas.tsx`, `src/components/home/heroShader.ts`, `src/components/home/HeroCanvas.test.tsx`
 - Delete: `src/assets/hero2.png` (only if unreferenced — verified below)
@@ -2773,6 +2756,7 @@ git commit -m "feat(redesign): editorial Home — bento hero, about, record, ven
 ### Task 18: Navigation restyle + full-screen mobile overlay
 
 **Files:**
+
 - Modify: `src/components/Navigation.tsx`
 
 Changes (surgical — keep dropdown logic, skip link, keyboard handling intact):
@@ -2782,22 +2766,22 @@ Changes (surgical — keep dropdown logic, skip link, keyboard handling intact):
 In the `updateScrollState` function (`src/components/Navigation.tsx:36-43`), the old Home page kept the nav transparent for 10 viewport-heights of sticky scroll. The new hero is one viewport tall. Replace:
 
 ```ts
-      if (location.pathname === '/') {
-        const summaryEndPosition = window.innerHeight * 10;
-        setIsScrolled(window.scrollY > summaryEndPosition);
-      } else {
-        setIsScrolled(window.scrollY > 20);
-      }
+if (location.pathname === '/') {
+  const summaryEndPosition = window.innerHeight * 10;
+  setIsScrolled(window.scrollY > summaryEndPosition);
+} else {
+  setIsScrolled(window.scrollY > 20);
+}
 ```
 
 with:
 
 ```ts
-      if (location.pathname === '/') {
-        setIsScrolled(window.scrollY > window.innerHeight * 0.85);
-      } else {
-        setIsScrolled(window.scrollY > 20);
-      }
+if (location.pathname === '/') {
+  setIsScrolled(window.scrollY > window.innerHeight * 0.85);
+} else {
+  setIsScrolled(window.scrollY > 20);
+}
 ```
 
 - [ ] **Step 2: Editorial chrome — scrolled state + wordmark**
@@ -2815,17 +2799,17 @@ Replace the `<nav>` className (line ~123):
 Replace the wordmark block (the `<div className="flex flex-col -ml-2">` containing the two spans) with:
 
 ```tsx
-            <div className="flex flex-col -ml-2">
-              <span
-                className="text-altivum-porcelain"
-                style={{ fontFamily: EDITORIAL_FONT_FAMILY, fontWeight: 500, fontSize: '1.25rem', letterSpacing: '0.04em' }}
-              >
-                CHRISTIAN <span className="italic text-altivum-gold">PEREZ</span>
-              </span>
-              <span className="text-altivum-silver tracking-wider" style={typography.smallText}>
-                thechrisgrey
-              </span>
-            </div>
+<div className="flex flex-col -ml-2">
+  <span
+    className="text-altivum-porcelain"
+    style={{ fontFamily: EDITORIAL_FONT_FAMILY, fontWeight: 500, fontSize: '1.25rem', letterSpacing: '0.04em' }}
+  >
+    CHRISTIAN <span className="italic text-altivum-gold">PEREZ</span>
+  </span>
+  <span className="text-altivum-silver tracking-wider" style={typography.smallText}>
+    thechrisgrey
+  </span>
+</div>
 ```
 
 And add the import at the top: `import { EDITORIAL_FONT_FAMILY } from '../utils/editorialType';`
@@ -2837,15 +2821,14 @@ Add imports: `import { useFocusTrap } from '../hooks/useFocusTrap';`
 Inside the component add the trap + scroll lock:
 
 ```tsx
-  const { containerRef: overlayRef, handleKeyDown: handleOverlayKeyDown } =
-    useFocusTrap(isMobileMenuOpen);
+const { containerRef: overlayRef, handleKeyDown: handleOverlayKeyDown } = useFocusTrap(isMobileMenuOpen);
 
-  useEffect(() => {
-    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
+useEffect(() => {
+  document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+  return () => {
+    document.body.style.overflow = '';
+  };
+}, [isMobileMenuOpen]);
 ```
 
 (`useFocusTrap(isActive)` returns `{ containerRef, handleKeyDown }` — `containerRef` is a `RefObject<HTMLDivElement>`; `handleKeyDown` implements the Tab wrap and must be attached to the overlay's `onKeyDown`.)
@@ -2853,69 +2836,73 @@ Inside the component add the trap + scroll lock:
 Replace the entire `{isMobileMenuOpen && ( <div className="md:hidden pb-4 ..."> ... )}` block with:
 
 ```tsx
-        {isMobileMenuOpen && (
-          <div
-            ref={overlayRef}
-            onKeyDown={handleOverlayKeyDown}
-            className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-altivum-dark px-8 pb-12 pt-24 md:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Site menu"
+{
+  isMobileMenuOpen && (
+    <div
+      ref={overlayRef}
+      onKeyDown={handleOverlayKeyDown}
+      className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-altivum-dark px-8 pb-12 pt-24 md:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Site menu"
+    >
+      <button
+        onClick={() => setIsMobileMenuOpen(false)}
+        className="absolute right-6 top-6 p-2 text-altivum-silver hover:text-altivum-porcelain"
+        aria-label="Close menu"
+      >
+        <span className="material-icons" aria-hidden="true">
+          close
+        </span>
+      </button>
+
+      <span className="italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
+        (MENU)
+      </span>
+
+      <div className="mt-8 flex flex-col gap-5">
+        {[{ path: '/', label: 'Home' }, ...NAV_ITEMS.slice(1)].map((item, i) => (
+          <ViewTransitionLink
+            key={item.path}
+            to={item.path}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="opacity-0 animate-fade-in text-altivum-porcelain"
+            style={{
+              ...editorialType.displaySection,
+              fontSize: 'clamp(2rem, 8vw, 2.75rem)',
+              animationDelay: `${i * 70}ms`,
+              animationDuration: '0.6s',
+            }}
           >
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute right-6 top-6 p-2 text-altivum-silver hover:text-altivum-porcelain"
-              aria-label="Close menu"
-            >
-              <span className="material-icons" aria-hidden="true">close</span>
-            </button>
+            {item.label}
+          </ViewTransitionLink>
+        ))}
+      </div>
 
-            <span className="italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
-              (MENU)
-            </span>
-
-            <div className="mt-8 flex flex-col gap-5">
-              {[{ path: '/', label: 'Home' }, ...NAV_ITEMS.slice(1)].map((item, i) => (
-                <ViewTransitionLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="opacity-0 animate-fade-in text-altivum-porcelain"
-                  style={{
-                    ...editorialType.displaySection,
-                    fontSize: 'clamp(2rem, 8vw, 2.75rem)',
-                    animationDelay: `${i * 70}ms`,
-                    animationDuration: '0.6s',
-                  }}
-                >
-                  {item.label}
-                </ViewTransitionLink>
-              ))}
-            </div>
-
-            <span className="mt-10 italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
-              (ABOUT)
-            </span>
-            <div className="mt-4 flex flex-col gap-3">
-              {ABOUT_DROPDOWN_ITEMS.map((item, i) => (
-                <ViewTransitionLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="opacity-0 animate-fade-in text-altivum-silver hover:text-altivum-gold"
-                  style={{
-                    fontFamily: EDITORIAL_FONT_FAMILY,
-                    fontSize: '1.125rem',
-                    animationDelay: `${350 + i * 50}ms`,
-                    animationDuration: '0.6s',
-                  }}
-                >
-                  {item.label}
-                </ViewTransitionLink>
-              ))}
-            </div>
-          </div>
-        )}
+      <span className="mt-10 italic text-altivum-porcelain/50" style={editorialType.eyebrow}>
+        (ABOUT)
+      </span>
+      <div className="mt-4 flex flex-col gap-3">
+        {ABOUT_DROPDOWN_ITEMS.map((item, i) => (
+          <ViewTransitionLink
+            key={item.path}
+            to={item.path}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="opacity-0 animate-fade-in text-altivum-silver hover:text-altivum-gold"
+            style={{
+              fontFamily: EDITORIAL_FONT_FAMILY,
+              fontSize: '1.125rem',
+              animationDelay: `${350 + i * 50}ms`,
+              animationDuration: '0.6s',
+            }}
+          >
+            {item.label}
+          </ViewTransitionLink>
+        ))}
+      </div>
+    </div>
+  );
+}
 ```
 
 Also add the `editorialType` import: `import { editorialType, EDITORIAL_FONT_FAMILY } from '../utils/editorialType';` (replacing the import added in Step 2).
@@ -2943,6 +2930,7 @@ git commit -m "feat(redesign): editorial navigation — Playfair wordmark, gold 
 ### Task 19: Footer restyle
 
 **Files:**
+
 - Modify: `src/components/Footer.tsx` (full rewrite, same data + links)
 
 - [ ] **Step 1: Rewrite the Footer**
@@ -3099,6 +3087,7 @@ git commit -m "feat(redesign): editorial footer — statement line, eyebrow colu
 ### Task 20: Cypress smoke updates
 
 **Files:**
+
 - Modify: `cypress/e2e/home.cy.ts`
 - Modify: `cypress/e2e/mobile-navigation.cy.ts` (overlay instead of inline menu)
 
@@ -3173,6 +3162,7 @@ Expected: completes — env validation, podcast episodes, lint (0 warnings), tsc
 - [ ] **Step 3: Preview + manual checklist**
 
 Run: `npm run preview` — at http://localhost:4173 verify:
+
 - Hero: tiles cascade in, ridge contours draw once (~1.8s), then stillness; name is DOM text immediately
 - Reduced motion (toggle in OS/DevTools rendering emulation): static SVG ridge, final stat values, no pin — everything readable
 - Scroll: about reveal, stat roll-ups staggered, ventures pin + horizontal scrub (desktop), parallax break, porcelain CTA

@@ -26,7 +26,7 @@ const renderWidget = (route = '/') => {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <ChatWidget />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 };
 
@@ -80,19 +80,13 @@ describe('Chat Widget Integration', () => {
 
       await waitFor(() => {
         // Should show the welcome message
-        expect(
-          screen.getByText(/I'm Alti/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/I'm Alti/i)).toBeInTheDocument();
 
         // Should show the input
-        expect(
-          screen.getByRole('textbox', { name: /type a message/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: /type a message/i })).toBeInTheDocument();
 
         // Should show page-specific suggestions (Home page for route '/')
-        expect(
-          screen.getByText("What's Christian's story?")
-        ).toBeInTheDocument();
+        expect(screen.getByText("What's Christian's story?")).toBeInTheDocument();
       });
     });
 
@@ -149,9 +143,7 @@ describe('Chat Widget Integration', () => {
         // Two buttons match "Close chat" (widget button + panel close button).
         // The widget button is the one with aria-expanded attribute.
         const closeButtons = screen.getAllByRole('button', { name: /close chat/i });
-        const widgetButton = closeButtons.find(
-          (btn) => btn.getAttribute('aria-expanded') !== null
-        );
+        const widgetButton = closeButtons.find((btn) => btn.getAttribute('aria-expanded') !== null);
         expect(widgetButton).toHaveAttribute('aria-expanded', 'true');
       });
     });
@@ -165,9 +157,7 @@ describe('Chat Widget Integration', () => {
       await user.click(screen.getByRole('button', { name: /open chat/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /open full chat/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /open full chat/i })).toBeInTheDocument();
       });
     });
 
@@ -196,9 +186,7 @@ describe('Chat Widget Integration', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /clear conversation/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /clear conversation/i })).toBeInTheDocument();
       });
     });
   });
@@ -213,7 +201,7 @@ describe('Chat Widget Integration', () => {
       await waitFor(() => {
         const dialog = screen.getByRole('dialog');
         expect(dialog).toHaveAttribute('aria-modal', 'true');
-        expect(dialog).toHaveAttribute('aria-label', 'Alti - Altivum\'s AI Agent');
+        expect(dialog).toHaveAttribute('aria-label', "Alti - Altivum's AI Agent");
       });
     });
 

@@ -50,9 +50,7 @@ vi.mock('../../utils/routeManifest', () => ({
 // Mock @portabletext/react to avoid rendering complex rich text
 vi.mock('@portabletext/react', () => ({
   PortableText: ({ value }: { value: unknown[] }) => (
-    <div data-testid="portable-text">
-      {Array.isArray(value) ? `${value.length} blocks` : 'no content'}
-    </div>
+    <div data-testid="portable-text">{Array.isArray(value) ? `${value.length} blocks` : 'no content'}</div>
   ),
 }));
 
@@ -75,9 +73,7 @@ const mockPost = {
     asset: { _id: 'img-1', url: 'https://example.com/img1.jpg' },
     alt: 'AI Systems',
   },
-  body: [
-    { _type: 'block', _key: 'key1', children: [{ _type: 'span', text: 'Hello world' }] },
-  ],
+  body: [{ _type: 'block', _key: 'key1', children: [{ _type: 'span', text: 'Hello world' }] }],
   tags: [
     { _id: 'tag-1', title: 'AI', slug: { current: 'ai' } },
     { _id: 'tag-2', title: 'AWS', slug: { current: 'aws' } },
@@ -114,7 +110,7 @@ const renderBlogPost = (slug = 'building-ai-systems') => {
           <Route path="/blog/:slug" element={<BlogPost />} />
         </Routes>
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -145,9 +141,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })).toBeInTheDocument();
       });
     });
 
@@ -173,9 +167,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByText('A deep dive into building production AI systems on AWS.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('A deep dive into building production AI systems on AWS.')).toBeInTheDocument();
       });
     });
 
@@ -213,9 +205,7 @@ describe('BlogPost Page Integration', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Share:')).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: /copy link/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /copy link/i })).toBeInTheDocument();
       });
     });
   });
@@ -226,9 +216,7 @@ describe('BlogPost Page Integration', () => {
 
       await waitFor(() => {
         expect(screen.getByText('About the Author')).toBeInTheDocument();
-        expect(
-          screen.getByText(/Christian Perez - Founder & CEO, Altivum Inc./i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Christian Perez - Founder & CEO, Altivum Inc./i)).toBeInTheDocument();
       });
     });
 
@@ -250,9 +238,7 @@ describe('BlogPost Page Integration', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Cloud Architecture Series')).toBeInTheDocument();
-        expect(
-          screen.getByText('A multi-part series on cloud architecture.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('A multi-part series on cloud architecture.')).toBeInTheDocument();
       });
     });
 
@@ -281,9 +267,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /related articles/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /related articles/i })).toBeInTheDocument();
         expect(screen.getByText('Serverless Patterns')).toBeInTheDocument();
       });
     });
@@ -304,14 +288,10 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost('nonexistent-slug');
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /article not found/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /article not found/i })).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByText(/doesn't exist or has been moved/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/doesn't exist or has been moved/i)).toBeInTheDocument();
 
       const backLink = screen.getByRole('link', { name: /back to blog/i });
       expect(backLink).toHaveAttribute('href', '/blog');
@@ -324,14 +304,10 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /unable to load article/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /unable to load article/i })).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByRole('button', { name: /try again/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
 
       const backLink = screen.getByRole('link', { name: /back to blog/i });
       expect(backLink).toHaveAttribute('href', '/blog');
@@ -343,9 +319,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /unable to load article/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /unable to load article/i })).toBeInTheDocument();
       });
 
       // Retry with success
@@ -353,9 +327,7 @@ describe('BlogPost Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /try again/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })).toBeInTheDocument();
       });
     });
   });
@@ -366,9 +338,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })).toBeInTheDocument();
       });
 
       // Should not have called fetch since we had cache
@@ -379,9 +349,7 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: 'Building AI Systems on AWS' })).toBeInTheDocument();
       });
 
       expect(mockSetPostCache).toHaveBeenCalledWith('building-ai-systems', mockPost);
@@ -430,17 +398,13 @@ describe('BlogPost Page Integration', () => {
       renderBlogPost();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /copy link/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /copy link/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /copy link/i }));
 
       await waitFor(() => {
-        expect(mockWriteText).toHaveBeenCalledWith(
-          'https://thechrisgrey.com/blog/building-ai-systems'
-        );
+        expect(mockWriteText).toHaveBeenCalledWith('https://thechrisgrey.com/blog/building-ai-systems');
       });
 
       await waitFor(() => {

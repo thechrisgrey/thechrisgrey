@@ -13,12 +13,12 @@ until you flip it. All commands assume `us-east-1` (Bedrock region) unless noted
 Collect these values before running any `aws` command. Nothing below should be
 committed to git.
 
-| Variable | Where it comes from |
-|---|---|
-| `BLUEPRINT_SIGNING_KEY` | Generate once: `openssl rand -hex 32` — must match `VITE_BLUEPRINT_SIGNING_KEY` in Amplify |
-| `SANITY_READ_TOKEN` | Sanity → API → Tokens (read-only, `production` dataset). Optional until Phase 4 golden examples exist |
-| `SNS_TOPIC_ARN` | `arn:aws:sns:us-east-1:205930636302:thechrisgrey-site-alerts` (existing topic) |
-| `CORS_ORIGIN` | `https://thechrisgrey.com` |
+| Variable                | Where it comes from                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `BLUEPRINT_SIGNING_KEY` | Generate once: `openssl rand -hex 32` — must match `VITE_BLUEPRINT_SIGNING_KEY` in Amplify            |
+| `SANITY_READ_TOKEN`     | Sanity → API → Tokens (read-only, `production` dataset). Optional until Phase 4 golden examples exist |
+| `SNS_TOPIC_ARN`         | `arn:aws:sns:us-east-1:205930636302:thechrisgrey-site-alerts` (existing topic)                        |
+| `CORS_ORIGIN`           | `https://thechrisgrey.com`                                                                            |
 
 Set them in your shell for the commands below:
 
@@ -138,6 +138,7 @@ BEDROCK_HAIKU_MODEL_ID=us.anthropic.claude-haiku-4-5-20251001-v1:0
 ```
 
 Defaults if omitted:
+
 - `BLUEPRINT_RATE_LIMIT_TABLE` falls back to `CHAT_RATE_LIMIT_TABLE`, then to `thechrisgrey-chat-ratelimit`.
 - Missing `SANITY_READ_TOKEN` disables golden-example injection but the engine still generates (with a warning).
 

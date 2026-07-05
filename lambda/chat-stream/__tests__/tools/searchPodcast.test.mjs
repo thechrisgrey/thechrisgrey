@@ -34,7 +34,11 @@ function fakeAgentClient(retrievalResults) {
 }
 
 function throwingAgentClient(error) {
-  return { send: async () => { throw error; } };
+  return {
+    send: async () => {
+      throw error;
+    },
+  };
 }
 
 function result(text, videoId, startSeconds, episodeTitle, score = 0.5) {
@@ -46,9 +50,7 @@ function result(text, videoId, startSeconds, episodeTitle, score = 0.5) {
 }
 
 function parseEvents(stream) {
-  return stream.chunks.map((chunk) =>
-    JSON.parse(chunk.slice(EVENT_DELIM.length, chunk.length - EVENT_DELIM.length)),
-  );
+  return stream.chunks.map((chunk) => JSON.parse(chunk.slice(EVENT_DELIM.length, chunk.length - EVENT_DELIM.length)));
 }
 
 function buildTool(agentClient, stream, metrics, requestId = "req-1") {

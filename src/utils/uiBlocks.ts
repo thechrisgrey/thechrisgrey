@@ -67,9 +67,4 @@ export interface LinkGridBlock {
 }
 
 export type UiBlock =
-  | TimelineBlock
-  | ComparisonBlock
-  | StatRowBlock
-  | ProfileMiniBlock
-  | ExplainerBlock
-  | LinkGridBlock;
+  TimelineBlock | ComparisonBlock | StatRowBlock | ProfileMiniBlock | ExplainerBlock | LinkGridBlock;

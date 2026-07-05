@@ -16,39 +16,62 @@ const Footer = () => {
               Christian Perez
             </h3>
             <p className="text-altivum-silver" style={typography.smallText}>
-              Founder & CEO of Altivum Inc., Former Green Beret, Bronze Star Recipient,
-              Host of The Vector Podcast, Author of Beyond the Assessment
+              Founder & CEO of Altivum Inc., Former Green Beret, Bronze Star Recipient, Host of The Vector Podcast,
+              Author of Beyond the Assessment
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-white uppercase tracking-wider mb-2 sm:mb-3" style={{ ...typography.smallText, fontWeight: 600 }}>
+            <h4
+              className="text-white uppercase tracking-wider mb-2 sm:mb-3"
+              style={{ ...typography.smallText, fontWeight: 600 }}
+            >
               Quick Links
             </h4>
             <ul className="space-y-1 sm:space-y-2">
               <li>
-                <ViewTransitionLink to="/about" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/about"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   About
                 </ViewTransitionLink>
               </li>
               <li>
-                <ViewTransitionLink to="/altivum" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/altivum"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   Altivum Inc.
                 </ViewTransitionLink>
               </li>
               <li>
-                <ViewTransitionLink to="/podcast" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/podcast"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   The Vector Podcast
                 </ViewTransitionLink>
               </li>
               <li>
-                <ViewTransitionLink to="/claude" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/claude"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   Claude
                 </ViewTransitionLink>
               </li>
               <li>
-                <ViewTransitionLink to="/blog" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/blog"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   Blog
                 </ViewTransitionLink>
               </li>
@@ -68,12 +91,19 @@ const Footer = () => {
 
           {/* Connect */}
           <div>
-            <h4 className="text-white uppercase tracking-wider mb-2 sm:mb-3" style={{ ...typography.smallText, fontWeight: 600 }}>
+            <h4
+              className="text-white uppercase tracking-wider mb-2 sm:mb-3"
+              style={{ ...typography.smallText, fontWeight: 600 }}
+            >
               Connect
             </h4>
             <ul className="space-y-1 sm:space-y-2">
               <li>
-                <ViewTransitionLink to="/contact" className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline" style={typography.smallText}>
+                <ViewTransitionLink
+                  to="/contact"
+                  className="text-altivum-silver hover:text-altivum-gold transition-colors link-underline"
+                  style={typography.smallText}
+                >
                   Get in Touch
                 </ViewTransitionLink>
               </li>
@@ -103,7 +133,10 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-white/3" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
+        <div
+          className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-white/3"
+          style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}
+        >
           <p className="text-center text-altivum-silver" style={typography.smallText}>
             &copy; {currentYear} Christian Perez. All rights reserved.
             <span className="mx-2">·</span>

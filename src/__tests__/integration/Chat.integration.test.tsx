@@ -39,7 +39,7 @@ const renderChat = () => {
       <MemoryRouter initialEntries={['/chat']}>
         <Chat />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -60,9 +60,7 @@ describe('Chat Page Integration', () => {
     it('renders the welcome message from the AI assistant', () => {
       renderChat();
 
-      expect(
-        screen.getByText(/I'm Alti/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/I'm Alti/i)).toBeInTheDocument();
     });
 
     it('opts the scrollable messages container out of Lenis so the conversation can scroll', () => {
@@ -80,44 +78,28 @@ describe('Chat Page Integration', () => {
     it('renders the page header with title and subtitle', () => {
       renderChat();
 
-      expect(
-        screen.getByRole('heading', { level: 1, name: /alti/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /Ask me anything about Christian/i
-        )
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: /alti/i })).toBeInTheDocument();
+      expect(screen.getByText(/Ask me anything about Christian/i)).toBeInTheDocument();
     });
 
     it('renders the chat input area', () => {
       renderChat();
 
-      expect(
-        screen.getByRole('textbox', { name: /type a message/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /send message/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('textbox', { name: /type a message/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /send message/i })).toBeInTheDocument();
     });
 
     it('shows suggested prompts when no user messages exist', () => {
       renderChat();
 
-      expect(
-        screen.getByText('How did he go from Green Beret to tech CEO?')
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("What drives Altivum's mission?")
-      ).toBeInTheDocument();
+      expect(screen.getByText('How did he go from Green Beret to tech CEO?')).toBeInTheDocument();
+      expect(screen.getByText("What drives Altivum's mission?")).toBeInTheDocument();
     });
 
     it('does not show the clear button when no user messages exist', () => {
       renderChat();
 
-      expect(
-        screen.queryByRole('button', { name: /clear conversation/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /clear conversation/i })).not.toBeInTheDocument();
     });
   });
 
@@ -192,9 +174,7 @@ describe('Chat Page Integration', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/This is a streamed response/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/This is a streamed response/i)).toBeInTheDocument();
       });
     });
 
@@ -219,14 +199,10 @@ describe('Chat Page Integration', () => {
       } as Response);
       renderChat();
 
-      await user.click(
-        screen.getByText('How did he go from Green Beret to tech CEO?')
-      );
+      await user.click(screen.getByText('How did he go from Green Beret to tech CEO?'));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('How did he go from Green Beret to tech CEO?')
-        ).toBeInTheDocument();
+        expect(screen.getByText('How did he go from Green Beret to tech CEO?')).toBeInTheDocument();
       });
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -241,13 +217,9 @@ describe('Chat Page Integration', () => {
       renderChat();
 
       // Suggestions should be visible initially
-      expect(
-        screen.getByText("What drives Altivum's mission?")
-      ).toBeInTheDocument();
+      expect(screen.getByText("What drives Altivum's mission?")).toBeInTheDocument();
 
-      await user.click(
-        screen.getByText('How did he go from Green Beret to tech CEO?')
-      );
+      await user.click(screen.getByText('How did he go from Green Beret to tech CEO?'));
 
       await waitFor(() => {
         // The suggestion text should now appear as a user message,
@@ -276,9 +248,7 @@ describe('Chat Page Integration', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /clear conversation/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /clear conversation/i })).toBeInTheDocument();
       });
     });
 
@@ -302,15 +272,11 @@ describe('Chat Page Integration', () => {
         expect(screen.getByText(/Response from AI/i)).toBeInTheDocument();
       });
 
-      await user.click(
-        screen.getByRole('button', { name: /clear conversation/i })
-      );
+      await user.click(screen.getByRole('button', { name: /clear conversation/i }));
 
       await waitFor(() => {
         // Welcome message should reappear
-        expect(
-          screen.getByText(/I'm Alti/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/I'm Alti/i)).toBeInTheDocument();
         // User message should be gone
         expect(screen.queryByText('Hello')).not.toBeInTheDocument();
       });
@@ -328,9 +294,7 @@ describe('Chat Page Integration', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/I encountered an error/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/I encountered an error/i)).toBeInTheDocument();
       });
     });
 
@@ -348,9 +312,7 @@ describe('Chat Page Integration', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/I encountered an error/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/I encountered an error/i)).toBeInTheDocument();
       });
     });
   });
@@ -408,7 +370,7 @@ describe('Chat Page Integration', () => {
       renderChat();
 
       await vi.waitFor(() => {
-        expect(document.title).toBe('Alti - Altivum\'s AI Agent | Christian Perez');
+        expect(document.title).toBe("Alti - Altivum's AI Agent | Christian Perez");
       });
     });
   });

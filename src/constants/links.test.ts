@@ -24,13 +24,8 @@ describe('SOCIAL_LINKS', () => {
       const validPrefixes = ['https://', 'mailto:', 'tel:'];
 
       Object.entries(SOCIAL_LINKS).forEach(([key, value]) => {
-        const hasValidPrefix = validPrefixes.some((prefix) =>
-          value.startsWith(prefix)
-        );
-        expect(
-          hasValidPrefix,
-          `${key} ("${value}") should start with one of: ${validPrefixes.join(', ')}`
-        ).toBe(true);
+        const hasValidPrefix = validPrefixes.some((prefix) => value.startsWith(prefix));
+        expect(hasValidPrefix, `${key} ("${value}") should start with one of: ${validPrefixes.join(', ')}`).toBe(true);
       });
     });
   });

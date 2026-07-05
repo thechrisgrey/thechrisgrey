@@ -8,11 +8,7 @@ interface WaitlistProps {
   compact?: boolean;
 }
 
-type Status =
-  | { kind: 'idle' }
-  | { kind: 'loading' }
-  | { kind: 'success' }
-  | { kind: 'error'; message: string };
+type Status = { kind: 'idle' } | { kind: 'loading' } | { kind: 'success' } | { kind: 'error'; message: string };
 
 const NEWSLETTER_ENDPOINT = import.meta.env.VITE_NEWSLETTER_ENDPOINT || '';
 
@@ -109,17 +105,11 @@ export function Waitlist({
       )}
 
       {status.kind === 'success' ? (
-        <div
-          className="flex items-start gap-2 text-emerald-300"
-          style={typography.bodyText}
-          role="status"
-        >
+        <div className="flex items-start gap-2 text-emerald-300" style={typography.bodyText} role="status">
           <span className="material-icons text-sm mt-0.5" aria-hidden="true">
             mark_email_read
           </span>
-          <span>
-            You're on the list. Watch your inbox for early Pro access.
-          </span>
+          <span>You're on the list. Watch your inbox for early Pro access.</span>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -163,12 +153,7 @@ export function Waitlist({
       )}
 
       {status.kind === 'error' && (
-        <p
-          id="blueprint-waitlist-error"
-          className="mt-3 text-rose-300"
-          style={typography.smallText}
-          role="alert"
-        >
+        <p id="blueprint-waitlist-error" className="mt-3 text-rose-300" style={typography.smallText} role="alert">
           {status.message}
         </p>
       )}

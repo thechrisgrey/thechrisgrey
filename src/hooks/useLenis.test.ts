@@ -33,7 +33,9 @@ describe('useLenisInstance', () => {
     vi.clearAllMocks();
     let called = false;
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => {
-      if (!called) { called = true; }
+      if (!called) {
+        called = true;
+      }
       return 1;
     });
     vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});

@@ -244,7 +244,6 @@ function SceneContent({
           onClick={() => flyToCluster(cluster.id)}
         />
       ))}
-
     </>
   );
 }
@@ -269,7 +268,11 @@ export interface TopologyControlHandle {
   flyTo: (clusterId: string) => void;
 }
 
-export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: externalOnSelect, controlRef }: TopologySceneProps = {}) {
+export function TopologyScene({
+  selectedClusterId: externalId,
+  onSelectCluster: externalOnSelect,
+  controlRef,
+}: TopologySceneProps = {}) {
   const [internalId, setInternalId] = useState<string | null>(null);
   const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand' | 'never'>('always');
 
@@ -279,9 +282,7 @@ export function TopologyScene({ selectedClusterId: externalId, onSelectCluster: 
 
   // Fully pause the rAF loop when the tab is hidden (parity with HeroCanvas /
   // AltiMascot), rather than only toggling autoRotate inside a still-running loop.
-  const [docVisible, setDocVisible] = useState(() =>
-    typeof document === 'undefined' ? true : !document.hidden,
-  );
+  const [docVisible, setDocVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden));
   useEffect(() => {
     const onVisibility = () => setDocVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);

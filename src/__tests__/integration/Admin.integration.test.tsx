@@ -62,7 +62,7 @@ const renderAdmin = () => {
       <MemoryRouter initialEntries={['/admin']}>
         <Admin />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -84,25 +84,19 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { level: 1, name: /admin/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: /admin/i })).toBeInTheDocument();
       });
 
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /sign in/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
     });
 
     it('shows Knowledge Base Management subtitle', async () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByText('Knowledge Base Management')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Knowledge Base Management')).toBeInTheDocument();
       });
     });
   });
@@ -167,9 +161,7 @@ describe('Admin Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /knowledge base/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /knowledge base/i })).toBeInTheDocument();
       });
     });
 
@@ -215,9 +207,7 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /knowledge base/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /knowledge base/i })).toBeInTheDocument();
       });
     };
 
@@ -247,9 +237,7 @@ describe('Admin Page Integration', () => {
       await loginAndRenderDashboard();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /publish to kb/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /publish to kb/i })).toBeInTheDocument();
       });
     });
 
@@ -257,9 +245,7 @@ describe('Admin Page Integration', () => {
       await loginAndRenderDashboard();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /add entry/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add entry/i })).toBeInTheDocument();
       });
     });
 
@@ -267,9 +253,7 @@ describe('Admin Page Integration', () => {
       await loginAndRenderDashboard();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /logout/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
       });
     });
 
@@ -301,21 +285,15 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /add entry/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add entry/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /add entry/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /new entry/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /new entry/i })).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Entry title')).toBeInTheDocument();
-        expect(
-          screen.getByPlaceholderText('Entry content (plain text)')
-        ).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Entry content (plain text)')).toBeInTheDocument();
       });
     });
 
@@ -337,9 +315,7 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /add entry/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /add entry/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /add entry/i }));
@@ -351,9 +327,7 @@ describe('Admin Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
       await waitFor(() => {
-        expect(
-          screen.queryByPlaceholderText('Entry title')
-        ).not.toBeInTheDocument();
+        expect(screen.queryByPlaceholderText('Entry title')).not.toBeInTheDocument();
       });
     });
   });
@@ -386,12 +360,8 @@ describe('Admin Page Integration', () => {
 
       // Confirmation buttons should appear
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /confirm delete/i })
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: /cancel delete/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /confirm delete/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /cancel delete/i })).toBeInTheDocument();
       });
     });
 
@@ -420,17 +390,13 @@ describe('Admin Page Integration', () => {
       await user.click(deleteButtons[0]);
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /cancel delete/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /cancel delete/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /cancel delete/i }));
 
       await waitFor(() => {
-        expect(
-          screen.queryByRole('button', { name: /confirm delete/i })
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /confirm delete/i })).not.toBeInTheDocument();
       });
     });
   });
@@ -472,17 +438,13 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /publish to kb/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /publish to kb/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /publish to kb/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Published 2 entries/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Published 2 entries/i)).toBeInTheDocument();
       });
     });
   });
@@ -509,9 +471,7 @@ describe('Admin Page Integration', () => {
       renderAdmin();
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: /logout/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
       });
 
       await user.click(screen.getByRole('button', { name: /logout/i }));

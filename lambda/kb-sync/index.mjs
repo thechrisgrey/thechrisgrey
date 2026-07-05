@@ -15,24 +15,30 @@ const client = new BedrockAgentClient({ region: "us-east-1" });
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
 
 async function publishMetric(metricName, value = 1) {
-  await cloudwatch.send(new PutMetricDataCommand({
-    Namespace: NAMESPACE,
-    MetricData: [{
-      MetricName: metricName,
-      Value: value,
-      Unit: "Count",
-      Timestamp: new Date(),
-    }],
-  })).catch(err => console.error("Metric publish failed:", err.name));
+  await cloudwatch
+    .send(
+      new PutMetricDataCommand({
+        Namespace: NAMESPACE,
+        MetricData: [
+          {
+            MetricName: metricName,
+            Value: value,
+            Unit: "Count",
+            Timestamp: new Date(),
+          },
+        ],
+      }),
+    )
+    .catch((err) => console.error("Metric publish failed:", err.name));
 }
 
 export const handler = async (event) => {
   // Extract event details for logging
   const records = event.Records || [];
-  const eventSummary = records.map(r => ({
+  const eventSummary = records.map((r) => ({
     eventName: r.eventName,
     key: r.s3?.object?.key,
-    bucket: r.s3?.bucket?.name
+    bucket: r.s3?.bucket?.name,
   }));
 
   console.log(JSON.stringify({ event: "s3_trigger", changes: eventSummary }));
@@ -45,11 +51,13 @@ export const handler = async (event) => {
 
     const response = await client.send(command);
 
-    console.log(JSON.stringify({
-      event: "kb_sync_started",
-      ingestionJobId: response.ingestionJob?.ingestionJobId,
-      status: response.ingestionJob?.status,
-    }));
+    console.log(
+      JSON.stringify({
+        event: "kb_sync_started",
+        ingestionJobId: response.ingestionJob?.ingestionJobId,
+        status: response.ingestionJob?.status,
+      }),
+    );
 
     await publishMetric("KBSyncTriggered");
 
@@ -58,15 +66,17 @@ export const handler = async (event) => {
       body: JSON.stringify({
         message: "Knowledge Base sync triggered",
         ingestionJobId: response.ingestionJob?.ingestionJobId,
-        triggeredBy: eventSummary
-      })
+        triggeredBy: eventSummary,
+      }),
     };
   } catch (error) {
-    console.error(JSON.stringify({
-      event: "kb_sync_failure",
-      error: error.name,
-      message: error.message,
-    }));
+    console.error(
+      JSON.stringify({
+        event: "kb_sync_failure",
+        error: error.name,
+        message: error.message,
+      }),
+    );
 
     await publishMetric("KBSyncFailure");
 
@@ -75,8 +85,8 @@ export const handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({
         message: "Failed to trigger Knowledge Base sync",
-        error: error.message
-      })
+        error: error.message,
+      }),
     };
   }
 };

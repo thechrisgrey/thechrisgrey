@@ -27,10 +27,10 @@ Warm personality redirect. Alti acknowledges the question without being dismissi
 
 Two layers handle topic relevance with different responsibilities:
 
-| Layer | Role | Handles |
-|---|---|---|
-| **System prompt** (soft, contextual) | Nuanced judgment about conversational context | Grey areas where the same question might be allowed or redirected depending on conversation flow |
-| **Bedrock guardrails** (hard, categorical) | Hard floor for categories that are never relevant | Obviously off-topic requests like coding help, trivia, creative writing |
+| Layer                                      | Role                                              | Handles                                                                                          |
+| ------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **System prompt** (soft, contextual)       | Nuanced judgment about conversational context     | Grey areas where the same question might be allowed or redirected depending on conversation flow |
+| **Bedrock guardrails** (hard, categorical) | Hard floor for categories that are never relevant | Obviously off-topic requests like coding help, trivia, creative writing                          |
 
 The system prompt does the heavy lifting. The guardrails catch what should never reach the model's judgment at all.
 
@@ -113,12 +113,12 @@ WHAT TO AVOID:
 
 ### Add denied topics
 
-| Denied Topic | Definition |
-|---|---|
-| **Programming and code assistance** | Requests to write, debug, review, or explain code in any programming language |
-| **General knowledge and trivia** | Questions about science, history, geography, math, or academic subjects with no connection to Christian Perez's background, career, or areas of expertise |
-| **Creative content generation** | Requests to write poems, stories, essays, emails, resumes, cover letters, or other documents |
-| **Other public figures** | Questions about celebrities, politicians, business leaders, or public figures other than Christian Perez |
+| Denied Topic                        | Definition                                                                                                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Programming and code assistance** | Requests to write, debug, review, or explain code in any programming language                                                                             |
+| **General knowledge and trivia**    | Questions about science, history, geography, math, or academic subjects with no connection to Christian Perez's background, career, or areas of expertise |
+| **Creative content generation**     | Requests to write poems, stories, essays, emails, resumes, cover letters, or other documents                                                              |
+| **Other public figures**            | Questions about celebrities, politicians, business leaders, or public figures other than Christian Perez                                                  |
 
 ### Keep unchanged
 
@@ -164,6 +164,7 @@ aws lambda update-function-code --function-name thechrisgrey-chat-stream --zip-f
 ## Post-Deployment Documentation
 
 Update `CLAUDE.md` to reflect:
+
 - New guardrail version (`2` instead of `1`)
 - Revised denied topics list (remove "Off-topic technical support", add the four new categories)
 - The contextual leash behavior in the system prompt description
@@ -172,16 +173,16 @@ Update `CLAUDE.md` to reflect:
 
 Manual validation against the live Lambda after deployment:
 
-| Test Case | Expected Behavior | Layer |
-|---|---|---|
-| "What is a Route 53 resolver?" (standalone) | Warm redirect | System prompt |
-| "What is an AWS User Group?" (standalone) | Warm redirect | System prompt |
-| "What is an AWS User Group?" (after discussing his AWS work) | Brief explanation in context | System prompt allows |
-| "Write me a Python function to sort a list" | Hard block | Guardrail |
-| "What is the capital of France?" | Hard block | Guardrail |
-| "Tell me about Elon Musk" | Hard block | Guardrail |
-| "Write me a cover letter" | Hard block | Guardrail |
-| "How did Christian go from Green Beret to tech CEO?" | Normal answer | Both allow |
-| "What drives Altivum's mission?" | Normal answer | Both allow |
-| "What's his take on AI and veterans?" | Normal answer | Both allow |
-| "What happened during the Global War on Terror?" (standalone) | Warm redirect | System prompt (guardrail should not over-trigger on military history adjacent to Christian's service) |
+| Test Case                                                     | Expected Behavior            | Layer                                                                                                 |
+| ------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| "What is a Route 53 resolver?" (standalone)                   | Warm redirect                | System prompt                                                                                         |
+| "What is an AWS User Group?" (standalone)                     | Warm redirect                | System prompt                                                                                         |
+| "What is an AWS User Group?" (after discussing his AWS work)  | Brief explanation in context | System prompt allows                                                                                  |
+| "Write me a Python function to sort a list"                   | Hard block                   | Guardrail                                                                                             |
+| "What is the capital of France?"                              | Hard block                   | Guardrail                                                                                             |
+| "Tell me about Elon Musk"                                     | Hard block                   | Guardrail                                                                                             |
+| "Write me a cover letter"                                     | Hard block                   | Guardrail                                                                                             |
+| "How did Christian go from Green Beret to tech CEO?"          | Normal answer                | Both allow                                                                                            |
+| "What drives Altivum's mission?"                              | Normal answer                | Both allow                                                                                            |
+| "What's his take on AI and veterans?"                         | Normal answer                | Both allow                                                                                            |
+| "What happened during the Global War on Terror?" (standalone) | Warm redirect                | System prompt (guardrail should not over-trigger on military history adjacent to Christian's service) |

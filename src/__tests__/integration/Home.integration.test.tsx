@@ -22,7 +22,7 @@ const renderHome = () => {
       <MemoryRouter initialEntries={['/']}>
         <Home />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -63,7 +63,7 @@ describe('Home Page Integration', () => {
       // outline, which previously skipped h1 -> h3). The CTA "Let's Connect"
       // h2 is also at this level; assertions below only check membership.
       const headings = screen.getAllByRole('heading', { level: 2 });
-      const titles = headings.map(h => h.textContent?.replace(/\s+/g, ' ').trim());
+      const titles = headings.map((h) => h.textContent?.replace(/\s+/g, ' ').trim());
       expect(titles).toContain('Personal Biography');
       expect(titles).toContain('Altivum Inc');
       expect(titles).toContain('The Vector Podcast');
@@ -84,7 +84,7 @@ describe('Home Page Integration', () => {
       renderHome();
 
       const links = screen.getAllByRole('link');
-      const findLink = (href: string) => links.find(l => l.getAttribute('href') === href);
+      const findLink = (href: string) => links.find((l) => l.getAttribute('href') === href);
 
       expect(findLink('/about')).toBeDefined();
       expect(findLink('/altivum')).toBeDefined();
@@ -112,7 +112,7 @@ describe('Home Page Integration', () => {
       renderHome();
       const linkedinLinks = screen.getAllByRole('link', { name: /linkedin/i });
       const ctaLinkedIn = linkedinLinks.find(
-        (link) => link.getAttribute('href') === 'https://www.linkedin.com/in/thechrisgrey/'
+        (link) => link.getAttribute('href') === 'https://www.linkedin.com/in/thechrisgrey/',
       );
       expect(ctaLinkedIn).toBeInTheDocument();
       expect(ctaLinkedIn).toHaveAttribute('target', '_blank');
@@ -123,7 +123,7 @@ describe('Home Page Integration', () => {
       renderHome();
       const instagramLinks = screen.getAllByRole('link', { name: /instagram/i });
       const ctaInstagram = instagramLinks.find(
-        (link) => link.getAttribute('href') === 'https://www.instagram.com/thechrisgrey/'
+        (link) => link.getAttribute('href') === 'https://www.instagram.com/thechrisgrey/',
       );
       expect(ctaInstagram).toBeInTheDocument();
       expect(ctaInstagram).toHaveAttribute('target', '_blank');

@@ -1,141 +1,141 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 10
     labels:
-      - "dependencies"
+      - 'dependencies'
     groups:
       # Batch patch + minor updates into ONE PR per group so they stop piling up
       # as dozens of individual PRs. MAJOR bumps are intentionally NOT grouped —
       # they arrive as individual PRs so each gets a deliberate, tested review.
       dev-dependencies:
-        dependency-type: "development"
+        dependency-type: 'development'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       production-dependencies:
-        dependency-type: "production"
+        dependency-type: 'production'
         update-types:
-          - "patch"
+          - 'patch'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     labels:
-      - "dependencies"
+      - 'dependencies'
     groups:
       github-actions:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/chat-stream"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/chat-stream'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/kb-builder"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/kb-builder'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/metrics"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/metrics'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/kb-sync"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/kb-sync'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/blueprint"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/blueprint'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/mcp-server"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/mcp-server'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "npm"
-    directory: "/lambda/shared"
+  - package-ecosystem: 'npm'
+    directory: '/lambda/shared'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 3
     labels:
-      - "dependencies"
-      - "lambda"
+      - 'dependencies'
+      - 'lambda'
     groups:
       lambda-dependencies:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'

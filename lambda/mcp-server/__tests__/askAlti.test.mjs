@@ -73,9 +73,7 @@ describe("ask_alti MCP tool — validation", () => {
 
 describe("ask_alti MCP tool — happy path", () => {
   it("returns the Bedrock response text and tags the user input with guardContent", async () => {
-    const bedrock = makeBedrockClient(
-      converseResponse({ text: "Christian is a Green Beret and founder of Altivum." }),
-    );
+    const bedrock = makeBedrockClient(converseResponse({ text: "Christian is a Green Beret and founder of Altivum." }));
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
       ConverseCommand: FakeConverseCommand,
@@ -147,7 +145,11 @@ describe("ask_alti MCP tool — KB retrieval", () => {
   });
 
   it("proceeds without KB context when retrieval throws", async () => {
-    const agent = { send: async () => { throw new Error("kb down"); } };
+    const agent = {
+      send: async () => {
+        throw new Error("kb down");
+      },
+    };
     const bedrock = makeBedrockClient(converseResponse({ text: "reply" }));
     const tool = buildAskAltiMcpTool({
       bedrockClient: bedrock.client,
@@ -166,7 +168,11 @@ describe("ask_alti MCP tool — KB retrieval", () => {
 describe("ask_alti MCP tool — Bedrock failures", () => {
   it("returns a graceful error on Bedrock throw", async () => {
     const tool = buildAskAltiMcpTool({
-      bedrockClient: { send: async () => { throw new Error("boom"); } },
+      bedrockClient: {
+        send: async () => {
+          throw new Error("boom");
+        },
+      },
       ConverseCommand: FakeConverseCommand,
       modelId: "m",
     });

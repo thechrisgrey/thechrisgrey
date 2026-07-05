@@ -38,9 +38,7 @@ describe('useKbAdmin', () => {
 
   describe('fetchEntries', () => {
     it('should fetch and set entries on success', async () => {
-      const mockEntries = [
-        { _id: '1', title: 'Entry 1', category: 'biography', content: 'content', isActive: true },
-      ];
+      const mockEntries = [{ _id: '1', title: 'Entry 1', category: 'biography', content: 'content', isActive: true }];
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ entries: mockEntries }),
@@ -245,7 +243,7 @@ describe('useKbAdmin', () => {
         pendingPromise.then(() => ({
           ok: true,
           json: () => Promise.resolve({ message: 'Done', entryCount: 1, documentSize: 100, publishedAt: 'now' }),
-        }))
+        })),
       );
 
       const { result } = renderHook(() => useKbAdmin(mockGetAccessToken));

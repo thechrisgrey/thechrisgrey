@@ -46,11 +46,7 @@ const FadeReveal = ({
       },
     });
 
-    tl.fromTo(
-      el,
-      { opacity: 0, x: xOffset, y: 8 },
-      { opacity: 1, x: 0, y: 0, delay, ease: 'power2.out' }
-    );
+    tl.fromTo(el, { opacity: 0, x: xOffset, y: 8 }, { opacity: 1, x: 0, y: 0, delay, ease: 'power2.out' });
 
     return () => {
       tl.scrollTrigger?.kill();
@@ -63,7 +59,11 @@ const FadeReveal = ({
   // (rendering `opacity: 0` here would put hidden content in the static HTML
   // AI/SEO crawlers consume, which is exactly what PR #104 was trying to prevent).
   if (isMotionDisabled()) {
-    return <div className={className} style={style}>{children}</div>;
+    return (
+      <div className={className} style={style}>
+        {children}
+      </div>
+    );
   }
 
   return (

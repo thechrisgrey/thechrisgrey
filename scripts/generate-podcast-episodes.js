@@ -153,11 +153,7 @@ export function parseDurationSeconds(isoDuration) {
  * Looks for patterns like "Ep 1", "Episode 1", "E1", "#1"
  */
 export function extractEpisodeNumber(title) {
-  const patterns = [
-    /(?:ep(?:isode)?\.?\s*#?\s*)(\d+)/i,
-    /(?:#\s*)(\d+)/,
-    /(?:e)(\d+)(?:\s|:|$)/i,
-  ];
+  const patterns = [/(?:ep(?:isode)?\.?\s*#?\s*)(\d+)/i, /(?:#\s*)(\d+)/, /(?:e)(\d+)(?:\s|:|$)/i];
 
   for (const pattern of patterns) {
     const match = title.match(pattern);
@@ -178,7 +174,9 @@ function extractDescription(description) {
     if (!trimmed) continue;
     // Skip paragraphs that are mostly social links
     const lines = trimmed.split('\n');
-    const urlLines = lines.filter(l => /https?:\/\//.test(l) || /^(LinkedIn|Instagram|Facebook|YouTube|Twitter|X|TikTok|Website):/.test(l.trim()));
+    const urlLines = lines.filter(
+      (l) => /https?:\/\//.test(l) || /^(LinkedIn|Instagram|Facebook|YouTube|Twitter|X|TikTok|Website):/.test(l.trim()),
+    );
     if (urlLines.length > lines.length / 2) continue;
     // Skip "Connect with [name]" lines (with or without URLs)
     if (/^connect with\b/i.test(trimmed)) continue;
@@ -216,20 +214,20 @@ async function generateEpisodes() {
     console.log(`   Found ${videos.length} videos`);
 
     // Get video durations
-    const videoIds = videos.map(v => v.contentDetails.videoId);
+    const videoIds = videos.map((v) => v.contentDetails.videoId);
     const videoDetails = await getVideoDetails(videoIds);
 
     // Keep only full-length episodes. Filter out YouTube Shorts and short
     // clips by DURATION — the previous title-based "#shorts" check missed
     // Shorts whose titles don't contain that tag (e.g. a 0:56 clip), which
     // then sorted to the top and became the "Latest Episode" hero.
-    const fullEpisodes = videos.filter(video => {
+    const fullEpisodes = videos.filter((video) => {
       const details = videoDetails[video.contentDetails.videoId] || {};
       return parseDurationSeconds(details.duration) >= MIN_EPISODE_DURATION_SECONDS;
     });
     console.log(
       `   Kept ${fullEpisodes.length} full episodes (>= ${MIN_EPISODE_DURATION_SECONDS / 60} min); ` +
-      `filtered out ${videos.length - fullEpisodes.length} shorts/clips`
+        `filtered out ${videos.length - fullEpisodes.length} shorts/clips`,
     );
 
     // Transform to episode format
@@ -247,12 +245,13 @@ async function generateEpisodes() {
           description: extractDescription(snippet.description || ''),
           publishedAt: snippet.publishedAt.split('T')[0], // YYYY-MM-DD
           duration: parseDuration(details.duration || 'PT0S'),
-          episodeNumber: episodeNum || (fullEpisodes.length - index), // Fallback to reverse index within full episodes
+          episodeNumber: episodeNum || fullEpisodes.length - index, // Fallback to reverse index within full episodes
           seasonNumber: 1,
-          thumbnail: snippet.thumbnails?.maxres?.url ||
-                     snippet.thumbnails?.high?.url ||
-                     snippet.thumbnails?.medium?.url ||
-                     snippet.thumbnails?.default?.url,
+          thumbnail:
+            snippet.thumbnails?.maxres?.url ||
+            snippet.thumbnails?.high?.url ||
+            snippet.thumbnails?.medium?.url ||
+            snippet.thumbnails?.default?.url,
           links: {
             youtube: `https://www.youtube.com/watch?v=${videoId}`,
             spotify: SPOTIFY_SHOW_URL,

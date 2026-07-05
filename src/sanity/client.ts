@@ -1,5 +1,5 @@
-import { createClient } from '@sanity/client'
-import { createImageUrlBuilder, type SanityImageSource } from '@sanity/image-url'
+import { createClient } from '@sanity/client';
+import { createImageUrlBuilder, type SanityImageSource } from '@sanity/image-url';
 
 export const client = createClient({
   projectId: 'k5950b3w',
@@ -7,10 +7,10 @@ export const client = createClient({
   apiVersion: '2024-01-01',
   useCdn: true, // Enable CDN for faster reads in production
   timeout: 10000, // 10s — fail fast if Sanity is down
-})
+});
 
 // Image URL builder
-const builder = createImageUrlBuilder({ projectId: 'k5950b3w', dataset: 'production' })
+const builder = createImageUrlBuilder({ projectId: 'k5950b3w', dataset: 'production' });
 
 // `SanityImageSource` is the exact input `@sanity/image-url` accepts — it covers
 // both the dereferenced form our listing/post queries return (`{ asset: { _id, url } }`)
@@ -18,7 +18,7 @@ const builder = createImageUrlBuilder({ projectId: 'k5950b3w', dataset: 'product
 // bookReference covers arrive as. Typing to it removes the `any` without
 // over-narrowing and breaking either shape.
 export function urlFor(source: SanityImageSource) {
-  return builder.image(source)
+  return builder.image(source);
 }
 
 // The Vector Podcast project (separate Sanity project for podcast content)
@@ -28,10 +28,10 @@ export const podcastClient = createClient({
   apiVersion: '2024-01-01',
   useCdn: true,
   timeout: 10000,
-})
+});
 
-const podcastBuilder = createImageUrlBuilder({ projectId: 'uaxzdsfa', dataset: 'production' })
+const podcastBuilder = createImageUrlBuilder({ projectId: 'uaxzdsfa', dataset: 'production' });
 
 export function podcastUrlFor(source: SanityImageSource) {
-  return podcastBuilder.image(source)
+  return podcastBuilder.image(source);
 }

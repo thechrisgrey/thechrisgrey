@@ -26,7 +26,7 @@ describe('LenisProvider', () => {
     render(
       <LenisProvider>
         <p>Child content</p>
-      </LenisProvider>
+      </LenisProvider>,
     );
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
@@ -37,7 +37,7 @@ describe('LenisProvider', () => {
     render(
       <LenisProvider>
         <TestConsumer />
-      </LenisProvider>
+      </LenisProvider>,
     );
     expect(screen.getByTestId('status').textContent).toBe('active');
 
@@ -59,7 +59,7 @@ describe('LenisProvider', () => {
     render(
       <LenisProvider>
         <TestConsumer />
-      </LenisProvider>
+      </LenisProvider>,
     );
     expect(screen.getByTestId('status').textContent).toBe('inactive');
 

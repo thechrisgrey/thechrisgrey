@@ -46,10 +46,7 @@ interface SiteHealthState {
   error: string | null;
 }
 
-export function useSiteHealth(
-  getAccessToken: () => Promise<string | null>,
-  enabled = true
-) {
+export function useSiteHealth(getAccessToken: () => Promise<string | null>, enabled = true) {
   const [state, setState] = useState<SiteHealthState>({
     data: null,
     isLoading: false,

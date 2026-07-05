@@ -22,7 +22,17 @@ describe('GROQ queries', () => {
     });
 
     it('should project essential post fields', () => {
-      const expectedFields = ['_id', 'title', 'slug', 'excerpt', 'category', 'publishedAt', 'readingTime', 'isFeatured', 'image'];
+      const expectedFields = [
+        '_id',
+        'title',
+        'slug',
+        'excerpt',
+        'category',
+        'publishedAt',
+        'readingTime',
+        'isFeatured',
+        'image',
+      ];
       expectedFields.forEach((field) => {
         expect(BLOG_LISTING_QUERY).toContain(field);
       });
@@ -103,7 +113,18 @@ describe('GROQ queries', () => {
     });
 
     it('should project guest fields', () => {
-      const expectedFields = ['name', 'role', 'branch', 'episodeUrl', 'image', 'linkedinUrl', 'instagramUrl', 'websiteUrl', 'websiteLabel', 'order'];
+      const expectedFields = [
+        'name',
+        'role',
+        'branch',
+        'episodeUrl',
+        'image',
+        'linkedinUrl',
+        'instagramUrl',
+        'websiteUrl',
+        'websiteLabel',
+        'order',
+      ];
       expectedFields.forEach((field) => {
         expect(PODCAST_GUESTS_QUERY).toContain(field);
       });

@@ -8,9 +8,11 @@ describe('Home Page', () => {
   });
 
   it('should display the hero section with the hero image', () => {
-    cy.get('section').first().within(() => {
-      cy.get('img[alt="Leadership Forged in Service"]').should('exist');
-    });
+    cy.get('section')
+      .first()
+      .within(() => {
+        cy.get('img[alt="Leadership Forged in Service"]').should('exist');
+      });
   });
 
   it('should have a visually hidden h1 for accessibility and SEO', () => {
@@ -21,9 +23,7 @@ describe('Home Page', () => {
 
   it('should have correct SEO meta tags', () => {
     cy.verifySEO('Christian Perez');
-    cy.get('head meta[property="og:url"]')
-      .should('have.attr', 'content')
-      .and('include', 'thechrisgrey.com');
+    cy.get('head meta[property="og:url"]').should('have.attr', 'content').and('include', 'thechrisgrey.com');
   });
 
   it('should display the navigation bar', () => {
@@ -73,8 +73,7 @@ describe('Home Page', () => {
 
   it('should have a link to the full socials page', () => {
     cy.get('section').last().scrollIntoView();
-    cy.contains('Check out the rest of my socials')
-      .should('have.attr', 'href', '/links');
+    cy.contains('Check out the rest of my socials').should('have.attr', 'href', '/links');
   });
 
   it('should display the footer', () => {

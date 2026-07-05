@@ -58,7 +58,10 @@ export const OG_CARDS = {
   '/altivum': { eyebrow: 'ALTIVUM INC', title: 'Mission-driven technology, built to serve.' },
   '/foundation': { eyebrow: 'THE ALTIVUM FOUNDATION', title: 'Veteran scholarships in cloud, AI & robotics.' },
   '/podcast': { eyebrow: 'THE VECTOR PODCAST', title: 'Conversations on service, leadership & technology.' },
-  '/beyond-the-assessment': { eyebrow: 'BEYOND THE ASSESSMENT', title: 'What it really takes to earn the Green Beret.' },
+  '/beyond-the-assessment': {
+    eyebrow: 'BEYOND THE ASSESSMENT',
+    title: 'What it really takes to earn the Green Beret.',
+  },
   '/aws': { eyebrow: 'AMAZON WEB SERVICES', title: 'AWS Community Builder in AI Engineering.' },
   '/claude': { eyebrow: 'CLAUDE', title: 'Applied AI engineering with Anthropic’s Claude.' },
   '/blog': { eyebrow: 'BLOG', title: 'Field notes on AI, cloud, and leadership.' },
@@ -78,28 +81,45 @@ export function slugForPath(path) {
 const el = (type, style, children) => ({ type, props: { style, ...(children !== undefined ? { children } : {}) } });
 
 function card({ eyebrow, title }) {
-  return el('div', {
-    width: '1200px', height: '630px', display: 'flex', flexDirection: 'column',
-    justifyContent: 'space-between', padding: '80px 84px',
-    backgroundColor: C.dark,
-    backgroundImage: `linear-gradient(135deg, ${C.dark} 0%, ${C.gradMid} 55%, ${C.gradEnd} 100%)`,
-    fontFamily: 'Barlow', color: C.text,
-  }, [
-    // Top: eyebrow -> title -> gold rule
-    el('div', { display: 'flex', flexDirection: 'column' }, [
-      el('div', { fontSize: '26px', fontWeight: 600, letterSpacing: '5px', color: C.gold }, eyebrow),
-      el('div', { fontSize: '72px', fontWeight: 300, lineHeight: 1.12, marginTop: '30px', maxWidth: '1000px', color: C.text }, title),
-      el('div', { width: '96px', height: '3px', backgroundColor: C.gold, marginTop: '38px' }),
-    ]),
-    // Bottom: name + role (left), domain (right)
-    el('div', { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }, [
+  return el(
+    'div',
+    {
+      width: '1200px',
+      height: '630px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      padding: '80px 84px',
+      backgroundColor: C.dark,
+      backgroundImage: `linear-gradient(135deg, ${C.dark} 0%, ${C.gradMid} 55%, ${C.gradEnd} 100%)`,
+      fontFamily: 'Barlow',
+      color: C.text,
+    },
+    [
+      // Top: eyebrow -> title -> gold rule
       el('div', { display: 'flex', flexDirection: 'column' }, [
-        el('div', { fontSize: '33px', fontWeight: 600, color: C.white }, 'Christian Perez'),
-        el('div', { fontSize: '23px', fontWeight: 300, color: C.silver, marginTop: '6px' }, 'Founder & CEO, Altivum Inc  ·  Former Green Beret'),
+        el('div', { fontSize: '26px', fontWeight: 600, letterSpacing: '5px', color: C.gold }, eyebrow),
+        el(
+          'div',
+          { fontSize: '72px', fontWeight: 300, lineHeight: 1.12, marginTop: '30px', maxWidth: '1000px', color: C.text },
+          title,
+        ),
+        el('div', { width: '96px', height: '3px', backgroundColor: C.gold, marginTop: '38px' }),
       ]),
-      el('div', { fontSize: '24px', fontWeight: 600, color: C.gold }, SITE),
-    ]),
-  ]);
+      // Bottom: name + role (left), domain (right)
+      el('div', { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }, [
+        el('div', { display: 'flex', flexDirection: 'column' }, [
+          el('div', { fontSize: '33px', fontWeight: 600, color: C.white }, 'Christian Perez'),
+          el(
+            'div',
+            { fontSize: '23px', fontWeight: 300, color: C.silver, marginTop: '6px' },
+            'Founder & CEO, Altivum Inc  ·  Former Green Beret',
+          ),
+        ]),
+        el('div', { fontSize: '24px', fontWeight: 600, color: C.gold }, SITE),
+      ]),
+    ],
+  );
 }
 
 export async function renderCard(content) {
@@ -143,12 +163,14 @@ async function main() {
 }
 
 // Run only when invoked directly (so the exports can be imported by a test).
-const invokedDirectly =
-  process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
 if (invokedDirectly) {
   main().catch((err) => {
     // Best-effort: never break the build. Degrades to the shared /og.png fallback.
-    console.warn('[og] WARN OG image generation failed — falling back to /og.png:', err && err.message ? err.message : err);
+    console.warn(
+      '[og] WARN OG image generation failed — falling back to /og.png:',
+      err && err.message ? err.message : err,
+    );
     process.exit(0);
   });
 }

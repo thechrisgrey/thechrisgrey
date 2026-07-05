@@ -17,8 +17,8 @@ const BeyondTheAssessment = () => {
         type="book"
         faq={bookFAQs}
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Beyond the Assessment", url: "https://thechrisgrey.com/beyond-the-assessment" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Beyond the Assessment', url: 'https://thechrisgrey.com/beyond-the-assessment' },
         ]}
         structuredData={[buildBookSchema()]}
       />
@@ -46,7 +46,6 @@ const BeyondTheAssessment = () => {
       <section className="pb-24 md:pb-32 lg:pb-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
             {/* Image Column */}
             <div className="relative opacity-0 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="relative rounded-lg overflow-hidden shadow-2xl border border-altivum-silver/10 group">
@@ -78,16 +77,21 @@ const BeyondTheAssessment = () => {
 
               <div className="space-y-6 text-white/80" style={typography.subtitle}>
                 <p>
-                  “Men, congratulations on the success you have achieved here after a challenging 21 days. Own it. Enjoy it. Celebrate it. You’ve earned that much.”
+                  “Men, congratulations on the success you have achieved here after a challenging 21 days. Own it. Enjoy
+                  it. Celebrate it. You’ve earned that much.”
                 </p>
                 <p>
-                  These words marked the end of Special Forces Assessment and Selection (SFAS)—a 21-day back-breaking, knee-buckling job interview shrouded in secrecy. But the most important lesson wasn’t about the physical feat; it was the warning that followed:
+                  These words marked the end of Special Forces Assessment and Selection (SFAS)—a 21-day back-breaking,
+                  knee-buckling job interview shrouded in secrecy. But the most important lesson wasn’t about the
+                  physical feat; it was the warning that followed:
                 </p>
                 <p className="text-white font-medium border-l-2 border-altivum-gold pl-4 italic">
                   “Do not make the catastrophic mistake of forgetting the following: you are always being assessed.”
                 </p>
                 <p>
-                  <em>Beyond the Assessment</em> explores the intangible qualities that define true leadership and resilience. It bridges the gap between tactical precision and human connection, challenging you to prove—every day—that you have the character and capability to excel.
+                  <em>Beyond the Assessment</em> explores the intangible qualities that define true leadership and
+                  resilience. It bridges the gap between tactical precision and human connection, challenging you to
+                  prove—every day—that you have the character and capability to excel.
                 </p>
               </div>
 
@@ -100,8 +104,18 @@ const BeyondTheAssessment = () => {
                   className="inline-flex items-center justify-center px-8 py-4 bg-altivum-gold hover:bg-altivum-gold/90 text-altivum-dark font-bold rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-altivum-gold/20 active:scale-[0.98] touch-manipulation min-h-[48px] min-w-[200px]"
                 >
                   <span>Order on Amazon</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </a>
               </div>

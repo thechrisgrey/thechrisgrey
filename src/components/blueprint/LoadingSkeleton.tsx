@@ -15,12 +15,7 @@ interface LoadingSkeletonProps {
 
 export function LoadingSkeleton({ message }: LoadingSkeletonProps) {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label="Generating blueprint"
-      className="space-y-6"
-    >
+    <div role="status" aria-live="polite" aria-label="Generating blueprint" className="space-y-6">
       <div className="flex items-center gap-3 text-altivum-silver" style={typography.bodyText}>
         <span
           className="w-5 h-5 border-2 border-altivum-gold/30 border-t-altivum-gold rounded-full animate-spin"

@@ -10,12 +10,12 @@ Fundamentally redesign thechrisgrey.com's visual identity around a dark editoria
 
 ## 2. Color System — "Gallery," 60/20/10/10
 
-| Token | Hex | Ratio | Role |
-|---|---|---|---|
-| `altivum-dark` (existing) | `#0A0F1C` | 60% | Page canvas, section backgrounds |
-| `altivum-porcelain` (new) | `#F2EFE9` | 20% | Display type on dark, the single light (CTA) section, cards |
-| `altivum-gold` (existing) | `#C5A572` | 10% | Italic accent words, CTAs, contour lines, dividers, stat suffixes |
-| `altivum-umber` (new) | `#3E3A33` | 10% | Tags, secondary tile surfaces, hover states, image grading anchor |
+| Token                     | Hex       | Ratio | Role                                                              |
+| ------------------------- | --------- | ----- | ----------------------------------------------------------------- |
+| `altivum-dark` (existing) | `#0A0F1C` | 60%   | Page canvas, section backgrounds                                  |
+| `altivum-porcelain` (new) | `#F2EFE9` | 20%   | Display type on dark, the single light (CTA) section, cards       |
+| `altivum-gold` (existing) | `#C5A572` | 10%   | Italic accent words, CTAs, contour lines, dividers, stat suffixes |
+| `altivum-umber` (new)     | `#3E3A33` | 10%   | Tags, secondary tile surfaces, hover states, image grading anchor |
 
 - New tokens are **added** to `tailwind.config.js`; nothing existing is removed.
 - Navy `#1A2332`, blue `#2E4A6B`, slate `#4A5A73`, silver `#9BA6B8` demote to supporting neutrals (borders, muted captions) and do not count toward the dominant ratio.
@@ -45,32 +45,38 @@ Fundamentally redesign thechrisgrey.com's visual identity around a dark editoria
 Replaces the current Hero → 675/840vh sticky summary → CTA with six editorial sections:
 
 ### 5.1 Hero — "Command Grid" bento (100vh)
+
 12-column bento grid, 8px gaps, tiles on `#0D1322` with 1px `rgba(242,239,233,0.07)` hairline borders, 6px radius:
 
-| Tile | Position | Content |
-|---|---|---|
-| Scene | cols 1–8, rows 1–6 (dominant) | Live Three.js ridge (gold contour terrain). Eyebrow top-left: `(FOUNDER & CEO — ALTIVUM INC.)`. Name lower-left **inside** the tile: "Christian *Perez*" in Playfair (Perez italic gold), caption "Green Beret · Founder · Author · Host". `<h1>` = "Christian Perez" |
-| Intro | cols 9–12 | 2–3 sentence positioning copy, SF Pro |
-| Stat | cols 9–12, umber bg | "18*D*" + caption "SF Medical Sergeant" |
-| Contact | cols 9–12 | "Start a conversation" + gold pill → /contact |
-| Venture strip | bottom row, 4 tiles | (PODCAST) The Vector · (BOOK) Beyond the Assessment · (VENTURE) Altivum Inc. · SCROLL ↓ |
+| Tile          | Position                      | Content                                                                                                                                                                                                                                                               |
+| ------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scene         | cols 1–8, rows 1–6 (dominant) | Live Three.js ridge (gold contour terrain). Eyebrow top-left: `(FOUNDER & CEO — ALTIVUM INC.)`. Name lower-left **inside** the tile: "Christian _Perez_" in Playfair (Perez italic gold), caption "Green Beret · Founder · Author · Host". `<h1>` = "Christian Perez" |
+| Intro         | cols 9–12                     | 2–3 sentence positioning copy, SF Pro                                                                                                                                                                                                                                 |
+| Stat          | cols 9–12, umber bg           | "18*D*" + caption "SF Medical Sergeant"                                                                                                                                                                                                                               |
+| Contact       | cols 9–12                     | "Start a conversation" + gold pill → /contact                                                                                                                                                                                                                         |
+| Venture strip | bottom row, 4 tiles           | (PODCAST) The Vector · (BOOK) Beyond the Assessment · (VENTURE) Altivum Inc. · SCROLL ↓                                                                                                                                                                               |
 
 Hero venture tiles are wayfinding (compact links); the (VENTURES) carousel below is storytelling — intentional dual presence. Mobile: collapses to 2-col stack, scene tile first.
 
 ### 5.2 (ABOUT)
-Three-column editorial split: stacked display headline left (e.g. "QUIET DISCIPLINE. *RELENTLESS* EXECUTION."), WebGL image surface center — the existing portrait (`public/profile1.jpeg`) duotone-graded into the palette via the §8 pipeline — quiet copy + "THE FULL STORY" pill right → /about.
+
+Three-column editorial split: stacked display headline left (e.g. "QUIET DISCIPLINE. _RELENTLESS_ EXECUTION."), WebGL image surface center — the existing portrait (`public/profile1.jpeg`) duotone-graded into the palette via the §8 pipeline — quiet copy + "THE FULL STORY" pill right → /about.
 
 ### 5.3 (THE RECORD)
+
 Four serif stats scattered asymmetrically (absolute positioning on desktop, stacked on mobile): 18*D* / 60*+* episodes / 1 book / 3*x* ventures, each with tiny uppercase caption. Initial values above are editable content, structure supports any count of 3–5 stats.
 
 ### 5.4 (VENTURES)
+
 Pinned section; vertical scroll drives horizontal travel through 4 full-bleed panels: Altivum Inc. → The Vector Podcast → Beyond the Assessment → AWS/Claude work. Numbered indicator (1)–(4). Serif titles parallax against panel imagery. Touch: native horizontal swipe, no pin.
 
 ### 5.5 Image break
+
 Full-bleed graded architectural image, 0.85x parallax, one italic porcelain pull-quote crossing it.
 
 ### 5.6 (NEXT) — CTA
-The single porcelain section (palette inversion as punctuation): dark display headline "BUILD SOMETHING *WORTH KEEPING.*", dark pill → /contact, outline pill → newsletter. Newsletter reuses existing Lambda endpoint.
+
+The single porcelain section (palette inversion as punctuation): dark display headline "BUILD SOMETHING _WORTH KEEPING._", dark pill → /contact, outline pill → newsletter. Newsletter reuses existing Lambda endpoint.
 
 ## 6. Motion System (GSAP)
 
@@ -79,6 +85,7 @@ Rule: **things settle, they never bounce.** Eases `power3.out` or slower; nothin
 **Load (hero, once):** tiles cascade (opacity + 12px rise, 60ms stagger, ~0.9s) → ridge contours draw in (~1.8s) → stillness (only gold-dust drift at 2% opacity).
 
 **Scroll (ScrollTrigger, building on existing SplitReveal/FadeReveal):**
+
 - (ABOUT): word-by-word headline reveal; image parallax 0.9x; copy fades last
 - (THE RECORD): numerals roll up to value, staggered; captions fade after
 - (VENTURES): pin + horizontal scrub; per-panel title parallax
@@ -100,6 +107,7 @@ Rule: **things settle, they never bounce.** Eases `power3.out` or slower; nothin
 Alti mascot keeps its separate existing canvas.
 
 **Contract:**
+
 - Canvas mounts post-first-paint via `requestIdleCallback`; LCP is DOM hero text
 - Static SVG contour ridge renders first and **is** the fallback (reduced-motion, no WebGL, context-lost, low-end). Failure mode = staying on first paint
 - Images ship as real `<img>` (SEO/fallback); WebGL surface visually replaces when ready
@@ -117,7 +125,7 @@ Alti mascot keeps its separate existing canvas.
 
 **Navigation:** same structure (About dropdown 6 items; Home/Blog/Links/Contact). Transparent over hero → solid dark + hairline gold bottom border past 20px (existing threshold logic). Wordmark in Playfair small caps. Mobile: hamburger opens full-screen dark overlay — Playfair display-size entries, staggered reveal, `useFocusTrap`. Nav transparency on Home updates for the new 100vh hero (old `innerHeight*10` threshold replaced).
 
-**Footer:** one large Playfair line ("Build something *worth keeping.*"), three columns under eyebrows (NAVIGATE) / (VENTURES) / (CONNECT), porcelain on dark, hairline gold dividers; existing legal/social/newsletter content carried over; newsletter input as gold-bordered pill.
+**Footer:** one large Playfair line ("Build something _worth keeping._"), three columns under eyebrows (NAVIGATE) / (VENTURES) / (CONNECT), porcelain on dark, hairline gold dividers; existing legal/social/newsletter content carried over; newsletter input as gold-bordered pill.
 
 Nav + Footer ship in phase 1 and frame all pages, including unmigrated ones.
 
@@ -142,12 +150,12 @@ Nav + Footer ship in phase 1 and frame all pages, including unmigrated ones.
 
 ## 13. Decision Log
 
-| Decision | Choice | Alternatives considered |
-|---|---|---|
-| Palette | Gallery (porcelain + umber) | Highland (olive), Library (oxblood) |
-| Display type | Playfair Display | Instrument Serif, Fraunces |
-| Build approach | Parallel design-system layer | Global mutation, /v2 fork |
-| Hero | Command Grid bento + live ridge, monumental stillness | Centered name (rejected), Masthead Mosaic, Split Signature |
-| Three.js | Shared canvas: ridge + atmosphere + surfaces | Per-component canvases |
-| Imagery | Abstract textures + architectural minimalism | Alpine, human/mission |
-| Home structure | Full editorial restructure | Re-skin sticky summary, hybrid |
+| Decision       | Choice                                                | Alternatives considered                                    |
+| -------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
+| Palette        | Gallery (porcelain + umber)                           | Highland (olive), Library (oxblood)                        |
+| Display type   | Playfair Display                                      | Instrument Serif, Fraunces                                 |
+| Build approach | Parallel design-system layer                          | Global mutation, /v2 fork                                  |
+| Hero           | Command Grid bento + live ridge, monumental stillness | Centered name (rejected), Masthead Mosaic, Split Signature |
+| Three.js       | Shared canvas: ridge + atmosphere + surfaces          | Per-component canvases                                     |
+| Imagery        | Abstract textures + architectural minimalism          | Alpine, human/mission                                      |
+| Home structure | Full editorial restructure                            | Re-skin sticky summary, hybrid                             |

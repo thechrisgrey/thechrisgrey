@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Button } from './Button';
 
-const renderWithRouter = (ui: React.ReactElement) =>
-  render(<MemoryRouter>{ui}</MemoryRouter>);
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
 
 describe('Button', () => {
   describe('rendering as a button element', () => {
@@ -41,7 +40,11 @@ describe('Button', () => {
     it('should not fire click when disabled', async () => {
       const user = userEvent.setup();
       const onClick = vi.fn();
-      renderWithRouter(<Button onClick={onClick} disabled>Disabled</Button>);
+      renderWithRouter(
+        <Button onClick={onClick} disabled>
+          Disabled
+        </Button>,
+      );
 
       await user.click(screen.getByRole('button'));
       expect(onClick).not.toHaveBeenCalled();
@@ -67,7 +70,7 @@ describe('Button', () => {
       renderWithRouter(
         <Button href="https://example.com" external>
           External
-        </Button>
+        </Button>,
       );
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('target', '_blank');
@@ -90,7 +93,11 @@ describe('Button', () => {
     });
 
     it('should render icon on the left when specified', () => {
-      renderWithRouter(<Button icon="arrow_back" iconPosition="left">Back</Button>);
+      renderWithRouter(
+        <Button icon="arrow_back" iconPosition="left">
+          Back
+        </Button>,
+      );
       const button = screen.getByRole('button');
       // The icon span should appear before the text
       const spans = button.querySelectorAll('span');

@@ -26,15 +26,7 @@ function cacheKey(question) {
   return question.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-async function retrieveKbContext({
-  agentClient,
-  RetrieveCommand,
-  kbId,
-  question,
-  requestId,
-  kbCache,
-  metrics,
-}) {
+async function retrieveKbContext({ agentClient, RetrieveCommand, kbId, question, requestId, kbCache, metrics }) {
   if (!agentClient || !RetrieveCommand || !kbId) return null;
 
   const key = cacheKey(question);
@@ -57,9 +49,7 @@ async function retrieveKbContext({
     });
     const resp = await agentClient.send(cmd, { abortSignal: controller.signal });
     const chunks = Array.isArray(resp?.retrievalResults)
-      ? resp.retrievalResults
-          .map((r) => r?.content?.text)
-          .filter((t) => typeof t === "string" && t.length > 0)
+      ? resp.retrievalResults.map((r) => r?.content?.text).filter((t) => typeof t === "string" && t.length > 0)
       : [];
     const joined = chunks.length > 0 ? chunks.join("\n\n---\n\n") : null;
     const latencyMs = Date.now() - startedAt;
@@ -73,12 +63,14 @@ async function retrieveKbContext({
     } else {
       metrics?.record("McpKbFailure");
     }
-    console.error(JSON.stringify({
-      requestId,
-      event: "mcp_kb_error",
-      error: err?.name,
-      message: err?.message,
-    }));
+    console.error(
+      JSON.stringify({
+        requestId,
+        event: "mcp_kb_error",
+        error: err?.name,
+        message: err?.message,
+      }),
+    );
     return null;
   } finally {
     clearTimeout(timeoutId);
@@ -140,12 +132,14 @@ async function invokeBedrock({
       };
     }
     metrics?.record("McpBedrockFailure");
-    console.error(JSON.stringify({
-      requestId,
-      event: "mcp_bedrock_error",
-      error: err?.name,
-      message: err?.message,
-    }));
+    console.error(
+      JSON.stringify({
+        requestId,
+        event: "mcp_bedrock_error",
+        error: err?.name,
+        message: err?.message,
+      }),
+    );
     return { error: "Alti is unavailable right now. Try again shortly." };
   } finally {
     clearTimeout(timeoutId);

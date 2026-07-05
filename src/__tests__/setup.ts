@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 
 // Mock window.matchMedia for jsdom (used by useMediaQuery hook)
 Object.defineProperty(window, 'matchMedia', {

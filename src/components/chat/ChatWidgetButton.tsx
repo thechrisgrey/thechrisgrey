@@ -17,8 +17,7 @@ const MascotFallback = () => (
     data-testid="alti-fallback"
     className="w-16 h-16 flex items-center justify-center rounded-full"
     style={{
-      background:
-        'radial-gradient(circle at center, rgba(197,165,114,0.18) 0%, transparent 70%)',
+      background: 'radial-gradient(circle at center, rgba(197,165,114,0.18) 0%, transparent 70%)',
     }}
   >
     <span className="material-icons text-altivum-gold text-3xl">support_agent</span>

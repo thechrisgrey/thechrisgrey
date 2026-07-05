@@ -44,8 +44,18 @@ describe('SocialIcon', () => {
 
   it('should render all known platforms without error', () => {
     const platforms = [
-      'linkedin', 'twitter', 'facebook', 'github', 'instagram',
-      'youtube', 'substack', 'linktree', 'devto', 'aws', 'email', 'asu',
+      'linkedin',
+      'twitter',
+      'facebook',
+      'github',
+      'instagram',
+      'youtube',
+      'substack',
+      'linktree',
+      'devto',
+      'aws',
+      'email',
+      'asu',
     ];
 
     platforms.forEach((platform) => {

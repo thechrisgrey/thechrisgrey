@@ -49,7 +49,15 @@ describe('GenerativeBlocks', () => {
   });
 
   it('renders a stat_row block', () => {
-    renderBlocks([{ type: 'stat_row', stats: [{ value: '9', label: 'Episodes' }, { value: '2025', label: 'Launched' }] }]);
+    renderBlocks([
+      {
+        type: 'stat_row',
+        stats: [
+          { value: '9', label: 'Episodes' },
+          { value: '2025', label: 'Launched' },
+        ],
+      },
+    ]);
     expect(screen.getByText('9')).toBeInTheDocument();
     expect(screen.getByText('Episodes')).toBeInTheDocument();
   });
@@ -72,7 +80,13 @@ describe('GenerativeBlocks', () => {
 
   it('renders a profile_mini with an internal CTA', () => {
     renderBlocks([
-      { type: 'profile_mini', name: 'Christian Perez', role: 'Founder & CEO', blurb: 'Former Green Beret.', ctaPath: '/about' },
+      {
+        type: 'profile_mini',
+        name: 'Christian Perez',
+        role: 'Founder & CEO',
+        blurb: 'Former Green Beret.',
+        ctaPath: '/about',
+      },
     ]);
     expect(screen.getByText('Christian Perez')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Learn more/i })).toHaveAttribute('href', '/about');
@@ -80,7 +94,12 @@ describe('GenerativeBlocks', () => {
 
   it('renders an explainer block with paragraphs and bullets', () => {
     renderBlocks([
-      { type: 'explainer', title: 'What is Alti', paragraphs: ['Alti is the site agent.'], bullets: ['RAG', 'Tool use'] },
+      {
+        type: 'explainer',
+        title: 'What is Alti',
+        paragraphs: ['Alti is the site agent.'],
+        bullets: ['RAG', 'Tool use'],
+      },
     ]);
     expect(screen.getByText('What is Alti')).toBeInTheDocument();
     expect(screen.getByText('Alti is the site agent.')).toBeInTheDocument();

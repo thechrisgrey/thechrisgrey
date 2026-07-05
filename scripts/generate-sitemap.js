@@ -104,26 +104,26 @@ async function generateSitemap() {
   const today = formatDate(new Date().toISOString());
 
   // Generate static page entries
-  const staticEntries = staticPages.map(page =>
+  const staticEntries = staticPages.map((page) =>
     generateUrlEntry({
       loc: `${SITE_URL}${page.url}`,
       lastmod: today,
       changefreq: page.changefreq,
       priority: page.priority,
-    })
+    }),
   );
 
   // Fetch and generate blog post entries
   const posts = await fetchBlogPosts();
   console.log(`Found ${posts.length} blog posts`);
 
-  const blogEntries = posts.map(post =>
+  const blogEntries = posts.map((post) =>
     generateUrlEntry({
       loc: `${SITE_URL}/blog/${post.slug}`,
       lastmod: formatDate(post.lastmod),
       changefreq: 'monthly',
       priority: '0.6',
-    })
+    }),
   );
 
   // Combine all entries
@@ -148,8 +148,7 @@ ${allEntries.join('\n')}
 // without triggering a sitemap write as an import side effect. Compared via
 // pathToFileURL(realpathSync(...)) so the match is robust to symlinked /
 // realpath-differing invocations rather than the fragile `file://${argv[1]}` idiom.
-const invokedDirectly =
-  process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
 if (invokedDirectly) {
   generateSitemap().catch((err) => {
     console.error('Sitemap generation failed:', err);

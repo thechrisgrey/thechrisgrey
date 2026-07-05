@@ -4,7 +4,10 @@ import { buildRememberFactTool } from "../../tools/rememberFact.mjs";
 import { EVENT_DELIM } from "../../events.mjs";
 
 class PutCommand {
-  constructor(input) { this.input = input; this.__name = "PutCommand"; }
+  constructor(input) {
+    this.input = input;
+    this.__name = "PutCommand";
+  }
 }
 
 function fakeStream() {
@@ -75,7 +78,9 @@ test("remember_fact rejects when deviceId missing", async () => {
 test("remember_fact handles DynamoDB errors gracefully", async () => {
   const stream = fakeStream();
   const metrics = fakeMetrics();
-  const docClient = fakeDoc(async () => { throw new Error("DynamoDB unreachable"); });
+  const docClient = fakeDoc(async () => {
+    throw new Error("DynamoDB unreachable");
+  });
   const tool = buildRememberFactTool({
     docClient,
     PutCommand,

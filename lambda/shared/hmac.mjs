@@ -17,7 +17,7 @@ export const SIGNATURE_MAX_AGE_SECONDS = 300;
 export function verifySignature(
   event,
   signingKey,
-  { signatureHeader = "x-chat-signature", timestampHeader = "x-chat-timestamp" } = {}
+  { signatureHeader = "x-chat-signature", timestampHeader = "x-chat-timestamp" } = {},
 ) {
   if (!signingKey) {
     return { valid: true };

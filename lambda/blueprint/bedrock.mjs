@@ -18,17 +18,10 @@
  * (`BedrockTimeoutError`) the engine can treat as a retryable failure.
  */
 
-import {
-  ConverseCommand,
-  ConverseStreamCommand,
-  ApplyGuardrailCommand,
-} from "@aws-sdk/client-bedrock-runtime";
+import { ConverseCommand, ConverseStreamCommand, ApplyGuardrailCommand } from "@aws-sdk/client-bedrock-runtime";
 
-export const OPUS_MODEL_ID =
-  process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-6-v1";
-export const HAIKU_MODEL_ID =
-  process.env.BEDROCK_HAIKU_MODEL_ID ||
-  "us.anthropic.claude-haiku-4-5-20251001-v1:0";
+export const OPUS_MODEL_ID = process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-6-v1";
+export const HAIKU_MODEL_ID = process.env.BEDROCK_HAIKU_MODEL_ID || "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 
 // Bedrock Guardrail (the same guardrail chat-stream + mcp-server enforce).
 // Applied to every model call so visitor free-text in the spec is filtered for
@@ -72,27 +65,31 @@ function userMessages(text) {
  * @param {number} [opts.maxAttempts=2] - Total attempts (1 retry).
  * @returns {Promise<{ intervened: boolean, checkFailed?: boolean }>}
  */
-export async function applyInputGuardrail(bedrockClient, text, {
-  requestId = null,
-  guardrailId = GUARDRAIL_ID,
-  guardrailVersion = GUARDRAIL_VERSION,
-  maxAttempts = 2,
-} = {}) {
+export async function applyInputGuardrail(
+  bedrockClient,
+  text,
+  { requestId = null, guardrailId = GUARDRAIL_ID, guardrailVersion = GUARDRAIL_VERSION, maxAttempts = 2 } = {},
+) {
   if (!guardrailId || !guardrailVersion || !text) return { intervened: false };
   let lastError = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const response = await bedrockClient.send(new ApplyGuardrailCommand({
-        guardrailIdentifier: guardrailId,
-        guardrailVersion,
-        source: "INPUT",
-        content: [{ text: { text } }],
-      }));
+      const response = await bedrockClient.send(
+        new ApplyGuardrailCommand({
+          guardrailIdentifier: guardrailId,
+          guardrailVersion,
+          source: "INPUT",
+          content: [{ text: { text } }],
+        }),
+      );
       const intervened = response?.action === "GUARDRAIL_INTERVENED";
       if (intervened && requestId) {
-        console.warn(JSON.stringify({
-          requestId, event: "blueprint_input_guardrail_intervened",
-        }));
+        console.warn(
+          JSON.stringify({
+            requestId,
+            event: "blueprint_input_guardrail_intervened",
+          }),
+        );
       }
       return { intervened };
     } catch (error) {
@@ -102,10 +99,14 @@ export async function applyInputGuardrail(bedrockClient, text, {
   // Every attempt failed — decline (fail closed) rather than wave the input
   // through to Opus unscreened.
   if (requestId) {
-    console.error(JSON.stringify({
-      requestId, event: "blueprint_input_guardrail_error",
-      error: lastError?.name, message: lastError?.message,
-    }));
+    console.error(
+      JSON.stringify({
+        requestId,
+        event: "blueprint_input_guardrail_error",
+        error: lastError?.name,
+        message: lastError?.message,
+      }),
+    );
   }
   return { intervened: false, checkFailed: true };
 }
@@ -158,9 +159,7 @@ export const OPUS_TIMEOUT_FLOOR_MS = 5_000;
  * @returns {number|null} epoch-ms deadline, or null when there is no Lambda
  *   window (off-Lambda: local, MCP, tests) — callers then use the static cap.
  */
-export function resolveOpusDeadlineMs(remainingMs, nowMs, {
-  buffer = OPUS_TIMEOUT_BUFFER_MS,
-} = {}) {
+export function resolveOpusDeadlineMs(remainingMs, nowMs, { buffer = OPUS_TIMEOUT_BUFFER_MS } = {}) {
   if (typeof remainingMs !== "number" || !Number.isFinite(remainingMs)) return null;
   if (typeof nowMs !== "number" || !Number.isFinite(nowMs)) return null;
   return nowMs + remainingMs - buffer;
@@ -180,10 +179,11 @@ export function resolveOpusDeadlineMs(remainingMs, nowMs, {
  * @param {number} [opts.cap=OPUS_TIMEOUT_MS]
  * @returns {number} timeout in ms, clamped to [floor, cap].
  */
-export function opusTimeoutForDeadline(deadlineMs, nowMs, {
-  floor = OPUS_TIMEOUT_FLOOR_MS,
-  cap = OPUS_TIMEOUT_MS,
-} = {}) {
+export function opusTimeoutForDeadline(
+  deadlineMs,
+  nowMs,
+  { floor = OPUS_TIMEOUT_FLOOR_MS, cap = OPUS_TIMEOUT_MS } = {},
+) {
   if (deadlineMs == null || !Number.isFinite(deadlineMs) || !Number.isFinite(nowMs)) {
     return cap;
   }
@@ -250,15 +250,10 @@ export function parseConverseResponse(response) {
  * @param {string} [opts.requestId]
  * @returns {Promise<{ text: string, usage: object, latencyMs: number }>}
  */
-export async function invokeClaude(bedrockClient, {
-  modelId,
-  system,
-  user,
-  maxTokens,
-  temperature,
-  timeoutMs,
-  requestId = null,
-}) {
+export async function invokeClaude(
+  bedrockClient,
+  { modelId, system, user, maxTokens, temperature, timeoutMs, requestId = null },
+) {
   const start = Date.now();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -281,17 +276,29 @@ export async function invokeClaude(bedrockClient, {
     const latencyMs = Date.now() - start;
     if (error?.name === "AbortError") {
       if (requestId) {
-        console.error(JSON.stringify({
-          requestId, event: "bedrock_timeout", modelId, latencyMs, timeoutMs,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "bedrock_timeout",
+            modelId,
+            latencyMs,
+            timeoutMs,
+          }),
+        );
       }
       throw new BedrockTimeoutError(modelId, timeoutMs);
     }
     if (requestId) {
-      console.error(JSON.stringify({
-        requestId, event: "bedrock_error", modelId, latencyMs,
-        error: error?.name, message: error?.message,
-      }));
+      console.error(
+        JSON.stringify({
+          requestId,
+          event: "bedrock_error",
+          modelId,
+          latencyMs,
+          error: error?.name,
+          message: error?.message,
+        }),
+      );
     }
     throw new BedrockInvocationError(modelId, error);
   }
@@ -302,12 +309,7 @@ export async function invokeClaude(bedrockClient, {
  * with high schema fidelity. Blocking — callers waiting on full output
  * use this path; callers that want streaming feedback use streamOpus().
  */
-export async function invokeOpus(bedrockClient, {
-  system,
-  user,
-  requestId = null,
-  timeoutMs = OPUS_TIMEOUT_MS,
-}) {
+export async function invokeOpus(bedrockClient, { system, user, requestId = null, timeoutMs = OPUS_TIMEOUT_MS }) {
   return invokeClaude(bedrockClient, {
     modelId: OPUS_MODEL_ID,
     system,
@@ -332,13 +334,10 @@ export async function invokeOpus(bedrockClient, {
  * @param {string} [opts.requestId]
  * @returns {Promise<{ text: string, usage: object, latencyMs: number, stop_reason?: string }>}
  */
-export async function streamOpus(bedrockClient, {
-  system,
-  user,
-  onChunk,
-  requestId = null,
-  timeoutMs = OPUS_TIMEOUT_MS,
-}) {
+export async function streamOpus(
+  bedrockClient,
+  { system, user, onChunk, requestId = null, timeoutMs = OPUS_TIMEOUT_MS },
+) {
   const start = Date.now();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -385,10 +384,16 @@ export async function streamOpus(bedrockClient, {
     // surface it as a timeout, matching the blocking path.
     if (controller.signal.aborted) {
       if (requestId) {
-        console.error(JSON.stringify({
-          requestId, event: "bedrock_stream_timeout", modelId: OPUS_MODEL_ID,
-          latencyMs: Date.now() - start, timeoutMs, partialChars: accumulated.length,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "bedrock_stream_timeout",
+            modelId: OPUS_MODEL_ID,
+            latencyMs: Date.now() - start,
+            timeoutMs,
+            partialChars: accumulated.length,
+          }),
+        );
       }
       throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
     }
@@ -406,26 +411,30 @@ export async function streamOpus(bedrockClient, {
     if (error instanceof BedrockTimeoutError) throw error;
     if (error?.name === "AbortError") {
       if (requestId) {
-        console.error(JSON.stringify({
-          requestId,
-          event: "bedrock_stream_timeout",
-          modelId: OPUS_MODEL_ID,
-          latencyMs,
-          timeoutMs,
-          partialChars: accumulated.length,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "bedrock_stream_timeout",
+            modelId: OPUS_MODEL_ID,
+            latencyMs,
+            timeoutMs,
+            partialChars: accumulated.length,
+          }),
+        );
       }
       throw new BedrockTimeoutError(OPUS_MODEL_ID, timeoutMs);
     }
     if (requestId) {
-      console.error(JSON.stringify({
-        requestId,
-        event: "bedrock_stream_error",
-        modelId: OPUS_MODEL_ID,
-        latencyMs,
-        error: error?.name,
-        message: error?.message,
-      }));
+      console.error(
+        JSON.stringify({
+          requestId,
+          event: "bedrock_stream_error",
+          modelId: OPUS_MODEL_ID,
+          latencyMs,
+          error: error?.name,
+          message: error?.message,
+        }),
+      );
     }
     throw new BedrockInvocationError(OPUS_MODEL_ID, error);
   }

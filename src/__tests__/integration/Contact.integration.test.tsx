@@ -12,7 +12,7 @@ const renderContact = () => {
       <MemoryRouter initialEntries={['/contact']}>
         <Contact />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -31,9 +31,7 @@ describe('Contact Page Integration', () => {
   describe('Page rendering', () => {
     it('renders the hero section with the "Let\'s Connect" heading', () => {
       renderContact();
-      expect(
-        screen.getByRole('heading', { level: 1, name: /let's connect/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: /let's connect/i })).toBeInTheDocument();
     });
 
     it('renders the contact form with all required fields', () => {
@@ -47,9 +45,7 @@ describe('Contact Page Integration', () => {
 
     it('renders the submit button', () => {
       renderContact();
-      expect(
-        screen.getByRole('button', { name: /send message/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /send message/i })).toBeInTheDocument();
     });
 
     it('renders all four speaking topic cards', () => {
@@ -99,10 +95,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'A');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -111,9 +104,7 @@ describe('Contact Page Integration', () => {
         expect(nameInput).toHaveAttribute('aria-invalid', 'true');
         expect(nameInput).toHaveAttribute('aria-describedby', 'name-error');
       });
-      expect(
-        screen.getByText('Name must be between 2 and 100 characters')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Name must be between 2 and 100 characters')).toBeInTheDocument();
     });
 
     it('shows error when email is invalid', async () => {
@@ -124,10 +115,7 @@ describe('Contact Page Integration', () => {
       // Use an email that passes HTML5 type="email" validation but fails custom regex
       // (our regex requires a TLD like .com; HTML5 allows bare domain like test@domain)
       await user.type(screen.getByLabelText(/email \*/i), 'test@domain');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -136,9 +124,7 @@ describe('Contact Page Integration', () => {
         expect(emailInput).toHaveAttribute('aria-invalid', 'true');
         expect(emailInput).toHaveAttribute('aria-describedby', 'email-error');
       });
-      expect(
-        screen.getByText('Please enter a valid email address')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
     });
 
     it('shows error when message is too short', async () => {
@@ -156,9 +142,7 @@ describe('Contact Page Integration', () => {
         expect(messageInput).toHaveAttribute('aria-invalid', 'true');
         expect(messageInput).toHaveAttribute('aria-describedby', 'message-error');
       });
-      expect(
-        screen.getByText('Message must be between 10 and 5000 characters')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Message must be between 10 and 5000 characters')).toBeInTheDocument();
     });
 
     it('clears error when user starts typing after an error', async () => {
@@ -167,26 +151,19 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'A');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('Name must be between 2 and 100 characters')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Name must be between 2 and 100 characters')).toBeInTheDocument();
       });
 
       // Start typing again - the field's error should clear
       await user.type(screen.getByLabelText(/name \*/i), 'B');
 
       await waitFor(() => {
-        expect(
-          screen.queryByText('Name must be between 2 and 100 characters')
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Name must be between 2 and 100 characters')).not.toBeInTheDocument();
         expect(screen.getByLabelText(/name \*/i)).not.toHaveAttribute('aria-invalid');
       });
     });
@@ -197,10 +174,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'A');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -215,10 +189,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@domain');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -238,16 +209,10 @@ describe('Contact Page Integration', () => {
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('Name must be between 2 and 100 characters')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Name must be between 2 and 100 characters')).toBeInTheDocument();
       });
-      expect(
-        screen.getByText('Please enter a valid email address')
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('Message must be between 10 and 5000 characters')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+      expect(screen.getByText('Message must be between 10 and 5000 characters')).toBeInTheDocument();
       expect(screen.getByLabelText(/name \*/i)).toHaveAttribute('aria-invalid', 'true');
       expect(screen.getByLabelText(/email \*/i)).toHaveAttribute('aria-invalid', 'true');
       expect(screen.getByLabelText(/message \*/i)).toHaveAttribute('aria-invalid', 'true');
@@ -259,10 +224,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'A');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -282,10 +244,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -310,10 +269,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -324,9 +280,7 @@ describe('Contact Page Integration', () => {
       });
 
       expect(screen.getByText('Thank You!')).toBeInTheDocument();
-      expect(
-        screen.getByText("Thanks for contacting me. I'll reach back as soon as possible.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Thanks for contacting me. I'll reach back as soon as possible.")).toBeInTheDocument();
     });
 
     it('resets form fields after successful submission', async () => {
@@ -368,10 +322,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -402,10 +353,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -426,10 +374,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -446,10 +391,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -471,10 +413,7 @@ describe('Contact Page Integration', () => {
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
       await user.type(screen.getByLabelText(/subject/i), 'Test Subject');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for testing.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for testing.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -515,10 +454,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -540,10 +476,7 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -569,17 +502,12 @@ describe('Contact Page Integration', () => {
 
       await user.type(screen.getByLabelText(/name \*/i), 'Test User');
       await user.type(screen.getByLabelText(/email \*/i), 'test@example.com');
-      await user.type(
-        screen.getByLabelText(/message \*/i),
-        'This is a valid message for the contact form.'
-      );
+      await user.type(screen.getByLabelText(/message \*/i), 'This is a valid message for the contact form.');
 
       await user.click(screen.getByRole('button', { name: /send message/i }));
 
       const dialog = await screen.findByRole('dialog');
-      const status = within(dialog).getByText(
-        "Thanks for contacting me. I'll reach back as soon as possible."
-      );
+      const status = within(dialog).getByText("Thanks for contacting me. I'll reach back as soon as possible.");
       expect(status).toHaveAttribute('role', 'status');
       expect(status).toHaveAttribute('aria-live', 'polite');
     });
@@ -589,17 +517,11 @@ describe('Contact Page Integration', () => {
     it('sources channel hrefs from SOCIAL_LINKS', () => {
       renderContact();
 
-      expect(screen.getByRole('link', { name: /linkedin/i })).toHaveAttribute(
-        'href',
-        SOCIAL_LINKS.linkedin
-      );
-      expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute(
-        'href',
-        SOCIAL_LINKS.github
-      );
+      expect(screen.getByRole('link', { name: /linkedin/i })).toHaveAttribute('href', SOCIAL_LINKS.linkedin);
+      expect(screen.getByRole('link', { name: /github/i })).toHaveAttribute('href', SOCIAL_LINKS.github);
       expect(screen.getByRole('link', { name: /general inquiries/i })).toHaveAttribute(
         'href',
-        SOCIAL_LINKS.altivumEmail
+        SOCIAL_LINKS.altivumEmail,
       );
     });
 

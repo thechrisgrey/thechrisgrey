@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -56,7 +56,7 @@ export default defineConfig({
         // (e.g. why a Turnstile token couldn't be obtained, ErrorBoundary catches,
         // fetch failures) stay visible in the browser console for debugging.
         drop_console: ['log', 'info', 'debug', 'trace'],
-      }
-    }
-  }
-})
+      },
+    },
+  },
+});

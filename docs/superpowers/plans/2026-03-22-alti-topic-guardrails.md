@@ -34,6 +34,7 @@ Use `aws bedrock update-guardrail` with the full topic policy. The command must 
 4. **Other public figures** — "Questions about celebrities, politicians, business leaders, or public figures other than Christian Perez"
 
 Keep these existing topics unchanged:
+
 - Illegal activities
 - Professional advice
 
@@ -47,25 +48,45 @@ The `--topic-policy-config` JSON must use this structure (each topic needs `name
     {
       "name": "Programming and code assistance",
       "definition": "Requests to write, debug, review, or explain code in any programming language",
-      "examples": ["Write me a Python function", "Debug this JavaScript error", "Explain how recursion works", "Help me with my React component"],
+      "examples": [
+        "Write me a Python function",
+        "Debug this JavaScript error",
+        "Explain how recursion works",
+        "Help me with my React component"
+      ],
       "type": "DENY"
     },
     {
       "name": "General knowledge and trivia",
       "definition": "Questions about science, history, geography, math, or academic subjects with no connection to Christian Perez's background, career, or areas of expertise",
-      "examples": ["What is the capital of France", "Explain quantum computing", "How does photosynthesis work", "What year did World War 1 start"],
+      "examples": [
+        "What is the capital of France",
+        "Explain quantum computing",
+        "How does photosynthesis work",
+        "What year did World War 1 start"
+      ],
       "type": "DENY"
     },
     {
       "name": "Creative content generation",
       "definition": "Requests to write poems, stories, essays, emails, resumes, cover letters, or other documents",
-      "examples": ["Write me a poem", "Help me with my resume", "Draft an email to my boss", "Write a short story about space"],
+      "examples": [
+        "Write me a poem",
+        "Help me with my resume",
+        "Draft an email to my boss",
+        "Write a short story about space"
+      ],
       "type": "DENY"
     },
     {
       "name": "Other public figures",
       "definition": "Questions about celebrities, politicians, business leaders, or public figures other than Christian Perez",
-      "examples": ["Tell me about Elon Musk", "Who is the president", "What does Jeff Bezos do", "Compare Christian to Mark Zuckerberg"],
+      "examples": [
+        "Tell me about Elon Musk",
+        "Who is the president",
+        "What does Jeff Bezos do",
+        "Compare Christian to Mark Zuckerberg"
+      ],
       "type": "DENY"
     },
     {
@@ -128,6 +149,7 @@ No files changed. This is an infrastructure-only task.
 ### Task 2: Update Lambda System Prompt
 
 **Files:**
+
 - Modify: `lambda/chat-stream/index.mjs:130-150` (BASE_SYSTEM_PROMPT)
 
 - [ ] **Step 1: Replace the BASE_SYSTEM_PROMPT**
@@ -183,6 +205,7 @@ standalone off-topic questions with a warm personality redirect."
 ### Task 3: Update Lambda Guardrail Version
 
 **Files:**
+
 - Modify: `lambda/chat-stream/index.mjs:67` (GUARDRAIL_VERSION)
 
 **Depends on:** Task 1 (guardrail version 2 must exist in Bedrock)
@@ -193,10 +216,10 @@ In `lambda/chat-stream/index.mjs` line 67, change:
 
 ```javascript
 // Before
-const GUARDRAIL_VERSION = "1";
+const GUARDRAIL_VERSION = '1';
 
 // After
-const GUARDRAIL_VERSION = "2";
+const GUARDRAIL_VERSION = '2';
 ```
 
 - [ ] **Step 2: Commit**
@@ -299,6 +322,7 @@ Expected: Warm redirect from system prompt. Guardrail should NOT hard-block this
 ### Task 6: Update CLAUDE.md Documentation
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Update the guardrail version reference**
@@ -308,11 +332,13 @@ Find the line referencing guardrail version 1 and update to version 2.
 - [ ] **Step 2: Update the denied topics list**
 
 Replace the current denied topics list:
+
 ```
 - Denied topics: Off-topic technical support, illegal activities, professional advice
 ```
 
 With:
+
 ```
 - Denied topics: Programming and code assistance, general knowledge and trivia, creative content generation, other public figures, illegal activities, professional advice
 ```
@@ -320,6 +346,7 @@ With:
 - [ ] **Step 3: Update the system prompt description**
 
 In the "Response Guidelines" section under the Alti chat documentation, add a note about the contextual leash behavior:
+
 ```
 - Topic boundaries: Alti answers questions about Christian Perez only; general concepts are allowed in conversational context but standalone off-topic questions get a warm redirect
 ```

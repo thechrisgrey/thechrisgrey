@@ -188,10 +188,9 @@ describe('Navigation ↔ ROUTES drift detector', () => {
     const inNav = new Set(navPaths);
     for (const route of ROUTES) {
       const surfaced = inNav.has(route.path) || NON_NAV_ROUTES.has(route.path);
-      expect(
-        surfaced,
-        `${route.path} is missing from NAVIGATION_CONFIG — add it to the nav or to NON_NAV_ROUTES`
-      ).toBe(true);
+      expect(surfaced, `${route.path} is missing from NAVIGATION_CONFIG — add it to the nav or to NON_NAV_ROUTES`).toBe(
+        true,
+      );
     }
   });
 

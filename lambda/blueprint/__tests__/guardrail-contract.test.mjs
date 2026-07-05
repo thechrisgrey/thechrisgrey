@@ -44,10 +44,7 @@ if (!process.env.BEDROCK_CONTRACT_TESTS) {
   // mcp-server config; the blueprint Lambda runs there too. Allow override for a
   // staging guardrail in another region.
   const region =
-    process.env.BLUEPRINT_AWS_REGION ||
-    process.env.AWS_REGION ||
-    process.env.AWS_DEFAULT_REGION ||
-    "us-east-1";
+    process.env.BLUEPRINT_AWS_REGION || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
 
   // Real client — NOT a scripted fake. Every send() in this suite hits Bedrock.
   const bedrockClient = new BedrockRuntimeClient({ region });

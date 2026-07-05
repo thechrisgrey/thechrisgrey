@@ -26,10 +26,7 @@
 import { createHash, randomUUID } from "crypto";
 import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  UpdateCommand,
-} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { createClient as createSanityClient } from "@sanity/client";
 import { checkRateLimit } from "lambda-shared/rateLimit";
@@ -44,9 +41,8 @@ const REGION = process.env.AWS_REGION || "us-east-1";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://thechrisgrey.com";
 const SIGNING_KEY = process.env.BLUEPRINT_SIGNING_KEY || "";
 const SESSION_TOKEN_KEY = process.env.SESSION_TOKEN_KEY || "";
-const RATE_LIMIT_TABLE = process.env.BLUEPRINT_RATE_LIMIT_TABLE
-  || process.env.CHAT_RATE_LIMIT_TABLE
-  || "thechrisgrey-chat-ratelimit";
+const RATE_LIMIT_TABLE =
+  process.env.BLUEPRINT_RATE_LIMIT_TABLE || process.env.CHAT_RATE_LIMIT_TABLE || "thechrisgrey-chat-ratelimit";
 const RATE_LIMIT_MAX = 1;
 const RATE_LIMIT_WINDOW_SECONDS = 30 * 24 * 60 * 60; // 30 days
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
@@ -70,22 +66,21 @@ const sanityClient = sanityProjectId
   : null;
 
 // Module-scope fetcher so the 5-min cache persists across warm invocations.
-const examplesFetcher = sanityClient
-  ? createGoldenExamplesFetcher(sanityClient)
-  : null;
+const examplesFetcher = sanityClient ? createGoldenExamplesFetcher(sanityClient) : null;
 
 if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
-  console.warn(JSON.stringify({
-    event: "startup_warning",
-    message: "Neither SESSION_TOKEN_KEY nor BLUEPRINT_SIGNING_KEY set — request authentication disabled",
-  }));
+  console.warn(
+    JSON.stringify({
+      event: "startup_warning",
+      message: "Neither SESSION_TOKEN_KEY nor BLUEPRINT_SIGNING_KEY set — request authentication disabled",
+    }),
+  );
 }
 
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": CORS_ORIGIN,
-    "Access-Control-Allow-Headers":
-      "Content-Type, x-blueprint-timestamp, x-blueprint-signature",
+    "Access-Control-Allow-Headers": "Content-Type, x-blueprint-timestamp, x-blueprint-signature",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "3600",
   };
@@ -354,20 +349,30 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     if (streamOpened && ndjsonMode) {
       // Stream already live — surface the error as an NDJSON event.
       try {
-        responseStream.write(JSON.stringify({
-          type: "error",
-          error: "internal_error",
-          message: "An unexpected error occurred.",
-        }) + "\n");
+        responseStream.write(
+          JSON.stringify({
+            type: "error",
+            error: "internal_error",
+            message: "An unexpected error occurred.",
+          }) + "\n",
+        );
       } catch {
         // Already torn down.
       }
-      try { responseStream.end(); } catch { /* already ended */ }
+      try {
+        responseStream.end();
+      } catch {
+        /* already ended */
+      }
     } else if (!streamOpened) {
       closeWithJson(500, { error: "internal_error" });
     } else {
       // streamOpened but not NDJSON (e.g., OPTIONS path already ended). Nothing to do.
-      try { responseStream.end(); } catch { /* already ended */ }
+      try {
+        responseStream.end();
+      } catch {
+        /* already ended */
+      }
     }
   } finally {
     await metrics.flush();

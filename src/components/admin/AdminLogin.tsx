@@ -66,10 +66,7 @@ function AdminLogin({ onLogin, isLoading, error }: AdminLoginProps) {
           </div>
 
           {error && (
-            <div
-              className="p-4 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm"
-              role="alert"
-            >
+            <div className="p-4 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm" role="alert">
               {error}
             </div>
           )}

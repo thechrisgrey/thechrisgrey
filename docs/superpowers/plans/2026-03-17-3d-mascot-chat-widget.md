@@ -14,20 +14,21 @@
 
 ## File Structure
 
-| File | Responsibility |
-|------|---------------|
-| `public/alti.glb` | Meshopt-compressed 3D model served statically |
-| `src/components/chat/AltiMascot.tsx` | Three.js Canvas, model loading, lighting, hover animation, platform div |
-| `src/components/chat/ChatWidgetButton.tsx` | Button wrapper with a11y, lazy-loads AltiMascot |
-| `src/components/chat/ChatWidget.tsx` | No changes needed (already passes `isOpen` to button) |
-| `amplify.yml` | Cache header for `.glb` files |
-| `vite.config.ts` | Manual chunk for `three` to keep vendor bundle clean |
+| File                                       | Responsibility                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| `public/alti.glb`                          | Meshopt-compressed 3D model served statically                           |
+| `src/components/chat/AltiMascot.tsx`       | Three.js Canvas, model loading, lighting, hover animation, platform div |
+| `src/components/chat/ChatWidgetButton.tsx` | Button wrapper with a11y, lazy-loads AltiMascot                         |
+| `src/components/chat/ChatWidget.tsx`       | No changes needed (already passes `isOpen` to button)                   |
+| `amplify.yml`                              | Cache header for `.glb` files                                           |
+| `vite.config.ts`                           | Manual chunk for `three` to keep vendor bundle clean                    |
 
 ---
 
 ### Task 1: Install Dependencies and Compress Model
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `vite.config.ts`
 - Create: `public/alti.glb` (compressed copy)
@@ -97,6 +98,7 @@ git commit -m "feat: add Three.js dependencies and compressed Alti mascot model"
 ### Task 2: Create AltiMascot Component
 
 **Files:**
+
 - Create: `src/components/chat/AltiMascot.tsx`
 
 - [ ] **Step 1: Create AltiMascot.tsx**
@@ -169,17 +171,11 @@ const AltiMascot = ({ isOpen }: AltiMascotProps) => {
       {/* Platform */}
       <div
         className={`w-12 h-3 rounded-[50%] flex items-center justify-center transition-all duration-200 ${
-          isOpen
-            ? 'bg-altivum-navy/90 border border-white/15'
-            : 'bg-altivum-navy/70 border border-white/8'
+          isOpen ? 'bg-altivum-navy/90 border border-white/15' : 'bg-altivum-navy/70 border border-white/8'
         }`}
         style={{ marginTop: '-4px' }}
       >
-        {isOpen && (
-          <span className="material-icons text-altivum-silver text-[10px] leading-none">
-            close
-          </span>
-        )}
+        {isOpen && <span className="material-icons text-altivum-silver text-[10px] leading-none">close</span>}
       </div>
     </div>
   );
@@ -189,6 +185,7 @@ export default AltiMascot;
 ```
 
 **Key decisions in this code:**
+
 - `useGLTF` loads the model. `useGLTF.preload()` at module scope starts fetching the GLB as soon as the lazy chunk loads, before the component mounts — reduces time-to-visible.
 - `frameloop="demand"` — Canvas only renders when `invalidate()` is called. The `useFrame` callback destructures `invalidate` from its state parameter and calls it only while the lerp is active. Once the lerp converges, rendering stops. Zero idle GPU.
 - Pointer events: `setHovered(true/false)` triggers a React re-render, which causes `useFrame` to run (React Three Fiber invalidates on re-render in demand mode), starting the lerp loop.
@@ -217,6 +214,7 @@ git commit -m "feat: add AltiMascot 3D component with hover animation"
 ### Task 3: Update ChatWidgetButton and Tests
 
 **Files:**
+
 - Modify: `src/components/chat/ChatWidgetButton.tsx`
 - Modify: `src/components/chat/ChatWidgetButton.test.tsx`
 - Modify: `src/__tests__/integration/ChatWidget.integration.test.tsx`
@@ -256,6 +254,7 @@ export default ChatWidgetButton;
 ```
 
 **Key points:**
+
 - Button element preserved — all a11y intact.
 - `React.lazy()` + local `<Suspense>` for lazy loading (outside App.tsx's Suspense boundary).
 - `fallback={null}` — invisible until the 3D chunk loads, no flash.
@@ -272,9 +271,7 @@ import ChatWidgetButton from './ChatWidgetButton';
 
 // Mock AltiMascot since Three.js Canvas doesn't work in jsdom
 vi.mock('./AltiMascot', () => ({
-  default: ({ isOpen }: { isOpen: boolean }) => (
-    <div data-testid="alti-mascot" data-is-open={isOpen} />
-  ),
+  default: ({ isOpen }: { isOpen: boolean }) => <div data-testid="alti-mascot" data-is-open={isOpen} />,
 }));
 
 describe('ChatWidgetButton', () => {
@@ -359,6 +356,7 @@ git commit -m "feat: replace gold circle FAB with 3D Alti mascot"
 ### Task 4: Add GLB Cache Header to amplify.yml
 
 **Files:**
+
 - Modify: `amplify.yml`
 
 - [ ] **Step 1: Add cache header rule**
@@ -366,10 +364,10 @@ git commit -m "feat: replace gold circle FAB with 3D Alti mascot"
 Add a new pattern block after the `**/*.webp` entry in `amplify.yml` (before `sitemap.xml`):
 
 ```yaml
-  - pattern: '**/*.glb'
-    headers:
-      - key: Cache-Control
-        value: 'public, max-age=604800'
+- pattern: '**/*.glb'
+  headers:
+    - key: Cache-Control
+      value: 'public, max-age=604800'
 ```
 
 This gives the GLB file 1-week browser caching, matching the image cache policy. No `immutable` since the file has no content hash.
@@ -392,6 +390,7 @@ git commit -m "chore: add cache header for GLB model files"
 This task is manual — it requires running the dev server and adjusting camera/model positioning based on how the actual model looks.
 
 **Files:**
+
 - May modify: `src/components/chat/AltiMascot.tsx` (camera position, model scale, lighting)
 
 - [ ] **Step 1: Start the dev server**
@@ -414,12 +413,14 @@ The default camera is at `[0, 0, 3]` with fov 45. If the model is too large, too
 - [ ] **Step 3: Test hover animation**
 
 Hover over the mascot. It should smoothly scale up ~10% and scale back down when the pointer leaves. Verify:
+
 - Animation is smooth (not stuttery)
 - No continuous GPU activity after hover ends (check with browser GPU monitor if needed)
 
 - [ ] **Step 4: Test chat open/close states**
 
 Click the mascot — the chat panel should open. Verify:
+
 - The platform below shows an "X" close icon when the panel is open
 - Clicking the mascot again closes the panel
 - The panel still closes via Escape key and the panel's own close button

@@ -27,10 +27,7 @@ describe('YouTubeFacade', () => {
       render(<YouTubeFacade {...defaultProps} />);
       const img = screen.getByAltText('Test Video');
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute(
-        'src',
-        'https://i.ytimg.com/vi/abc123/maxresdefault.jpg'
-      );
+      expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/abc123/maxresdefault.jpg');
     });
 
     it('should set loading="lazy" on thumbnail image', () => {
@@ -56,10 +53,7 @@ describe('YouTubeFacade', () => {
       // Simulate image load error
       fireEvent.error(img);
 
-      expect(img).toHaveAttribute(
-        'src',
-        'https://i.ytimg.com/vi/abc123/hqdefault.jpg'
-      );
+      expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/abc123/hqdefault.jpg');
     });
 
     it('should not change src if already using hqdefault', () => {
@@ -68,17 +62,11 @@ describe('YouTubeFacade', () => {
 
       // First error: switch to hqdefault
       fireEvent.error(img);
-      expect(img).toHaveAttribute(
-        'src',
-        'https://i.ytimg.com/vi/abc123/hqdefault.jpg'
-      );
+      expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/abc123/hqdefault.jpg');
 
       // Second error: should not change (already hqdefault)
       fireEvent.error(img);
-      expect(img).toHaveAttribute(
-        'src',
-        'https://i.ytimg.com/vi/abc123/hqdefault.jpg'
-      );
+      expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/abc123/hqdefault.jpg');
     });
   });
 
@@ -101,69 +89,46 @@ describe('YouTubeFacade', () => {
       const user = userEvent.setup();
       render(<YouTubeFacade {...defaultProps} />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play test video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play test video/i }));
 
       const iframe = screen.getByTitle('Test Video');
-      expect(iframe).toHaveAttribute(
-        'src',
-        'https://www.youtube.com/embed/abc123?autoplay=1'
-      );
+      expect(iframe).toHaveAttribute('src', 'https://www.youtube.com/embed/abc123?autoplay=1');
     });
 
     it('should include embedParams in iframe src when provided', async () => {
       const user = userEvent.setup();
-      render(
-        <YouTubeFacade {...defaultProps} embedParams="rel=0&modestbranding=1" />
-      );
+      render(<YouTubeFacade {...defaultProps} embedParams="rel=0&modestbranding=1" />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play test video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play test video/i }));
 
       const iframe = screen.getByTitle('Test Video');
-      expect(iframe).toHaveAttribute(
-        'src',
-        'https://www.youtube.com/embed/abc123?rel=0&modestbranding=1&autoplay=1'
-      );
+      expect(iframe).toHaveAttribute('src', 'https://www.youtube.com/embed/abc123?rel=0&modestbranding=1&autoplay=1');
     });
 
     it('should remove the play button after clicking', async () => {
       const user = userEvent.setup();
       render(<YouTubeFacade {...defaultProps} />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play test video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play test video/i }));
 
-      expect(
-        screen.queryByRole('button', { name: /play test video/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /play test video/i })).not.toBeInTheDocument();
     });
 
     it('should set sandbox attribute on iframe', async () => {
       const user = userEvent.setup();
       render(<YouTubeFacade {...defaultProps} />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play test video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play test video/i }));
 
       const iframe = screen.getByTitle('Test Video');
-      expect(iframe).toHaveAttribute(
-        'sandbox',
-        'allow-scripts allow-same-origin allow-presentation allow-popups'
-      );
+      expect(iframe).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
     });
 
     it('should set allowFullScreen on iframe', async () => {
       const user = userEvent.setup();
       render(<YouTubeFacade {...defaultProps} />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play test video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play test video/i }));
 
       const iframe = screen.getByTitle('Test Video');
       expect(iframe).toHaveAttribute('allowfullscreen', '');
@@ -172,31 +137,19 @@ describe('YouTubeFacade', () => {
 
   describe('with different videoId', () => {
     it('should use the correct videoId in thumbnail URL', () => {
-      render(
-        <YouTubeFacade videoId="xyz789" title="Another Video" />
-      );
+      render(<YouTubeFacade videoId="xyz789" title="Another Video" />);
       const img = screen.getByAltText('Another Video');
-      expect(img).toHaveAttribute(
-        'src',
-        'https://i.ytimg.com/vi/xyz789/maxresdefault.jpg'
-      );
+      expect(img).toHaveAttribute('src', 'https://i.ytimg.com/vi/xyz789/maxresdefault.jpg');
     });
 
     it('should use the correct videoId in embed URL after click', async () => {
       const user = userEvent.setup();
-      render(
-        <YouTubeFacade videoId="xyz789" title="Another Video" />
-      );
+      render(<YouTubeFacade videoId="xyz789" title="Another Video" />);
 
-      await user.click(
-        screen.getByRole('button', { name: /play another video/i })
-      );
+      await user.click(screen.getByRole('button', { name: /play another video/i }));
 
       const iframe = screen.getByTitle('Another Video');
-      expect(iframe).toHaveAttribute(
-        'src',
-        'https://www.youtube.com/embed/xyz789?autoplay=1'
-      );
+      expect(iframe).toHaveAttribute('src', 'https://www.youtube.com/embed/xyz789?autoplay=1');
     });
   });
 });

@@ -6,9 +6,11 @@ describe('Blog Post Page', () => {
     cy.get('article', { timeout: 15000 }).should('have.length.greaterThan', 0);
 
     // Store the first post's link and navigate to it
-    cy.get('article').first().within(() => {
-      cy.get('a').first().invoke('attr', 'href').as('postUrl');
-    });
+    cy.get('article')
+      .first()
+      .within(() => {
+        cy.get('a').first().invoke('attr', 'href').as('postUrl');
+      });
 
     cy.get('@postUrl').then((url) => {
       cy.visit(url as unknown as string);
@@ -45,9 +47,7 @@ describe('Blog Post Page', () => {
 
   it('should have correct SEO meta tags for the post', () => {
     cy.title().should('not.be.empty');
-    cy.get('head meta[name="description"]')
-      .should('have.attr', 'content')
-      .and('not.be.empty');
+    cy.get('head meta[name="description"]').should('have.attr', 'content').and('not.be.empty');
   });
 
   it('should display the navigation bar', () => {

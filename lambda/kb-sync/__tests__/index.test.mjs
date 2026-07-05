@@ -23,12 +23,8 @@ process.env.AWS_CONFIG_FILE = "/dev/null";
 process.env.AWS_EC2_METADATA_DISABLED = "true";
 process.env.AWS_REGION = "us-east-1";
 
-const { BedrockAgentClient, StartIngestionJobCommand } = await import(
-  "@aws-sdk/client-bedrock-agent"
-);
-const { CloudWatchClient, PutMetricDataCommand } = await import(
-  "@aws-sdk/client-cloudwatch"
-);
+const { BedrockAgentClient, StartIngestionJobCommand } = await import("@aws-sdk/client-bedrock-agent");
+const { CloudWatchClient, PutMetricDataCommand } = await import("@aws-sdk/client-cloudwatch");
 
 // These IDs are hard-coded as module constants in index.mjs. The Lambda has no
 // env override for them, so the test asserts against the literal production
@@ -125,19 +121,12 @@ function s3PutEvent({
 test("StartIngestionJob is built with the hard-coded KB + DataSource IDs", async () => {
   const response = await handler(s3PutEvent());
 
-  assert.equal(
-    bedrockCalls.length,
-    1,
-    "handler must send exactly one StartIngestionJobCommand"
-  );
+  assert.equal(bedrockCalls.length, 1, "handler must send exactly one StartIngestionJobCommand");
 
   const command = bedrockCalls[0];
   // The handler sends a *real* StartIngestionJobCommand; assert against the
   // genuine SDK class, not a duck-typed shape.
-  assert.ok(
-    command instanceof StartIngestionJobCommand,
-    "command must be a real StartIngestionJobCommand instance"
-  );
+  assert.ok(command instanceof StartIngestionJobCommand, "command must be a real StartIngestionJobCommand instance");
   // The real SDK stores the constructor config on `.input` (verified against
   // the live SDK), so this asserts the exact wiring the handler builds.
   assert.deepEqual(command.input, {
@@ -179,16 +168,9 @@ test("success path returns 200 with the ingestionJobId from the Bedrock response
 test("success path publishes the KBSyncTriggered CloudWatch metric", async () => {
   await handler(s3PutEvent());
 
-  assert.equal(
-    cloudwatchCalls.length,
-    1,
-    "exactly one PutMetricDataCommand on the success path"
-  );
+  assert.equal(cloudwatchCalls.length, 1, "exactly one PutMetricDataCommand on the success path");
   const metricCmd = cloudwatchCalls[0];
-  assert.ok(
-    metricCmd instanceof PutMetricDataCommand,
-    "must be a real PutMetricDataCommand instance"
-  );
+  assert.ok(metricCmd instanceof PutMetricDataCommand, "must be a real PutMetricDataCommand instance");
   assert.equal(metricCmd.input.Namespace, EXPECTED_NAMESPACE);
   assert.equal(metricCmd.input.MetricData.length, 1);
   const datum = metricCmd.input.MetricData[0];
@@ -211,18 +193,14 @@ test("multi-record S3 event still triggers a single ingestion job and echoes eve
 
   const response = await handler(event);
 
-  assert.equal(
-    bedrockCalls.length,
-    1,
-    "one ingestion job regardless of record count"
-  );
+  assert.equal(bedrockCalls.length, 1, "one ingestion job regardless of record count");
   const body = JSON.parse(response.body);
   assert.deepEqual(
     body.triggeredBy.map((r) => ({ name: r.eventName, key: r.key })),
     [
       { name: "ObjectCreated:Put", key: "a.txt" },
       { name: "ObjectRemoved:Delete", key: "b.txt" },
-    ]
+    ],
   );
 });
 
@@ -240,7 +218,7 @@ test("empty/non-matching event (no Records) does not crash and still maps to an 
   assert.equal(
     bedrockCalls.length,
     1,
-    "current handler fires ingestion even on an empty event (no Records short-circuit)"
+    "current handler fires ingestion even on an empty event (no Records short-circuit)",
   );
 });
 
@@ -265,10 +243,7 @@ test("Bedrock failure returns 500, swallows the error (no throw), and publishes 
 
   // On failure it publishes KBSyncFailure (the only metric on this path).
   assert.equal(cloudwatchCalls.length, 1);
-  assert.equal(
-    cloudwatchCalls[0].input.MetricData[0].MetricName,
-    "KBSyncFailure"
-  );
+  assert.equal(cloudwatchCalls[0].input.MetricData[0].MetricName, "KBSyncFailure");
 });
 
 test("a failing metric publish is swallowed and does not break the success path", async () => {

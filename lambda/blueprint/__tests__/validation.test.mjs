@@ -1,10 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  tryParseJson,
-  validateSchema,
-  validateWithHaiku,
-} from "../validation.mjs";
+import { tryParseJson, validateSchema, validateWithHaiku } from "../validation.mjs";
 import { scriptedBedrockClient, validBlueprintOutput } from "./harness.mjs";
 
 test("tryParseJson returns empty_response for blank input", () => {
@@ -102,9 +98,7 @@ test("validateWithHaiku respects severity=error in issues (forces ok=false)", as
       text: JSON.stringify({
         ok: true,
         confidence: "medium",
-        issues: [
-          { field: "iac_scaffold.snippet", severity: "error", note: "contains TODO" },
-        ],
+        issues: [{ field: "iac_scaffold.snippet", severity: "error", note: "contains TODO" }],
       }),
     },
   ]);
@@ -120,9 +114,7 @@ test("validateWithHaiku treats warnings alone as ok=true", async () => {
       text: JSON.stringify({
         ok: true,
         confidence: "high",
-        issues: [
-          { field: "services", severity: "warn", note: "rationales could be tighter" },
-        ],
+        issues: [{ field: "services", severity: "warn", note: "rationales could be tighter" }],
       }),
     },
   ]);
@@ -132,9 +124,7 @@ test("validateWithHaiku treats warnings alone as ok=true", async () => {
 });
 
 test("validateWithHaiku handles non-JSON response gracefully", async () => {
-  const bedrock = scriptedBedrockClient([
-    { text: "I think this looks pretty good!" },
-  ]);
+  const bedrock = scriptedBedrockClient([{ text: "I think this looks pretty good!" }]);
   const res = await validateWithHaiku(bedrock, validBlueprintOutput());
   assert.equal(res.ok, true, "malformed Haiku responses default to ok=true (soft signal)");
   assert.equal(res.confidence, "low");

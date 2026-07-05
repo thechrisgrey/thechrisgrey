@@ -21,34 +21,26 @@ describe('useSessionStorage', () => {
 
     it('should return the initial value for complex types', () => {
       const initialValue = { name: 'test', count: 0 };
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', initialValue)
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', initialValue));
       expect(result.current[0]).toEqual(initialValue);
     });
 
     it('should return the initial value for arrays', () => {
       const initialValue = [1, 2, 3];
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', initialValue)
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', initialValue));
       expect(result.current[0]).toEqual([1, 2, 3]);
     });
 
     it('should read existing value from sessionStorage', () => {
       window.sessionStorage.setItem('test-key', JSON.stringify('stored-value'));
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'default')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'default'));
       expect(result.current[0]).toBe('stored-value');
     });
 
     it('should fall back to initial value if sessionStorage contains invalid JSON', () => {
       window.sessionStorage.setItem('test-key', 'not-valid-json{{{');
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'fallback')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'fallback'));
       expect(result.current[0]).toBe('fallback');
       expect(warnSpy).toHaveBeenCalled();
     });
@@ -56,9 +48,7 @@ describe('useSessionStorage', () => {
 
   describe('setValue', () => {
     it('should update the stored value', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'initial')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'initial'));
 
       act(() => {
         result.current[1]('updated');
@@ -68,23 +58,17 @@ describe('useSessionStorage', () => {
     });
 
     it('should persist value to sessionStorage', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'initial')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'initial'));
 
       act(() => {
         result.current[1]('persisted');
       });
 
-      expect(window.sessionStorage.getItem('test-key')).toBe(
-        JSON.stringify('persisted')
-      );
+      expect(window.sessionStorage.getItem('test-key')).toBe(JSON.stringify('persisted'));
     });
 
     it('should support updater function (prev => newValue)', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('counter', 0)
-      );
+      const { result } = renderHook(() => useSessionStorage('counter', 0));
 
       act(() => {
         result.current[1]((prev) => prev + 1);
@@ -100,9 +84,7 @@ describe('useSessionStorage', () => {
     });
 
     it('should support updater function with arrays', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage<string[]>('items', [])
-      );
+      const { result } = renderHook(() => useSessionStorage<string[]>('items', []));
 
       act(() => {
         result.current[1]((prev) => [...prev, 'item1']);
@@ -120,9 +102,7 @@ describe('useSessionStorage', () => {
 
   describe('clearValue', () => {
     it('should reset value to initial value', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'initial')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'initial'));
 
       act(() => {
         result.current[1]('changed');
@@ -138,9 +118,7 @@ describe('useSessionStorage', () => {
     });
 
     it('should reset sessionStorage to initial value after clear', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'initial')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'initial'));
 
       act(() => {
         result.current[1]('something');
@@ -164,10 +142,7 @@ describe('useSessionStorage', () => {
       window.sessionStorage.setItem('date-key', JSON.stringify(data));
 
       const { result } = renderHook(() =>
-        useSessionStorage<{ timestamp: Date | string; label: string }>(
-          'date-key',
-          { timestamp: '', label: '' }
-        )
+        useSessionStorage<{ timestamp: Date | string; label: string }>('date-key', { timestamp: '', label: '' }),
       );
 
       expect(result.current[0].timestamp).toBeInstanceOf(Date);
@@ -183,10 +158,7 @@ describe('useSessionStorage', () => {
       window.sessionStorage.setItem('messages', JSON.stringify(messages));
 
       const { result } = renderHook(() =>
-        useSessionStorage<Array<{ id: string; timestamp: Date | string }>>(
-          'messages',
-          []
-        )
+        useSessionStorage<Array<{ id: string; timestamp: Date | string }>>('messages', []),
       );
 
       expect(result.current[0][0].timestamp).toBeInstanceOf(Date);
@@ -198,10 +170,7 @@ describe('useSessionStorage', () => {
       window.sessionStorage.setItem('text-key', JSON.stringify(data));
 
       const { result } = renderHook(() =>
-        useSessionStorage<{ name: string; value: string }>(
-          'text-key',
-          { name: '', value: '' }
-        )
+        useSessionStorage<{ name: string; value: string }>('text-key', { name: '', value: '' }),
       );
 
       expect(typeof result.current[0].name).toBe('string');
@@ -211,9 +180,7 @@ describe('useSessionStorage', () => {
 
   describe('return value structure', () => {
     it('should return a tuple of [value, setValue, clearValue]', () => {
-      const { result } = renderHook(() =>
-        useSessionStorage('test-key', 'initial')
-      );
+      const { result } = renderHook(() => useSessionStorage('test-key', 'initial'));
 
       expect(result.current).toHaveLength(3);
       expect(typeof result.current[1]).toBe('function');

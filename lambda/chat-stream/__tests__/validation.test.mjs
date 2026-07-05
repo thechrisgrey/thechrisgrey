@@ -64,10 +64,7 @@ test("validatePageContext returns null for non-object", () => {
 });
 
 test("validatePageContext rejects unknown paths", () => {
-  assert.equal(
-    validatePageContext({ currentPage: "/evil", section: "Home", visitedPages: [] }),
-    null,
-  );
+  assert.equal(validatePageContext({ currentPage: "/evil", section: "Home", visitedPages: [] }), null);
 });
 
 test("validatePageContext accepts valid blog slug", () => {
@@ -101,10 +98,7 @@ test("validatePageContext keeps the root path as '/'", () => {
 });
 
 test("validatePageContext rejects section with unsafe chars", () => {
-  assert.equal(
-    validatePageContext({ currentPage: "/", section: "<script>", visitedPages: [] }),
-    null,
-  );
+  assert.equal(validatePageContext({ currentPage: "/", section: "<script>", visitedPages: [] }), null);
 });
 
 test("validatePageContext filters invalid visitedPages entries", () => {

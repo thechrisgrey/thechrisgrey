@@ -18,11 +18,7 @@
  */
 
 import { BlueprintInputSchema } from "./schema.mjs";
-import {
-  buildSystemPrompt,
-  buildUserPrompt,
-  selectExamples,
-} from "./prompts.mjs";
+import { buildSystemPrompt, buildUserPrompt, selectExamples } from "./prompts.mjs";
 import {
   invokeOpus,
   streamOpus,
@@ -30,11 +26,7 @@ import {
   applyInputGuardrail,
   BedrockTimeoutError,
 } from "./bedrock.mjs";
-import {
-  tryParseJson,
-  validateSchema,
-  validateWithHaiku,
-} from "./validation.mjs";
+import { tryParseJson, validateSchema, validateWithHaiku } from "./validation.mjs";
 import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
 
 export const VALID_TIERS = new Set(["free", "pro"]);
@@ -132,8 +124,7 @@ export async function generateBlueprint(rawSpec, deps) {
 
   // 2. Resolve golden-example fetcher and load examples
   emit(onProgress, { type: "status", phase: "fetching_examples" });
-  const fetcher = injectedFetcher
-    || (sanityClient ? createGoldenExamplesFetcher(sanityClient) : null);
+  const fetcher = injectedFetcher || (sanityClient ? createGoldenExamplesFetcher(sanityClient) : null);
 
   let allExamples = [];
   if (fetcher) {
@@ -141,7 +132,9 @@ export async function generateBlueprint(rawSpec, deps) {
       allExamples = await fetcher.getExamples();
     } catch (error) {
       logger.warn?.("golden_examples_load_error", {
-        requestId, error: error?.name, message: error?.message,
+        requestId,
+        error: error?.name,
+        message: error?.message,
       });
       allExamples = [];
     }
@@ -196,9 +189,10 @@ export async function generateBlueprint(rawSpec, deps) {
       attempt,
       examplesUsed: examples.length,
     });
-    const retryNote = attempt > 1
-      ? `\n\nNOTE: A previous attempt failed schema validation with these issues:\n${JSON.stringify(lastSchemaIssues).slice(0, 600)}\nReturn a corrected JSON object that satisfies every constraint.`
-      : "";
+    const retryNote =
+      attempt > 1
+        ? `\n\nNOTE: A previous attempt failed schema validation with these issues:\n${JSON.stringify(lastSchemaIssues).slice(0, 600)}\nReturn a corrected JSON object that satisfies every constraint.`
+        : "";
 
     // Re-derive this attempt's abort budget from the shared deadline so a retry
     // that starts later gets less time — two attempts can never exceed the
@@ -226,7 +220,10 @@ export async function generateBlueprint(rawSpec, deps) {
     } catch (error) {
       const code = error instanceof BedrockTimeoutError ? "opus_timeout" : "opus_error";
       logger.error?.(code, {
-        requestId, error: error?.name, message: error?.message, attempt,
+        requestId,
+        error: error?.name,
+        message: error?.message,
+        attempt,
       });
       return {
         ok: false,
@@ -252,7 +249,9 @@ export async function generateBlueprint(rawSpec, deps) {
     if (!jsonParse.ok) {
       lastSchemaIssues = [{ field: "_root", severity: "error", note: jsonParse.error }];
       logger.warn?.("opus_response_parse_error", {
-        requestId, error: jsonParse.error, attempt,
+        requestId,
+        error: jsonParse.error,
+        attempt,
       });
       continue;
     }
@@ -261,7 +260,9 @@ export async function generateBlueprint(rawSpec, deps) {
     if (!schemaResult.ok) {
       lastSchemaIssues = schemaResult.issues;
       logger.warn?.("opus_schema_validation_failed", {
-        requestId, issues: schemaResult.issues.slice(0, 5), attempt,
+        requestId,
+        issues: schemaResult.issues.slice(0, 5),
+        attempt,
       });
       continue;
     }
@@ -303,12 +304,15 @@ export async function generateBlueprint(rawSpec, deps) {
     };
     if (!verdict.ok) {
       logger.warn?.("haiku_flagged_quality_issues", {
-        requestId, issues: verdict.issues.slice(0, 5),
+        requestId,
+        issues: verdict.issues.slice(0, 5),
       });
     }
   } catch (error) {
     logger.warn?.("haiku_validator_error", {
-      requestId, error: error?.name, message: error?.message,
+      requestId,
+      error: error?.name,
+      message: error?.message,
     });
     haikuVerdict = { ok: true, confidence: "low", issues: [] };
   }

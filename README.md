@@ -34,18 +34,18 @@ Personal website for **Christian Perez** ([@thechrisgrey](https://thechrisgrey.c
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 19, TypeScript 5, Vite 5 (Vitest 4, ESLint 10 flat config) |
-| **Styling** | Tailwind CSS 4 (CSS-first `@theme` config, Oxide engine) |
-| **Routing** | React Router 7 |
-| **CMS** | Sanity.io (blog content) |
-| **AI Chat** | Amazon Bedrock (Claude Haiku 4.5) + RAG |
-| **Auth** | Amazon Cognito (admin panel) |
-| **Hosting** | AWS Amplify |
-| **CDN/Analytics** | Cloudflare Web Analytics |
-| **Testing** | Vitest + React Testing Library + Cypress |
-| **Code Quality** | ESLint, strict TypeScript |
+| Layer             | Technology                                                       |
+| ----------------- | ---------------------------------------------------------------- |
+| **Frontend**      | React 19, TypeScript 5, Vite 5 (Vitest 4, ESLint 10 flat config) |
+| **Styling**       | Tailwind CSS 4 (CSS-first `@theme` config, Oxide engine)         |
+| **Routing**       | React Router 7                                                   |
+| **CMS**           | Sanity.io (blog content)                                         |
+| **AI Chat**       | Amazon Bedrock (Claude Haiku 4.5) + RAG                          |
+| **Auth**          | Amazon Cognito (admin panel)                                     |
+| **Hosting**       | AWS Amplify                                                      |
+| **CDN/Analytics** | Cloudflare Web Analytics                                         |
+| **Testing**       | Vitest + React Testing Library + Cypress                         |
+| **Code Quality**  | ESLint, strict TypeScript                                        |
 
 ---
 
@@ -122,22 +122,22 @@ Lambda Function URL (streaming)
 
 ## AWS Infrastructure
 
-| Service | Resource | Region | Purpose |
-|---------|----------|--------|---------|
-| **Amplify** | `d3du8eg39a9peo` | us-east-2 | Hosting, CI/CD |
-| **Lambda** | `thechrisgrey-chat-stream` | us-east-1 | AI chat streaming |
-| **Lambda** | `thechrisgrey-contact-email` | us-east-2 | Contact form |
-| **Lambda** | `thechrisgrey-newsletter-subscription` | us-east-2 | Newsletter |
-| **Lambda** | `thechrisgrey-kb-sync` | us-east-1 | KB auto-sync on S3 changes |
-| **Lambda** | `thechrisgrey-kb-builder` | us-east-1 | KB admin CRUD operations |
-| **Lambda** | `thechrisgrey-metrics` | us-east-1 | Metrics collection and reporting |
-| **Bedrock KB** | `ARFYABW8HP` | us-east-1 | RAG knowledge base |
-| **Cognito** | User Pool | us-east-1 | Admin authentication |
-| **S3** | `thechrisgrey-kb-source` | us-east-1 | KB source documents |
-| **S3** | `thechrisgrey-vectors` | us-east-1 | Vector embeddings |
-| **DynamoDB** | `thechrisgrey-chat-ratelimit` | us-east-1 | Rate limiting (20 req/hr/IP) |
-| **Secrets Manager** | `thechrisgrey/youtube-api-key` | us-east-1 | YouTube API key |
-| **CloudWatch** | `tcg-AI-chat` | us-east-1 | Bedrock invocation logs |
+| Service             | Resource                               | Region    | Purpose                          |
+| ------------------- | -------------------------------------- | --------- | -------------------------------- |
+| **Amplify**         | `d3du8eg39a9peo`                       | us-east-2 | Hosting, CI/CD                   |
+| **Lambda**          | `thechrisgrey-chat-stream`             | us-east-1 | AI chat streaming                |
+| **Lambda**          | `thechrisgrey-contact-email`           | us-east-2 | Contact form                     |
+| **Lambda**          | `thechrisgrey-newsletter-subscription` | us-east-2 | Newsletter                       |
+| **Lambda**          | `thechrisgrey-kb-sync`                 | us-east-1 | KB auto-sync on S3 changes       |
+| **Lambda**          | `thechrisgrey-kb-builder`              | us-east-1 | KB admin CRUD operations         |
+| **Lambda**          | `thechrisgrey-metrics`                 | us-east-1 | Metrics collection and reporting |
+| **Bedrock KB**      | `ARFYABW8HP`                           | us-east-1 | RAG knowledge base               |
+| **Cognito**         | User Pool                              | us-east-1 | Admin authentication             |
+| **S3**              | `thechrisgrey-kb-source`               | us-east-1 | KB source documents              |
+| **S3**              | `thechrisgrey-vectors`                 | us-east-1 | Vector embeddings                |
+| **DynamoDB**        | `thechrisgrey-chat-ratelimit`          | us-east-1 | Rate limiting (20 req/hr/IP)     |
+| **Secrets Manager** | `thechrisgrey/youtube-api-key`         | us-east-1 | YouTube API key                  |
+| **CloudWatch**      | `tcg-AI-chat`                          | us-east-1 | Bedrock invocation logs          |
 
 ---
 
@@ -178,14 +178,14 @@ validate-env -> podcast-episodes -> lint -> tsc -> vite build -> sitemap -> rss
 
 ## Testing
 
-| Framework | Scope | Command |
-|-----------|-------|---------|
-| **Vitest** | Unit + Integration | `npm test` |
-| **Vitest** | Watch mode | `npm run test:watch` |
-| **Vitest** | Coverage report | `npm run test:coverage` |
-| **Cypress** | E2E (headless) | `npm run cy:run` |
-| **Cypress** | E2E (interactive) | `npm run cy:open` |
-| **node:test** | Lambda unit + contract | `npm run test:lambda` |
+| Framework     | Scope                  | Command                 |
+| ------------- | ---------------------- | ----------------------- |
+| **Vitest**    | Unit + Integration     | `npm test`              |
+| **Vitest**    | Watch mode             | `npm run test:watch`    |
+| **Vitest**    | Coverage report        | `npm run test:coverage` |
+| **Cypress**   | E2E (headless)         | `npm run cy:run`        |
+| **Cypress**   | E2E (interactive)      | `npm run cy:open`       |
+| **node:test** | Lambda unit + contract | `npm run test:lambda`   |
 
 The test suite includes unit tests for components, hooks, and utilities; integration tests for page-level behavior; and end-to-end tests covering navigation, chat, blog, and contact flows.
 
@@ -209,17 +209,17 @@ See `.env.example` for the full list of flags and required permissions. Run thes
 
 Set in AWS Amplify console or in a local `.env` file:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_CHAT_ENDPOINT` | Lambda Function URL for AI chat | Yes |
-| `VITE_CONTACT_ENDPOINT` | Lambda Function URL for contact form | Yes |
-| `VITE_NEWSLETTER_ENDPOINT` | Lambda Function URL for newsletter | Yes |
-| `VITE_COGNITO_USER_POOL_ID` | Cognito User Pool ID (admin auth) | Yes |
-| `VITE_COGNITO_CLIENT_ID` | Cognito App Client ID | Yes |
-| `VITE_KB_BUILDER_ENDPOINT` | Lambda Function URL for KB admin | Yes |
-| `VITE_CHAT_SIGNING_KEY` | HMAC signing key for chat requests | Yes |
-| `VITE_METRICS_ENDPOINT` | Lambda Function URL for metrics | Yes |
-| `YOUTUBE_API_KEY` | YouTube Data API v3 key (build-time only) | Yes |
+| Variable                    | Description                               | Required |
+| --------------------------- | ----------------------------------------- | -------- |
+| `VITE_CHAT_ENDPOINT`        | Lambda Function URL for AI chat           | Yes      |
+| `VITE_CONTACT_ENDPOINT`     | Lambda Function URL for contact form      | Yes      |
+| `VITE_NEWSLETTER_ENDPOINT`  | Lambda Function URL for newsletter        | Yes      |
+| `VITE_COGNITO_USER_POOL_ID` | Cognito User Pool ID (admin auth)         | Yes      |
+| `VITE_COGNITO_CLIENT_ID`    | Cognito App Client ID                     | Yes      |
+| `VITE_KB_BUILDER_ENDPOINT`  | Lambda Function URL for KB admin          | Yes      |
+| `VITE_CHAT_SIGNING_KEY`     | HMAC signing key for chat requests        | Yes      |
+| `VITE_METRICS_ENDPOINT`     | Lambda Function URL for metrics           | Yes      |
+| `YOUTUBE_API_KEY`           | YouTube Data API v3 key (build-time only) | Yes      |
 
 `VITE_` prefixed variables are bundled into the frontend. `YOUTUBE_API_KEY` is only used during the build step.
 
@@ -390,14 +390,14 @@ Privacy-friendly, cookie-free analytics with no personal data collection.
 
 ### Color Palette
 
-| Name | Hex | Usage |
-|------|-----|-------|
-| `altivum-dark` | `#0A0F1C` | Backgrounds |
-| `altivum-navy` | `#1A2332` | Cards, nav |
-| `altivum-blue` | `#2E4A6B` | Accents |
-| `altivum-slate` | `#4A5A73` | Borders, muted |
-| `altivum-silver` | `#9BA6B8` | Body text |
-| `altivum-gold` | `#C5A572` | Highlights, CTAs |
+| Name             | Hex       | Usage            |
+| ---------------- | --------- | ---------------- |
+| `altivum-dark`   | `#0A0F1C` | Backgrounds      |
+| `altivum-navy`   | `#1A2332` | Cards, nav       |
+| `altivum-blue`   | `#2E4A6B` | Accents          |
+| `altivum-slate`  | `#4A5A73` | Borders, muted   |
+| `altivum-silver` | `#9BA6B8` | Body text        |
+| `altivum-gold`   | `#C5A572` | Highlights, CTAs |
 
 ### Typography
 

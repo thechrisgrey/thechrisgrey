@@ -80,10 +80,7 @@ const SocialIcon = ({ platform, className = 'w-6 h-6' }: SocialIconProps) => {
 
   return (
     <svg className={className} fill="currentColor" viewBox={icon.viewBox}>
-      <path
-        d={icon.path}
-        {...(icon.fillRule ? { fillRule: icon.fillRule, clipRule: icon.clipRule } : {})}
-      />
+      <path d={icon.path} {...(icon.fillRule ? { fillRule: icon.fillRule, clipRule: icon.clipRule } : {})} />
     </svg>
   );
 };

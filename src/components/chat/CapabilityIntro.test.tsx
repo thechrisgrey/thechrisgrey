@@ -11,10 +11,7 @@ const renderIntro = (overrides: { onUseExample?: MockedFunction<UseExample>; ini
   // explicit MockedFunction<...> type so callers and the prop slot agree.
   const onUseExample: MockedFunction<UseExample> = overrides.onUseExample ?? vi.fn<UseExample>();
   const utils = render(
-    <CapabilityIntro
-      onUseExample={onUseExample}
-      initiallyExpanded={overrides.initiallyExpanded ?? false}
-    />
+    <CapabilityIntro onUseExample={onUseExample} initiallyExpanded={overrides.initiallyExpanded ?? false} />,
   );
   return { ...utils, onUseExample };
 };
@@ -69,16 +66,12 @@ describe('CapabilityIntro', () => {
       renderIntro({ initiallyExpanded: true });
       // The visual-answers card must show HOW to trigger it — the deterministic
       // "gen-ui" command — with an in-domain example that won't trip topic boundaries.
-      expect(
-        screen.getByText(/Use gen-ui to compare his military and tech careers\./)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Use gen-ui to compare his military and tech careers\./)).toBeInTheDocument();
     });
 
     it('renders the agency-reinforcing footer copy', () => {
       renderIntro({ initiallyExpanded: true });
-      expect(
-        screen.getByText(/ask alti to forget you anytime/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/ask alti to forget you anytime/i)).toBeInTheDocument();
     });
   });
 

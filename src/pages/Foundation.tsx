@@ -8,22 +8,26 @@ const FOCUS_AREAS = [
   {
     ordinal: '01',
     name: 'Cloud Computing',
-    description: 'Infrastructure and certification paths across AWS, Azure, and GCP — the operational backbone of the modern economy.',
+    description:
+      'Infrastructure and certification paths across AWS, Azure, and GCP — the operational backbone of the modern economy.',
   },
   {
     ordinal: '02',
     name: 'Artificial Intelligence',
-    description: 'Machine learning, large language models, and applied AI systems. The fields redefining every industry veterans enter.',
+    description:
+      'Machine learning, large language models, and applied AI systems. The fields redefining every industry veterans enter.',
   },
   {
     ordinal: '03',
     name: 'Robotics',
-    description: 'Autonomous systems, industrial automation, and field logistics. The civilian discipline closest to operational military work.',
+    description:
+      'Autonomous systems, industrial automation, and field logistics. The civilian discipline closest to operational military work.',
   },
   {
     ordinal: '04',
     name: 'Cybersecurity',
-    description: 'Threat analysis and defense operations. A field that rewards the exact instincts trained by years of service.',
+    description:
+      'Threat analysis and defense operations. A field that rewards the exact instincts trained by years of service.',
   },
 ];
 
@@ -96,7 +100,8 @@ const Foundation = () => {
             </h1>
             <div className="h-px w-16 bg-altivum-gold mx-auto mb-6 sm:mb-8" />
             <p className="text-altivum-silver max-w-2xl mx-auto mb-8 sm:mb-10" style={typography.subtitle}>
-              A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in the technologies defining the next economy. At no cost to the scholar.
+              A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in the technologies defining the
+              next economy. At no cost to the scholar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <FoundationCtaButton href={FOUNDATION_URL} variant="gold">
@@ -121,7 +126,9 @@ const Foundation = () => {
           </h2>
           <div className="h-px w-16 bg-altivum-gold/60 mx-auto mb-8" />
           <p className="text-altivum-silver" style={typography.subtitle}>
-            The men and women who served this country bring discipline, adaptability, and leadership forged under pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics, and cybersecurity — need exactly those qualities. The Altivum Foundation exists to connect the two.
+            The men and women who served this country bring discipline, adaptability, and leadership forged under
+            pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics, and
+            cybersecurity — need exactly those qualities. The Altivum Foundation exists to connect the two.
           </p>
         </div>
       </section>
@@ -131,19 +138,25 @@ const Foundation = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center">
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>200K+</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                200K+
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Veterans transition out of service annually
               </p>
             </div>
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>3.5M</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                3.5M
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Tech jobs unfilled in the United States
               </p>
             </div>
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>$0</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                $0
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Cost to our scholars
               </p>
@@ -176,7 +189,10 @@ const Foundation = () => {
                 <p className="text-altivum-gold/80 mb-3" style={typography.smallText}>
                   {area.ordinal}
                 </p>
-                <h3 className="text-white mb-4 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleLarge}>
+                <h3
+                  className="text-white mb-4 group-hover:text-altivum-gold transition-colors"
+                  style={typography.cardTitleLarge}
+                >
                   {area.name}
                 </h3>
                 <p className="text-altivum-silver" style={typography.bodyText}>
@@ -200,13 +216,18 @@ const Foundation = () => {
             </h2>
             <div className="space-y-4">
               <p className="text-altivum-silver" style={typography.bodyText}>
-                When I took off the uniform, the path from special operations to cloud architecture was not a roadmap. It was a lot of self-funded certifications, late nights, and the sense that a generation of proven leaders was being locked out of the industries that needed them most.
+                When I took off the uniform, the path from special operations to cloud architecture was not a roadmap.
+                It was a lot of self-funded certifications, late nights, and the sense that a generation of proven
+                leaders was being locked out of the industries that needed them most.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                The Altivum Foundation exists because certification costs are prohibitive and training programs are fragmented. The veterans who can lead a team through a combat zone can lead an engineering team through a product launch — if someone gives them the technical foundation.
+                The Altivum Foundation exists because certification costs are prohibitive and training programs are
+                fragmented. The veterans who can lead a team through a combat zone can lead an engineering team through
+                a product launch — if someone gives them the technical foundation.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                This is that foundation. A 501(c)(3) nonprofit (EIN 41-4163272) that funds the education at no cost to the scholar, with every contribution fully tax-deductible.
+                This is that foundation. A 501(c)(3) nonprofit (EIN 41-4163272) that funds the education at no cost to
+                the scholar, with every contribution fully tax-deductible.
               </p>
             </div>
             <div className="mt-8">
@@ -216,7 +237,13 @@ const Foundation = () => {
                 style={typography.bodyText}
               >
                 More about Christian
-                <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </ViewTransitionLink>

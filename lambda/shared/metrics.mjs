@@ -41,14 +41,16 @@ export class MetricsCollector {
 
     await Promise.all(
       batches.map((batch) =>
-        this.client
-          .send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: batch }))
-          .catch((err) => console.error(JSON.stringify({
-            event: "metrics_flush_error",
-            error: err.name,
-            message: err.message,
-          })))
-      )
+        this.client.send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: batch })).catch((err) =>
+          console.error(
+            JSON.stringify({
+              event: "metrics_flush_error",
+              error: err.name,
+              message: err.message,
+            }),
+          ),
+        ),
+      ),
     );
   }
 }

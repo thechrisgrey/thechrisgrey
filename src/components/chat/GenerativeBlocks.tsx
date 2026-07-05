@@ -93,7 +93,10 @@ function Comparison({ block }: { block: ComparisonBlock }) {
       {block.title ? <BlockTitle>{block.title}</BlockTitle> : null}
       <div className="flex flex-col sm:flex-row gap-5">
         <ComparisonColumn heading={block.left.heading} points={block.left.points} />
-        <div className="hidden sm:block w-px bg-linear-to-b from-transparent via-altivum-gold/20 to-transparent" aria-hidden="true" />
+        <div
+          className="hidden sm:block w-px bg-linear-to-b from-transparent via-altivum-gold/20 to-transparent"
+          aria-hidden="true"
+        />
         <ComparisonColumn heading={block.right.heading} points={block.right.points} />
       </div>
     </div>
@@ -138,7 +141,10 @@ function ProfileMini({ block }: { block: ProfileMiniBlock }) {
           style={typography.smallText}
         >
           <span>Learn more</span>
-          <span className="material-icons text-base leading-none transition-transform group-hover:translate-x-1" aria-hidden="true">
+          <span
+            className="material-icons text-base leading-none transition-transform group-hover:translate-x-1"
+            aria-hidden="true"
+          >
             arrow_forward
           </span>
         </ViewTransitionLink>
@@ -189,7 +195,10 @@ function LinkGrid({ block }: { block: LinkGridBlock }) {
           >
             <span className="text-altivum-gold flex items-center gap-1" style={typography.bodyText}>
               {link.label}
-              <span className="material-icons text-base leading-none transition-transform group-hover:translate-x-1" aria-hidden="true">
+              <span
+                className="material-icons text-base leading-none transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              >
                 arrow_forward
               </span>
             </span>

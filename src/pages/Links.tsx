@@ -36,7 +36,9 @@ const SocialCard = ({ social }: { social: SocialLink }) => (
         </h3>
         <p className="text-altivum-silver/60 text-xs truncate">{social.handle}</p>
       </div>
-      <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">arrow_forward</span>
+      <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 text-sm">
+        arrow_forward
+      </span>
     </div>
   </a>
 );
@@ -71,23 +73,68 @@ const Links = () => {
   ];
 
   const personalSocials: SocialLink[] = [
-    { name: 'AWS Builder', handle: 'AWS Community Builder Profile', url: SOCIAL_LINKS.awsBuilder, icon: <SocialIcon platform="aws" /> },
+    {
+      name: 'AWS Builder',
+      handle: 'AWS Community Builder Profile',
+      url: SOCIAL_LINKS.awsBuilder,
+      icon: <SocialIcon platform="aws" />,
+    },
     { name: 'Substack', handle: '@thechrisgrey', url: SOCIAL_LINKS.substack, icon: <SocialIcon platform="substack" /> },
     { name: 'Linktree', handle: '@thechrisgrey', url: SOCIAL_LINKS.linktree, icon: <SocialIcon platform="linktree" /> },
-    { name: 'Arizona State University', handle: 'ASU Search Profile', url: SOCIAL_LINKS.asu, icon: <SocialIcon platform="asu" /> },
+    {
+      name: 'Arizona State University',
+      handle: 'ASU Search Profile',
+      url: SOCIAL_LINKS.asu,
+      icon: <SocialIcon platform="asu" />,
+    },
     { name: 'Facebook', handle: '@thechrisgrey', url: SOCIAL_LINKS.facebook, icon: <SocialIcon platform="facebook" /> },
-    { name: 'X (Twitter)', handle: '@thechrisgrey', url: SOCIAL_LINKS.twitter, icon: <SocialIcon platform="twitter" /> },
-    { name: 'LinkedIn', handle: 'Christian Perez', url: SOCIAL_LINKS.linkedin, icon: <SocialIcon platform="linkedin" /> },
+    {
+      name: 'X (Twitter)',
+      handle: '@thechrisgrey',
+      url: SOCIAL_LINKS.twitter,
+      icon: <SocialIcon platform="twitter" />,
+    },
+    {
+      name: 'LinkedIn',
+      handle: 'Christian Perez',
+      url: SOCIAL_LINKS.linkedin,
+      icon: <SocialIcon platform="linkedin" />,
+    },
     { name: 'GitHub', handle: '@AltivumInc-Admin', url: SOCIAL_LINKS.github, icon: <SocialIcon platform="github" /> },
     { name: 'DEV Community', handle: '@thechrisgrey', url: SOCIAL_LINKS.devto, icon: <SocialIcon platform="devto" /> },
-    { name: 'Email', handle: 'christian.perez@altivum.ai', url: SOCIAL_LINKS.email, icon: <SocialIcon platform="email" /> },
+    {
+      name: 'Email',
+      handle: 'christian.perez@altivum.ai',
+      url: SOCIAL_LINKS.email,
+      icon: <SocialIcon platform="email" />,
+    },
   ];
 
   const companySocials: SocialLink[] = [
-    { name: 'Facebook', handle: 'Altivum Inc.', url: SOCIAL_LINKS.altivumFacebook, icon: <SocialIcon platform="facebook" /> },
-    { name: 'X (Twitter)', handle: '@AltivumAI', url: SOCIAL_LINKS.altivumTwitter, icon: <SocialIcon platform="twitter" /> },
-    { name: 'LinkedIn', handle: 'Altivum Inc.', url: SOCIAL_LINKS.altivumLinkedIn, icon: <SocialIcon platform="linkedin" /> },
-    { name: 'YouTube', handle: '@AltivumPress', url: SOCIAL_LINKS.altivumYouTube, icon: <SocialIcon platform="youtube" /> },
+    {
+      name: 'Facebook',
+      handle: 'Altivum Inc.',
+      url: SOCIAL_LINKS.altivumFacebook,
+      icon: <SocialIcon platform="facebook" />,
+    },
+    {
+      name: 'X (Twitter)',
+      handle: '@AltivumAI',
+      url: SOCIAL_LINKS.altivumTwitter,
+      icon: <SocialIcon platform="twitter" />,
+    },
+    {
+      name: 'LinkedIn',
+      handle: 'Altivum Inc.',
+      url: SOCIAL_LINKS.altivumLinkedIn,
+      icon: <SocialIcon platform="linkedin" />,
+    },
+    {
+      name: 'YouTube',
+      handle: '@AltivumPress',
+      url: SOCIAL_LINKS.altivumYouTube,
+      icon: <SocialIcon platform="youtube" />,
+    },
     { name: 'Email', handle: 'info@altivum.ai', url: SOCIAL_LINKS.altivumEmail, icon: <SocialIcon platform="email" /> },
   ];
 
@@ -99,15 +146,15 @@ const Links = () => {
         keywords="Christian Perez links, social media, Altivum links, podcast links, thechrisgrey socials"
         url="https://thechrisgrey.com/links"
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Links", url: "https://thechrisgrey.com/links" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Links', url: 'https://thechrisgrey.com/links' },
         ]}
         structuredData={[
           buildProfilePageSchema({
-            name: "Christian Perez Links & Resources",
-            description: "Connect with Christian Perez across the web. All social profiles and projects in one place.",
-            url: "https://thechrisgrey.com/links"
-          })
+            name: 'Christian Perez Links & Resources',
+            description: 'Connect with Christian Perez across the web. All social profiles and projects in one place.',
+            url: 'https://thechrisgrey.com/links',
+          }),
         ]}
       />
       {/* Hero Section */}
@@ -115,9 +162,7 @@ const Links = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block px-4 py-2 bg-altivum-gold/10 rounded-md mb-6">
-              <span className="text-altivum-gold font-semibold text-sm uppercase tracking-wider">
-                @thechrisgrey
-              </span>
+              <span className="text-altivum-gold font-semibold text-sm uppercase tracking-wider">@thechrisgrey</span>
             </div>
             <h1 className="text-white mb-6" style={typography.heroHeader}>
               All My Links
@@ -151,8 +196,8 @@ const Links = () => {
                 </h2>
                 <div className="h-px w-16 bg-altivum-gold mb-6"></div>
                 <p className="text-altivum-silver mb-8" style={typography.bodyText}>
-                  Connect with me on AWS Builder to explore my cloud architecture projects,
-                  technical insights, and contributions to the AWS community.
+                  Connect with me on AWS Builder to explore my cloud architecture projects, technical insights, and
+                  contributions to the AWS community.
                 </p>
                 <a
                   href="https://builder.aws.com/profile"
@@ -209,7 +254,10 @@ const Links = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleLarge}>
+                      <h3
+                        className="text-white group-hover:text-altivum-gold transition-colors"
+                        style={typography.cardTitleLarge}
+                      >
                         {site.name}
                       </h3>
                       <span className="px-2 py-1 bg-white/5 rounded-sm text-xs font-medium text-altivum-silver border border-white/10">
@@ -219,7 +267,9 @@ const Links = () => {
                     <p className="text-altivum-silver text-sm mb-2">{site.description}</p>
                     <p className="text-altivum-gold/70 text-xs font-mono">{site.url}</p>
                   </div>
-                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 ml-4">open_in_new</span>
+                  <span className="material-icons text-altivum-silver/30 group-hover:text-altivum-gold group-hover:translate-x-1 transition-all shrink-0 ml-4">
+                    open_in_new
+                  </span>
                 </div>
               </a>
             ))}
@@ -273,8 +323,7 @@ const Links = () => {
             Want to Work Together?
           </h2>
           <p className="text-altivum-silver mb-10" style={typography.bodyText}>
-            Whether you're interested in cloud services, AI integration, or veteran programs,
-            let's connect.
+            Whether you're interested in cloud services, AI integration, or veteran programs, let's connect.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <ViewTransitionLink

@@ -11,10 +11,7 @@ import userEvent from '@testing-library/user-event';
  */
 const TEST_ENDPOINT = 'https://example.com/newsletter';
 
-async function renderWaitlist(
-  props: Record<string, unknown> = {},
-  endpoint: string = TEST_ENDPOINT
-) {
+async function renderWaitlist(props: Record<string, unknown> = {}, endpoint: string = TEST_ENDPOINT) {
   // Clear any prior env stub first: vi.stubEnv(key, '') is a no-op when the
   // key already holds a stubbed non-empty value, which would leak the previous
   // test's endpoint into the "not configured" case. Reset the module registry
@@ -46,9 +43,7 @@ describe('Waitlist', () => {
     it('renders the default heading and subheading', async () => {
       const { getByText } = await renderWaitlist();
       expect(getByText('Join the Blueprint waitlist')).toBeInTheDocument();
-      expect(
-        getByText(/Get early access to Pro tier/i)
-      ).toBeInTheDocument();
+      expect(getByText(/Get early access to Pro tier/i)).toBeInTheDocument();
     });
 
     it('renders custom heading and subheading when provided', async () => {
@@ -63,9 +58,7 @@ describe('Waitlist', () => {
     it('renders an email input and a submit button', async () => {
       const { getByPlaceholderText, getByRole } = await renderWaitlist();
       expect(getByPlaceholderText('you@example.com')).toBeInTheDocument();
-      expect(
-        getByRole('button', { name: /join waitlist/i })
-      ).toBeInTheDocument();
+      expect(getByRole('button', { name: /join waitlist/i })).toBeInTheDocument();
     });
   });
 
@@ -79,17 +72,14 @@ describe('Waitlist', () => {
       fireEvent.change(input, { target: { value: 'not-an-email' } });
       fireEvent.submit(input.closest('form')!);
 
-      expect(getByRole('alert')).toHaveTextContent(
-        /please enter a valid email address/i
-      );
+      expect(getByRole('alert')).toHaveTextContent(/please enter a valid email address/i);
       // fetch must never be invoked for an invalid email.
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('clears the error once the user edits the field again', async () => {
       const user = userEvent.setup();
-      const { getByPlaceholderText, getByRole, queryByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, queryByRole } = await renderWaitlist();
 
       const input = getByPlaceholderText('you@example.com');
       const { fireEvent } = await import('@testing-library/react');
@@ -108,15 +98,10 @@ describe('Waitlist', () => {
       const user = userEvent.setup();
       const { getByPlaceholderText, getByRole } = await renderWaitlist({}, '');
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
-      expect(getByRole('alert')).toHaveTextContent(
-        /waitlist is not configured yet/i
-      );
+      expect(getByRole('alert')).toHaveTextContent(/waitlist is not configured yet/i);
       expect(mockFetch).not.toHaveBeenCalled();
     });
   });
@@ -130,13 +115,9 @@ describe('Waitlist', () => {
         json: () => Promise.resolve({ message: 'ok' }),
       });
 
-      const { getByPlaceholderText, getByRole, findByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole } = await renderWaitlist();
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
       const status = await findByRole('status');
@@ -161,19 +142,13 @@ describe('Waitlist', () => {
         json: () => Promise.resolve({}),
       });
 
-      const { getByPlaceholderText, getByRole, findByRole, queryByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole, queryByRole } = await renderWaitlist();
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
       await findByRole('status');
-      expect(
-        queryByRole('button', { name: /join waitlist/i })
-      ).not.toBeInTheDocument();
+      expect(queryByRole('button', { name: /join waitlist/i })).not.toBeInTheDocument();
     });
   });
 
@@ -186,13 +161,9 @@ describe('Waitlist', () => {
         json: () => Promise.resolve({}),
       });
 
-      const { getByPlaceholderText, getByRole, findByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole } = await renderWaitlist();
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
       const alert = await findByRole('alert');
@@ -207,13 +178,9 @@ describe('Waitlist', () => {
         json: () => Promise.resolve({ error: 'Server exploded' }),
       });
 
-      const { getByPlaceholderText, getByRole, findByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole } = await renderWaitlist();
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
       const alert = await findByRole('alert');
@@ -224,13 +191,9 @@ describe('Waitlist', () => {
       const user = userEvent.setup();
       mockFetch.mockRejectedValueOnce(new Error('boom'));
 
-      const { getByPlaceholderText, getByRole, findByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole } = await renderWaitlist();
 
-      await user.type(
-        getByPlaceholderText('you@example.com'),
-        'visitor@example.com'
-      );
+      await user.type(getByPlaceholderText('you@example.com'), 'visitor@example.com');
       await user.click(getByRole('button', { name: /join waitlist/i }));
 
       const alert = await findByRole('alert');
@@ -245,11 +208,10 @@ describe('Waitlist', () => {
       mockFetch.mockReturnValueOnce(
         new Promise((resolve) => {
           resolveFetch = resolve;
-        })
+        }),
       );
 
-      const { getByPlaceholderText, getByRole, findByRole } =
-        await renderWaitlist();
+      const { getByPlaceholderText, getByRole, findByRole } = await renderWaitlist();
 
       const input = getByPlaceholderText('you@example.com');
       await user.type(input, 'visitor@example.com');

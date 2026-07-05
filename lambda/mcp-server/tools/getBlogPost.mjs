@@ -25,26 +25,18 @@ function truncate(text) {
 
 function formatPost(post) {
   const url = `${SITE_ORIGIN}/blog/${post.slug}`;
-  const published = post.publishedAt
-    ? `Published: ${String(post.publishedAt).slice(0, 10)}`
-    : "";
-  const tags = Array.isArray(post.tags) && post.tags.length > 0
-    ? `Tags: ${post.tags.filter((t) => typeof t === "string").join(", ")}`
-    : "";
-  const series = post.series?.title
-    ? `Series: ${post.series.title}`
-    : "";
+  const published = post.publishedAt ? `Published: ${String(post.publishedAt).slice(0, 10)}` : "";
+  const tags =
+    Array.isArray(post.tags) && post.tags.length > 0
+      ? `Tags: ${post.tags.filter((t) => typeof t === "string").join(", ")}`
+      : "";
+  const series = post.series?.title ? `Series: ${post.series.title}` : "";
   const excerpt = post.excerpt ? `\nExcerpt: ${post.excerpt}\n` : "";
   const meta = [published, tags, series].filter(Boolean).join("\n");
   const body = truncate(post.body);
-  return [
-    `# ${post.title}`,
-    url,
-    meta,
-    excerpt,
-    "",
-    body,
-  ].filter((chunk) => chunk !== undefined && chunk !== null).join("\n");
+  return [`# ${post.title}`, url, meta, excerpt, "", body]
+    .filter((chunk) => chunk !== undefined && chunk !== null)
+    .join("\n");
 }
 
 export function buildGetBlogPostMcpTool({ sanityClient, metrics, requestId }) {
@@ -61,10 +53,12 @@ export function buildGetBlogPostMcpTool({ sanityClient, metrics, requestId }) {
       if (!SLUG_PATTERN.test(slug) || slug.length > 120) {
         return {
           isError: true,
-          content: [{
-            type: "text",
-            text: "Slug must be lowercase alphanumeric with hyphens (e.g. 'building-agentic-alti').",
-          }],
+          content: [
+            {
+              type: "text",
+              text: "Slug must be lowercase alphanumeric with hyphens (e.g. 'building-agentic-alti').",
+            },
+          ],
         };
       }
 
@@ -87,13 +81,15 @@ export function buildGetBlogPostMcpTool({ sanityClient, metrics, requestId }) {
         };
       } catch (error) {
         metrics?.record("McpFailure_GetBlogPost");
-        console.error(JSON.stringify({
-          requestId,
-          event: "mcp_tool_error",
-          tool: "get_blog_post",
-          error: error?.name,
-          message: error?.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "mcp_tool_error",
+            tool: "get_blog_post",
+            error: error?.name,
+            message: error?.message,
+          }),
+        );
         return {
           isError: true,
           content: [{ type: "text", text: "Unable to fetch that post right now. Try again shortly." }],

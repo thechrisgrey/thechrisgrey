@@ -36,7 +36,5 @@ export function authenticateRequest(event, { sessionKey, scope, legacyKey, legac
   }
 
   const sig = verifySignature(event, legacyKey, legacySigOptions);
-  return sig.valid
-    ? { valid: true, method: "legacy" }
-    : { valid: false, method: "legacy", error: sig.error };
+  return sig.valid ? { valid: true, method: "legacy" } : { valid: false, method: "legacy", error: sig.error };
 }

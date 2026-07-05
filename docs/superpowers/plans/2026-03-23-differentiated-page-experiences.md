@@ -51,6 +51,7 @@ src/pages/AWS.tsx                          -- Replace Focus Areas + Timeline wit
 ## Task 1: Install GSAP and Configure Vite Chunking
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `vite.config.ts`
 
@@ -95,6 +96,7 @@ git commit -m "chore: add gsap dependency and vendor chunk"
 ## Task 2: Create Shared Utilities (WebGL Check + useMediaQuery)
 
 **Files:**
+
 - Create: `src/utils/checkWebGL.ts`
 - Create: `src/hooks/useMediaQuery.ts`
 
@@ -156,6 +158,7 @@ git commit -m "feat: add WebGL check utility and useMediaQuery hook"
 ## Task 3: Create Claude Page Data File
 
 **Files:**
+
 - Create: `src/data/architectureNodes.ts`
 
 - [ ] **Step 1: Create the architecture data file**
@@ -185,98 +188,112 @@ export const pipelineNodes: PipelineNodeData[] = [
     label: 'User Input',
     sublabel: 'Browser',
     service: 'React Frontend',
-    description: 'The visitor types a message in the chat interface. The message is validated client-side (4000 char limit) and prepared for signing.',
+    description:
+      'The visitor types a message in the chat interface. The message is validated client-side (4000 char limit) and prepared for signing.',
     config: {
       'Max Length': '4,000 characters',
-      'Framework': 'React 19 + TypeScript',
-      'Component': 'TraceInput.tsx',
+      Framework: 'React 19 + TypeScript',
+      Component: 'TraceInput.tsx',
     },
-    reasoning: 'Client-side validation prevents oversized payloads from reaching the Lambda, reducing unnecessary invocations and costs.',
+    reasoning:
+      'Client-side validation prevents oversized payloads from reaching the Lambda, reducing unnecessary invocations and costs.',
   },
   {
     id: 'hmac-signing',
     label: 'HMAC',
     sublabel: 'Signing',
     service: 'Web Crypto API',
-    description: 'Generates an HMAC-SHA256 signature using a shared secret. The signature and timestamp are sent as headers to authenticate the request.',
+    description:
+      'Generates an HMAC-SHA256 signature using a shared secret. The signature and timestamp are sent as headers to authenticate the request.',
     config: {
-      'Algorithm': 'HMAC-SHA256',
-      'Format': 'timestamp.body',
-      'Headers': 'X-Chat-Timestamp, X-Chat-Signature',
+      Algorithm: 'HMAC-SHA256',
+      Format: 'timestamp.body',
+      Headers: 'X-Chat-Timestamp, X-Chat-Signature',
     },
-    reasoning: 'HMAC signing prevents unauthorized callers from invoking the Lambda directly. The 5-minute timestamp window prevents replay attacks.',
+    reasoning:
+      'HMAC signing prevents unauthorized callers from invoking the Lambda directly. The 5-minute timestamp window prevents replay attacks.',
   },
   {
     id: 'lambda-handler',
     label: 'Lambda',
     sublabel: 'Handler',
     service: 'AWS Lambda -- Streaming Function',
-    description: 'Receives the request, verifies the HMAC signature with timing-safe comparison, validates input structure, and orchestrates the downstream pipeline.',
+    description:
+      'Receives the request, verifies the HMAC signature with timing-safe comparison, validates input structure, and orchestrates the downstream pipeline.',
     config: {
-      'Function': 'thechrisgrey-chat-stream',
-      'Runtime': 'Node.js 20.x',
-      'Region': 'us-east-1',
-      'Streaming': 'awslambda.streamifyResponse()',
+      Function: 'thechrisgrey-chat-stream',
+      Runtime: 'Node.js 20.x',
+      Region: 'us-east-1',
+      Streaming: 'awslambda.streamifyResponse()',
     },
-    reasoning: 'Lambda Function URLs with streaming enabled provide sub-second time-to-first-byte without API Gateway overhead or WebSocket complexity.',
+    reasoning:
+      'Lambda Function URLs with streaming enabled provide sub-second time-to-first-byte without API Gateway overhead or WebSocket complexity.',
   },
   {
     id: 'guardrail-check',
     label: 'Guardrail',
     sublabel: 'Check',
     service: 'Amazon Bedrock Guardrails',
-    description: 'Screens the user message against content policies before it reaches the model. Blocks prompt attacks, hate speech, and off-topic requests.',
+    description:
+      'Screens the user message against content policies before it reaches the model. Blocks prompt attacks, hate speech, and off-topic requests.',
     config: {
       'Guardrail ID': '5kofhp46ssob',
-      'Version': '2',
-      'Filters': 'PROMPT_ATTACK, HATE, SEXUAL, VIOLENCE, MISCONDUCT',
+      Version: '2',
+      Filters: 'PROMPT_ATTACK, HATE, SEXUAL, VIOLENCE, MISCONDUCT',
       'Denied Topics': 'Code assistance, general trivia, other public figures',
     },
-    reasoning: 'Pre-inference guardrails reject harmful content before it consumes Bedrock tokens, saving cost and ensuring the AI agent stays on-topic.',
+    reasoning:
+      'Pre-inference guardrails reject harmful content before it consumes Bedrock tokens, saving cost and ensuring the AI agent stays on-topic.',
   },
   {
     id: 'rag-retrieval',
     label: 'RAG',
     sublabel: 'Retrieval',
     service: 'Bedrock Knowledge Base + S3 Vectors',
-    description: 'Retrieves the 5 most relevant text chunks from the knowledge base using Titan Embeddings v2 (1024 dimensions, cosine distance).',
+    description:
+      'Retrieves the 5 most relevant text chunks from the knowledge base using Titan Embeddings v2 (1024 dimensions, cosine distance).',
     config: {
       'KB ID': 'ARFYABW8HP',
-      'Embeddings': 'Amazon Titan Text Embeddings v2',
-      'Dimensions': '1,024',
+      Embeddings: 'Amazon Titan Text Embeddings v2',
+      Dimensions: '1,024',
       'Vector Store': 'S3 Vectors',
       'Top K': '5 chunks',
     },
-    reasoning: 'RAG grounds Claude\'s responses in verified biographical content, preventing hallucination. S3 Vectors replaced OpenSearch Serverless to eliminate the $345/month minimum OCU cost.',
+    reasoning:
+      "RAG grounds Claude's responses in verified biographical content, preventing hallucination. S3 Vectors replaced OpenSearch Serverless to eliminate the $345/month minimum OCU cost.",
   },
   {
     id: 'bedrock-inference',
     label: 'Bedrock',
     sublabel: 'Inference',
     service: 'Amazon Bedrock -- ConverseStream API',
-    description: 'Claude Haiku 4.5 generates a response using the conversation history and retrieved knowledge base context. Responses stream token-by-token.',
+    description:
+      'Claude Haiku 4.5 generates a response using the conversation history and retrieved knowledge base context. Responses stream token-by-token.',
     config: {
-      'Model': 'Claude Haiku 4.5',
+      Model: 'Claude Haiku 4.5',
       'Model ID': 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
       'Max Tokens': '350',
-      'Temperature': '0.6',
-      'Timeout': '10 seconds',
+      Temperature: '0.6',
+      Timeout: '10 seconds',
     },
-    reasoning: 'Haiku 4.5 balances speed and quality for conversational use. The 350 token limit and 0.6 temperature keep responses concise and focused.',
+    reasoning:
+      'Haiku 4.5 balances speed and quality for conversational use. The 350 token limit and 0.6 temperature keep responses concise and focused.',
   },
   {
     id: 'streaming-response',
     label: 'Stream',
     sublabel: 'Response',
     service: 'Lambda Function URL -- Streaming',
-    description: 'The response streams back through the Lambda Function URL to the browser. The frontend reads the stream chunk-by-chunk and renders text progressively.',
+    description:
+      'The response streams back through the Lambda Function URL to the browser. The frontend reads the stream chunk-by-chunk and renders text progressively.',
     config: {
-      'Protocol': 'HTTP chunked transfer',
-      'CORS': 'thechrisgrey.com',
+      Protocol: 'HTTP chunked transfer',
+      CORS: 'thechrisgrey.com',
       'Client Timeout': '30 seconds',
       'Sliding Window': '20 messages',
     },
-    reasoning: 'Streaming provides immediate feedback (sub-second first token) rather than waiting for the full response. The 20-message sliding window bounds context and cost.',
+    reasoning:
+      'Streaming provides immediate feedback (sub-second first token) rather than waiting for the full response. The 20-message sliding window bounds context and cost.',
   },
 ];
 
@@ -302,6 +319,7 @@ git commit -m "feat: add Claude page architecture pipeline data"
 ## Task 4: Create AWS Page Data File
 
 **Files:**
+
 - Create: `src/data/infrastructureTopology.ts`
 
 - [ ] **Step 1: Create the infrastructure topology data file**
@@ -332,8 +350,18 @@ export const clusters: ClusterData[] = [
     position: [-3, 1.5, 0],
     size: 0.6,
     services: [
-      { name: 'AWS Amplify', type: 'Hosting & CI/CD', region: 'us-east-2', description: 'Builds and deploys the React SPA from the main branch. Serves static assets from dist/.' },
-      { name: 'CloudFront', type: 'CDN', region: 'Global', description: 'Edge-cached distribution for static assets. Managed automatically by Amplify.' },
+      {
+        name: 'AWS Amplify',
+        type: 'Hosting & CI/CD',
+        region: 'us-east-2',
+        description: 'Builds and deploys the React SPA from the main branch. Serves static assets from dist/.',
+      },
+      {
+        name: 'CloudFront',
+        type: 'CDN',
+        region: 'Global',
+        description: 'Edge-cached distribution for static assets. Managed automatically by Amplify.',
+      },
     ],
     connections: ['compute'],
   },
@@ -343,10 +371,30 @@ export const clusters: ClusterData[] = [
     position: [-1, -0.5, 1],
     size: 0.8,
     services: [
-      { name: 'chat-stream', type: 'Lambda Function', region: 'us-east-1', description: 'Streaming chat handler. Bedrock ConverseStream API with HMAC auth and guardrails.' },
-      { name: 'kb-sync', type: 'Lambda Function', region: 'us-east-1', description: 'Triggered by S3 events. Starts Knowledge Base ingestion when source documents change.' },
-      { name: 'kb-builder', type: 'Lambda Function', region: 'us-east-1', description: 'Admin CRUD for KB entries. Assembles and publishes knowledge-base.txt to S3.' },
-      { name: 'metrics', type: 'Lambda Function', region: 'us-east-1', description: 'Receives Web Vitals and CSP reports. Publishes to CloudWatch custom metrics.' },
+      {
+        name: 'chat-stream',
+        type: 'Lambda Function',
+        region: 'us-east-1',
+        description: 'Streaming chat handler. Bedrock ConverseStream API with HMAC auth and guardrails.',
+      },
+      {
+        name: 'kb-sync',
+        type: 'Lambda Function',
+        region: 'us-east-1',
+        description: 'Triggered by S3 events. Starts Knowledge Base ingestion when source documents change.',
+      },
+      {
+        name: 'kb-builder',
+        type: 'Lambda Function',
+        region: 'us-east-1',
+        description: 'Admin CRUD for KB entries. Assembles and publishes knowledge-base.txt to S3.',
+      },
+      {
+        name: 'metrics',
+        type: 'Lambda Function',
+        region: 'us-east-1',
+        description: 'Receives Web Vitals and CSP reports. Publishes to CloudWatch custom metrics.',
+      },
     ],
     connections: ['ai-ml', 'data', 'auth-security', 'observability'],
   },
@@ -356,10 +404,30 @@ export const clusters: ClusterData[] = [
     position: [2, 1, 0.5],
     size: 0.9,
     services: [
-      { name: 'Claude Haiku 4.5', type: 'Foundation Model', region: 'us-east-1', description: 'Primary inference model for Alti chat. 350 max tokens, 0.6 temperature.' },
-      { name: 'Titan Embeddings v2', type: 'Embeddings Model', region: 'us-east-1', description: '1024-dimension embeddings for RAG. Cosine distance similarity.' },
-      { name: 'Knowledge Base', type: 'Bedrock KB', region: 'us-east-1', description: 'RAG pipeline. Retrieves 5 most relevant chunks per query from S3 Vectors.' },
-      { name: 'Guardrails', type: 'Content Filter', region: 'us-east-1', description: 'Pre-inference content screening. Blocks prompt attacks, off-topic, and harmful content.' },
+      {
+        name: 'Claude Haiku 4.5',
+        type: 'Foundation Model',
+        region: 'us-east-1',
+        description: 'Primary inference model for Alti chat. 350 max tokens, 0.6 temperature.',
+      },
+      {
+        name: 'Titan Embeddings v2',
+        type: 'Embeddings Model',
+        region: 'us-east-1',
+        description: '1024-dimension embeddings for RAG. Cosine distance similarity.',
+      },
+      {
+        name: 'Knowledge Base',
+        type: 'Bedrock KB',
+        region: 'us-east-1',
+        description: 'RAG pipeline. Retrieves 5 most relevant chunks per query from S3 Vectors.',
+      },
+      {
+        name: 'Guardrails',
+        type: 'Content Filter',
+        region: 'us-east-1',
+        description: 'Pre-inference content screening. Blocks prompt attacks, off-topic, and harmful content.',
+      },
     ],
     connections: ['data'],
   },
@@ -369,9 +437,24 @@ export const clusters: ClusterData[] = [
     position: [1, -1.5, -0.5],
     size: 0.7,
     services: [
-      { name: 'DynamoDB', type: 'NoSQL Database', region: 'us-east-1', description: 'Rate limiting table. Atomic per-IP tracking with TTL auto-cleanup.' },
-      { name: 'S3 (KB Source)', type: 'Object Storage', region: 'us-east-1', description: 'Source bucket for Knowledge Base documents. Triggers kb-sync Lambda on changes.' },
-      { name: 'S3 Vectors', type: 'Vector Store', region: 'us-east-1', description: 'S3-based vector index for RAG embeddings. Cost-effective alternative to OpenSearch.' },
+      {
+        name: 'DynamoDB',
+        type: 'NoSQL Database',
+        region: 'us-east-1',
+        description: 'Rate limiting table. Atomic per-IP tracking with TTL auto-cleanup.',
+      },
+      {
+        name: 'S3 (KB Source)',
+        type: 'Object Storage',
+        region: 'us-east-1',
+        description: 'Source bucket for Knowledge Base documents. Triggers kb-sync Lambda on changes.',
+      },
+      {
+        name: 'S3 Vectors',
+        type: 'Vector Store',
+        region: 'us-east-1',
+        description: 'S3-based vector index for RAG embeddings. Cost-effective alternative to OpenSearch.',
+      },
     ],
     connections: ['ai-ml'],
   },
@@ -381,9 +464,24 @@ export const clusters: ClusterData[] = [
     position: [3, -0.5, -1],
     size: 0.55,
     services: [
-      { name: 'Cognito', type: 'User Pool', region: 'us-east-1', description: 'Admin authentication for the KB management panel. Single admin user, no self-signup.' },
-      { name: 'IAM Roles', type: 'Access Control', region: 'Global', description: 'Least-privilege roles per Lambda. Separate roles for chat, KB sync, KB builder, metrics.' },
-      { name: 'HMAC Signing', type: 'Request Auth', region: 'Client-side', description: 'SHA256 request signing prevents unauthorized Lambda invocations. 5-min replay window.' },
+      {
+        name: 'Cognito',
+        type: 'User Pool',
+        region: 'us-east-1',
+        description: 'Admin authentication for the KB management panel. Single admin user, no self-signup.',
+      },
+      {
+        name: 'IAM Roles',
+        type: 'Access Control',
+        region: 'Global',
+        description: 'Least-privilege roles per Lambda. Separate roles for chat, KB sync, KB builder, metrics.',
+      },
+      {
+        name: 'HMAC Signing',
+        type: 'Request Auth',
+        region: 'Client-side',
+        description: 'SHA256 request signing prevents unauthorized Lambda invocations. 5-min replay window.',
+      },
     ],
     connections: ['compute'],
   },
@@ -393,9 +491,24 @@ export const clusters: ClusterData[] = [
     position: [-2, -1.5, -1],
     size: 0.55,
     services: [
-      { name: 'CloudWatch', type: 'Monitoring', region: 'us-east-1', description: 'Custom metrics (Web Vitals, chat pipeline, rate limits), log groups, and alarm triggers.' },
-      { name: 'SNS', type: 'Notifications', region: 'us-east-1', description: 'Alert topic for alarm notifications. Routes to chris@altivum.ai.' },
-      { name: 'Alarms', type: 'Threshold Alerts', region: 'us-east-1', description: '6 CloudWatch alarms: CLS, KB failures, rate limit surges, CSP violations, Bedrock cost, KB sync.' },
+      {
+        name: 'CloudWatch',
+        type: 'Monitoring',
+        region: 'us-east-1',
+        description: 'Custom metrics (Web Vitals, chat pipeline, rate limits), log groups, and alarm triggers.',
+      },
+      {
+        name: 'SNS',
+        type: 'Notifications',
+        region: 'us-east-1',
+        description: 'Alert topic for alarm notifications. Routes to chris@altivum.ai.',
+      },
+      {
+        name: 'Alarms',
+        type: 'Threshold Alerts',
+        region: 'us-east-1',
+        description: '6 CloudWatch alarms: CLS, KB failures, rate limit surges, CSP violations, Bedrock cost, KB sync.',
+      },
     ],
     connections: ['compute'],
   },
@@ -414,6 +527,7 @@ git commit -m "feat: add AWS page infrastructure topology data"
 ## Task 5: Build Claude Page Pipeline Components (Static Rendering)
 
 **Files:**
+
 - Create: `src/components/claude/PipelineNode.tsx`
 - Create: `src/components/claude/PipelineEdge.tsx`
 - Create: `src/components/claude/NodeDetailPanel.tsx`
@@ -436,6 +550,7 @@ Create `src/components/claude/NodeDetailPanel.tsx`. An HTML `<div>` (not SVG) th
 - [ ] **Step 4: Create ArchitectureXRay container**
 
 Create `src/components/claude/ArchitectureXRay.tsx`. Main container that:
+
 - Imports `pipelineNodes` and `pipelineEdges` from data file
 - Renders an `<svg>` with `viewBox` calculated from node count
 - Lays out nodes horizontally on desktop (using flexbox-like SVG positioning), vertically on mobile (detect via `useMediaQuery('(min-width: 768px)')`)
@@ -466,6 +581,7 @@ git commit -m "feat: add Architecture X-Ray pipeline components (static renderin
 ## Task 6: Add Trace Input and Live API Integration
 
 **Files:**
+
 - Create: `src/components/claude/TraceInput.tsx`
 - Create: `src/components/claude/TraceResponseBubble.tsx`
 - Modify: `src/components/claude/ArchitectureXRay.tsx`
@@ -481,6 +597,7 @@ Create `src/components/claude/TraceResponseBubble.tsx`. A mini chat bubble below
 - [ ] **Step 3: Add trace logic to ArchitectureXRay**
 
 Modify `src/components/claude/ArchitectureXRay.tsx` to add:
+
 - `const CHAT_ENDPOINT = import.meta.env.VITE_CHAT_ENDPOINT` at module scope (same pattern as `useChatEngine.ts`)
 - `traceState: 'idle' | 'tracing' | 'complete' | 'error'` state
 - `responseContent` and `isSystemMessage` state
@@ -517,6 +634,7 @@ git commit -m "feat: add live trace input and streaming API integration to X-Ray
 ## Task 7: Integrate Architecture X-Ray into Claude Page
 
 **Files:**
+
 - Modify: `src/pages/Claude.tsx`
 
 - [ ] **Step 1: Import and insert ArchitectureXRay**
@@ -557,6 +675,7 @@ git commit -m "feat: integrate Architecture X-Ray into Claude page"
 ## Task 8: Build AWS 2D Fallback Components
 
 **Files:**
+
 - Create: `src/components/aws/FallbackCluster.tsx`
 - Create: `src/components/aws/FallbackDetail.tsx`
 - Create: `src/components/aws/TopologyFallback2D.tsx`
@@ -574,6 +693,7 @@ Create `src/components/aws/FallbackDetail.tsx`. An HTML `<div>` that renders bel
 - [ ] **Step 3: Create TopologyFallback2D component**
 
 Create `src/components/aws/TopologyFallback2D.tsx`. Main 2D container that:
+
 - Imports `clusters` from data file
 - Renders an `<svg>` with clusters positioned in a 2D layout (map 3D positions to 2D by ignoring Z axis and scaling X/Y)
 - Draws connection lines between related clusters (dashed gold strokes)
@@ -596,6 +716,7 @@ git commit -m "feat: add 2D SVG fallback for AWS topology map"
 ## Task 9: Build AWS 3D Scene Components
 
 **Files:**
+
 - Create: `src/components/aws/ServiceCluster.tsx`
 - Create: `src/components/aws/ClusterEdge.tsx`
 - Create: `src/components/aws/ClusterDetail.tsx`
@@ -616,6 +737,7 @@ Create `src/components/aws/ClusterDetail.tsx`. Uses drei `Html` component positi
 - [ ] **Step 4: Create TopologyScene component**
 
 Create `src/components/aws/TopologyScene.tsx`. The main R3F `<Canvas>` wrapper:
+
 - `frameloop="always"` with `document.hidden` check in `useFrame` to pause when tab not visible
 - Perspective camera at `[0, 2, 8]` looking at origin
 - Ambient light (0.4) + point light ([0, 4, 0], gold tint, 0.6)
@@ -639,11 +761,13 @@ git commit -m "feat: add 3D R3F topology scene components for AWS page"
 ## Task 10: Build InfraTopology Container and Keyboard Overlay
 
 **Files:**
+
 - Create: `src/components/aws/InfraTopology.tsx`
 
 - [ ] **Step 1: Create InfraTopology container**
 
 Create `src/components/aws/InfraTopology.tsx`. The main container that:
+
 - Imports `checkWebGLSupport` from `src/utils/checkWebGL.ts`
 - Imports `useMediaQuery` from `src/hooks/useMediaQuery.ts`
 - Checks `const isDesktop = useMediaQuery('(min-width: 768px)')` and `const webglOk = checkWebGLSupport()`
@@ -665,11 +789,13 @@ git commit -m "feat: add InfraTopology container with 3D/2D switching and a11y o
 ## Task 11: Integrate Topology Map into AWS Page
 
 **Files:**
+
 - Modify: `src/pages/AWS.tsx`
 
 - [ ] **Step 1: Modify AWS page**
 
 In `src/pages/AWS.tsx`:
+
 1. Import `InfraTopology` from `../components/aws/InfraTopology`
 2. Remove the Focus Areas section (the `<section>` containing the 3-column `focusAreas` grid, roughly lines 119-163)
 3. Remove the What This Means section (the `<section>` with the timeline items, roughly lines 165-221)
@@ -696,6 +822,7 @@ git commit -m "feat: integrate Infrastructure Topology Map into AWS page, remove
 ## Task 12: Accessibility and Reduced Motion
 
 **Files:**
+
 - Modify: `src/components/claude/ArchitectureXRay.tsx`
 - Modify: `src/components/aws/TopologyScene.tsx`
 - Modify: `src/components/aws/ClusterEdge.tsx`
@@ -724,11 +851,13 @@ git commit -m "feat: add prefers-reduced-motion support to both interactive page
 ## Task 13: Tests
 
 **Files:**
+
 - Create tests for key components
 
 **Test file locations and Three.js mock pattern:**
 
 All test files follow the `__tests__` convention:
+
 - `src/data/__tests__/architectureNodes.test.ts`
 - `src/data/__tests__/infrastructureTopology.test.ts`
 - `src/components/claude/__tests__/PipelineNode.test.tsx`
@@ -738,6 +867,7 @@ All test files follow the `__tests__` convention:
 - `src/components/aws/__tests__/TopologyFallback2D.test.tsx`
 
 **Three.js/R3F mock pattern** (required for any test rendering R3F components in jsdom):
+
 ```typescript
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,

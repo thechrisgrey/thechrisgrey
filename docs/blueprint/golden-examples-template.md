@@ -45,12 +45,12 @@ Copy this block per example. Field lengths must satisfy
 
 ```yaml
 title: "<short descriptive title, e.g. 'Streaming RAG chat on a $50/mo budget'>"
-slug: "<url-safe kebab-case slug>"
-category: "<one of the 8 categories>"
+slug: '<url-safe kebab-case slug>'
+category: '<one of the 8 categories>'
 
 spec:
-  goal: "<20–500 chars: what the user asked for in their own words>"
-  category: "<must match top-level category>"
+  goal: '<20–500 chars: what the user asked for in their own words>'
+  category: '<must match top-level category>'
   scale:
     traffic: "<optional, ≤200 chars: e.g. '1k req/day'>"
     data_volume: "<optional, ≤200 chars: e.g. '500MB of docs'>"
@@ -58,7 +58,7 @@ spec:
   constraints:
     monthly_budget_usd: <optional integer, 1–100000>
     compliance: [<optional array subset of: hipaa, pci, soc2, fedramp, gdpr, ccpa>]
-    region_restriction: "<optional, ≤50 chars>"
+    region_restriction: '<optional, ≤50 chars>'
     team_size: <optional integer, 1–1000>
   preferred_languages: [<optional subset of: typescript, javascript, python, go, rust, java>]
   integrations: [<optional array, each ≤50 chars, max 20 total>]
@@ -71,38 +71,38 @@ output:
 
   services:
     # 2–15 entries
-    - service: "<AWS or third-party service name, 2–80 chars>"
-      purpose: "<10–300 chars: its role in this architecture>"
-      rationale: "<10–400 chars: why this service over alternatives>"
-      cost_signal: "<free-tier | low | medium | high>"
+    - service: '<AWS or third-party service name, 2–80 chars>'
+      purpose: '<10–300 chars: its role in this architecture>'
+      rationale: '<10–400 chars: why this service over alternatives>'
+      cost_signal: '<free-tier | low | medium | high>'
 
   diagram_mermaid: |
     flowchart TD
       <mermaid source, 50–4000 chars>
 
   iac_scaffold:
-    tool: "<cdk | sam | terraform>"
-    rationale: "<20–400 chars: why this IaC tool for this workload>"
+    tool: '<cdk | sam | terraform>'
+    rationale: '<20–400 chars: why this IaC tool for this workload>'
     snippet: |
       <50–4000 chars. Real, runnable IaC. No pseudo-code, no '...' elisions
       in critical paths.>
 
   iam_highlights:
     # 1–10 bullets
-    - "<10–300 chars: critical IAM policy note — least-privilege scope, risky permission to avoid, etc.>"
+    - '<10–300 chars: critical IAM policy note — least-privilege scope, risky permission to avoid, etc.>'
 
   cost_estimate:
     monthly_low_usd: <number ≥ 0, ≤ 100000>
     monthly_high_usd: <number ≥ 0, ≤ 100000>
     assumptions:
       # 1–8 entries
-      - "<10–400 chars: assumption that drives the cost>"
+      - '<10–400 chars: assumption that drives the cost>'
 
   claude_artifacts:
     # 1–4 entries
-    - kind: "<skill | slash_command | subagent | mcp_tool>"
-      name: "<3–80 chars, kebab-case>"
-      description: "<20–300 chars>"
+    - kind: '<skill | slash_command | subagent | mcp_tool>'
+      name: '<3–80 chars, kebab-case>'
+      description: '<20–300 chars>'
       body: |
         <100–8000 chars. For a skill: a real skill markdown file. For a slash
         command: the full slash command body. For a subagent: the full system
@@ -111,7 +111,7 @@ output:
 
   next_steps:
     # 3–10 ordered items
-    - "<10–300 chars: concrete next action for the user>"
+    - '<10–300 chars: concrete next action for the user>'
 
   caveats:
     # 0–6 entries

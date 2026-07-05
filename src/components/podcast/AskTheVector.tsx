@@ -23,10 +23,10 @@ const AskTheVector = () => {
   const [input, setInput] = useState('');
   const pageContext = usePageContext();
 
-  const { messages, isTyping, isStreaming, streamingMessageId, handleSend } = useChatEngine(
-    pageContext,
-    { storageKey: PODCAST_ASK_STORAGE_KEY, initialMessages: [] }
-  );
+  const { messages, isTyping, isStreaming, streamingMessageId, handleSend } = useChatEngine(pageContext, {
+    storageKey: PODCAST_ASK_STORAGE_KEY,
+    initialMessages: [],
+  });
 
   const busy = isTyping || isStreaming;
 
@@ -36,7 +36,7 @@ const AskTheVector = () => {
   const lastSystem = reversed.find((m) => m.isSystem);
 
   const citations = (lastAssistant?.drafts ?? []).filter(
-    (d): d is DraftActionPodcastCitation => d.action === 'podcast_citation'
+    (d): d is DraftActionPodcastCitation => d.action === 'podcast_citation',
   );
 
   const hasConversation = Boolean(lastUser);
@@ -92,9 +92,7 @@ const AskTheVector = () => {
               aria-label="Search the podcast"
               className="min-h-[48px] px-5 inline-flex items-center justify-center gap-2 rounded-lg bg-altivum-gold/10 text-altivum-gold border border-altivum-gold/40 hover:bg-altivum-gold/20 hover:shadow-[0_0_20px_rgba(197,165,114,0.3)] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none touch-manipulation"
             >
-              <span className="material-icons text-xl leading-none">
-                {busy ? 'hourglass_empty' : 'search'}
-              </span>
+              <span className="material-icons text-xl leading-none">{busy ? 'hourglass_empty' : 'search'}</span>
               <span className="hidden sm:inline text-sm">Ask</span>
             </button>
           </form>

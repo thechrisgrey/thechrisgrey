@@ -98,17 +98,10 @@ export type DraftAction =
   | DraftActionPodcastCitation;
 
 export type ChatEvent =
-  | DraftAction
-  | ToolInvocationEvent
-  | ToolResultEvent
-  | MemoryUpdateEvent
-  | GuardrailEvent
-  | UiBlockEvent;
+  DraftAction | ToolInvocationEvent | ToolResultEvent | MemoryUpdateEvent | GuardrailEvent | UiBlockEvent;
 
 export type ParsedChunk =
-  | { kind: 'text'; text: string }
-  | { kind: 'system'; text: string }
-  | { kind: 'event'; event: ChatEvent };
+  { kind: 'text'; text: string } | { kind: 'system'; text: string } | { kind: 'event'; event: ChatEvent };
 
 type ParseState = {
   buffer: string;

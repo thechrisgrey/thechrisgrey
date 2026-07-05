@@ -61,11 +61,7 @@ export function FallbackDetail({ cluster, allClusters, onClose }: FallbackDetail
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3
-            id="fallback-detail-heading"
-            style={typography.cardTitleSmall}
-            className="text-white"
-          >
+          <h3 id="fallback-detail-heading" style={typography.cardTitleSmall} className="text-white">
             {cluster.label}
           </h3>
           <p style={typography.smallText} className="text-altivum-silver mt-1">
@@ -77,7 +73,9 @@ export function FallbackDetail({ cluster, allClusters, onClose }: FallbackDetail
           className="text-altivum-silver hover:text-white transition-colors p-1"
           aria-label="Close detail panel"
         >
-          <span className="material-icons" style={{ fontSize: 20 }}>close</span>
+          <span className="material-icons" style={{ fontSize: 20 }}>
+            close
+          </span>
         </button>
       </div>
 

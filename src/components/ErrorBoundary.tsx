@@ -47,9 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
         return fallback;
       }
 
-      const errorTitle = pageName
-        ? `Something went wrong with ${pageName}`
-        : 'Something went wrong';
+      const errorTitle = pageName ? `Something went wrong with ${pageName}` : 'Something went wrong';
 
       return (
         <div className="min-h-screen bg-altivum-dark flex items-center justify-center px-6">
@@ -63,7 +61,8 @@ class ErrorBoundary extends Component<Props, State> {
             </h1>
 
             <p className="text-altivum-silver mb-8" style={typography.bodyText}>
-              We encountered an unexpected error. Please try refreshing the page{showHomeButton ? ' or return to the home page' : ''}.
+              We encountered an unexpected error. Please try refreshing the page
+              {showHomeButton ? ' or return to the home page' : ''}.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -89,9 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-8 text-left">
-                <summary className="text-altivum-silver cursor-pointer hover:text-white text-sm">
-                  Error Details
-                </summary>
+                <summary className="text-altivum-silver cursor-pointer hover:text-white text-sm">Error Details</summary>
                 <pre className="mt-4 p-4 bg-altivum-navy rounded-sm text-xs text-red-400 overflow-auto">
                   {this.state.error.toString()}
                 </pre>

@@ -64,11 +64,14 @@ test("with no bearer header, a valid legacy HMAC signature still authenticates (
 });
 
 test("with no bearer and an invalid legacy signature, the request is rejected", () => {
-  const r = authenticateRequest(evt({ headers: { "x-chat-timestamp": "123", "x-chat-signature": "bad" }, body: "{}" }), {
-    sessionKey: SESSION_KEY,
-    scope: "chat",
-    legacyKey: LEGACY_KEY,
-  });
+  const r = authenticateRequest(
+    evt({ headers: { "x-chat-timestamp": "123", "x-chat-signature": "bad" }, body: "{}" }),
+    {
+      sessionKey: SESSION_KEY,
+      scope: "chat",
+      legacyKey: LEGACY_KEY,
+    },
+  );
   assert.equal(r.valid, false);
   assert.equal(r.method, "legacy");
 });

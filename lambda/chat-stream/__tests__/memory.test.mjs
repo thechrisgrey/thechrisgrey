@@ -13,13 +13,22 @@ import {
 } from "../memory.mjs";
 
 class QueryCommand {
-  constructor(input) { this.input = input; this.__name = "QueryCommand"; }
+  constructor(input) {
+    this.input = input;
+    this.__name = "QueryCommand";
+  }
 }
 class PutCommand {
-  constructor(input) { this.input = input; this.__name = "PutCommand"; }
+  constructor(input) {
+    this.input = input;
+    this.__name = "PutCommand";
+  }
 }
 class BatchWriteCommand {
-  constructor(input) { this.input = input; this.__name = "BatchWriteCommand"; }
+  constructor(input) {
+    this.input = input;
+    this.__name = "BatchWriteCommand";
+  }
 }
 
 function fakeClient(responder) {
@@ -332,9 +341,7 @@ test("forgetDevice retries UnprocessedItems and counts only confirmed deletions"
       if (batchAttempt === 1) {
         return {
           UnprocessedItems: {
-            [MEMORY_TABLE]: [
-              { DeleteRequest: { Key: { deviceHash: "h", factId: "f3" } } },
-            ],
+            [MEMORY_TABLE]: [{ DeleteRequest: { Key: { deviceHash: "h", factId: "f3" } } }],
           },
         };
       }

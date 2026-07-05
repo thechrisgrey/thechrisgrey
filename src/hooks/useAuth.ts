@@ -90,9 +90,7 @@ export function useAuth() {
     if (stored) {
       try {
         const tokens: AuthTokens = JSON.parse(stored);
-        await cognitoClient.send(
-          new GlobalSignOutCommand({ AccessToken: tokens.accessToken })
-        );
+        await cognitoClient.send(new GlobalSignOutCommand({ AccessToken: tokens.accessToken }));
       } catch {
         // Sign out locally even if remote sign out fails
       }

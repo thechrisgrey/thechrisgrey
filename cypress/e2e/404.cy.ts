@@ -34,21 +34,15 @@ describe('404 Not Found Page', () => {
   });
 
   it('should display a Go Home link', () => {
-    cy.contains('Go Home')
-      .should('be.visible')
-      .and('have.attr', 'href', '/');
+    cy.contains('Go Home').should('be.visible').and('have.attr', 'href', '/');
   });
 
   it('should display a Read the Blog link', () => {
-    cy.contains('Read the Blog')
-      .should('be.visible')
-      .and('have.attr', 'href', '/blog');
+    cy.contains('Read the Blog').should('be.visible').and('have.attr', 'href', '/blog');
   });
 
   it('should display a Get in Touch link', () => {
-    cy.contains('Get in Touch')
-      .should('be.visible')
-      .and('have.attr', 'href', '/contact');
+    cy.contains('Get in Touch').should('be.visible').and('have.attr', 'href', '/contact');
   });
 
   it('should display quick links to other pages', () => {
@@ -101,12 +95,7 @@ describe('404 Not Found Page', () => {
   });
 
   it('should render the 404 page for various invalid routes', () => {
-    const invalidRoutes = [
-      '/random-path',
-      '/about/something',
-      '/blog-post-that-is-not-valid-route',
-      '/admin-secret',
-    ];
+    const invalidRoutes = ['/random-path', '/about/something', '/blog-post-that-is-not-valid-route', '/admin-secret'];
 
     invalidRoutes.forEach((route) => {
       cy.visit(route, { failOnStatusCode: false });

@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import {
-  useChatEngine,
-  CHAT_STORAGE_KEY,
-  initialWelcomeMessage,
-} from './useChatEngine';
+import { useChatEngine, CHAT_STORAGE_KEY, initialWelcomeMessage } from './useChatEngine';
 import type { Message } from './useChatEngine';
 
 // Mock import.meta.env
@@ -113,7 +109,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -122,9 +118,7 @@ describe('useChatEngine', () => {
         await result.current.handleSend('Hello there');
       });
 
-      const userMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'user'
-      );
+      const userMessages = result.current.messages.filter((m: Message) => m.role === 'user');
       expect(userMessages).toHaveLength(1);
       expect(userMessages[0].content).toBe('Hello there');
     });
@@ -157,7 +151,7 @@ describe('useChatEngine', () => {
       });
 
       const assistant = result.current.messages.find(
-        (m: Message) => m.role === 'assistant' && !m.isSystem && m.id.startsWith('assistant-')
+        (m: Message) => m.role === 'assistant' && !m.isSystem && m.id.startsWith('assistant-'),
       );
       // Text on both sides of the framed event reassembles cleanly...
       expect(assistant?.content).toBe('Hello world');
@@ -231,10 +225,7 @@ describe('useChatEngine', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockRejectedValue(new Error('Network error'))
-      );
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const { result } = renderHook(() => useChatEngine());
@@ -245,7 +236,7 @@ describe('useChatEngine', () => {
 
       // Should have added an error message
       const assistantMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       expect(assistantMessages).toHaveLength(1);
       expect(assistantMessages[0].content).toContain('error');
@@ -256,10 +247,7 @@ describe('useChatEngine', () => {
     });
 
     it('should handle non-ok response', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: false, status: 500 })
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500 }));
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const { result } = renderHook(() => useChatEngine());
@@ -269,7 +257,7 @@ describe('useChatEngine', () => {
       });
 
       const assistantMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       expect(assistantMessages).toHaveLength(1);
       expect(assistantMessages[0].content).toContain('error');
@@ -304,7 +292,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -315,7 +303,7 @@ describe('useChatEngine', () => {
 
       // Find the assistant response (not the welcome message)
       const assistantMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       expect(assistantMessages).toHaveLength(1);
       expect(assistantMessages[0].content).toBe('Hello World');
@@ -330,7 +318,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -341,7 +329,7 @@ describe('useChatEngine', () => {
 
       // Should add an "empty response" message
       const assistantMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       expect(assistantMessages).toHaveLength(1);
       expect(assistantMessages[0].content).toContain('empty response');
@@ -358,7 +346,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -367,9 +355,7 @@ describe('useChatEngine', () => {
         await result.current.handleSuggestionSelect('Test suggestion');
       });
 
-      const userMessages = result.current.messages.filter(
-        (m: Message) => m.role === 'user'
-      );
+      const userMessages = result.current.messages.filter((m: Message) => m.role === 'user');
       expect(userMessages).toHaveLength(1);
       expect(userMessages[0].content).toBe('Test suggestion');
     });
@@ -385,7 +371,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -415,10 +401,7 @@ describe('useChatEngine', () => {
           timestamp: new Date('2026-01-01T00:01:00.000Z'),
         },
       ];
-      window.sessionStorage.setItem(
-        CHAT_STORAGE_KEY,
-        JSON.stringify(existingMessages)
-      );
+      window.sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(existingMessages));
 
       const { result } = renderHook(() => useChatEngine());
 
@@ -465,7 +448,7 @@ describe('useChatEngine', () => {
             });
           }
           return Promise.resolve(secondResponse);
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -507,10 +490,7 @@ describe('useChatEngine', () => {
           timestamp: new Date(`2026-01-01T00:${String(i).padStart(2, '0')}:00.000Z`),
         });
       }
-      window.sessionStorage.setItem(
-        CHAT_STORAGE_KEY,
-        JSON.stringify(priorMessages)
-      );
+      window.sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(priorMessages));
 
       const mockReader = {
         read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
@@ -536,9 +516,7 @@ describe('useChatEngine', () => {
         content: 'final message',
       });
       // Welcome message must have been excluded from the sent history
-      expect(
-        body.messages.some((m: { content: string }) => m.content === 'Welcome')
-      ).toBe(false);
+      expect(body.messages.some((m: { content: string }) => m.content === 'Welcome')).toBe(false);
     });
 
     it('should strip the welcome message from the sent conversation history', async () => {
@@ -634,7 +612,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -643,9 +621,7 @@ describe('useChatEngine', () => {
         await result.current.handleSend('hello');
       });
 
-      const systemMessages = result.current.messages.filter(
-        (m: Message) => m.isSystem === true
-      );
+      const systemMessages = result.current.messages.filter((m: Message) => m.isSystem === true);
       expect(systemMessages).toHaveLength(1);
       expect(systemMessages[0].content).toBe('Rate limit exceeded.');
       // Prefix sentinel must have been stripped from visible content
@@ -672,7 +648,7 @@ describe('useChatEngine', () => {
         vi.fn().mockResolvedValue({
           ok: true,
           body: { getReader: () => mockReader },
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -682,7 +658,7 @@ describe('useChatEngine', () => {
       });
 
       const assistantReplies = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       expect(assistantReplies).toHaveLength(1);
       expect(assistantReplies[0].isSystem).toBeUndefined();
@@ -701,7 +677,7 @@ describe('useChatEngine', () => {
               reject(err);
             });
           });
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -724,7 +700,7 @@ describe('useChatEngine', () => {
               read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
             }),
           },
-        })
+        }),
       );
 
       await act(async () => {
@@ -763,9 +739,7 @@ describe('useChatEngine', () => {
       expect(mockFetch.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
       expect(mockFetch.mock.calls[1][1].signal).toBeInstanceOf(AbortSignal);
       // Each request gets a fresh controller
-      expect(mockFetch.mock.calls[0][1].signal).not.toBe(
-        mockFetch.mock.calls[1][1].signal
-      );
+      expect(mockFetch.mock.calls[0][1].signal).not.toBe(mockFetch.mock.calls[1][1].signal);
     });
   });
 
@@ -780,9 +754,7 @@ describe('useChatEngine', () => {
           .fn()
           .mockResolvedValueOnce({
             done: false,
-            value: encoder.encode(
-              `${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`
-            ),
+            value: encoder.encode(`${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`),
           })
           .mockResolvedValue({ done: true, value: undefined }),
       };
@@ -812,13 +784,9 @@ describe('useChatEngine', () => {
       // The SECOND request body must not carry any empty-content message,
       // and must not carry the system/error string as a fake assistant turn.
       const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+      expect(secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)).toBe(false);
       expect(
-        secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)
-      ).toBe(false);
-      expect(
-        secondBody.messages.some((m: { content: string }) =>
-          m.content.includes("couldn't put together a response")
-        )
+        secondBody.messages.some((m: { content: string }) => m.content.includes("couldn't put together a response")),
       ).toBe(false);
     });
 
@@ -845,7 +813,7 @@ describe('useChatEngine', () => {
             timestamp: new Date(),
             isSystem: true,
           },
-        ])
+        ]),
       );
 
       const { result } = renderHook(() => useChatEngine());
@@ -855,9 +823,7 @@ describe('useChatEngine', () => {
       });
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(
-        body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')
-      ).toBe(false);
+      expect(body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')).toBe(false);
       // The real prior user turn is preserved.
       expect(body.messages).toEqual([
         { role: 'user', content: 'earlier' },
@@ -877,10 +843,7 @@ describe('useChatEngine', () => {
           })
           .mockResolvedValue({ done: true, value: undefined }),
       };
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } }));
 
       const { result } = renderHook(() => useChatEngine());
 
@@ -890,13 +853,11 @@ describe('useChatEngine', () => {
 
       // No assistant message should have empty content.
       const blankAssistant = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.content.trim().length === 0
+        (m: Message) => m.role === 'assistant' && m.content.trim().length === 0,
       );
       expect(blankAssistant).toHaveLength(0);
       // The visible system message is still present.
-      expect(
-        result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')
-      ).toBe(true);
+      expect(result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')).toBe(true);
     });
 
     it('should preserve an empty-text assistant bubble that carries a draft event', async () => {
@@ -920,10 +881,7 @@ describe('useChatEngine', () => {
           .mockResolvedValueOnce({ done: false, value: encoder.encode(frame) })
           .mockResolvedValue({ done: true, value: undefined }),
       };
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } }));
 
       const { result } = renderHook(() => useChatEngine());
 
@@ -932,7 +890,7 @@ describe('useChatEngine', () => {
       });
 
       const assistantBubbles = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.id !== 'welcome'
+        (m: Message) => m.role === 'assistant' && m.id !== 'welcome',
       );
       // The bubble carrying the draft must survive even with empty text.
       expect(assistantBubbles).toHaveLength(1);
@@ -950,10 +908,7 @@ describe('useChatEngine', () => {
       const mockReader = {
         read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
       };
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } })
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } }));
 
       const { result } = renderHook(() => useChatEngine());
 
@@ -1012,7 +967,7 @@ describe('useChatEngine', () => {
               }),
             },
           });
-        })
+        }),
       );
 
       const { result } = renderHook(() => useChatEngine());

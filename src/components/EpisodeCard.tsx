@@ -25,12 +25,14 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
           aria-expanded={isExpanded}
           aria-controls={panelId}
         >
-          <div className={`
+          <div
+            className={`
             px-5 py-4 border border-white/10 bg-white/5
             hover:border-altivum-gold/30 hover:bg-white/10 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5
             transition-all duration-300
             ${isExpanded ? 'rounded-t-lg border-b-0' : 'rounded-lg'}
-          `}>
+          `}
+          >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 min-w-0 flex-1">
                 {/* Episode number */}
@@ -46,17 +48,15 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
 
               <div className="flex items-center gap-4 shrink-0">
                 {/* Duration */}
-                <span className="text-altivum-silver text-xs hidden sm:block">
-                  {episode.duration}
-                </span>
+                <span className="text-altivum-silver text-xs hidden sm:block">{episode.duration}</span>
 
                 {/* Date */}
-                <span className="text-altivum-silver text-xs hidden md:block">
-                  {formatDate(episode.publishedAt)}
-                </span>
+                <span className="text-altivum-silver text-xs hidden md:block">{formatDate(episode.publishedAt)}</span>
 
                 {/* Expand icon */}
-                <span className={`material-icons text-altivum-silver text-xl transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                <span
+                  className={`material-icons text-altivum-silver text-xl transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                >
                   expand_more
                 </span>
               </div>
@@ -75,9 +75,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
             </div>
 
             {/* Description */}
-            <p className="text-altivum-silver text-sm mb-4 leading-relaxed">
-              {episode.description}
-            </p>
+            <p className="text-altivum-silver text-sm mb-4 leading-relaxed">{episode.description}</p>
 
             {/* Listen Links */}
             <div className="flex flex-wrap gap-2">
@@ -126,22 +124,19 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
 
   return (
     <article className={`group ${isFeatured ? 'col-span-full' : ''}`}>
-      <div className={`
+      <div
+        className={`
         p-6 sm:p-8 rounded-lg border border-white/10 bg-white/5
         hover:border-altivum-gold/30 hover:bg-white/10 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5
         transition-all duration-300
         ${isFeatured ? 'lg:flex lg:gap-10' : ''}
-      `}>
+      `}
+      >
         {/* Thumbnail */}
         {isFeatured && (
           <div className="relative overflow-hidden rounded-lg mb-6 lg:w-2/5 lg:mb-0 aspect-video bg-linear-to-br from-altivum-navy to-altivum-dark flex items-center justify-center">
             {episode.thumbnail ? (
-              <img
-                src={episode.thumbnail}
-                alt={episode.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              <img src={episode.thumbnail} alt={episode.title} className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="text-center p-6">
                 <span className="material-icons text-6xl text-altivum-gold/50 mb-2">podcasts</span>
@@ -184,10 +179,7 @@ const EpisodeCard = ({ episode, variant = 'standard' }: EpisodeCardProps) => {
           </h3>
 
           {/* Description */}
-          <p
-            className={`text-altivum-silver mb-5 ${isFeatured ? '' : 'line-clamp-3'}`}
-            style={typography.bodyText}
-          >
+          <p className={`text-altivum-silver mb-5 ${isFeatured ? '' : 'line-clamp-3'}`} style={typography.bodyText}>
             {episode.description}
           </p>
 

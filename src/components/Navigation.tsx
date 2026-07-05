@@ -67,48 +67,52 @@ const Navigation = () => {
   }, [focusedDropdownIndex]);
 
   // Keyboard navigation for dropdown
-  const handleDropdownKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const itemCount = ABOUT_DROPDOWN_ITEMS.length;
+  const handleDropdownKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const itemCount = ABOUT_DROPDOWN_ITEMS.length;
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        if (!isAboutDropdownOpen) {
-          setIsAboutDropdownOpen(true);
-          setFocusedDropdownIndex(0);
-        } else {
-          setFocusedDropdownIndex((prev) => (prev + 1) % itemCount);
-        }
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        if (isAboutDropdownOpen) {
-          setFocusedDropdownIndex((prev) => (prev - 1 + itemCount) % itemCount);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setIsAboutDropdownOpen(false);
-        setFocusedDropdownIndex(-1);
-        break;
-      case 'Tab':
-        setIsAboutDropdownOpen(false);
-        setFocusedDropdownIndex(-1);
-        break;
-    }
-  }, [isAboutDropdownOpen]);
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (!isAboutDropdownOpen) {
+            setIsAboutDropdownOpen(true);
+            setFocusedDropdownIndex(0);
+          } else {
+            setFocusedDropdownIndex((prev) => (prev + 1) % itemCount);
+          }
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (isAboutDropdownOpen) {
+            setFocusedDropdownIndex((prev) => (prev - 1 + itemCount) % itemCount);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setIsAboutDropdownOpen(false);
+          setFocusedDropdownIndex(-1);
+          break;
+        case 'Tab':
+          setIsAboutDropdownOpen(false);
+          setFocusedDropdownIndex(-1);
+          break;
+      }
+    },
+    [isAboutDropdownOpen],
+  );
 
   const isActive = (path: string) => location.pathname === path;
 
   const isAboutActive = () => {
-    return ABOUT_DROPDOWN_ITEMS.some(item => item.path && location.pathname === item.path);
+    return ABOUT_DROPDOWN_ITEMS.some((item) => item.path && location.pathname === item.path);
   };
 
   return (
     <nav
       data-vt-persist="navigation"
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
-        }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 opacity-0 animate-nav-fade-in ${
+        isScrolled ? 'bg-altivum-navy/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
+      }`}
     >
       {/* Skip link for keyboard navigation */}
       <a
@@ -136,10 +140,11 @@ const Navigation = () => {
           <div className="hidden md:flex items-center space-x-1 lg:ml-auto lg:-mr-40">
             <ViewTransitionLink
               to="/"
-              className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive('/')
-                ? 'text-altivum-gold bg-altivum-blue/30'
-                : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${
+                isActive('/')
+                  ? 'text-altivum-gold bg-altivum-blue/30'
+                  : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+              }`}
             >
               Home
             </ViewTransitionLink>
@@ -151,16 +156,23 @@ const Navigation = () => {
                   setIsAboutDropdownOpen(!isAboutDropdownOpen);
                   setFocusedDropdownIndex(-1);
                 }}
-                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 flex items-center ${isAboutActive()
-                  ? 'text-altivum-gold bg-altivum-blue/30'
-                  : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                  }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 flex items-center ${
+                  isAboutActive()
+                    ? 'text-altivum-gold bg-altivum-blue/30'
+                    : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                }`}
                 aria-label="About menu"
                 aria-expanded={isAboutDropdownOpen}
                 aria-haspopup="true"
               >
                 About
-                <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -171,11 +183,13 @@ const Navigation = () => {
                   role="menu"
                   aria-orientation="vertical"
                 >
-                  {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
+                  {ABOUT_DROPDOWN_ITEMS.map((item, index) =>
                     item.path ? (
                       <ViewTransitionLink
                         key={index}
-                        ref={(el) => { dropdownItemsRef.current[index] = el; }}
+                        ref={(el) => {
+                          dropdownItemsRef.current[index] = el;
+                        }}
                         to={item.path}
                         onClick={() => {
                           setIsAboutDropdownOpen(false);
@@ -183,10 +197,11 @@ const Navigation = () => {
                         }}
                         role="menuitem"
                         tabIndex={focusedDropdownIndex === index ? 0 : -1}
-                        className={`block px-4 py-3 text-sm font-medium transition-all duration-200 ${isActive(item.path)
-                          ? 'text-altivum-gold bg-altivum-blue/30'
-                          : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                          } ${focusedDropdownIndex === index ? 'bg-altivum-blue/20' : ''}`}
+                        className={`block px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                          isActive(item.path)
+                            ? 'text-altivum-gold bg-altivum-blue/30'
+                            : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                        } ${focusedDropdownIndex === index ? 'bg-altivum-blue/20' : ''}`}
                       >
                         {item.label}
                       </ViewTransitionLink>
@@ -199,8 +214,8 @@ const Navigation = () => {
                       >
                         {item.label}
                       </div>
-                    )
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </div>
@@ -209,10 +224,11 @@ const Navigation = () => {
               <ViewTransitionLink
                 key={item.path}
                 to={item.path}
-                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${isActive(item.path)
-                  ? 'text-altivum-gold bg-altivum-blue/30'
-                  : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                  }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-all duration-200 ${
+                  isActive(item.path)
+                    ? 'text-altivum-gold bg-altivum-blue/30'
+                    : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                }`}
               >
                 {item.label}
               </ViewTransitionLink>
@@ -239,10 +255,11 @@ const Navigation = () => {
               <ViewTransitionLink
                 to="/"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive('/')
-                  ? 'text-altivum-gold bg-altivum-blue/30'
-                  : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                  }`}
+                className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${
+                  isActive('/')
+                    ? 'text-altivum-gold bg-altivum-blue/30'
+                    : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                }`}
               >
                 Home
               </ViewTransitionLink>
@@ -251,28 +268,26 @@ const Navigation = () => {
               <div className="px-4 py-2">
                 <div className="text-xs font-semibold text-altivum-gold uppercase tracking-wider mb-2">About</div>
                 <div className="flex flex-col space-y-1 ml-2">
-                  {ABOUT_DROPDOWN_ITEMS.map((item, index) => (
+                  {ABOUT_DROPDOWN_ITEMS.map((item, index) =>
                     item.path ? (
                       <ViewTransitionLink
                         key={index}
                         to={item.path}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive(item.path)
-                          ? 'text-altivum-gold bg-altivum-blue/30'
-                          : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                          }`}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                          isActive(item.path)
+                            ? 'text-altivum-gold bg-altivum-blue/30'
+                            : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                        }`}
                       >
                         {item.label}
                       </ViewTransitionLink>
                     ) : (
-                      <div
-                        key={index}
-                        className="px-4 py-2 text-sm font-medium text-altivum-silver"
-                      >
+                      <div key={index} className="px-4 py-2 text-sm font-medium text-altivum-silver">
                         {item.label}
                       </div>
-                    )
-                  ))}
+                    ),
+                  )}
                 </div>
               </div>
 
@@ -281,10 +296,11 @@ const Navigation = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${isActive(item.path)
-                    ? 'text-altivum-gold bg-altivum-blue/30'
-                    : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
-                    }`}
+                  className={`px-4 py-3 rounded-md text-base font-medium transition-all duration-200 ${
+                    isActive(item.path)
+                      ? 'text-altivum-gold bg-altivum-blue/30'
+                      : 'text-altivum-silver hover:text-white hover:bg-altivum-blue/20'
+                  }`}
                 >
                   {item.label}
                 </ViewTransitionLink>

@@ -62,9 +62,7 @@ export function NodeDetailPanel({ node, onClose }: NodeDetailPanelProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-white text-lg font-light tracking-wide">
-            {node.service}
-          </h3>
+          <h3 className="text-white text-lg font-light tracking-wide">{node.service}</h3>
         </div>
         <button
           onClick={handleClose}
@@ -76,30 +74,22 @@ export function NodeDetailPanel({ node, onClose }: NodeDetailPanelProps) {
       </div>
 
       {/* Description */}
-      <p className="text-altivum-silver text-sm leading-relaxed mb-6">
-        {node.description}
-      </p>
+      <p className="text-altivum-silver text-sm leading-relaxed mb-6">{node.description}</p>
 
       {/* Config grid */}
       {configEntries.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-6">
           {configEntries.map(([key, value]) => (
             <div key={key} className="flex flex-col">
-              <span className="text-altivum-gold text-xs font-light tracking-wide uppercase">
-                {key}
-              </span>
-              <span className="text-altivum-silver text-sm">
-                {value}
-              </span>
+              <span className="text-altivum-gold text-xs font-light tracking-wide uppercase">{key}</span>
+              <span className="text-altivum-silver text-sm">{value}</span>
             </div>
           ))}
         </div>
       )}
 
       {/* Reasoning */}
-      <p className="text-altivum-silver text-sm leading-relaxed italic">
-        {node.reasoning}
-      </p>
+      <p className="text-altivum-silver text-sm leading-relaxed italic">{node.reasoning}</p>
     </div>
   );
 }

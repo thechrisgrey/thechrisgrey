@@ -28,21 +28,23 @@ app can talk to its backends. Never commit `.env` or `.env.local`.
 
 ## Core commands
 
-| Command | What it does |
-|---------|--------------|
-| `npm run dev` | Vite dev server (localhost:5173) |
-| `npm run build` | Full production pipeline (see below) |
-| `npm run preview` | Serve the production build locally |
-| `npm run lint` | ESLint on `src/` (`--max-warnings 0`) |
-| `npm run lint:lambda` | ESLint on `lambda/` `.mjs` handlers |
-| `npm test` | Vitest run (frontend unit + integration) |
-| `npm run test:watch` | Vitest in watch mode |
-| `npm run test:coverage` | Vitest with v8 coverage + thresholds |
-| `npm run test:lambda` | `node --test` suites for every Lambda |
-| `npm run cy:run` | Cypress e2e (headless) |
-| `npm run cy:open` | Cypress interactive runner |
-| `npm run validate:agents` | Check this file stays in sync with the code |
-| `npm run deploy:lambda -- <name>` | Deploy one Lambda (see Deployment) |
+| Command                           | What it does                                |
+| --------------------------------- | ------------------------------------------- |
+| `npm run dev`                     | Vite dev server (localhost:5173)            |
+| `npm run build`                   | Full production pipeline (see below)        |
+| `npm run preview`                 | Serve the production build locally          |
+| `npm run lint`                    | ESLint on `src/` (`--max-warnings 0`)       |
+| `npm run lint:lambda`             | ESLint on `lambda/` `.mjs` handlers         |
+| `npm run format`                  | Prettier auto-format all files (`--write`)  |
+| `npm run format:check`            | Prettier check (CI gate, no writes)         |
+| `npm test`                        | Vitest run (frontend unit + integration)    |
+| `npm run test:watch`              | Vitest in watch mode                        |
+| `npm run test:coverage`           | Vitest with v8 coverage + thresholds        |
+| `npm run test:lambda`             | `node --test` suites for every Lambda       |
+| `npm run cy:run`                  | Cypress e2e (headless)                      |
+| `npm run cy:open`                 | Cypress interactive runner                  |
+| `npm run validate:agents`         | Check this file stays in sync with the code |
+| `npm run deploy:lambda -- <name>` | Deploy one Lambda (see Deployment)          |
 
 ### Build pipeline
 
@@ -76,9 +78,9 @@ anything touching an external service (Bedrock, Amplify, streaming, auth),
 exercise the real deployed path before claiming it works. Distrust mocks that
 assume behavior the live SDK may not exhibit.
 
-Run before finishing any change: `npm run lint`, `npm run lint:lambda` (if you
-touched `lambda/`), `npm test`, and `npm run test:lambda` (if you touched
-`lambda/`).
+Run before finishing any change: `npm run format:check`, `npm run lint`, `npm run
+lint:lambda` (if you touched `lambda/`), `npm test`, and `npm run test:lambda`
+(if you touched `lambda/`).
 
 If you edit this file, run `npm run validate:agents` to confirm it stays in
 sync with the code. That check verifies every documented `npm run` command, file

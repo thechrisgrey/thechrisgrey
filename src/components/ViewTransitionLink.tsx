@@ -15,12 +15,15 @@ const ViewTransitionLink = forwardRef<HTMLAnchorElement, ViewTransitionLinkProps
       prefetchRoute(to);
     }, [to]);
 
-    const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-      e.preventDefault();
-      onClick?.(e);
-      transitionNavigate(to);
-    }, [to, onClick, transitionNavigate]);
+    const handleClick = useCallback(
+      (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        onClick?.(e);
+        transitionNavigate(to);
+      },
+      [to, onClick, transitionNavigate],
+    );
 
     return (
       <Link
@@ -38,7 +41,7 @@ const ViewTransitionLink = forwardRef<HTMLAnchorElement, ViewTransitionLinkProps
         {...props}
       />
     );
-  }
+  },
 );
 
 ViewTransitionLink.displayName = 'ViewTransitionLink';

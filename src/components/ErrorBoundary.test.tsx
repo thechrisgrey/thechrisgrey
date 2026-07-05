@@ -34,7 +34,7 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary>
           <div>Normal content</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Normal content')).toBeInTheDocument();
     });
@@ -43,7 +43,7 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary>
           <div>Normal content</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
     });
@@ -54,7 +54,7 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
@@ -63,29 +63,25 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary pageName="the Blog">
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.getByText('Something went wrong with the Blog')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Something went wrong with the Blog')).toBeInTheDocument();
     });
 
     it('should show a Refresh Page button', () => {
       renderWithRouter(
         <ErrorBoundary>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.getByRole('button', { name: /refresh page/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /refresh page/i })).toBeInTheDocument();
     });
 
     it('should show a Go Home link by default', () => {
       renderWithRouter(
         <ErrorBoundary>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByRole('link', { name: /go home/i })).toBeInTheDocument();
     });
@@ -94,51 +90,43 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary showHomeButton={false}>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.queryByRole('link', { name: /go home/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /go home/i })).not.toBeInTheDocument();
     });
 
     it('should show error description text', () => {
       renderWithRouter(
         <ErrorBoundary>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.getByText(/we encountered an unexpected error/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/we encountered an unexpected error/i)).toBeInTheDocument();
     });
 
     it('should mention returning to home page when showHomeButton is true', () => {
       renderWithRouter(
         <ErrorBoundary showHomeButton={true}>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.getByText(/return to the home page/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/return to the home page/i)).toBeInTheDocument();
     });
 
     it('should not mention home page when showHomeButton is false', () => {
       renderWithRouter(
         <ErrorBoundary showHomeButton={false}>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
-      expect(
-        screen.queryByText(/return to the home page/i)
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/return to the home page/i)).not.toBeInTheDocument();
     });
 
     it('should render Go Home link pointing to "/"', () => {
       renderWithRouter(
         <ErrorBoundary>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       const homeLink = screen.getByRole('link', { name: /go home/i });
       expect(homeLink).toHaveAttribute('href', '/');
@@ -150,7 +138,7 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary fallback={<div>Custom error page</div>}>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Custom error page')).toBeInTheDocument();
       expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
@@ -172,12 +160,10 @@ describe('ErrorBoundary', () => {
       renderWithRouter(
         <ErrorBoundary onReset={onReset}>
           <ThrowingComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      await user.click(
-        screen.getByRole('button', { name: /refresh page/i })
-      );
+      await user.click(screen.getByRole('button', { name: /refresh page/i }));
 
       expect(onReset).toHaveBeenCalledTimes(1);
     });

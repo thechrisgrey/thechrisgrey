@@ -4,10 +4,7 @@
     {
       "Sid": "BedrockInvokeFoundationModels",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ],
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
       "Resource": [
         "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-6-v1",
         "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-opus-4-6-v1",
@@ -20,10 +17,7 @@
     {
       "Sid": "BedrockInvokeInferenceProfiles",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ],
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
       "Resource": [
         "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-opus-4-6-v1",
         "arn:aws:bedrock:us-east-1:205930636302:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0"
@@ -32,41 +26,25 @@
     {
       "Sid": "BedrockGuardrail",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:ApplyGuardrail"
-      ],
-      "Resource": [
-        "arn:aws:bedrock:us-east-1:205930636302:guardrail/5kofhp46ssob"
-      ]
+      "Action": ["bedrock:ApplyGuardrail"],
+      "Resource": ["arn:aws:bedrock:us-east-1:205930636302:guardrail/5kofhp46ssob"]
     },
     {
       "Sid": "DynamoDBRateLimit",
       "Effect": "Allow",
-      "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem"
-      ],
-      "Resource": [
-        "arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-ratelimit"
-      ]
+      "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem"],
+      "Resource": ["arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-ratelimit"]
     },
     {
       "Sid": "CloudWatchLogs",
       "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
       "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-blueprint:*"
     },
     {
       "Sid": "CloudWatchMetrics",
       "Effect": "Allow",
-      "Action": [
-        "cloudwatch:PutMetricData"
-      ],
+      "Action": ["cloudwatch:PutMetricData"],
       "Resource": "*",
       "Condition": {
         "StringEquals": {

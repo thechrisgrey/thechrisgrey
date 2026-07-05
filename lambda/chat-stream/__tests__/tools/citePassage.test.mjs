@@ -22,7 +22,11 @@ function fakeSanity(post) {
   };
 }
 function rejectingSanity(error) {
-  return { fetch: async () => { throw error; } };
+  return {
+    fetch: async () => {
+      throw error;
+    },
+  };
 }
 function parseLastEvent(stream) {
   const chunk = stream.chunks[stream.chunks.length - 1];

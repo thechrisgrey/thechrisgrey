@@ -1,0 +1,22 @@
+dist/
+coverage/
+node_modules/
+lambda/*/node_modules/
+lambda/*/function.zip
+amplify/
+.amplify/
+.claude/
+.superpowers/
+.worktrees/
+podcast-kb-staging/
+podcast-transcripts/
+.transcribe-audio/
+scripts/editorial-raw/
+
+# Generated files
+src/data/generatedEpisodes.json
+
+# Binary / non-code files
+*.pdf
+*.glb
+*.zip

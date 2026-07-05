@@ -117,12 +117,9 @@ function main() {
     for (const v of r.violations) console.error(`  [seo-gate] ${r.route}: ${v}`);
   }
 
-  const strict =
-    process.env.STRICT_PRERENDER === 'true' || process.env.STRICT_SEO_VALIDATION === 'true';
+  const strict = process.env.STRICT_PRERENDER === 'true' || process.env.STRICT_SEO_VALIDATION === 'true';
   if (strict && totalViolations > 0) {
-    console.error(
-      `[seo-gate] STRICT mode: exiting 1 due to ${totalViolations} SEO violation(s) in prerendered HTML.`,
-    );
+    console.error(`[seo-gate] STRICT mode: exiting 1 due to ${totalViolations} SEO violation(s) in prerendered HTML.`);
     process.exit(1);
   }
   // Default: strictly non-fatal so a broken prerender/validation never blocks the deploy.

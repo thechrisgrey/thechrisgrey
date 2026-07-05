@@ -62,11 +62,13 @@ export function createGoldenExamplesFetcher(sanityClient, opts = {}) {
         cache = { data, expiresAt: now() + ttlMs };
         return data;
       } catch (error) {
-        console.error(JSON.stringify({
-          event: "golden_examples_fetch_error",
-          error: error?.name,
-          message: error?.message,
-        }));
+        console.error(
+          JSON.stringify({
+            event: "golden_examples_fetch_error",
+            error: error?.name,
+            message: error?.message,
+          }),
+        );
         cache = { data: [], expiresAt: now() + negativeTtlMs };
         return [];
       } finally {

@@ -34,19 +34,20 @@ The chat allows visitors to conversationally learn about Christian Perez's backg
 
 ## Key Technical Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| **Bedrock API** | ConverseStream (not InvokeModel) | Consistent API for conversations, handles message history natively, supports system prompts |
-| **Model** | Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`) | Latest Haiku model via inference profile - fast responses, cost-effective, excellent for conversational use |
-| **Lambda Runtime** | Node.js 20.x | Native streaming support via `awslambda.streamifyResponse()` |
-| **Invocation Method** | Lambda Function URL with `RESPONSE_STREAM` | Direct streaming without API Gateway complexity |
-| **Frontend Streaming** | Fetch API with ReadableStream | Native browser streaming support, no dependencies |
+| Decision               | Choice                                                           | Rationale                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Bedrock API**        | ConverseStream (not InvokeModel)                                 | Consistent API for conversations, handles message history natively, supports system prompts                 |
+| **Model**              | Claude Haiku 4.5 (`us.anthropic.claude-haiku-4-5-20251001-v1:0`) | Latest Haiku model via inference profile - fast responses, cost-effective, excellent for conversational use |
+| **Lambda Runtime**     | Node.js 20.x                                                     | Native streaming support via `awslambda.streamifyResponse()`                                                |
+| **Invocation Method**  | Lambda Function URL with `RESPONSE_STREAM`                       | Direct streaming without API Gateway complexity                                                             |
+| **Frontend Streaming** | Fetch API with ReadableStream                                    | Native browser streaming support, no dependencies                                                           |
 
 ---
 
 ## Phase 1: Lambda Function (Backend)
 
 ### File Structure
+
 ```
 lambda/
 └── chat-stream/
@@ -57,13 +58,10 @@ lambda/
 ### Lambda Handler Code (`index.mjs`)
 
 ```javascript
-import {
-  BedrockRuntimeClient,
-  ConverseStreamCommand,
-} from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient, ConverseStreamCommand } from '@aws-sdk/client-bedrock-runtime';
 
-const client = new BedrockRuntimeClient({ region: "us-east-1" });
-const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0"; // Inference profile ID
+const client = new BedrockRuntimeClient({ region: 'us-east-1' });
+const MODEL_ID = 'us.anthropic.claude-haiku-4-5-20251001-v1:0'; // Inference profile ID
 
 // System prompt defining the AI persona
 const SYSTEM_PROMPT = `You are an AI assistant representing Christian Perez (also known as @thechrisgrey). You help visitors learn about his background, work, and expertise.
@@ -87,64 +85,62 @@ Guidelines:
 - Keep responses concise but informative (2-4 sentences for simple questions)
 - For complex topics, provide more detail but stay focused`;
 
-export const handler = awslambda.streamifyResponse(
-  async (event, responseStream, _context) => {
-    // Set CORS headers
-    const headers = {
-      "Content-Type": "text/plain",
-      "Access-Control-Allow-Origin": "https://thechrisgrey.com",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
+export const handler = awslambda.streamifyResponse(async (event, responseStream, _context) => {
+  // Set CORS headers
+  const headers = {
+    'Content-Type': 'text/plain',
+    'Access-Control-Allow-Origin': 'https://thechrisgrey.com',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
 
-    // Handle preflight
-    if (event.requestContext?.http?.method === "OPTIONS") {
-      responseStream.write("");
-      responseStream.end();
-      return;
-    }
+  // Handle preflight
+  if (event.requestContext?.http?.method === 'OPTIONS') {
+    responseStream.write('');
+    responseStream.end();
+    return;
+  }
 
-    try {
-      const body = JSON.parse(event.body || "{}");
-      const messages = body.messages || [];
+  try {
+    const body = JSON.parse(event.body || '{}');
+    const messages = body.messages || [];
 
-      // Convert messages to Bedrock format
-      const bedrockMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: [{ text: msg.content }],
-      }));
+    // Convert messages to Bedrock format
+    const bedrockMessages = messages.map((msg) => ({
+      role: msg.role,
+      content: [{ text: msg.content }],
+    }));
 
-      const command = new ConverseStreamCommand({
-        modelId: MODEL_ID,
-        messages: bedrockMessages,
-        system: [{ text: SYSTEM_PROMPT }],
-        inferenceConfig: {
-          maxTokens: 1024,
-          temperature: 0.7,
-          topP: 0.9,
-        },
-      });
+    const command = new ConverseStreamCommand({
+      modelId: MODEL_ID,
+      messages: bedrockMessages,
+      system: [{ text: SYSTEM_PROMPT }],
+      inferenceConfig: {
+        maxTokens: 1024,
+        temperature: 0.7,
+        topP: 0.9,
+      },
+    });
 
-      const response = await client.send(command);
+    const response = await client.send(command);
 
-      // Stream the response
-      for await (const event of response.stream) {
-        if (event.contentBlockDelta) {
-          const text = event.contentBlockDelta.delta?.text;
-          if (text) {
-            responseStream.write(text);
-          }
+    // Stream the response
+    for await (const event of response.stream) {
+      if (event.contentBlockDelta) {
+        const text = event.contentBlockDelta.delta?.text;
+        if (text) {
+          responseStream.write(text);
         }
       }
-
-      responseStream.end();
-    } catch (error) {
-      console.error("Error:", error);
-      responseStream.write("I apologize, but I encountered an error. Please try again.");
-      responseStream.end();
     }
+
+    responseStream.end();
+  } catch (error) {
+    console.error('Error:', error);
+    responseStream.write('I apologize, but I encountered an error. Please try again.');
+    responseStream.end();
   }
-);
+});
 ```
 
 ### Package Dependencies (`package.json`)
@@ -169,6 +165,7 @@ export const handler = awslambda.streamifyResponse(
 #### 1. IAM Role for Lambda
 
 **Trust Policy:**
+
 ```json
 {
   "Version": "2012-10-17",
@@ -185,17 +182,14 @@ export const handler = awslambda.streamifyResponse(
 ```
 
 **Permissions Policy:**
+
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
       "Resource": "arn:aws:logs:*:*:*"
     },
     {
@@ -209,23 +203,23 @@ export const handler = awslambda.streamifyResponse(
 
 #### 2. Lambda Function Configuration
 
-| Setting | Value |
-|---------|-------|
-| Runtime | Node.js 20.x |
-| Architecture | arm64 |
-| Memory | 512 MB |
-| Timeout | 60 seconds |
-| Handler | index.handler |
+| Setting      | Value         |
+| ------------ | ------------- |
+| Runtime      | Node.js 20.x  |
+| Architecture | arm64         |
+| Memory       | 512 MB        |
+| Timeout      | 60 seconds    |
+| Handler      | index.handler |
 
 #### 3. Lambda Function URL
 
-| Setting | Value |
-|---------|-------|
-| Auth Type | NONE (public) |
-| Invoke Mode | `RESPONSE_STREAM` |
-| CORS Allow Origin | `https://thechrisgrey.com` |
-| CORS Allow Methods | `POST, OPTIONS` |
-| CORS Allow Headers | `Content-Type` |
+| Setting            | Value                      |
+| ------------------ | -------------------------- |
+| Auth Type          | NONE (public)              |
+| Invoke Mode        | `RESPONSE_STREAM`          |
+| CORS Allow Origin  | `https://thechrisgrey.com` |
+| CORS Allow Methods | `POST, OPTIONS`            |
+| CORS Allow Headers | `Content-Type`             |
 
 ### Deployment Commands
 
@@ -296,24 +290,27 @@ const handleSend = async (content: string) => {
     timestamp: new Date(),
   };
 
-  setMessages(prev => [...prev, userMessage]);
+  setMessages((prev) => [...prev, userMessage]);
   setShowSuggestions(false);
   setIsTyping(true);
 
   // Prepare conversation history for API
-  const conversationHistory = [...messages, userMessage].map(msg => ({
+  const conversationHistory = [...messages, userMessage].map((msg) => ({
     role: msg.role,
     content: msg.content,
   }));
 
   // Create placeholder for assistant response
   const assistantMessageId = `assistant-${Date.now()}`;
-  setMessages(prev => [...prev, {
-    id: assistantMessageId,
-    role: 'assistant',
-    content: '',
-    timestamp: new Date(),
-  }]);
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    },
+  ]);
   setIsTyping(false);
 
   try {
@@ -336,20 +333,20 @@ const handleSend = async (content: string) => {
         const chunk = decoder.decode(value, { stream: true });
 
         // Append chunk to the assistant message
-        setMessages(prev => prev.map(msg =>
-          msg.id === assistantMessageId
-            ? { ...msg, content: msg.content + chunk }
-            : msg
-        ));
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === assistantMessageId ? { ...msg, content: msg.content + chunk } : msg)),
+        );
       }
     }
   } catch (error) {
     console.error('Chat error:', error);
-    setMessages(prev => prev.map(msg =>
-      msg.id === assistantMessageId
-        ? { ...msg, content: 'I apologize, but I encountered an error. Please try again.' }
-        : msg
-    ));
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === assistantMessageId
+          ? { ...msg, content: 'I apologize, but I encountered an error. Please try again.' }
+          : msg,
+      ),
+    );
   }
 };
 ```
@@ -369,22 +366,26 @@ VITE_CHAT_ENDPOINT=https://xxxxxxxx.lambda-url.us-east-1.on.aws/
 The system prompt should be refined based on testing. Key areas to include:
 
 ### Christian Perez Background
+
 - Military service details (Green Beret, 18D Medical Sergeant)
 - Transition from military to tech entrepreneurship
 - Current role as Altivum CEO
 
 ### Altivum Inc
+
 - Cloud migration services
 - AI integration capabilities
 - Target clients and industries
 - Company mission and values
 
 ### The Vector Podcast
+
 - Show format and typical guests
 - Key themes discussed
 - Where to listen
 
 ### Beyond the Assessment
+
 - Book overview and themes
 - Key lessons from Special Forces selection
 - Target audience
@@ -393,33 +394,36 @@ The system prompt should be refined based on testing. Key areas to include:
 
 ## Implementation Order
 
-| Step | Task | Estimated Effort |
-|------|------|------------------|
-| 1 | Create Lambda function code locally | 30 min |
-| 2 | Create IAM role with required permissions | 15 min |
-| 3 | Deploy Lambda function | 15 min |
-| 4 | Configure Function URL with RESPONSE_STREAM | 10 min |
-| 5 | Test Lambda endpoint with curl | 15 min |
-| 6 | Add VITE_CHAT_ENDPOINT to Amplify | 5 min |
-| 7 | Update Chat.tsx with streaming fetch | 45 min |
-| 8 | Test end-to-end streaming | 30 min |
-| 9 | Refine system prompt based on testing | 1 hour |
-| 10 | Deploy and verify production | 15 min |
+| Step | Task                                        | Estimated Effort |
+| ---- | ------------------------------------------- | ---------------- |
+| 1    | Create Lambda function code locally         | 30 min           |
+| 2    | Create IAM role with required permissions   | 15 min           |
+| 3    | Deploy Lambda function                      | 15 min           |
+| 4    | Configure Function URL with RESPONSE_STREAM | 10 min           |
+| 5    | Test Lambda endpoint with curl              | 15 min           |
+| 6    | Add VITE_CHAT_ENDPOINT to Amplify           | 5 min            |
+| 7    | Update Chat.tsx with streaming fetch        | 45 min           |
+| 8    | Test end-to-end streaming                   | 30 min           |
+| 9    | Refine system prompt based on testing       | 1 hour           |
+| 10   | Deploy and verify production                | 15 min           |
 
 ---
 
 ## Cost Estimates
 
 ### Claude Haiku 4.5 Pricing (Bedrock)
+
 - Input: $0.80 / 1M tokens
 - Output: $4.00 / 1M tokens
 
 ### Example Usage
+
 - Average conversation: ~500 input tokens, ~300 output tokens
 - Cost per conversation: ~$0.0016
 - 1,000 conversations/month: ~$1.60
 
 ### Lambda Costs
+
 - 512 MB, ~5 seconds per request
 - 1,000 requests/month: ~$0.05
 

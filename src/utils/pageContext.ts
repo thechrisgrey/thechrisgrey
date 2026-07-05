@@ -25,7 +25,7 @@ const ROUTE_CONTEXT_MAP: Record<string, RouteMetadata> = {
 };
 
 const DEFAULT_SUGGESTIONS = [
-  "How did he go from Green Beret to tech CEO?",
+  'How did he go from Green Beret to tech CEO?',
   "What drives Altivum's mission?",
   'Why did he write Beyond the Assessment?',
   "What's his take on AI and veterans?",
@@ -38,9 +38,7 @@ const DEFAULT_SUGGESTIONS = [
  */
 export const PAGE_SUGGESTIONS: Record<string, string[]> = {
   [HOME_CONTEXT.path]: HOME_CONTEXT.suggestions,
-  ...Object.fromEntries(
-    ROUTES.filter((r) => r.suggestions).map((r) => [r.path, r.suggestions!])
-  ),
+  ...Object.fromEntries(ROUTES.filter((r) => r.suggestions).map((r) => [r.path, r.suggestions!])),
 };
 
 export function getPageContext(pathname: string, visitedPages: string[]): PageContext {
@@ -53,15 +51,14 @@ export function getPageContext(pathname: string, visitedPages: string[]): PageCo
   const isBlogPost = pathname.startsWith('/blog/') && pathname !== '/blog';
   const lookupKey = isBlogPost ? '/blog/:slug' : pathname;
 
-  const metadata = ROUTE_CONTEXT_MAP[lookupKey] || ROUTE_CONTEXT_MAP[pathname] || {
-    pageTitle: 'Page',
-    section: 'General',
-  };
+  const metadata = ROUTE_CONTEXT_MAP[lookupKey] ||
+    ROUTE_CONTEXT_MAP[pathname] || {
+      pageTitle: 'Page',
+      section: 'General',
+    };
 
   // For blog posts, include the slug in the section
-  const section = isBlogPost
-    ? `Blog Post (${pathname.replace('/blog/', '')})`
-    : metadata.section;
+  const section = isBlogPost ? `Blog Post (${pathname.replace('/blog/', '')})` : metadata.section;
 
   return {
     currentPage: pathname,

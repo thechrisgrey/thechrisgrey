@@ -22,14 +22,13 @@ describe('useFocusTrap', () => {
     document.body.appendChild(button);
     button.focus();
 
-    const { rerender } = renderHook(
-      ({ isActive }) => useFocusTrap(isActive),
-      { initialProps: { isActive: false } }
-    );
+    const { rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), { initialProps: { isActive: false } });
 
     // Activate the trap
     rerender({ isActive: true });
-    act(() => { vi.advanceTimersByTime(20); });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
 
     // Deactivate - should return focus to the button
     rerender({ isActive: false });
@@ -58,10 +57,7 @@ describe('useFocusTrap', () => {
     });
 
     // Re-render to trigger the effect with the ref set
-    const { rerender } = renderHook(
-      ({ isActive }) => useFocusTrap(isActive),
-      { initialProps: { isActive: false } }
-    );
+    const { rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), { initialProps: { isActive: false } });
     rerender({ isActive: true });
 
     // Note: Since the ref is not connected to the hook's internal ref,
@@ -83,14 +79,15 @@ describe('useFocusTrap', () => {
     container.appendChild(input);
     document.body.appendChild(container);
 
-    const { result, rerender } = renderHook(
-      ({ isActive }) => useFocusTrap(isActive),
-      { initialProps: { isActive: false } }
-    );
+    const { result, rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), {
+      initialProps: { isActive: false },
+    });
     // Connect the hook's own ref to the container so the effect can find it.
     result.current.containerRef.current = container;
     rerender({ isActive: true });
-    act(() => { vi.advanceTimersByTime(20); });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
 
     expect(document.activeElement).toBe(input);
 
@@ -107,13 +104,14 @@ describe('useFocusTrap', () => {
     container.appendChild(secondBtn);
     document.body.appendChild(container);
 
-    const { result, rerender } = renderHook(
-      ({ isActive }) => useFocusTrap(isActive),
-      { initialProps: { isActive: false } }
-    );
+    const { result, rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), {
+      initialProps: { isActive: false },
+    });
     result.current.containerRef.current = container;
     rerender({ isActive: true });
-    act(() => { vi.advanceTimersByTime(20); });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
 
     expect(document.activeElement).toBe(firstBtn);
 

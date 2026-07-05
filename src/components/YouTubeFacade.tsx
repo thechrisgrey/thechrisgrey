@@ -52,7 +52,10 @@ const YouTubeFacade = ({ videoId, title, embedParams = '', startSeconds }: YouTu
           }
         }}
       />
-      <span className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-200" aria-hidden="true" />
+      <span
+        className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-200"
+        aria-hidden="true"
+      />
       <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
         <span className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-altivum-gold/90 group-hover:bg-altivum-gold transition-colors duration-200 shadow-lg">
           <span className="material-icons text-altivum-dark text-3xl sm:text-4xl ml-1">play_arrow</span>

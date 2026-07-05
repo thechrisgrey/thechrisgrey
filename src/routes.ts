@@ -101,12 +101,7 @@ export const ROUTES: readonly RouteDefinition[] = [
     path: '/altivum',
     importer: () => import('./pages/Altivum'),
     context: { pageTitle: 'Altivum Inc', section: 'Altivum Inc' },
-    suggestions: [
-      'What does Altivum do?',
-      'What is Altivum Logic?',
-      "What's Vanguard?",
-      'How is Altivum different?',
-    ],
+    suggestions: ['What does Altivum do?', 'What is Altivum Logic?', "What's Vanguard?", 'How is Altivum different?'],
   },
   {
     path: '/foundation',
@@ -251,9 +246,7 @@ export const ROUTES: readonly RouteDefinition[] = [
  * Cheap lookup by path. Built once at module load. `O(1)` access at runtime;
  * the array is the canonical form so the in-file ordering can be controlled.
  */
-export const ROUTES_BY_PATH: ReadonlyMap<string, RouteDefinition> = new Map(
-  ROUTES.map((r) => [r.path, r])
-);
+export const ROUTES_BY_PATH: ReadonlyMap<string, RouteDefinition> = new Map(ROUTES.map((r) => [r.path, r]));
 
 /** A single header-nav / About-dropdown entry. */
 export interface NavigationItem {

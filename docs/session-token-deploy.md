@@ -17,8 +17,8 @@ Account `205930636302`, region `us-east-1`. Function name = `thechrisgrey-<dir>`
 
 - **`SESSION_TOKEN_KEY`** — the server-only token signing secret. Generate one:
   `openssl rand -hex 32`. The SAME value goes on three Lambdas (issuer + chat-stream + blueprint).
-- **`TURNSTILE_SECRET`** — the Cloudflare Turnstile *secret* key (server-only).
-- **Turnstile *site* key** (public, safe in the bundle): `0x4AAAAAADkGOL2LtE3mqBSL`.
+- **`TURNSTILE_SECRET`** — the Cloudflare Turnstile _secret_ key (server-only).
+- **Turnstile _site_ key** (public, safe in the bundle): `0x4AAAAAADkGOL2LtE3mqBSL`.
 
 ## 1. Create the issuer Lambda role
 
@@ -100,12 +100,14 @@ SMOKE_SESSION_TOKEN_KEY="<PASTE_KEY>" \
 SMOKE_LEGACY_CHAT_KEY="<current CHAT_SIGNING_KEY>" \
 npm run smoke:lambda
 ```
+
 Then in a real browser on https://thechrisgrey.com: open the chat widget, send a
 message (Turnstile runs invisibly, a token is minted, the reply streams), and run
 a blueprint generation. Watch CloudWatch: `AuthSessionToken` should rise and
 `AuthLegacySignature` should fall as bundles refresh.
 
 Opt-in guardrail false-positive contract test (real Bedrock):
+
 ```bash
 BEDROCK_CONTRACT_TESTS=1 AWS_REGION=us-east-1 \
   node --test lambda/blueprint/__tests__/guardrail-contract.test.mjs
@@ -120,6 +122,6 @@ Only after metrics confirm the legacy path has drained:
 2. Delete `src/utils/chatSigning.ts`, `src/utils/blueprintSigning.ts` + their tests.
 3. Remove `VITE_CHAT_SIGNING_KEY` / `VITE_BLUEPRINT_SIGNING_KEY` from Amplify env
    and from `scripts/validate-env.js`'s `required` list; add `VITE_SESSION_ENDPOINT`
-   + `VITE_TURNSTILE_SITE_KEY` there instead.
+   - `VITE_TURNSTILE_SITE_KEY` there instead.
 4. Retire `CHAT_SIGNING_KEY` / `BLUEPRINT_SIGNING_KEY` Lambda env (confirm no other
    caller — e.g. mcp-server — depends on the body-HMAC path first).

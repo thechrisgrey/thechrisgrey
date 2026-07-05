@@ -16,9 +16,7 @@ function makeEntry(overrides: Partial<ServiceEntry> = {}): ServiceEntry {
 describe('ServiceList', () => {
   it('should render the labelled list', () => {
     render(<ServiceList services={[makeEntry()]} />);
-    expect(
-      screen.getByRole('list', { name: /services in this architecture/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: /services in this architecture/i })).toBeInTheDocument();
   });
 
   it('should render each service name, purpose, and rationale', () => {
@@ -58,10 +56,7 @@ describe('ServiceList', () => {
       render(<ServiceList services={[makeEntry({ cost_signal: 'free-tier' })]} />);
       const badge = screen.getByText(COST_SIGNAL_LABELS['free-tier']);
       expect(badge).toBeInTheDocument();
-      expect(badge).toHaveAttribute(
-        'aria-label',
-        `Cost tier ${COST_SIGNAL_LABELS['free-tier']}`
-      );
+      expect(badge).toHaveAttribute('aria-label', `Cost tier ${COST_SIGNAL_LABELS['free-tier']}`);
       expect(badge.className).toContain('text-emerald-300');
     });
 

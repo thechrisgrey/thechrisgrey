@@ -1,13 +1,26 @@
-import type { HighlighterCore } from 'shiki/core'
+import type { HighlighterCore } from 'shiki/core';
 
 const SUPPORTED_LANGUAGES = [
-  'typescript', 'javascript', 'python', 'bash', 'json', 'html', 'css',
-  'yaml', 'markdown', 'sql', 'go', 'rust', 'java', 'tsx', 'jsx',
-] as const
+  'typescript',
+  'javascript',
+  'python',
+  'bash',
+  'json',
+  'html',
+  'css',
+  'yaml',
+  'markdown',
+  'sql',
+  'go',
+  'rust',
+  'java',
+  'tsx',
+  'jsx',
+] as const;
 
-type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
+type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
-let highlighterPromise: Promise<HighlighterCore> | null = null
+let highlighterPromise: Promise<HighlighterCore> | null = null;
 
 function createHighlighterInstance(): Promise<HighlighterCore> {
   return import('shiki/core').then(({ createHighlighterCore }) =>
@@ -32,18 +45,18 @@ function createHighlighterInstance(): Promise<HighlighterCore> {
           import('@shikijs/langs/jsx'),
         ],
         engine: createJavaScriptRegexEngine(),
-      })
-    )
-  )
+      }),
+    ),
+  );
 }
 
 export function getHighlighter(): Promise<HighlighterCore> {
   if (!highlighterPromise) {
-    highlighterPromise = createHighlighterInstance()
+    highlighterPromise = createHighlighterInstance();
   }
-  return highlighterPromise
+  return highlighterPromise;
 }
 
 export function isSupportedLanguage(lang: string): lang is SupportedLanguage {
-  return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang)
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang);
 }

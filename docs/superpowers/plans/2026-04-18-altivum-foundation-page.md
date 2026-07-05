@@ -15,10 +15,12 @@
 ## File inventory
 
 **Create:**
+
 - `src/pages/Foundation.tsx` — overwrites the pre-brainstorm draft with the spec's six-section layout
 - `src/assets/foundation.jpg` — copied from foundation repo
 
 **Modify:**
+
 - `src/utils/schemas.ts` — add `foundationFAQs` + `buildFoundationOrganizationSchema`
 - `src/pages/Home.tsx` — 7-tab `keyPoints`, section heights, clamp max
 - `src/components/Navigation.tsx` — dropdown entry, transparency threshold
@@ -31,6 +33,7 @@
 ## Task 1: Copy hero image asset
 
 **Files:**
+
 - Create: `src/assets/foundation.jpg`
 - Source: `~/Desktop/altivum-dev/altivum-foundation/src/assets/originals/heroes/taf1.jpeg`
 
@@ -54,6 +57,7 @@ Expected: file exists, ~2.0 MB.
 ## Task 2: Extend `src/utils/schemas.ts`
 
 **Files:**
+
 - Modify: `src/utils/schemas.ts` (end of file, after `contactFAQs` export)
 
 - [ ] **Step 1: Add `foundationFAQs` export**
@@ -62,18 +66,21 @@ Append to the end of `src/utils/schemas.ts`:
 
 ```typescript
 export const foundationFAQs: FAQItem[] = [
-    {
-        question: "What is The Altivum Foundation?",
-        answer: "The Altivum Foundation is a 501(c)(3) nonprofit (EIN 41-4163272) founded by Christian Perez that funds U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, and cybersecurity. Scholarships cover the full cost of certifications, degrees, and bootcamps, at no cost to the scholar."
-    },
-    {
-        question: "Who is eligible for a scholarship?",
-        answer: "Scholarships are for U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, or cybersecurity. Full eligibility criteria and application details are available at altivumfoundation.org."
-    },
-    {
-        question: "Is my donation tax-deductible?",
-        answer: "Yes. The Altivum Foundation is a registered 501(c)(3) nonprofit (EIN 41-4163272), so contributions are tax-deductible to the extent allowed by law. Donations are accepted at altivumfoundation.org/give."
-    }
+  {
+    question: 'What is The Altivum Foundation?',
+    answer:
+      'The Altivum Foundation is a 501(c)(3) nonprofit (EIN 41-4163272) founded by Christian Perez that funds U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, and cybersecurity. Scholarships cover the full cost of certifications, degrees, and bootcamps, at no cost to the scholar.',
+  },
+  {
+    question: 'Who is eligible for a scholarship?',
+    answer:
+      'Scholarships are for U.S. military veterans pursuing education in cloud computing, artificial intelligence, robotics, or cybersecurity. Full eligibility criteria and application details are available at altivumfoundation.org.',
+  },
+  {
+    question: 'Is my donation tax-deductible?',
+    answer:
+      'Yes. The Altivum Foundation is a registered 501(c)(3) nonprofit (EIN 41-4163272), so contributions are tax-deductible to the extent allowed by law. Donations are accepted at altivumfoundation.org/give.',
+  },
 ];
 ```
 
@@ -86,33 +93,29 @@ Append to the end of `src/utils/schemas.ts` (after `foundationFAQs`):
  * NonprofitOrganization schema for The Altivum Foundation
  */
 export const buildFoundationOrganizationSchema = () => ({
-    "@type": "NonprofitOrganization",
-    "@id": "https://altivumfoundation.org/#organization",
-    "name": "The Altivum Foundation",
-    "url": "https://altivumfoundation.org",
-    "description": "A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, and robotics — at no cost to the scholar.",
-    "taxID": "41-4163272",
-    "nonprofitStatus": "Nonprofit501c3",
-    "founder": {
-        "@id": `${SITE_URL}/#person`
-    },
-    "knowsAbout": [
-        "Cloud Computing",
-        "Artificial Intelligence",
-        "Robotics",
-        "Cybersecurity",
-        "Veteran Education"
-    ],
-    "areaServed": {
-        "@type": "Country",
-        "name": "United States"
-    }
+  '@type': 'NonprofitOrganization',
+  '@id': 'https://altivumfoundation.org/#organization',
+  name: 'The Altivum Foundation',
+  url: 'https://altivumfoundation.org',
+  description:
+    'A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in cloud computing, artificial intelligence, and robotics — at no cost to the scholar.',
+  taxID: '41-4163272',
+  nonprofitStatus: 'Nonprofit501c3',
+  founder: {
+    '@id': `${SITE_URL}/#person`,
+  },
+  knowsAbout: ['Cloud Computing', 'Artificial Intelligence', 'Robotics', 'Cybersecurity', 'Veteran Education'],
+  areaServed: {
+    '@type': 'Country',
+    name: 'United States',
+  },
 });
 ```
 
 - [ ] **Step 3: Verify typecheck passes**
 
 Run:
+
 ```bash
 cd /Users/cperez/Desktop/altivum-dev/thechrisgrey && npx tsc --noEmit
 ```
@@ -124,6 +127,7 @@ Expected: no errors.
 ## Task 3: Overwrite `src/pages/Foundation.tsx`
 
 **Files:**
+
 - Modify: `src/pages/Foundation.tsx` (complete rewrite to match spec's six-section layout)
 
 - [ ] **Step 1: Write the full file**
@@ -141,22 +145,26 @@ const FOCUS_AREAS = [
   {
     ordinal: '01',
     name: 'Cloud Computing',
-    description: 'Infrastructure and certification paths across AWS, Azure, and GCP — the operational backbone of the modern economy.',
+    description:
+      'Infrastructure and certification paths across AWS, Azure, and GCP — the operational backbone of the modern economy.',
   },
   {
     ordinal: '02',
     name: 'Artificial Intelligence',
-    description: 'Machine learning, large language models, and applied AI systems. The fields redefining every industry veterans enter.',
+    description:
+      'Machine learning, large language models, and applied AI systems. The fields redefining every industry veterans enter.',
   },
   {
     ordinal: '03',
     name: 'Robotics',
-    description: 'Autonomous systems, industrial automation, and field logistics. The civilian discipline closest to operational military work.',
+    description:
+      'Autonomous systems, industrial automation, and field logistics. The civilian discipline closest to operational military work.',
   },
   {
     ordinal: '04',
     name: 'Cybersecurity',
-    description: 'Threat analysis and defense operations. A field that rewards the exact instincts trained by years of service.',
+    description:
+      'Threat analysis and defense operations. A field that rewards the exact instincts trained by years of service.',
   },
 ];
 
@@ -198,7 +206,8 @@ const Foundation = () => {
             </h1>
             <div className="h-px w-16 bg-altivum-gold mx-auto mb-6 sm:mb-8" />
             <p className="text-altivum-silver max-w-2xl mx-auto mb-8 sm:mb-10" style={typography.subtitle}>
-              A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in the technologies defining the next economy. At no cost to the scholar.
+              A 501(c)(3) nonprofit funding U.S. military veterans pursuing education in the technologies defining the
+              next economy. At no cost to the scholar.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
@@ -233,7 +242,9 @@ const Foundation = () => {
           </h2>
           <div className="h-px w-16 bg-altivum-gold/60 mx-auto mb-8" />
           <p className="text-altivum-silver" style={typography.subtitle}>
-            The men and women who served this country bring discipline, adaptability, and leadership forged under pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics — need exactly those qualities. The Altivum Foundation exists to connect the two.
+            The men and women who served this country bring discipline, adaptability, and leadership forged under
+            pressure. The industries shaping the next century — cloud computing, artificial intelligence, robotics —
+            need exactly those qualities. The Altivum Foundation exists to connect the two.
           </p>
         </div>
       </section>
@@ -243,19 +254,25 @@ const Foundation = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center">
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>200K+</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                200K+
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Veterans transition out of service annually
               </p>
             </div>
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>3.5M</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                3.5M
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Tech jobs unfilled in the United States
               </p>
             </div>
             <div>
-              <p className="text-altivum-gold" style={typography.heroHeader}>$0</p>
+              <p className="text-altivum-gold" style={typography.heroHeader}>
+                $0
+              </p>
               <p className="text-altivum-silver mt-2" style={typography.bodyText}>
                 Cost to our scholars
               </p>
@@ -288,7 +305,10 @@ const Foundation = () => {
                 <p className="text-altivum-gold/80 mb-3" style={typography.smallText}>
                   {area.ordinal}
                 </p>
-                <h3 className="text-white mb-4 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleLarge}>
+                <h3
+                  className="text-white mb-4 group-hover:text-altivum-gold transition-colors"
+                  style={typography.cardTitleLarge}
+                >
                   {area.name}
                 </h3>
                 <p className="text-altivum-silver" style={typography.bodyText}>
@@ -312,13 +332,18 @@ const Foundation = () => {
             </h2>
             <div className="space-y-4">
               <p className="text-altivum-silver" style={typography.bodyText}>
-                When I took off the uniform, the path from special operations to cloud architecture was not a roadmap. It was a lot of self-funded certifications, late nights, and the sense that a generation of proven leaders was being locked out of the industries that needed them most.
+                When I took off the uniform, the path from special operations to cloud architecture was not a roadmap.
+                It was a lot of self-funded certifications, late nights, and the sense that a generation of proven
+                leaders was being locked out of the industries that needed them most.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                The Altivum Foundation exists because certification costs are prohibitive and training programs are fragmented. The veterans who can lead a team through a combat zone can lead an engineering team through a product launch — if someone gives them the technical foundation.
+                The Altivum Foundation exists because certification costs are prohibitive and training programs are
+                fragmented. The veterans who can lead a team through a combat zone can lead an engineering team through
+                a product launch — if someone gives them the technical foundation.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                This is that foundation. A 501(c)(3) nonprofit (EIN 41-4163272) that funds the education at no cost to the scholar, with every contribution fully tax-deductible.
+                This is that foundation. A 501(c)(3) nonprofit (EIN 41-4163272) that funds the education at no cost to
+                the scholar, with every contribution fully tax-deductible.
               </p>
             </div>
             <div className="mt-8">
@@ -328,7 +353,13 @@ const Foundation = () => {
                 style={typography.bodyText}
               >
                 More about Christian
-                <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </Link>
@@ -389,6 +420,7 @@ Expected: no errors. Note: this task alone may warn about unused `Foundation` im
 ## Task 4: Wire up routing in `src/App.tsx`
 
 **Files:**
+
 - Modify: `src/App.tsx:26` (insert lazy import after `Claude`), `src/App.tsx:49` (insert route after `/altivum`)
 
 - [ ] **Step 1: Add lazy import**
@@ -432,6 +464,7 @@ Expected: no errors.
 ## Task 5: Add prefetch entry in `src/utils/routeManifest.ts`
 
 **Files:**
+
 - Modify: `src/utils/routeManifest.ts:5`
 
 - [ ] **Step 1: Insert prefetch entry**
@@ -461,6 +494,7 @@ Expected: no errors.
 ## Task 6: Update home page scroll (`src/pages/Home.tsx`)
 
 **Files:**
+
 - Modify: `src/pages/Home.tsx:34` (clamp max), `src/pages/Home.tsx:46-53` (keyPoints array), `src/pages/Home.tsx:92` (section height)
 
 - [ ] **Step 1: Add 7th keyPoint**
@@ -468,28 +502,28 @@ Expected: no errors.
 In `src/pages/Home.tsx`, find:
 
 ```tsx
-  const keyPoints = [
-    { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
-    { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
-    { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
-    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" }
-  ];
+const keyPoints = [
+  { title: 'Personal Biography', subtitle: 'Christian Perez', link: '/about' },
+  { title: 'Altivum Inc', subtitle: 'Founder & CEO', link: '/altivum' },
+  { title: 'The Vector Podcast', subtitle: 'Host', link: '/podcast' },
+  { title: 'Beyond the Assessment', subtitle: 'Author', link: '/beyond-the-assessment' },
+  { title: 'Amazon Web Services', subtitle: 'AWS Community Builder (AI Engineering)', link: '/aws' },
+  { title: 'Claude', subtitle: 'Applied AI Engineer', link: '/claude' },
+];
 ```
 
 Replace with:
 
 ```tsx
-  const keyPoints = [
-    { title: "Personal Biography", subtitle: "Christian Perez", link: "/about" },
-    { title: "Altivum Inc", subtitle: "Founder & CEO", link: "/altivum" },
-    { title: "The Altivum Foundation", subtitle: "Founder & President", link: "/foundation" },
-    { title: "The Vector Podcast", subtitle: "Host", link: "/podcast" },
-    { title: "Beyond the Assessment", subtitle: "Author", link: "/beyond-the-assessment" },
-    { title: "Amazon Web Services", subtitle: "AWS Community Builder (AI Engineering)", link: "/aws" },
-    { title: "Claude", subtitle: "Applied AI Engineer", link: "/claude" }
-  ];
+const keyPoints = [
+  { title: 'Personal Biography', subtitle: 'Christian Perez', link: '/about' },
+  { title: 'Altivum Inc', subtitle: 'Founder & CEO', link: '/altivum' },
+  { title: 'The Altivum Foundation', subtitle: 'Founder & President', link: '/foundation' },
+  { title: 'The Vector Podcast', subtitle: 'Host', link: '/podcast' },
+  { title: 'Beyond the Assessment', subtitle: 'Author', link: '/beyond-the-assessment' },
+  { title: 'Amazon Web Services', subtitle: 'AWS Community Builder (AI Engineering)', link: '/aws' },
+  { title: 'Claude', subtitle: 'Applied AI Engineer', link: '/claude' },
+];
 ```
 
 - [ ] **Step 2: Bump scroll-progress clamp from 5 to 6**
@@ -497,13 +531,13 @@ Replace with:
 In `src/pages/Home.tsx`, find:
 
 ```tsx
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 5);
+const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 5);
 ```
 
 Replace with:
 
 ```tsx
-          const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 6);
+const progress = Math.min(Math.floor((scrollPosition - windowHeight) / (windowHeight * scrollInterval)), 6);
 ```
 
 - [ ] **Step 3: Extend sticky section height**
@@ -533,6 +567,7 @@ Expected: no errors.
 ## Task 7: Update Navigation (`src/components/Navigation.tsx`)
 
 **Files:**
+
 - Modify: `src/components/Navigation.tsx:15-22` (dropdown array), `src/components/Navigation.tsx:36` (transparency threshold)
 
 - [ ] **Step 1: Insert Foundation into dropdown array**
@@ -569,13 +604,13 @@ const ABOUT_DROPDOWN_ITEMS = [
 In `src/components/Navigation.tsx`, find:
 
 ```tsx
-        const summaryEndPosition = window.innerHeight * 8;
+const summaryEndPosition = window.innerHeight * 8;
 ```
 
 Replace with:
 
 ```tsx
-        const summaryEndPosition = window.innerHeight * 9;
+const summaryEndPosition = window.innerHeight * 9;
 ```
 
 - [ ] **Step 3: Verify typecheck passes**
@@ -591,6 +626,7 @@ Expected: no errors.
 ## Task 8: Update sitemap (`scripts/generate-sitemap.js`)
 
 **Files:**
+
 - Modify: `scripts/generate-sitemap.js:24-35`
 
 - [ ] **Step 1: Add `/foundation` to staticPages**
@@ -651,6 +687,7 @@ cd /Users/cperez/Desktop/altivum-dev/thechrisgrey && npm run build
 ```
 
 Expected: build succeeds. Look for:
+
 - Podcast episodes step completes
 - TypeScript compile step completes with no errors
 - Vite build emits a `Foundation-[hash].js` chunk in the output
@@ -681,12 +718,14 @@ Open `http://localhost:5173` in a browser.
 - [ ] **Step 2: Verify home page scroll**
 
 At desktop width (≥768px):
+
 - Scroll slowly from the hero down through the sticky section.
 - Seven tabs should appear in order: Personal Biography → Altivum Inc → The Altivum Foundation → The Vector Podcast → Beyond the Assessment → Amazon Web Services → Claude.
 - The nav should stay transparent through the entire sticky section.
 - The nav should become solid (navy with shadow) somewhere inside the "Let's Connect" CTA section.
 
 Resize to mobile width (<768px):
+
 - Same seven tabs appear; pacing should feel similar to before (reveals every 50vh).
 
 - [ ] **Step 3: Verify About dropdown**
@@ -699,6 +738,7 @@ Mobile: open the hamburger menu. Under the "About" section, the same 7 items sho
 - [ ] **Step 4: Verify `/foundation` page**
 
 Navigate to `http://localhost:5173/foundation`:
+
 - Hero image loads and is darkened; "The Altivum Foundation" kicker + "Veteran scholarships in AI, Cloud & Robotics." headline render.
 - Click "Visit altivumfoundation.org" — opens altivumfoundation.org in new tab.
 - Click "Give Now" — opens altivumfoundation.org/give in new tab.
@@ -725,6 +765,7 @@ cd /Users/cperez/Desktop/altivum-dev/thechrisgrey && git status
 ```
 
 Expected: 7 files to commit:
+
 - New: `src/assets/foundation.jpg`
 - New: `src/pages/Foundation.tsx`
 - Modified: `src/utils/schemas.ts`

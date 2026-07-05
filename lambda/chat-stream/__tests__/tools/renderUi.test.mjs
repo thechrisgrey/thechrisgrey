@@ -15,9 +15,7 @@ function fakeMetrics() {
 }
 
 function parseEvents(stream) {
-  return stream.chunks.map((chunk) =>
-    JSON.parse(chunk.slice(EVENT_DELIM.length, chunk.length - EVENT_DELIM.length)),
-  );
+  return stream.chunks.map((chunk) => JSON.parse(chunk.slice(EVENT_DELIM.length, chunk.length - EVENT_DELIM.length)));
 }
 
 const validTimeline = {
@@ -67,7 +65,10 @@ test("UiBlockSchema rejects a link_grid with an external path", () => {
 });
 
 test("UiBlockSchema enforces stat_row min/max counts", () => {
-  assert.equal(UiBlockSchema.safeParse({ type: "stat_row", stats: [{ value: "9", label: "Episodes" }] }).success, false);
+  assert.equal(
+    UiBlockSchema.safeParse({ type: "stat_row", stats: [{ value: "9", label: "Episodes" }] }).success,
+    false,
+  );
 });
 
 // ── Tool callback behavior ──

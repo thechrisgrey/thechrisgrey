@@ -39,9 +39,15 @@ function makeStream() {
   return {
     chunks: [],
     ended: false,
-    write(c) { this.chunks.push(String(c)); },
-    end() { this.ended = true; },
-    get output() { return this.chunks.join(""); },
+    write(c) {
+      this.chunks.push(String(c));
+    },
+    end() {
+      this.ended = true;
+    },
+    get output() {
+      return this.chunks.join("");
+    },
   };
 }
 
@@ -67,14 +73,18 @@ test("OPTIONS preflight short-circuits with an empty body and no further process
   assert.equal(stream.ended, true);
 });
 
-test("rejects a request with MISSING signature headers (verify runs before rate limiting)", { timeout: 10000 }, async () => {
-  const stream = makeStream();
-  await handler(makeEvent({ headers: {} }), stream, {});
-  // The ONLY output is the signature-rejection system message — proving the
-  // request never advanced to the rate-limit / processing stage that follows it.
-  assert.equal(stream.output, SYS + "Unable to process request.");
-  assert.equal(stream.ended, true);
-});
+test(
+  "rejects a request with MISSING signature headers (verify runs before rate limiting)",
+  { timeout: 10000 },
+  async () => {
+    const stream = makeStream();
+    await handler(makeEvent({ headers: {} }), stream, {});
+    // The ONLY output is the signature-rejection system message — proving the
+    // request never advanced to the rate-limit / processing stage that follows it.
+    assert.equal(stream.output, SYS + "Unable to process request.");
+    assert.equal(stream.ended, true);
+  },
+);
 
 test("rejects a request with an INVALID signature", { timeout: 10000 }, async () => {
   const stream = makeStream();
@@ -105,7 +115,7 @@ test("a VALID signature passes verification and does NOT emit the rejection mess
   await handler(makeEvent({ headers, body }), stream, {});
   assert.ok(
     !stream.output.includes("Unable to process request."),
-    `a valid signature must not be rejected; got: ${JSON.stringify(stream.output)}`
+    `a valid signature must not be rejected; got: ${JSON.stringify(stream.output)}`,
   );
 });
 
@@ -116,14 +126,18 @@ test("a VALID chat-scoped bearer session token is admitted past the auth front d
   await handler(makeEvent({ headers: { authorization: `Bearer ${token}` }, body }), stream, {});
   assert.ok(
     !stream.output.includes("Unable to process request."),
-    `a valid session token must not be rejected; got: ${JSON.stringify(stream.output)}`
+    `a valid session token must not be rejected; got: ${JSON.stringify(stream.output)}`,
   );
 });
 
-test("a bearer token minted for the WRONG scope (blueprint) is rejected on the chat endpoint", { timeout: 10000 }, async () => {
-  const stream = makeStream();
-  const body = '{"messages":[{"role":"user","content":"hi"}]}';
-  const token = issueSessionToken({ deviceHash: "a".repeat(64), scope: "blueprint" }, SESSION_KEY, 300);
-  await handler(makeEvent({ headers: { authorization: `Bearer ${token}` }, body }), stream, {});
-  assert.equal(stream.output, SYS + "Unable to process request.");
-});
+test(
+  "a bearer token minted for the WRONG scope (blueprint) is rejected on the chat endpoint",
+  { timeout: 10000 },
+  async () => {
+    const stream = makeStream();
+    const body = '{"messages":[{"role":"user","content":"hi"}]}';
+    const token = issueSessionToken({ deviceHash: "a".repeat(64), scope: "blueprint" }, SESSION_KEY, 300);
+    await handler(makeEvent({ headers: { authorization: `Bearer ${token}` }, body }), stream, {});
+    assert.equal(stream.output, SYS + "Unable to process request.");
+  },
+);

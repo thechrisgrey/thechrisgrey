@@ -1,11 +1,6 @@
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
-import {
-  BLOG_SEARCH_QUERY,
-  SITE_ORIGIN,
-  normalizeQuery,
-  isMeaningful,
-} from "lambda-shared/sanityQueries";
+import { BLOG_SEARCH_QUERY, SITE_ORIGIN, normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
 export function buildSearchBlogTool({ sanityClient, responseStream, metrics, requestId }) {
@@ -22,13 +17,7 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
         .min(2, "Query must be at least 2 characters")
         .max(120, "Query too long")
         .describe("Keyword or short phrase to search for, e.g. 'Green Beret' or 'Strands agents'"),
-      limit: z
-        .number()
-        .int()
-        .min(1)
-        .max(5)
-        .default(3)
-        .describe("Maximum number of results to return (1-5)"),
+      limit: z.number().int().min(1).max(5).default(3).describe("Maximum number of results to return (1-5)"),
     }),
     callback: async ({ query, limit }) => {
       const normalized = normalizeQuery(query);
@@ -80,13 +69,15 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
         };
       } catch (error) {
         metrics?.record("ToolFailure_SearchBlog");
-        console.error(JSON.stringify({
-          requestId,
-          event: "tool_error",
-          tool: "search_blog",
-          error: error.name,
-          message: error.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "tool_error",
+            tool: "search_blog",
+            error: error.name,
+            message: error.message,
+          }),
+        );
         return { ok: false, error: "Unable to search the blog right now." };
       }
     },

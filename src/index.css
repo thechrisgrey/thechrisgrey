@@ -1,12 +1,9 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans:
-    'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --font-serif:
-    'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
-  --font-display:
-    'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-sans: 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
 
   --font-weight-ultralight: 200;
   --font-weight-light: 300;
@@ -109,13 +106,19 @@
     @apply antialiased bg-altivum-dark text-altivum-silver;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-white;
   }
 }
 
 /* Lenis smooth scroll */
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
 
@@ -138,7 +141,7 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid #C5A572;
+  outline: 2px solid #c5a572;
   outline-offset: 2px;
 }
 
@@ -180,18 +183,36 @@ select:focus:not(:focus-visible) {
   }
 
   @keyframes vt-fade-out {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(8px); }
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 
   @keyframes vt-fade-in {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  [data-vt-persist="navigation"] { view-transition-name: navigation; }
-  [data-vt-persist="footer"] { view-transition-name: footer; }
-  [data-vt-persist="chat-widget"] { view-transition-name: chat-widget; }
+  [data-vt-persist='navigation'] {
+    view-transition-name: navigation;
+  }
+  [data-vt-persist='footer'] {
+    view-transition-name: footer;
+  }
+  [data-vt-persist='chat-widget'] {
+    view-transition-name: chat-widget;
+  }
 
   ::view-transition-old(navigation),
   ::view-transition-new(navigation),
@@ -216,14 +237,14 @@ select:focus:not(:focus-visible) {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0F1C;
+  background: #0a0f1c;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4A5A73;
+  background: #4a5a73;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9BA6B8;
+  background: #9ba6b8;
 }

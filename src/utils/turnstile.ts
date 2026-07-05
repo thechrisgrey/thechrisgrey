@@ -26,7 +26,7 @@ interface TurnstileApi {
       // allowlist) to the error callback — capture it for diagnostics.
       'error-callback'?: (errorCode?: string) => void;
       'timeout-callback'?: () => void;
-    }
+    },
   ) => string;
   execute: (widgetId: string) => void;
   remove: (widgetId: string) => void;
@@ -39,8 +39,7 @@ declare global {
 }
 
 const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
-const SCRIPT_URL =
-  'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+const SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 // Hard ceiling on a single challenge. Without it, a widget that renders but whose
 // callbacks never fire (Cloudflare degradation, frozen iframe) would hang the
 // awaiting send/generate forever — the fetch AbortController never covers this.
@@ -116,7 +115,11 @@ export async function getTurnstileToken(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const teardown = () => {
       if (ctl.timer) clearTimeout(ctl.timer);
-      try { if (ctl.widgetId) api.remove(ctl.widgetId); } catch { /* noop */ }
+      try {
+        if (ctl.widgetId) api.remove(ctl.widgetId);
+      } catch {
+        /* noop */
+      }
       container.remove();
     };
     const succeed = (token: string) => {
@@ -156,6 +159,10 @@ export async function getTurnstileToken(): Promise<string> {
     }, TOKEN_TIMEOUT_MS);
 
     // Invisible widgets run the challenge on demand.
-    try { api.execute(ctl.widgetId); } catch { /* some modes auto-execute on render */ }
+    try {
+      api.execute(ctl.widgetId);
+    } catch {
+      /* some modes auto-execute on render */
+    }
   });
 }

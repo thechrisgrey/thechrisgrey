@@ -63,11 +63,7 @@ function EntryList({
               {items.map((entry) =>
                 editingEntry?._id === entry._id ? (
                   <div key={entry._id}>
-                    <EntryForm
-                      initial={entry}
-                      onSave={onUpdate}
-                      onCancel={onCancelEdit}
-                    />
+                    <EntryForm initial={entry} onSave={onUpdate} onCancel={onCancelEdit} />
                   </div>
                 ) : (
                   <div
@@ -81,9 +77,7 @@ function EntryList({
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-white text-sm font-medium truncate">
-                            {entry.title}
-                          </h3>
+                          <h3 className="text-white text-sm font-medium truncate">{entry.title}</h3>
                           {entry.date && (
                             <span className="text-altivum-silver text-xs shrink-0">
                               {new Date(entry.date).toLocaleDateString('en-US', {
@@ -98,9 +92,7 @@ function EntryList({
                             </span>
                           )}
                         </div>
-                        <p className="text-altivum-silver text-sm line-clamp-2">
-                          {entry.content}
-                        </p>
+                        <p className="text-altivum-silver text-sm line-clamp-2">{entry.content}</p>
                       </div>
 
                       <div className="flex items-center gap-1 shrink-0">
@@ -150,7 +142,7 @@ function EntryList({
                       </div>
                     </div>
                   </div>
-                )
+                ),
               )}
             </div>
           </div>
@@ -160,13 +152,9 @@ function EntryList({
       {/* Empty state */}
       {!isLoading && entries.length === 0 && (
         <div className="text-center py-20">
-          <span className="material-icons text-5xl text-altivum-silver mb-4 block">
-            library_books
-          </span>
+          <span className="material-icons text-5xl text-altivum-silver mb-4 block">library_books</span>
           <p className="text-altivum-silver mb-2">No entries yet</p>
-          <p className="text-altivum-silver text-sm">
-            Add your first Knowledge Base entry to get started.
-          </p>
+          <p className="text-altivum-silver text-sm">Add your first Knowledge Base entry to get started.</p>
         </div>
       )}
     </>

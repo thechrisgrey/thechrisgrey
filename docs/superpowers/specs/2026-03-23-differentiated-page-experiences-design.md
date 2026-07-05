@@ -9,6 +9,7 @@
 All About subpages currently share an identical layout structure: hero image, spaced paragraphs, 3-column cards with pill tags, and a timeline with dot markers. This makes pages predictable after the first visit. The goal is to differentiate two key pages -- Claude and AWS -- so that each becomes its own experience that educates and impresses engineers and technical leaders.
 
 **Design principles:**
+
 - The page itself is the portfolio piece (educate + impress)
 - Real data over simulated where possible
 - Go big on interactivity (R3F, GSAP, SVG animations are all in scope)
@@ -98,6 +99,7 @@ src/data/architectureNodes.ts
 Each node: `{ id, label, sublabel, service, description, config: Record<string, string>, reasoning }`
 
 Edge data: `{ from, to, estimatedLatency }` -- approximate real-world latency values based on CloudWatch logs (`tcg-AI-chat` log group):
+
 - User Input to HMAC Signing: ~1ms (client-side crypto)
 - HMAC to Lambda Handler: ~50ms warm / ~500ms cold start
 - Lambda to Guardrail Check: ~80-150ms

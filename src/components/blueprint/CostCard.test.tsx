@@ -6,10 +6,7 @@ import type { CostEstimate } from '../../types/blueprint';
 const baseCost: CostEstimate = {
   monthly_low_usd: 120,
   monthly_high_usd: 480,
-  assumptions: [
-    '1M Lambda invocations per month',
-    '10 GB DynamoDB storage',
-  ],
+  assumptions: ['1M Lambda invocations per month', '10 GB DynamoDB storage'],
 };
 
 describe('CostCard', () => {
@@ -103,9 +100,7 @@ describe('CostCard', () => {
       render(<CostCard cost={baseCost} />);
       const items = screen.getAllByRole('listitem');
       expect(items).toHaveLength(2);
-      expect(
-        screen.getByText('1M Lambda invocations per month')
-      ).toBeInTheDocument();
+      expect(screen.getByText('1M Lambda invocations per month')).toBeInTheDocument();
       expect(screen.getByText('10 GB DynamoDB storage')).toBeInTheDocument();
     });
 

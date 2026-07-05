@@ -5,9 +5,7 @@ import ChatWidgetButton from './ChatWidgetButton';
 
 // Mock AltiMascot since Three.js Canvas doesn't work in jsdom
 vi.mock('./AltiMascot', () => ({
-  default: ({ isOpen }: { isOpen: boolean }) => (
-    <div data-testid="alti-mascot" data-is-open={isOpen} />
-  ),
+  default: ({ isOpen }: { isOpen: boolean }) => <div data-testid="alti-mascot" data-is-open={isOpen} />,
 }));
 
 // WebGL capability gate — controllable per test.

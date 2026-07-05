@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: KB Builder Admin API
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Cognito-protected CRUD over Sanity `kbEntry` documents, plus a publish action
     that assembles `knowledge-base.txt` and uploads it to S3 (which triggers a
@@ -26,7 +26,7 @@ paths:
       operationId: listEntries
       summary: List all knowledge base entries
       responses:
-        "200":
+        '200':
           description: All entries, ordered by category, sortOrder, then date.
           content:
             application/json:
@@ -36,9 +36,9 @@ paths:
                   entries:
                     type: array
                     items:
-                      $ref: "#/components/schemas/KbEntry"
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                      $ref: '#/components/schemas/KbEntry'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
     post:
       tags: [entries]
       operationId: createEntry
@@ -48,9 +48,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/KbEntryInput"
+              $ref: '#/components/schemas/KbEntryInput'
       responses:
-        "201":
+        '201':
           description: Created entry
           content:
             application/json:
@@ -58,15 +58,15 @@ paths:
                 type: object
                 properties:
                   entry:
-                    $ref: "#/components/schemas/KbEntry"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                    $ref: '#/components/schemas/KbEntry'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
     options:
       operationId: entriesPreflight
       summary: CORS preflight
       responses:
-        "200": { description: OK }
+        '200': { description: OK }
   /entries/{id}:
     parameters:
       - name: id
@@ -74,7 +74,7 @@ paths:
         required: true
         schema:
           type: string
-          pattern: "^[a-zA-Z0-9._-]+$"
+          pattern: '^[a-zA-Z0-9._-]+$'
     put:
       tags: [entries]
       operationId: updateEntry
@@ -84,9 +84,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/KbEntryPatch"
+              $ref: '#/components/schemas/KbEntryPatch'
       responses:
-        "200":
+        '200':
           description: Updated entry
           content:
             application/json:
@@ -94,23 +94,23 @@ paths:
                 type: object
                 properties:
                   entry:
-                    $ref: "#/components/schemas/KbEntry"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "403":
+                    $ref: '#/components/schemas/KbEntry'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
           description: Target document is not a kbEntry.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "404": { $ref: "#/components/responses/NotFound" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                $ref: '#/components/schemas/Error'
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
     delete:
       tags: [entries]
       operationId: deleteEntry
       summary: Delete a knowledge base entry
       responses:
-        "200":
+        '200':
           description: Deletion result
           content:
             application/json:
@@ -119,23 +119,23 @@ paths:
                 properties:
                   deleted:
                     type: boolean
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "403":
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
           description: Target document is not a kbEntry.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "404": { $ref: "#/components/responses/NotFound" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                $ref: '#/components/schemas/Error'
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
   /publish:
     post:
       tags: [publish]
       operationId: publishKnowledgeBase
       summary: Assemble active entries and publish knowledge-base.txt to S3
       responses:
-        "200":
+        '200':
           description: Publish result
           content:
             application/json:
@@ -146,14 +146,14 @@ paths:
                   entryCount: { type: integer }
                   documentSize: { type: integer }
                   publishedAt: { type: string, format: date-time }
-        "400":
+        '400':
           description: No active entries to publish.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                $ref: '#/components/schemas/Error'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
 components:
   securitySchemes:
     cognito:
@@ -166,25 +166,25 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     Unauthorized:
       description: Missing or invalid Cognito token
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     NotFound:
       description: Entry not found
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     TooManyRequests:
       description: Rate limit exceeded (30 req / 60s per IP)
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
   schemas:
     Category:
       type: string
@@ -194,9 +194,9 @@ components:
       required: [title, category, content]
       properties:
         title: { type: string, maxLength: 200 }
-        category: { $ref: "#/components/schemas/Category" }
+        category: { $ref: '#/components/schemas/Category' }
         content: { type: string, maxLength: 50000 }
-        date: { type: string, description: "Parseable date string, max 20 chars." }
+        date: { type: string, description: 'Parseable date string, max 20 chars.' }
         sortOrder: { type: number, minimum: 0, maximum: 1000 }
         isActive: { type: boolean, default: true }
     KbEntryPatch:
@@ -204,7 +204,7 @@ components:
       description: All fields optional; only supplied fields are patched.
       properties:
         title: { type: string, maxLength: 200 }
-        category: { $ref: "#/components/schemas/Category" }
+        category: { $ref: '#/components/schemas/Category' }
         content: { type: string, maxLength: 50000 }
         date: { type: string }
         sortOrder: { type: number, minimum: 0, maximum: 1000 }
@@ -217,7 +217,7 @@ components:
         _createdAt: { type: string, format: date-time }
         _updatedAt: { type: string, format: date-time }
         title: { type: string }
-        category: { $ref: "#/components/schemas/Category" }
+        category: { $ref: '#/components/schemas/Category' }
         content: { type: string }
         date: { type: string }
         sortOrder: { type: number }

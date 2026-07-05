@@ -17,10 +17,7 @@ export function ClusterEdge({ start, end }: ClusterEdgeProps) {
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   // Each particle gets a phase offset so they spread along the line
-  const phases = useMemo(
-    () => Array.from({ length: PARTICLE_COUNT }, (_, i) => i / PARTICLE_COUNT),
-    [],
-  );
+  const phases = useMemo(() => Array.from({ length: PARTICLE_COUNT }, (_, i) => i / PARTICLE_COUNT), []);
 
   // Initial positions buffer — used as static positions under reduced motion
   const positions = useMemo(() => {
@@ -60,29 +57,14 @@ export function ClusterEdge({ start, end }: ClusterEdgeProps) {
   return (
     <group>
       {/* Connection line */}
-      <Line
-        points={[start, end]}
-        color="#C5A572"
-        opacity={0.15}
-        transparent
-        lineWidth={1}
-      />
+      <Line points={[start, end]} color="#C5A572" opacity={0.15} transparent lineWidth={1} />
 
       {/* Traveling particles */}
       <points ref={pointsRef}>
         <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[positions, 3]}
-            count={PARTICLE_COUNT}
-          />
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} count={PARTICLE_COUNT} />
         </bufferGeometry>
-        <PointMaterial
-          size={0.04}
-          color="#C5A572"
-          transparent
-          opacity={0.6}
-        />
+        <PointMaterial size={0.04} color="#C5A572" transparent opacity={0.6} />
       </points>
     </group>
   );

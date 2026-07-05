@@ -51,11 +51,7 @@ const SplitReveal = ({
       },
     });
 
-    tl.fromTo(
-      words,
-      { y: '100%', x: xOffset, opacity: 0 },
-      { y: 0, x: 0, opacity: 1, stagger, ease: 'power2.out' }
-    );
+    tl.fromTo(words, { y: '100%', x: xOffset, opacity: 0 }, { y: 0, x: 0, opacity: 1, stagger, ease: 'power2.out' });
 
     return () => {
       tl.scrollTrigger?.kill();
@@ -69,7 +65,11 @@ const SplitReveal = ({
   // crawlers consume; that hides the home page's 8 key points from anything
   // that doesn't execute JS).
   if (isMotionDisabled()) {
-    return <Tag className={className} style={style}>{children}</Tag>;
+    return (
+      <Tag className={className} style={style}>
+        {children}
+      </Tag>
+    );
   }
 
   const words = children.split(/\s+/);
@@ -79,7 +79,7 @@ const SplitReveal = ({
       {words.map((word, i) => (
         <span key={i} className="inline-block overflow-hidden">
           <span className="split-word-inner inline-block">{word}</span>
-          {i < words.length - 1 && <span className="inline-block w-[0.25em]">{' '}</span>}
+          {i < words.length - 1 && <span className="inline-block w-[0.25em]"> </span>}
         </span>
       ))}
     </Tag>

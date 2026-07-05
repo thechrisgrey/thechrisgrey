@@ -37,9 +37,7 @@ describe('Contact Page', () => {
   });
 
   it('should have a Download Press Kit link', () => {
-    cy.contains('Download Press Kit')
-      .should('have.attr', 'href', '/press-kit.zip')
-      .and('have.attr', 'download');
+    cy.contains('Download Press Kit').should('have.attr', 'href', '/press-kit.zip').and('have.attr', 'download');
   });
 
   it('should display the contact form with all fields', () => {
@@ -116,13 +114,15 @@ describe('Contact Page', () => {
     cy.get('input#name').type('John Doe');
     cy.get('input#email').type('john@example.com');
     cy.get('input#subject').type('Speaking Inquiry');
-    cy.get('textarea#message').type('I would like to invite you to speak at our upcoming tech conference. It would be a great fit for your expertise.');
+    cy.get('textarea#message').type(
+      'I would like to invite you to speak at our upcoming tech conference. It would be a great fit for your expertise.',
+    );
     cy.get('button[type="submit"]').click();
 
     // Success modal should appear
     cy.get('[role="dialog"]').should('be.visible');
     cy.contains('Thank You!').should('be.visible');
-    cy.contains("Thanks for contacting me").should('be.visible');
+    cy.contains('Thanks for contacting me').should('be.visible');
   });
 
   it('should close the success modal when clicking the Close button', () => {

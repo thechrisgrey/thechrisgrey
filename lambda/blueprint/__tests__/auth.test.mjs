@@ -24,15 +24,24 @@ function makeStream() {
   return {
     writes: [],
     ended: false,
-    write(c) { this.writes.push(String(c)); },
-    end() { this.ended = true; },
-    get body() { return this.writes.join(""); },
+    write(c) {
+      this.writes.push(String(c));
+    },
+    end() {
+      this.ended = true;
+    },
+    get body() {
+      return this.writes.join("");
+    },
   };
 }
 globalThis.awslambda = {
   streamifyResponse: (fn) => fn,
   HttpResponseStream: {
-    from: (stream, meta) => { committed.push(meta); return stream; },
+    from: (stream, meta) => {
+      committed.push(meta);
+      return stream;
+    },
   },
 };
 

@@ -37,13 +37,15 @@ export function buildRenderUiTool({ responseStream, metrics, requestId }) {
         return { ok: true, rendered: blocks.map((b) => b.type) };
       } catch (error) {
         metrics?.record("ToolFailure_RenderUi");
-        console.error(JSON.stringify({
-          requestId,
-          event: "tool_error",
-          tool: "render_ui",
-          error: error.name,
-          message: error.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "tool_error",
+            tool: "render_ui",
+            error: error.name,
+            message: error.message,
+          }),
+        );
         return { ok: false, error: "Unable to render that block." };
       }
     },

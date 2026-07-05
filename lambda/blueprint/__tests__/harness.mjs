@@ -3,12 +3,7 @@
  */
 import { createHmac } from "crypto";
 
-export function makeEvent({
-  body = "",
-  headers = {},
-  method = "POST",
-  ip = "1.2.3.4",
-} = {}) {
+export function makeEvent({ body = "", headers = {}, method = "POST", ip = "1.2.3.4" } = {}) {
   return {
     body,
     headers,
@@ -81,12 +76,10 @@ export function scriptedBedrockClient(responses, { guardrailAction = "NONE", gua
  * metadata) and exposes them as an async iterable on `.stream`. A guardrail
  * block sets the messageStop stopReason to "guardrail_intervened".
  */
-export function bedrockStreamResponse(text, {
-  chunkSize = 32,
-  inputTokens = 150,
-  outputTokens = 300,
-  stopReason = "end_turn",
-} = {}) {
+export function bedrockStreamResponse(
+  text,
+  { chunkSize = 32, inputTokens = 150, outputTokens = 300, stopReason = "end_turn" } = {},
+) {
   const deltas = [];
   for (let i = 0; i < text.length; i += chunkSize) {
     deltas.push(text.slice(i, i + chunkSize));
@@ -146,10 +139,10 @@ export function silentLogger() {
 export function validBlueprintOutput(overrides = {}) {
   return {
     architecture_summary:
-      "A straightforward serverless RAG chat on Bedrock Knowledge Base. "
-      + "Lambda fronts the Function URL, retrieves 5 chunks via KB, invokes "
-      + "Haiku 4.5, and streams tokens back to the browser. No containers, "
-      + "no VPC, no GPU. Works under $20/month at 1k queries/day.",
+      "A straightforward serverless RAG chat on Bedrock Knowledge Base. " +
+      "Lambda fronts the Function URL, retrieves 5 chunks via KB, invokes " +
+      "Haiku 4.5, and streams tokens back to the browser. No containers, " +
+      "no VPC, no GPU. Works under $20/month at 1k queries/day.",
     services: [
       {
         service: "AWS Lambda",
@@ -176,17 +169,17 @@ export function validBlueprintOutput(overrides = {}) {
       tool: "cdk",
       rationale: "CDK gives us TypeScript infrastructure with type-safe Bedrock + Lambda constructs",
       snippet:
-        "import * as cdk from 'aws-cdk-lib';\n"
-        + "import * as lambda from 'aws-cdk-lib/aws-lambda';\n"
-        + "export class RagStack extends cdk.Stack {\n"
-        + "  constructor(scope: cdk.App, id: string) { super(scope, id);\n"
-        + "    const fn = new lambda.Function(this, 'Chat', {\n"
-        + "      runtime: lambda.Runtime.NODEJS_20_X,\n"
-        + "      handler: 'index.handler',\n"
-        + "      code: lambda.Code.fromAsset('./dist'),\n"
-        + "    });\n"
-        + "    fn.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.NONE });\n"
-        + "  }\n}\n",
+        "import * as cdk from 'aws-cdk-lib';\n" +
+        "import * as lambda from 'aws-cdk-lib/aws-lambda';\n" +
+        "export class RagStack extends cdk.Stack {\n" +
+        "  constructor(scope: cdk.App, id: string) { super(scope, id);\n" +
+        "    const fn = new lambda.Function(this, 'Chat', {\n" +
+        "      runtime: lambda.Runtime.NODEJS_20_X,\n" +
+        "      handler: 'index.handler',\n" +
+        "      code: lambda.Code.fromAsset('./dist'),\n" +
+        "    });\n" +
+        "    fn.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.NONE });\n" +
+        "  }\n}\n",
     },
     iam_highlights: [
       "Scope bedrock:InvokeModel to the specific model ARN, not *",
@@ -195,23 +188,19 @@ export function validBlueprintOutput(overrides = {}) {
     cost_estimate: {
       monthly_low_usd: 5,
       monthly_high_usd: 30,
-      assumptions: [
-        "1k queries/day at 500 tokens in, 300 tokens out",
-        "KB has 500MB of content",
-      ],
+      assumptions: ["1k queries/day at 500 tokens in, 300 tokens out", "KB has 500MB of content"],
     },
     claude_artifacts: [
       {
         kind: "skill",
         name: "deploy-rag-stack",
-        description:
-          "Claude Code skill for deploying this RAG CDK stack to AWS with one command",
+        description: "Claude Code skill for deploying this RAG CDK stack to AWS with one command",
         body:
-          "---\nname: deploy-rag-stack\ndescription: Deploy the RAG stack\n---\n\n"
-          + "# Deploy RAG Stack\n\n"
-          + "Run `npx cdk deploy` from the project root. Confirm Bedrock "
-          + "access is enabled for the target account and that Haiku 4.5 is "
-          + "available in us-east-1 before deploying.",
+          "---\nname: deploy-rag-stack\ndescription: Deploy the RAG stack\n---\n\n" +
+          "# Deploy RAG Stack\n\n" +
+          "Run `npx cdk deploy` from the project root. Confirm Bedrock " +
+          "access is enabled for the target account and that Haiku 4.5 is " +
+          "available in us-east-1 before deploying.",
       },
     ],
     next_steps: [
@@ -219,9 +208,7 @@ export function validBlueprintOutput(overrides = {}) {
       "Create the Knowledge Base and point its data source at your S3 bucket",
       "Run cdk deploy and copy the Function URL into your frontend",
     ],
-    caveats: [
-      "Assumes us-east-1; add a second region for DR in production",
-    ],
+    caveats: ["Assumes us-east-1; add a second region for DR in production"],
     ...overrides,
   };
 }

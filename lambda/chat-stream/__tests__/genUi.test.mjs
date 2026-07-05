@@ -25,9 +25,15 @@ function makeStream() {
   return {
     chunks: [],
     ended: false,
-    write(c) { this.chunks.push(String(c)); },
-    end() { this.ended = true; },
-    get output() { return this.chunks.join(""); },
+    write(c) {
+      this.chunks.push(String(c));
+    },
+    end() {
+      this.ended = true;
+    },
+    get output() {
+      return this.chunks.join("");
+    },
   };
 }
 
@@ -50,7 +56,9 @@ function scriptedConverse(blocks, { text = "" } = {}) {
   };
 }
 class FakeConverseCommand {
-  constructor(input) { this.input = input; }
+  constructor(input) {
+    this.input = input;
+  }
 }
 
 const VALID_COMPARISON = {

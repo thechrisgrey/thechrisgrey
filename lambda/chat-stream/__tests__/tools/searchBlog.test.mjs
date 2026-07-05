@@ -28,7 +28,11 @@ function fakeSanity(results) {
 }
 
 function rejectingSanity(error) {
-  return { fetch: async () => { throw error; } };
+  return {
+    fetch: async () => {
+      throw error;
+    },
+  };
 }
 
 function parseLastEvent(stream) {

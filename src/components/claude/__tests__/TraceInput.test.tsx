@@ -6,10 +6,7 @@ import { TraceInput } from '../TraceInput';
 // Mock pageContext to provide suggestions for /claude
 vi.mock('../../../utils/pageContext', () => ({
   PAGE_SUGGESTIONS: {
-    '/claude': [
-      'How does he use Claude in production?',
-      'What Anthropic Academy certifications does he have?',
-    ],
+    '/claude': ['How does he use Claude in production?', 'What Anthropic Academy certifications does he have?'],
   },
 }));
 

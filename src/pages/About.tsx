@@ -16,15 +16,16 @@ const About = () => {
         type="profile"
         faq={aboutFAQs}
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "About", url: "https://thechrisgrey.com/about" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'About', url: 'https://thechrisgrey.com/about' },
         ]}
         structuredData={[
           buildProfilePageSchema({
-            name: "About Christian Perez",
-            description: "Biography of Christian Perez: From Special Forces Medic (18D) to Founder & CEO of Altivum Inc.",
-            url: "https://thechrisgrey.com/about"
-          })
+            name: 'About Christian Perez',
+            description:
+              'Biography of Christian Perez: From Special Forces Medic (18D) to Founder & CEO of Altivum Inc.',
+            url: 'https://thechrisgrey.com/about',
+          }),
         ]}
       />
       {/* Hero Section */}
@@ -53,16 +54,18 @@ const About = () => {
           <div className="mb-24 md:mb-32 text-center">
             <p className="text-white" style={typography.sectionHeader}>
               My name is <span className="text-altivum-gold">Christian Perez</span>, and I'm the Founder & CEO of{' '}
-              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">Altivum Inc.</ViewTransitionLink>
+              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">
+                Altivum Inc.
+              </ViewTransitionLink>
             </p>
           </div>
 
           {/* Early Life */}
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
-              I was born in <span className="text-white">Guatemala City</span> and came to the United States
-              with my family when I was two. <span className="text-white">Boston</span> shaped me. From enjoying
-              Italian cuisine in the North End to runs along the Charles River, the city's energy became part of who I am.
+              I was born in <span className="text-white">Guatemala City</span> and came to the United States with my
+              family when I was two. <span className="text-white">Boston</span> shaped me. From enjoying Italian cuisine
+              in the North End to runs along the Charles River, the city's energy became part of who I am.
             </p>
           </div>
 
@@ -70,23 +73,28 @@ const About = () => {
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
               In <span className="text-white">2012</span>, I joined the Army and later earned my{' '}
-              <span className="text-altivum-gold">Green Beret</span> as a Special Forces Medic (18D).
-              I was then assigned to 1st Special Forces Group and soon thereafter deployed to{' '}
+              <span className="text-altivum-gold">Green Beret</span> as a Special Forces Medic (18D). I was then
+              assigned to 1st Special Forces Group and soon thereafter deployed to{' '}
               <span className="text-white">Afghanistan</span> with SFOD-A 1236, where I was awarded a{' '}
-              <span className="text-altivum-gold">Bronze Star</span>. After receiving an Honorable Discharge,
-              I wrote <ViewTransitionLink to="/beyond-the-assessment" className="text-altivum-gold italic link-underline">Beyond the Assessment</ViewTransitionLink>—a reflection on modern
-              masculinity and a dedication to my son, <span className="text-white">Elijah</span>.
+              <span className="text-altivum-gold">Bronze Star</span>. After receiving an Honorable Discharge, I wrote{' '}
+              <ViewTransitionLink to="/beyond-the-assessment" className="text-altivum-gold italic link-underline">
+                Beyond the Assessment
+              </ViewTransitionLink>
+              —a reflection on modern masculinity and a dedication to my son, <span className="text-white">Elijah</span>
+              .
             </p>
           </div>
 
           {/* Career Evolution */}
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
-              Throughout my military career, I watched the rapid evolution of computing and artificial intelligence.
-              In <span className="text-white">February 2025</span>, I founded{' '}
-              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">Altivum Inc.</ViewTransitionLink>, a public benefit corporation
-              dedicated to engineering AI systems that <span className="text-white">empower people and
-                organizations to adapt and excel</span>.
+              Throughout my military career, I watched the rapid evolution of computing and artificial intelligence. In{' '}
+              <span className="text-white">February 2025</span>, I founded{' '}
+              <ViewTransitionLink to="/altivum" className="text-altivum-gold link-underline">
+                Altivum Inc.
+              </ViewTransitionLink>
+              , a public benefit corporation dedicated to engineering AI systems that{' '}
+              <span className="text-white">empower people and organizations to adapt and excel</span>.
             </p>
           </div>
 
@@ -102,8 +110,8 @@ const About = () => {
             <p className="text-white/80" style={typography.subtitle}>
               I believe the next decade belongs to those who understand how to combine{' '}
               <span className="text-white">human judgment</span> with{' '}
-              <span className="text-white">intelligent machines</span>—and my mission is to ensure
-              the people I serve are among them.
+              <span className="text-white">intelligent machines</span>—and my mission is to ensure the people I serve
+              are among them.
             </p>
           </div>
         </div>

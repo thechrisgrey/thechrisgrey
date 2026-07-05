@@ -49,9 +49,7 @@ export function buildVisitorContext(pageContext) {
   if (!pageContext) return "";
 
   const priorPages = pageContext.visitedPages.filter((p) => p !== pageContext.currentPage);
-  const journeyLine = priorPages.length > 0
-    ? `\nThey have also visited: ${priorPages.join(", ")}.`
-    : "";
+  const journeyLine = priorPages.length > 0 ? `\nThey have also visited: ${priorPages.join(", ")}.` : "";
 
   return `
 

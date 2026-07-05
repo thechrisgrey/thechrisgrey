@@ -3,9 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { useViewTransitionNavigate } from './useViewTransitionNavigate';
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <MemoryRouter>{children}</MemoryRouter>
-);
+const wrapper = ({ children }: { children: React.ReactNode }) => <MemoryRouter>{children}</MemoryRouter>;
 
 describe('useViewTransitionNavigate', () => {
   beforeEach(() => {
@@ -45,7 +43,9 @@ describe('useViewTransitionNavigate', () => {
   });
 
   it('wraps navigate in startViewTransition when supported and no reduced motion', () => {
-    const mockStartViewTransition = vi.fn((cb: () => void) => { cb(); });
+    const mockStartViewTransition = vi.fn((cb: () => void) => {
+      cb();
+    });
     (document as { startViewTransition?: unknown }).startViewTransition = mockStartViewTransition;
 
     const { result } = renderHook(() => useViewTransitionNavigate(), { wrapper });

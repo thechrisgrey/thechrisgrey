@@ -123,14 +123,12 @@ describe('Desktop Navigation', () => {
 
   it('should highlight the active nav item', () => {
     cy.visit('/blog');
-    cy.get('nav').contains('Blog')
-      .should('have.class', 'text-altivum-gold');
+    cy.get('nav').contains('Blog').should('have.class', 'text-altivum-gold');
   });
 
   it('should highlight About dropdown when on an About sub-page', () => {
     cy.visit('/about');
-    cy.get('button[aria-label="About menu"]')
-      .should('have.class', 'text-altivum-gold');
+    cy.get('button[aria-label="About menu"]').should('have.class', 'text-altivum-gold');
   });
 
   it('should support keyboard navigation of the About dropdown', () => {

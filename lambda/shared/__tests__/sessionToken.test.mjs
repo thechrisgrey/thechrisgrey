@@ -1,11 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "crypto";
-import {
-  issueSessionToken,
-  verifySessionToken,
-  SESSION_TOKEN_VERSION,
-} from "../sessionToken.mjs";
+import { issueSessionToken, verifySessionToken, SESSION_TOKEN_VERSION } from "../sessionToken.mjs";
 
 const KEY = "server-only-secret";
 const DEVICE_HASH = "a".repeat(64); // sha256 hex shape
@@ -94,9 +90,7 @@ test("missing signing key disables verification (parity with hmac.mjs)", () => {
 test("the bare HMAC matches the documented payload shape", () => {
   // Lock the wire format so the client and any re-implementation stay compatible.
   const exp = Math.floor(Date.now() / 1000) + 300;
-  const expectedSig = createHmac("sha256", KEY)
-    .update(`${exp}.chat.${DEVICE_HASH}`)
-    .digest("hex");
+  const expectedSig = createHmac("sha256", KEY).update(`${exp}.chat.${DEVICE_HASH}`).digest("hex");
   // issueSessionToken uses ttlSeconds, so reconstruct with a fixed exp via a tiny helper path:
   const token = `${SESSION_TOKEN_VERSION}.${exp}.chat.${DEVICE_HASH}.${expectedSig}`;
   const result = verifySessionToken(token, KEY, { scope: "chat" });

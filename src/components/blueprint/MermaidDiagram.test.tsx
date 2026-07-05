@@ -38,9 +38,7 @@ describe('MermaidDiagram', () => {
     renderMock.mockResolvedValue({ svg: '<svg id="ok"></svg>' });
     render(<MermaidDiagram source={SOURCE} />);
     expect(screen.getByText('Architecture diagram')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /view source/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view source/i })).toBeInTheDocument();
   });
 
   it('should show a rendering status before the diagram resolves', () => {
@@ -48,9 +46,7 @@ describe('MermaidDiagram', () => {
     renderMock.mockReturnValue(new Promise(() => {}));
     render(<MermaidDiagram source={SOURCE} />);
     expect(screen.getByText('Rendering diagram…')).toBeInTheDocument();
-    expect(
-      screen.getByRole('status', { name: 'Rendering diagram' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Rendering diagram' })).toBeInTheDocument();
   });
 
   it('should initialize mermaid and render the provided source', async () => {

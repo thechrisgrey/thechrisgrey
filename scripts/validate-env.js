@@ -12,11 +12,11 @@ const required = [
   'VITE_METRICS_ENDPOINT',
 ];
 
-const missing = required.filter(key => !process.env[key]);
+const missing = required.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
   console.error('Missing required environment variables:');
-  missing.forEach(key => console.error(`  - ${key}`));
+  missing.forEach((key) => console.error(`  - ${key}`));
   console.error('\nSet these in AWS Amplify console or .env.local for local development.');
   process.exit(1);
 }

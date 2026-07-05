@@ -22,7 +22,8 @@ const client = createClient({
 
 const SITE_URL = 'https://thechrisgrey.com';
 const FEED_TITLE = 'Christian Perez - Blog';
-const FEED_DESCRIPTION = 'Thoughts on leadership, technology, veteran entrepreneurship, and building Altivum Inc. By Christian Perez (@thechrisgrey).';
+const FEED_DESCRIPTION =
+  'Thoughts on leadership, technology, veteran entrepreneurship, and building Altivum Inc. By Christian Perez (@thechrisgrey).';
 const FEED_AUTHOR = 'Christian Perez';
 const FEED_EMAIL = 'admin@altivum.ai';
 
@@ -74,7 +75,7 @@ function formatRssDate(dateString) {
  */
 function generateRssItem(post) {
   const link = `${SITE_URL}/blog/${post.slug}`;
-  const categories = post.categories?.map(cat => `      <category>${escapeXml(cat)}</category>`).join('\n') || '';
+  const categories = post.categories?.map((cat) => `      <category>${escapeXml(cat)}</category>`).join('\n') || '';
 
   return `    <item>
       <title>${escapeXml(post.title)}</title>

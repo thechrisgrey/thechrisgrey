@@ -39,9 +39,7 @@ describe('ArtifactCard', () => {
 
     it('should render the artifact description', () => {
       render(<ArtifactCard artifact={baseArtifact} />);
-      expect(
-        screen.getByText('Automates deployment to AWS Amplify.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Automates deployment to AWS Amplify.')).toBeInTheDocument();
     });
 
     it('should render the human label for a skill kind', () => {
@@ -52,9 +50,7 @@ describe('ArtifactCard', () => {
 
     it('should render the kind icon for a skill', () => {
       const { container } = render(<ArtifactCard artifact={baseArtifact} />);
-      const icons = Array.from(container.querySelectorAll('.material-icons')).map(
-        (n) => n.textContent
-      );
+      const icons = Array.from(container.querySelectorAll('.material-icons')).map((n) => n.textContent);
       expect(icons).toContain('stars');
     });
 
@@ -65,9 +61,7 @@ describe('ArtifactCard', () => {
       };
       const { container } = render(<ArtifactCard artifact={artifact} />);
       expect(screen.getByText('Slash Command')).toBeInTheDocument();
-      const icons = Array.from(container.querySelectorAll('.material-icons')).map(
-        (n) => n.textContent
-      );
+      const icons = Array.from(container.querySelectorAll('.material-icons')).map((n) => n.textContent);
       expect(icons).toContain('terminal');
     });
 
@@ -75,9 +69,7 @@ describe('ArtifactCard', () => {
       const artifact: ClaudeArtifact = { ...baseArtifact, kind: 'subagent' };
       const { container } = render(<ArtifactCard artifact={artifact} />);
       expect(screen.getByText('Subagent')).toBeInTheDocument();
-      const icons = Array.from(container.querySelectorAll('.material-icons')).map(
-        (n) => n.textContent
-      );
+      const icons = Array.from(container.querySelectorAll('.material-icons')).map((n) => n.textContent);
       expect(icons).toContain('hub');
     });
 
@@ -85,9 +77,7 @@ describe('ArtifactCard', () => {
       const artifact: ClaudeArtifact = { ...baseArtifact, kind: 'mcp_tool' };
       const { container } = render(<ArtifactCard artifact={artifact} />);
       expect(screen.getByText('MCP Tool')).toBeInTheDocument();
-      const icons = Array.from(container.querySelectorAll('.material-icons')).map(
-        (n) => n.textContent
-      );
+      const icons = Array.from(container.querySelectorAll('.material-icons')).map((n) => n.textContent);
       expect(icons).toContain('extension');
     });
 
@@ -97,9 +87,7 @@ describe('ArtifactCard', () => {
         kind: 'mystery',
       } as unknown as ClaudeArtifact;
       const { container } = render(<ArtifactCard artifact={artifact} />);
-      const icons = Array.from(container.querySelectorAll('.material-icons')).map(
-        (n) => n.textContent
-      );
+      const icons = Array.from(container.querySelectorAll('.material-icons')).map((n) => n.textContent);
       expect(icons).toContain('auto_awesome');
     });
   });
@@ -143,9 +131,7 @@ describe('ArtifactCard', () => {
   describe('preview interaction', () => {
     it('should hide the body preview initially', () => {
       render(<ArtifactCard artifact={baseArtifact} />);
-      expect(
-        screen.queryByText('Run the deploy pipeline.', { exact: false })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Run the deploy pipeline.', { exact: false })).not.toBeInTheDocument();
       const preview = screen.getByRole('button', { name: /preview/i });
       expect(preview).toHaveAttribute('aria-expanded', 'false');
     });
@@ -156,12 +142,8 @@ describe('ArtifactCard', () => {
 
       await user.click(screen.getByRole('button', { name: /preview/i }));
 
-      expect(
-        screen.getByText('Run the deploy pipeline.', { exact: false })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /collapse/i })
-      ).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByText('Run the deploy pipeline.', { exact: false })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /collapse/i })).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('should collapse the body on a second click', async () => {
@@ -169,14 +151,10 @@ describe('ArtifactCard', () => {
       render(<ArtifactCard artifact={baseArtifact} />);
 
       await user.click(screen.getByRole('button', { name: /preview/i }));
-      expect(
-        screen.getByText('Run the deploy pipeline.', { exact: false })
-      ).toBeInTheDocument();
+      expect(screen.getByText('Run the deploy pipeline.', { exact: false })).toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: /collapse/i }));
-      expect(
-        screen.queryByText('Run the deploy pipeline.', { exact: false })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Run the deploy pipeline.', { exact: false })).not.toBeInTheDocument();
     });
   });
 
@@ -193,9 +171,7 @@ describe('ArtifactCard', () => {
         createObjectURL,
         revokeObjectURL,
       });
-      clickSpy = vi
-        .spyOn(HTMLAnchorElement.prototype, 'click')
-        .mockImplementation(() => {});
+      clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     });
 
     it('should trigger a download with a .md filename for a skill', async () => {

@@ -1,9 +1,4 @@
-import {
-  BLOG_SEARCH_QUERY,
-  SITE_ORIGIN,
-  normalizeQuery,
-  isMeaningful,
-} from "lambda-shared/sanityQueries";
+import { BLOG_SEARCH_QUERY, SITE_ORIGIN, normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 
 const INPUT_SCHEMA = {
   type: "object",
@@ -93,13 +88,15 @@ export function buildSearchBlogMcpTool({ sanityClient, metrics, requestId }) {
         };
       } catch (error) {
         metrics?.record("McpFailure_SearchBlog");
-        console.error(JSON.stringify({
-          requestId,
-          event: "mcp_tool_error",
-          tool: "search_blog",
-          error: error?.name,
-          message: error?.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "mcp_tool_error",
+            tool: "search_blog",
+            error: error?.name,
+            message: error?.message,
+          }),
+        );
         return {
           isError: true,
           content: [{ type: "text", text: "Unable to search the blog right now. Try again shortly." }],

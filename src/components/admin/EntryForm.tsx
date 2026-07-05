@@ -10,9 +10,7 @@ export interface EntryFormProps {
 
 function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
   const [title, setTitle] = useState(initial?.title || '');
-  const [category, setCategory] = useState<KbCategory>(
-    (initial?.category as KbCategory) || 'biography'
-  );
+  const [category, setCategory] = useState<KbCategory>((initial?.category as KbCategory) || 'biography');
   const [content, setContent] = useState(initial?.content || '');
   const [date, setDate] = useState(initial?.date || '');
   const [sortOrder, setSortOrder] = useState<number | ''>(initial?.sortOrder ?? '');
@@ -38,15 +36,10 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="p-6 bg-altivum-navy/50 border border-white/10 rounded-lg space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="p-6 bg-altivum-navy/50 border border-white/10 rounded-lg space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-medium text-altivum-gold mb-2 uppercase tracking-widest">
-            Title *
-          </label>
+          <label className="block text-xs font-medium text-altivum-gold mb-2 uppercase tracking-widest">Title *</label>
           <input
             type="text"
             value={title}
@@ -76,9 +69,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-altivum-gold mb-2 uppercase tracking-widest">
-          Content *
-        </label>
+        <label className="block text-xs font-medium text-altivum-gold mb-2 uppercase tracking-widest">Content *</label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -91,9 +82,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-xs font-medium text-altivum-silver mb-2 uppercase tracking-widest">
-            Date
-          </label>
+          <label className="block text-xs font-medium text-altivum-silver mb-2 uppercase tracking-widest">Date</label>
           <input
             type="date"
             value={date}
@@ -131,9 +120,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
           <input
             type="number"
             value={sortOrder}
-            onChange={(e) =>
-              setSortOrder(e.target.value ? parseInt(e.target.value, 10) : '')
-            }
+            onChange={(e) => setSortOrder(e.target.value ? parseInt(e.target.value, 10) : '')}
             className="w-full max-w-xs px-4 py-3 bg-white/5 border border-white/10 text-white rounded-sm focus:outline-hidden focus:border-altivum-gold transition-colors"
             placeholder="Optional numeric order"
           />

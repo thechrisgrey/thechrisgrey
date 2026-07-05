@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isPostHogConfigured,
-  capturePostHogEvent,
-  capturePostHogPageview,
-  disablePostHog,
-} from './posthog';
+import { isPostHogConfigured, capturePostHogEvent, capturePostHogPageview, disablePostHog } from './posthog';
 
 describe('posthog (consent-gated)', () => {
   it('isPostHogConfigured reports a boolean based on env config', () => {

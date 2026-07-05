@@ -12,16 +12,19 @@ function prefersReducedMotion(): boolean {
 export function useViewTransitionNavigate() {
   const navigate = useNavigate();
 
-  const transitionNavigate = useCallback((to: string, options?: NavigateOptions) => {
-    if (!supportsViewTransitions() || prefersReducedMotion()) {
-      navigate(to, options);
-      return;
-    }
+  const transitionNavigate = useCallback(
+    (to: string, options?: NavigateOptions) => {
+      if (!supportsViewTransitions() || prefersReducedMotion()) {
+        navigate(to, options);
+        return;
+      }
 
-    document.startViewTransition(() => {
-      navigate(to, options);
-    });
-  }, [navigate]);
+      document.startViewTransition(() => {
+        navigate(to, options);
+      });
+    },
+    [navigate],
+  );
 
   return transitionNavigate;
 }

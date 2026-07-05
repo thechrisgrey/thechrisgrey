@@ -14,7 +14,7 @@ Quality, correct, secure code is **always** the priority — never "whatever sol
 
 **Green tests are NOT proof a feature works.** Before claiming anything works — and especially for anything that touches an external service (AWS/Bedrock, deploys, streaming, APIs, auth) — exercise the REAL deployed path with a real request, not just mocks and unit tests.
 
-- **Distrust fakes:** confirm the live SDK/API actually behaves the way the mock assumes. (A mock that *rejected* on abort hid a real bug where the live `ConverseStream` *ended gracefully* — the test stayed green while the behavior was broken.)
+- **Distrust fakes:** confirm the live SDK/API actually behaves the way the mock assumes. (A mock that _rejected_ on abort hid a real bug where the live `ConverseStream` _ended gracefully_ — the test stayed green while the behavior was broken.)
 - This repo shipped a Bedrock guardrail with 1,000+ green tests that **never once fired in production** (wrong API signal, an invalid enum value, output false-blocking) — only signed requests to the live endpoint surfaced it.
 - **Report honestly:** say "tests pass" for passing tests; reserve "it works" for behavior you have watched work end-to-end.
 
@@ -38,15 +38,18 @@ npm run lint         # ESLint
 **Deployment:** Push to `main` triggers Amplify. Manual: `aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELEASE --region us-east-2`
 
 **Lambda deploy pattern:** Use the verified script — never hand-build `function.zip` (the manual `zip` glob omits sibling modules each handler imports and ships a crash-on-cold-start artifact).
+
 ```bash
 npm run deploy:lambda -- <name> --dry-run   # build + verify module graph, no upload
 npm run deploy:lambda -- <name>             # deploy (default region us-east-1; --region to override)
 ```
+
 `scripts/deploy-lambda.sh` runs `npm ci`, dereferences `lambda-shared` fresh into the bundle, and runs a stubbed-`awslambda` `import()` smoke check that aborts on any unresolved import before calling `update-function-code`.
 
 ## Architecture
 
 ### Routing
+
 - React Router v7, layout: `App.tsx` → ScrollToTop → Navigation → Suspense → Routes → Footer
 - All routes except Home use `React.lazy()`. Home is static (critical path).
 - **17 routes:** `/`, `/about`, `/altivum`, `/foundation`, `/podcast`, `/beyond-the-assessment`, `/aws`, `/claude`, `/blog`, `/blog/:slug`, `/links`, `/contact`, `/chat`, `/privacy`, `/admin`, `/blueprint`, catch-all 404
@@ -72,6 +75,7 @@ npm run deploy:lambda -- <name>             # deploy (default region us-east-1; 
 **ScrollTrigger Text Reveals:** `src/components/SplitReveal.tsx` + `src/components/FadeReveal.tsx` use GSAP ScrollTrigger for scroll-linked word-by-word animations. Accept `triggerRef`, `triggerStart`, `triggerEnd` props for sticky-section positioning. Mock GSAP in jsdom tests.
 
 **Micro-interactions:**
+
 - Card hover: `hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300`
 - Button press: `active:scale-[0.98]`
 - CTA glow: `hover:shadow-[0_0_20px_rgba(197,165,114,0.3)]`
@@ -112,6 +116,7 @@ Full-viewport chat at `/chat` + floating 3D widget on all other pages. Powered b
 **Widget** (`src/components/chat/`): ChatWidget → ChatWidgetButton (3D AltiMascot via R3F, 64x64 Canvas, `public/alti.glb` 1.15MB meshopt+WebP) + ChatWidgetPanel (400x560 desktop, full mobile). Widget hidden on `/chat`.
 
 **Backend** (`lambda/chat-stream/`):
+
 - Streaming via `awslambda.streamifyResponse()`, Strands SDK v1.0.0-rc.4, Claude Haiku 4.5
 - Modules: index.mjs (handler), agent.mjs (factory), tools/ (navigate, draftMessage, draftNewsletter, citePassage, searchBlog, rememberFact), events.mjs, memory.mjs, prompts.mjs
 - Routes: `POST /` (chat), `POST /forget` (erase visitor memory)
@@ -122,6 +127,7 @@ Full-viewport chat at `/chat` + floating 3D widget on all other pages. Powered b
 **Visitor Memory:** DynamoDB `thechrisgrey-chat-memory`, partitioned by deviceHash (SHA-256 of localStorage UUID from `src/utils/deviceId.ts`). 90-day TTL. PII disallowed — enforced server-side: `sanitizeFactContent` (`memory.mjs`) rejects facts containing emails or phone-shaped digit runs before persistence, not just by prompt instruction.
 
 **Security:**
+
 - HMAC-SHA256 request signing (`src/utils/chatSigning.ts`): `X-Chat-Timestamp` + `X-Chat-Signature`, 5-min window, timingSafeEqual
 - Rate limit: 20 req/hr per IP (atomic DynamoDB, table `thechrisgrey-chat-ratelimit`, sourceIp only)
 - Input validation: role whitelist (user/assistant), 4000 char/msg, 50 msg cap

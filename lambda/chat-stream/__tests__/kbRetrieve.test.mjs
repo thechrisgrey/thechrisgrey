@@ -27,11 +27,7 @@ test("returns joined chunks on success", async () => {
     assert.equal(cmd.input.retrievalQuery.text, "who is christian");
     assert.equal(cmd.input.retrievalConfiguration.vectorSearchConfiguration.numberOfResults, 3);
     return {
-      retrievalResults: [
-        { content: { text: "chunk A" } },
-        { content: { text: "chunk B" } },
-        { content: {} },
-      ],
+      retrievalResults: [{ content: { text: "chunk A" } }, { content: { text: "chunk B" } }, { content: {} }],
     };
   });
   const out = await retrieveContext(fake, FakeRetrieveCommand, "who is christian", { ...OPTS, metrics });
@@ -59,7 +55,9 @@ test("records timeout on AbortError", async () => {
   const metrics = recordingMetrics();
   const err = new Error("aborted");
   err.name = "AbortError";
-  const fake = client(async () => { throw err; });
+  const fake = client(async () => {
+    throw err;
+  });
   const out = await retrieveContext(fake, FakeRetrieveCommand, "q", { ...OPTS, metrics });
   assert.equal(out, null);
   assert.ok(metrics.records.some((r) => r.name === "KBRetrievalTimeout"));
@@ -70,7 +68,9 @@ test("records failure on non-abort errors", async () => {
   const metrics = recordingMetrics();
   const err = new Error("kb down");
   err.name = "InternalServerException";
-  const fake = client(async () => { throw err; });
+  const fake = client(async () => {
+    throw err;
+  });
   const out = await retrieveContext(fake, FakeRetrieveCommand, "q", { ...OPTS, metrics });
   assert.equal(out, null);
   assert.ok(metrics.records.some((r) => r.name === "KBRetrievalFailure"));

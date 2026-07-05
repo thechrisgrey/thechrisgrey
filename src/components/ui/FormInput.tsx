@@ -21,15 +21,16 @@ export const FormInput = ({
   error,
   required,
   hideLabel,
-  className = ''
+  className = '',
 }: FormInputProps) => (
   <div className={`relative ${className}`}>
-    <label
-      htmlFor={id}
-      className={hideLabel ? 'sr-only' : 'block text-sm font-medium text-altivum-silver mb-2'}
-    >
+    <label htmlFor={id} className={hideLabel ? 'sr-only' : 'block text-sm font-medium text-altivum-silver mb-2'}>
       {label}
-      {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
+      {required && (
+        <span className="text-red-400 ml-1" aria-hidden="true">
+          *
+        </span>
+      )}
     </label>
     <input
       id={id}

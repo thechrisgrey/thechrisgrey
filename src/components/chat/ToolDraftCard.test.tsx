@@ -42,10 +42,10 @@ describe('ToolDraftCard — navigate', () => {
   it('navigates and dismisses on accept', () => {
     let current = '/';
     renderWithRouter(
-      <ToolDraftCard
-        action={{ kind: 'draft_action', action: 'navigate', path: '/about', reason: 'To learn more.' }}
-      />,
-      (loc) => { current = loc; },
+      <ToolDraftCard action={{ kind: 'draft_action', action: 'navigate', path: '/about', reason: 'To learn more.' }} />,
+      (loc) => {
+        current = loc;
+      },
     );
     fireEvent.click(screen.getByRole('button', { name: /Take me there/i }));
     expect(current).toBe('/about');
@@ -84,7 +84,9 @@ describe('ToolDraftCard — contact', () => {
 
   it('navigates to contact with query params on accept', () => {
     let current = '/';
-    renderWithRouter(<ToolDraftCard action={baseAction} />, (loc) => { current = loc; });
+    renderWithRouter(<ToolDraftCard action={baseAction} />, (loc) => {
+      current = loc;
+    });
     fireEvent.click(screen.getByRole('button', { name: /Review & send/i }));
     expect(current).toContain('/contact');
     expect(current).toContain('subject=Podcast');
@@ -96,10 +98,10 @@ describe('ToolDraftCard — newsletter', () => {
   it('renders the pitch and an inline capture form (subscribe without leaving chat)', () => {
     let current = '/';
     renderWithRouter(
-      <ToolDraftCard
-        action={{ kind: 'draft_action', action: 'newsletter', pitch: 'Weekly insights' }}
-      />,
-      (loc) => { current = loc; },
+      <ToolDraftCard action={{ kind: 'draft_action', action: 'newsletter', pitch: 'Weekly insights' }} />,
+      (loc) => {
+        current = loc;
+      },
     );
     expect(screen.getByText(/Weekly insights/)).toBeInTheDocument();
     // The compact NewsletterForm is rendered inline (the old behavior navigated to
@@ -111,11 +113,7 @@ describe('ToolDraftCard — newsletter', () => {
   });
 
   it('offers a dismiss control', () => {
-    renderWithRouter(
-      <ToolDraftCard
-        action={{ kind: 'draft_action', action: 'newsletter', pitch: 'pitch' }}
-      />,
-    );
+    renderWithRouter(<ToolDraftCard action={{ kind: 'draft_action', action: 'newsletter', pitch: 'pitch' }} />);
     expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument();
   });
 });
@@ -151,7 +149,9 @@ describe('ToolDraftCard — citation', () => {
           url: 'https://thechrisgrey.com/blog/a-post',
         }}
       />,
-      (loc) => { current = loc; },
+      (loc) => {
+        current = loc;
+      },
     );
     fireEvent.click(screen.getByRole('button', { name: /Read the post/i }));
     expect(current).toBe('/blog/a-post');
@@ -202,7 +202,9 @@ describe('ToolDraftCard — blog_search_results', () => {
           results: sampleResults,
         }}
       />,
-      (loc) => { current = loc; },
+      (loc) => {
+        current = loc;
+      },
     );
     const buttons = screen.getAllByRole('button', { name: /Read this post/i });
     fireEvent.click(buttons[1]);

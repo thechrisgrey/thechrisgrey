@@ -6,13 +6,7 @@
 // the wrong shape and crash to a blank page. These guards validate the documented
 // REQUIRED fields before fetched data is trusted or cached.
 
-import type {
-  SanityImage,
-  SanityPost,
-  SanityPostPreview,
-  BlogListingResult,
-  PodcastGuest,
-} from './types';
+import type { SanityImage, SanityPost, SanityPostPreview, BlogListingResult, PodcastGuest } from './types';
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -47,10 +41,7 @@ export function isRenderableImageSource(value: unknown): boolean {
   if (!isObject(value)) return false;
   const asset = value.asset;
   if (!isObject(asset)) return false;
-  return (
-    typeof asset._ref === 'string' ||
-    (typeof asset._id === 'string' && typeof asset.url === 'string')
-  );
+  return typeof asset._ref === 'string' || (typeof asset._id === 'string' && typeof asset.url === 'string');
 }
 
 function hasPostPreviewCore(obj: Record<string, unknown>): boolean {
@@ -84,22 +75,12 @@ export function isBlogListingResult(value: unknown): value is BlogListingResult 
   );
 }
 
-const MILITARY_BRANCHES = new Set([
-  'army',
-  'navy',
-  'marines',
-  'air-force',
-  'space-force',
-  'coast-guard',
-]);
+const MILITARY_BRANCHES = new Set(['army', 'navy', 'marines', 'air-force', 'space-force', 'coast-guard']);
 
 export function isPodcastGuest(value: unknown): value is PodcastGuest {
   if (!isObject(value)) return false;
   // branch is optional, but when present must be a known enum value.
-  if (
-    value.branch !== undefined &&
-    (typeof value.branch !== 'string' || !MILITARY_BRANCHES.has(value.branch))
-  ) {
+  if (value.branch !== undefined && (typeof value.branch !== 'string' || !MILITARY_BRANCHES.has(value.branch))) {
     return false;
   }
   return (

@@ -13,7 +13,9 @@ function ControlButton({ label, icon, onClick }: { label: string; icon: string; 
       className="w-8 h-8 flex items-center justify-center text-altivum-silver hover:text-altivum-gold transition-colors duration-200 rounded-full hover:bg-altivum-gold/10"
       onClick={onClick}
     >
-      <span className="material-icons" style={{ fontSize: '18px' }}>{icon}</span>
+      <span className="material-icons" style={{ fontSize: '18px' }}>
+        {icon}
+      </span>
     </button>
   );
 }

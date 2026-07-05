@@ -1,18 +1,18 @@
-import { urlFor } from '../sanity/client'
-import type { SanityImageSource } from '@sanity/image-url'
+import { urlFor } from '../sanity/client';
+import type { SanityImageSource } from '@sanity/image-url';
 
 interface SanityResponsiveImageProps {
   // Accepts any source @sanity/image-url can build from (dereferenced or _ref),
   // plus null/undefined so callers can pass optional fields and rely on the
   // early `if (!source) return null` guard below.
-  source: SanityImageSource | null | undefined
-  alt: string
-  sizes: string
-  widths?: number[]
-  aspectRatio?: number
-  quality?: number
-  priority?: boolean
-  className?: string
+  source: SanityImageSource | null | undefined;
+  alt: string;
+  sizes: string;
+  widths?: number[];
+  aspectRatio?: number;
+  quality?: number;
+  priority?: boolean;
+  className?: string;
 }
 
 /**
@@ -29,7 +29,7 @@ const SanityResponsiveImage = ({
   priority = false,
   className = '',
 }: SanityResponsiveImageProps) => {
-  if (!source) return null
+  if (!source) return null;
 
   const buildUrl = (w: number) =>
     urlFor(source)
@@ -37,13 +37,11 @@ const SanityResponsiveImage = ({
       .height(Math.round(w / aspectRatio))
       .auto('format')
       .quality(quality)
-      .url()
+      .url();
 
-  const srcSet = widths
-    .map(w => `${buildUrl(w)} ${w}w`)
-    .join(', ')
+  const srcSet = widths.map((w) => `${buildUrl(w)} ${w}w`).join(', ');
 
-  const fallbackSrc = buildUrl(widths[widths.length - 1])
+  const fallbackSrc = buildUrl(widths[widths.length - 1]);
 
   // Tiny blurred placeholder for perceived instant load
   const lqipUrl = urlFor(source)
@@ -52,7 +50,7 @@ const SanityResponsiveImage = ({
     .quality(20)
     .blur(50)
     .auto('format')
-    .url()
+    .url();
 
   return (
     <div
@@ -74,7 +72,7 @@ const SanityResponsiveImage = ({
         className={className}
       />
     </div>
-  )
-}
+  );
+};
 
-export default SanityResponsiveImage
+export default SanityResponsiveImage;

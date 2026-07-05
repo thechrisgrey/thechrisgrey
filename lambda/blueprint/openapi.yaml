@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Blueprint Generator API
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Architecture-blueprint generator. Opus generates a blueprint from a project
     spec; Haiku 4.5 grades it for quality. Deployed as an AWS Lambda Function URL
@@ -37,53 +37,53 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BlueprintRequest"
+              $ref: '#/components/schemas/BlueprintRequest'
       responses:
-        "200":
+        '200':
           description: |
             NDJSON event stream. Terminal event is `complete` (ok=true, carries
             `output`) or `error` (carries `error` code + `message`).
           content:
             application/x-ndjson:
               schema:
-                $ref: "#/components/schemas/BlueprintEvent"
-        "400":
+                $ref: '#/components/schemas/BlueprintEvent'
+        '400':
           description: Pre-stream rejection (invalid_json, missing_spec, invalid_device_id)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "405":
+                $ref: '#/components/schemas/ErrorResponse'
+        '405':
           description: method_not_allowed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "429":
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
           description: rate_limited (1 blueprint / 30-day window)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "500":
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
           description: internal_error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
     options:
       tags: [blueprint]
       operationId: blueprintPreflight
       summary: CORS preflight
       security: []
       responses:
-        "204":
+        '204':
           description: No content
 components:
   securitySchemes:
@@ -103,9 +103,9 @@ components:
       properties:
         deviceId:
           type: string
-          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+          pattern: '^[a-zA-Z0-9_-]{8,64}$'
         spec:
-          $ref: "#/components/schemas/BlueprintSpec"
+          $ref: '#/components/schemas/BlueprintSpec'
     BlueprintSpec:
       type: object
       required: [goal, category]
@@ -162,7 +162,7 @@ components:
           type: boolean
           description: Present on `complete` (true).
         output:
-          $ref: "#/components/schemas/BlueprintOutput"
+          $ref: '#/components/schemas/BlueprintOutput'
         error:
           type: string
           description: Error code on `error` events (invalid_input, validation_failed, opus_timeout, guardrail_intervened, guardrail_unavailable, internal_error).

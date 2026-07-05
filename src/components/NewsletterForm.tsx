@@ -54,7 +54,7 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: subscribeEmail.trim()
+          email: subscribeEmail.trim(),
         }),
         signal: controller.signal,
       });
@@ -69,12 +69,12 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
       } else if (response.status === 429) {
         setSubscribeStatus({
           type: 'error',
-          message: 'Too many subscription attempts. Please try again later.'
+          message: 'Too many subscription attempts. Please try again later.',
         });
       } else {
         setSubscribeStatus({
           type: 'error',
-          message: result.error || 'Failed to subscribe. Please try again.'
+          message: result.error || 'Failed to subscribe. Please try again.',
         });
       }
     } catch (error) {
@@ -82,12 +82,12 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
       if (error instanceof Error && error.name === 'AbortError') {
         setSubscribeStatus({
           type: 'error',
-          message: 'Request timed out. Please try again.'
+          message: 'Request timed out. Please try again.',
         });
       } else {
         setSubscribeStatus({
           type: 'error',
-          message: 'Network error. Please check your connection and try again.'
+          message: 'Network error. Please check your connection and try again.',
         });
       }
     } finally {
@@ -110,8 +110,8 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
                 Stay Informed
               </h2>
               <p className="text-altivum-silver mb-12 max-w-2xl mx-auto" style={typography.bodyText}>
-                Subscribe to receive new articles directly to your inbox. No spam, just valuable
-                insights on leadership, technology, and growth.
+                Subscribe to receive new articles directly to your inbox. No spam, just valuable insights on leadership,
+                technology, and growth.
               </p>
             </div>
 
@@ -157,8 +157,8 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
                   subscribeStatus.type === 'success'
                     ? 'bg-green-900/30 border-l-4 border-green-500 text-green-300'
                     : subscribeStatus.type === 'error'
-                    ? 'bg-red-900/30 border-l-4 border-red-500 text-red-300'
-                    : 'bg-altivum-blue/30 border-l-4 border-altivum-gold text-altivum-gold'
+                      ? 'bg-red-900/30 border-l-4 border-red-500 text-red-300'
+                      : 'bg-altivum-blue/30 border-l-4 border-altivum-gold text-altivum-gold'
                 }`}
                 role="alert"
               >
@@ -252,7 +252,8 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
               </h3>
 
               <p className="text-altivum-silver mb-8" style={typography.bodyText}>
-                Check your email for a confirmation message. Be sure to check your spam folder and move it to your primary inbox if needed.
+                Check your email for a confirmation message. Be sure to check your spam folder and move it to your
+                primary inbox if needed.
               </p>
 
               <button

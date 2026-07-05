@@ -16,13 +16,13 @@ Add a Privacy Policy page to thechrisgrey.com to comply with GDPR/CCPA requireme
 
 ## Progress Tracker
 
-| # | Task | Status | Effort |
-|---|------|--------|--------|
-| 1 | Create Privacy.tsx page component | [x] Complete | 15 min |
-| 2 | Add /privacy route to App.tsx | [x] Complete | 2 min |
-| 3 | Add Privacy link to Footer.tsx | [x] Complete | 5 min |
-| 4 | Add /privacy to sitemap generator | [x] Complete | 2 min |
-| 5 | Verify and test | [x] Complete | 5 min |
+| #   | Task                              | Status       | Effort |
+| --- | --------------------------------- | ------------ | ------ |
+| 1   | Create Privacy.tsx page component | [x] Complete | 15 min |
+| 2   | Add /privacy route to App.tsx     | [x] Complete | 2 min  |
+| 3   | Add Privacy link to Footer.tsx    | [x] Complete | 5 min  |
+| 4   | Add /privacy to sitemap generator | [x] Complete | 2 min  |
+| 5   | Verify and test                   | [x] Complete | 5 min  |
 
 ---
 
@@ -33,6 +33,7 @@ Add a Privacy Policy page to thechrisgrey.com to comply with GDPR/CCPA requireme
 **File:** `src/pages/Privacy.tsx`
 
 **Structure:**
+
 - Hero section with title "Privacy Policy"
 - Last updated date
 - Organized sections covering all data practices
@@ -95,6 +96,7 @@ Add a Privacy Policy page to thechrisgrey.com to comply with GDPR/CCPA requireme
     - Link to contact page
 
 **Component Pattern:**
+
 ```tsx
 import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
@@ -107,21 +109,17 @@ const Privacy = () => {
         description="Privacy policy for thechrisgrey.com - how we collect, use, and protect your personal information."
         url="https://thechrisgrey.com/privacy"
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Privacy Policy", url: "https://thechrisgrey.com/privacy" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Privacy Policy', url: 'https://thechrisgrey.com/privacy' },
         ]}
       />
 
       {/* Hero Section */}
-      <section className="py-32 bg-altivum-dark">
-        {/* Title and last updated date */}
-      </section>
+      <section className="py-32 bg-altivum-dark">{/* Title and last updated date */}</section>
 
       {/* Policy Content */}
       <section className="py-24 bg-altivum-dark">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
-          {/* Organized sections */}
-        </div>
+        <div className="max-w-4xl mx-auto px-6 lg:px-8">{/* Organized sections */}</div>
       </section>
     </div>
   );
@@ -131,6 +129,7 @@ export default Privacy;
 ```
 
 **Styling Notes:**
+
 - Use `typography.sectionHeader` for section headings
 - Use `typography.bodyText` for paragraph content
 - Use `typography.cardTitleSmall` for subsection headings
@@ -144,6 +143,7 @@ export default Privacy;
 **File:** `src/App.tsx`
 
 **Changes:**
+
 1. Import Privacy component
 2. Add Route for /privacy
 
@@ -152,7 +152,7 @@ export default Privacy;
 import Privacy from './pages/Privacy';
 
 // Add route (after /chat)
-<Route path="/privacy" element={<Privacy />} />
+<Route path="/privacy" element={<Privacy />} />;
 ```
 
 ---
@@ -165,6 +165,7 @@ import Privacy from './pages/Privacy';
 Add "Privacy Policy" link in the copyright section at the bottom, separated by a dot or pipe.
 
 **Current (line 90-94):**
+
 ```tsx
 <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-altivum-slate/30">
   <p className="text-center text-altivum-silver" style={typography.smallText}>
@@ -174,6 +175,7 @@ Add "Privacy Policy" link in the copyright section at the bottom, separated by a
 ```
 
 **Updated:**
+
 ```tsx
 <div className="mt-4 sm:mt-6 md:mt-4 pt-3 sm:pt-4 border-t border-altivum-slate/30">
   <p className="text-center text-altivum-silver" style={typography.smallText}>
@@ -206,6 +208,7 @@ Place after /chat in the array. Low priority (0.3) since it's a utility page, an
 ### Task 5: Verify and Test
 
 **Checklist:**
+
 - [ ] Build completes without errors (`npm run build`)
 - [ ] Page accessible at /privacy
 - [ ] All sections render correctly
@@ -219,12 +222,12 @@ Place after /chat in the array. Low priority (0.3) since it's a utility page, an
 
 ## Files Modified Summary
 
-| File | Changes |
-|------|---------|
-| `src/pages/Privacy.tsx` | New file - Privacy Policy page |
-| `src/App.tsx` | Import + Route for /privacy |
-| `src/components/Footer.tsx` | Add Privacy Policy link |
-| `scripts/generate-sitemap.js` | Add /privacy to static pages |
+| File                          | Changes                        |
+| ----------------------------- | ------------------------------ |
+| `src/pages/Privacy.tsx`       | New file - Privacy Policy page |
+| `src/App.tsx`                 | Import + Route for /privacy    |
+| `src/components/Footer.tsx`   | Add Privacy Policy link        |
+| `scripts/generate-sitemap.js` | Add /privacy to static pages   |
 
 ---
 
@@ -233,6 +236,7 @@ Place after /chat in the array. Low priority (0.3) since it's a utility page, an
 This privacy policy is for a personal/small business website. For complex business operations or specific legal requirements, consult with a legal professional.
 
 Key compliance considerations:
+
 - **GDPR (EU):** Right to access, deletion, data portability
 - **CCPA (California):** Right to know, delete, opt-out of sale
 - **General:** Clear disclosure of data practices, contact method for inquiries
@@ -242,6 +246,7 @@ Key compliance considerations:
 ## Post-Implementation
 
 After deployment:
+
 - Update ideas-to-consider.md to mark as complete
 - Consider adding Google Analytics privacy disclosure if analytics added in future
 - Review annually for accuracy

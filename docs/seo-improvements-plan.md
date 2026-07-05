@@ -9,15 +9,15 @@
 
 ## Progress Tracker
 
-| # | Task | Priority | Status | Effort |
-|---|------|----------|--------|--------|
-| 1 | Add `/chat` to sitemap | High | [x] Complete | 5 min |
-| 2 | Add `noindex` prop to SEO component | High | [x] Complete | 10 min |
-| 3 | Apply `noindex` to 404 states | High | [x] Complete | 5 min |
-| 4 | Add article-specific OG tags | Medium | [x] Complete | 20 min |
-| 5 | Add hreflang tags | Low | [x] Complete | 10 min |
-| 6 | Add wordCount to BlogPosting schema | Low | [x] Complete | 15 min |
-| 7 | Verify and test all changes | High | [x] Complete | 15 min |
+| #   | Task                                | Priority | Status       | Effort |
+| --- | ----------------------------------- | -------- | ------------ | ------ |
+| 1   | Add `/chat` to sitemap              | High     | [x] Complete | 5 min  |
+| 2   | Add `noindex` prop to SEO component | High     | [x] Complete | 10 min |
+| 3   | Apply `noindex` to 404 states       | High     | [x] Complete | 5 min  |
+| 4   | Add article-specific OG tags        | Medium   | [x] Complete | 20 min |
+| 5   | Add hreflang tags                   | Low      | [x] Complete | 10 min |
+| 6   | Add wordCount to BlogPosting schema | Low      | [x] Complete | 15 min |
+| 7   | Verify and test all changes         | High     | [x] Complete | 15 min |
 
 **Actual Total Time:** ~30 minutes
 
@@ -32,6 +32,7 @@
 **Current State:** The `/chat` route exists in the app but is not included in the sitemap's static pages array.
 
 **Implementation:**
+
 1. Open `scripts/generate-sitemap.js`
 2. Add the chat page to the `staticPages` array after `/beyond-the-assessment`:
    ```javascript
@@ -39,6 +40,7 @@
    ```
 
 **Verification:**
+
 - Run `npm run build`
 - Check `dist/sitemap.xml` contains the `/chat` URL
 
@@ -51,7 +53,9 @@
 **Current State:** The SEO component doesn't support a `noindex` prop for pages that shouldn't be indexed (404 pages, search results, etc.).
 
 **Implementation:**
+
 1. Add `noindex` to the `SEOProps` interface:
+
    ```typescript
    interface SEOProps {
      title: string;
@@ -62,20 +66,21 @@
      type?: 'website' | 'article' | 'profile' | 'book';
      breadcrumbs?: BreadcrumbItem[];
      faq?: FAQItem[];
-     noindex?: boolean;  // NEW
-     datePublished?: string;  // NEW - for article OG tags
-     dateModified?: string;   // NEW - for article OG tags
+     noindex?: boolean; // NEW
+     datePublished?: string; // NEW - for article OG tags
+     dateModified?: string; // NEW - for article OG tags
    }
    ```
 
 2. Add conditional robots meta tag inside the `<Helmet>` component:
    ```tsx
-   {noindex && (
-     <meta name="robots" content="noindex, nofollow" />
-   )}
+   {
+     noindex && <meta name="robots" content="noindex, nofollow" />;
+   }
    ```
 
 **Verification:**
+
 - Build passes without TypeScript errors
 - Test by temporarily adding `noindex={true}` to a page and inspecting the HTML
 
@@ -84,11 +89,13 @@
 ### Task 3: Apply `noindex` to 404 States
 
 **Files:**
+
 - `src/pages/BlogPost.tsx` (404 state for missing posts)
 
 **Current State:** The 404 state in BlogPost.tsx renders SEO tags but doesn't prevent indexing.
 
 **Implementation:**
+
 1. In `BlogPost.tsx`, update the 404 SEO component (around line 97):
    ```tsx
    <SEO
@@ -100,6 +107,7 @@
    ```
 
 **Verification:**
+
 - Navigate to a non-existent blog post URL
 - Inspect page source for `<meta name="robots" content="noindex, nofollow" />`
 
@@ -112,23 +120,29 @@
 **Current State:** Blog posts don't include `article:published_time`, `article:modified_time`, or `article:author` OG tags.
 
 **Implementation:**
+
 1. Update the SEOProps interface to include `datePublished` and `dateModified` (if not already done in Task 2)
 
 2. Add article-specific OG tags inside `<Helmet>`, after the existing OG tags:
+
    ```tsx
-   {/* Article-specific Open Graph tags */}
-   {type === 'article' && datePublished && (
-     <meta property="article:published_time" content={datePublished} />
-   )}
-   {type === 'article' && dateModified && (
-     <meta property="article:modified_time" content={dateModified} />
-   )}
-   {type === 'article' && (
-     <>
-       <meta property="article:author" content="https://thechrisgrey.com/about" />
-       <meta property="article:section" content="Technology" />
-     </>
-   )}
+   {
+     /* Article-specific Open Graph tags */
+   }
+   {
+     type === 'article' && datePublished && <meta property="article:published_time" content={datePublished} />;
+   }
+   {
+     type === 'article' && dateModified && <meta property="article:modified_time" content={dateModified} />;
+   }
+   {
+     type === 'article' && (
+       <>
+         <meta property="article:author" content="https://thechrisgrey.com/about" />
+         <meta property="article:section" content="Technology" />
+       </>
+     );
+   }
    ```
 
 3. Update `BlogPost.tsx` to pass the new props (around line 126):
@@ -147,6 +161,7 @@
    ```
 
 **Verification:**
+
 - Navigate to a blog post
 - Inspect page source for `article:published_time` and `article:author` meta tags
 - Test with [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
@@ -160,6 +175,7 @@
 **Current State:** No hreflang tags present. While the site is English-only, explicit hreflang helps search engines understand language targeting.
 
 **Implementation:**
+
 1. Add hreflang link tags inside `<Helmet>`, after the canonical link:
    ```tsx
    <link rel="canonical" href={url} />
@@ -168,6 +184,7 @@
    ```
 
 **Verification:**
+
 - Inspect any page's source for hreflang link tags
 - Validate with [Google Search Console](https://search.google.com/search-console)
 
@@ -180,7 +197,9 @@
 **Current State:** The BlogPosting structured data doesn't include `wordCount`, which is a recommended property for article schemas.
 
 **Implementation:**
+
 1. Create a utility function to extract text and count words from Portable Text:
+
    ```typescript
    // Add at the top of BlogPost.tsx or in a utility file
    const getWordCount = (body: any[]): number => {
@@ -188,8 +207,8 @@
 
      const extractText = (blocks: any[]): string => {
        return blocks
-         .filter(block => block._type === 'block')
-         .map(block => {
+         .filter((block) => block._type === 'block')
+         .map((block) => {
            if (block.children) {
              return block.children
                .filter((child: any) => child._type === 'span')
@@ -202,7 +221,7 @@
      };
 
      const text = extractText(body);
-     return text.split(/\s+/).filter(word => word.length > 0).length;
+     return text.split(/\s+/).filter((word) => word.length > 0).length;
    };
    ```
 
@@ -224,6 +243,7 @@
    ```
 
 **Verification:**
+
 - Navigate to a blog post
 - Inspect page source for `"wordCount":` in the JSON-LD script
 - Validate with [Google Rich Results Test](https://search.google.com/test/rich-results)
@@ -233,6 +253,7 @@
 ### Task 7: Verify and Test All Changes
 
 **Tools:**
+
 - [Google Rich Results Test](https://search.google.com/test/rich-results)
 - [Schema.org Validator](https://validator.schema.org/)
 - [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
@@ -240,6 +261,7 @@
 - Browser DevTools (inspect page source)
 
 **Verification Checklist:**
+
 - [ ] Build completes without errors (`npm run build`)
 - [ ] Sitemap includes `/chat` URL
 - [ ] 404 pages have `noindex` meta tag
@@ -254,11 +276,11 @@
 
 ## Files Modified Summary
 
-| File | Changes |
-|------|---------|
-| `scripts/generate-sitemap.js` | Add `/chat` to static pages |
-| `src/components/SEO.tsx` | Add `noindex`, `datePublished`, `dateModified` props; add article OG tags; add hreflang tags |
-| `src/pages/BlogPost.tsx` | Add `noindex` to 404 state; pass date props to SEO; add wordCount to schema |
+| File                          | Changes                                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `scripts/generate-sitemap.js` | Add `/chat` to static pages                                                                  |
+| `src/components/SEO.tsx`      | Add `noindex`, `datePublished`, `dateModified` props; add article OG tags; add hreflang tags |
+| `src/pages/BlogPost.tsx`      | Add `noindex` to 404 state; pass date props to SEO; add wordCount to schema                  |
 
 ---
 
@@ -279,6 +301,7 @@ These items were identified but are not part of this implementation plan:
 ## Completion Criteria
 
 This plan is complete when:
+
 1. All 7 tasks are marked as complete
 2. All verification steps pass
 3. Changes are deployed to production

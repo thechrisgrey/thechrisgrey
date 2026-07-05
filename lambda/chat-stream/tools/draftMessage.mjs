@@ -12,7 +12,11 @@ export function buildDraftMessageTool({ responseStream, metrics }) {
       "NEVER fabricate the visitor's name, email, or company — leave those fields blank for the visitor to fill in.",
     inputSchema: z.object({
       subject: z.string().min(4).max(120).describe("A short subject line for the message"),
-      body: z.string().min(20).max(1500).describe("Drafted message body — reference the visitor's intent; do not invent identity details"),
+      body: z
+        .string()
+        .min(20)
+        .max(1500)
+        .describe("Drafted message body — reference the visitor's intent; do not invent identity details"),
       intent: z
         .enum(["speaking", "podcast", "consulting", "collaboration", "media", "general"])
         .describe("The category of outreach"),

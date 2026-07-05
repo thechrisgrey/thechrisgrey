@@ -23,16 +23,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 if (!process.env.SANITY_CONTRACT_TESTS) {
-  test(
-    "sanity contract (skipped: set SANITY_CONTRACT_TESTS=1 to run against live Sanity)",
-    { skip: true },
-    () => {},
-  );
+  test("sanity contract (skipped: set SANITY_CONTRACT_TESTS=1 to run against live Sanity)", { skip: true }, () => {});
 } else {
   const { createClient } = await import("@sanity/client");
-  const { BLOG_CITE_QUERY, BLOG_FULL_POST_QUERY, BLOG_SEARCH_QUERY } = await import(
-    "../../shared/sanityQueries.mjs"
-  );
+  const { BLOG_CITE_QUERY, BLOG_FULL_POST_QUERY, BLOG_SEARCH_QUERY } = await import("../../shared/sanityQueries.mjs");
 
   // Matches src/sanity/client.ts exactly so we test the same surface the app uses.
   const client = createClient({
@@ -49,22 +43,18 @@ if (!process.env.SANITY_CONTRACT_TESTS) {
 
   const LIVE_TIMEOUT_MS = 30_000;
 
-  test(
-    "LIVE listing query returns posts with the required preview fields",
-    { timeout: LIVE_TIMEOUT_MS },
-    async () => {
-      const posts = await client.fetch(LISTING_QUERY);
-      assert.ok(Array.isArray(posts), "listing must return an array");
-      assert.ok(posts.length > 0, "live project must contain at least one published post for this contract");
-      for (const p of posts) {
-        assert.equal(typeof p._id, "string", "_id must be a string");
-        assert.equal(typeof p.title, "string", "title must be a string");
-        assert.equal(typeof p.slug, "string", "slug.current must project to a string");
-        assert.equal(typeof p.excerpt, "string", "excerpt must be a string");
-        assert.equal(typeof p.publishedAt, "string", "publishedAt must be a string");
-      }
-    },
-  );
+  test("LIVE listing query returns posts with the required preview fields", { timeout: LIVE_TIMEOUT_MS }, async () => {
+    const posts = await client.fetch(LISTING_QUERY);
+    assert.ok(Array.isArray(posts), "listing must return an array");
+    assert.ok(posts.length > 0, "live project must contain at least one published post for this contract");
+    for (const p of posts) {
+      assert.equal(typeof p._id, "string", "_id must be a string");
+      assert.equal(typeof p.title, "string", "title must be a string");
+      assert.equal(typeof p.slug, "string", "slug.current must project to a string");
+      assert.equal(typeof p.excerpt, "string", "excerpt must be a string");
+      assert.equal(typeof p.publishedAt, "string", "publishedAt must be a string");
+    }
+  });
 
   test(
     "LIVE BLOG_FULL_POST_QUERY + BLOG_CITE_QUERY resolve a real slug to the expected shape",
@@ -87,23 +77,15 @@ if (!process.env.SANITY_CONTRACT_TESTS) {
     },
   );
 
-  test(
-    "LIVE single-post query returns null for a nonexistent slug",
-    { timeout: LIVE_TIMEOUT_MS },
-    async () => {
-      const missing = await client.fetch(BLOG_FULL_POST_QUERY, {
-        slug: "this-slug-does-not-exist-contract-test",
-      });
-      assert.equal(missing, null, "a nonexistent slug must resolve to null");
-    },
-  );
+  test("LIVE single-post query returns null for a nonexistent slug", { timeout: LIVE_TIMEOUT_MS }, async () => {
+    const missing = await client.fetch(BLOG_FULL_POST_QUERY, {
+      slug: "this-slug-does-not-exist-contract-test",
+    });
+    assert.equal(missing, null, "a nonexistent slug must resolve to null");
+  });
 
-  test(
-    "LIVE BLOG_SEARCH_QUERY executes and returns an array",
-    { timeout: LIVE_TIMEOUT_MS },
-    async () => {
-      const results = await client.fetch(BLOG_SEARCH_QUERY, { q: "a*", limit: 5 });
-      assert.ok(Array.isArray(results), "search must return an array (may be empty)");
-    },
-  );
+  test("LIVE BLOG_SEARCH_QUERY executes and returns an array", { timeout: LIVE_TIMEOUT_MS }, async () => {
+    const results = await client.fetch(BLOG_SEARCH_QUERY, { q: "a*", limit: 5 });
+    assert.ok(Array.isArray(results), "search must return an array (may be empty)");
+  });
 }

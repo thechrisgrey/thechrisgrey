@@ -3,9 +3,9 @@ import { typography } from '../utils/typography';
 import type { PodcastGuest } from '../sanity';
 
 const BRANCH_LABELS: Record<string, string> = {
-  'army': 'U.S. Army',
-  'navy': 'U.S. Navy',
-  'marines': 'U.S. Marine Corps',
+  army: 'U.S. Army',
+  navy: 'U.S. Navy',
+  marines: 'U.S. Marine Corps',
   'air-force': 'U.S. Air Force',
   'space-force': 'U.S. Space Force',
   'coast-guard': 'U.S. Coast Guard',
@@ -38,9 +38,7 @@ const GuestCard = ({ guest }: GuestCardProps) => {
       </h3>
       <p className={`text-altivum-silver text-sm ${guest.branch ? 'mb-1' : 'mb-4'}`}>{guest.role}</p>
       {guest.branch && (
-        <p className="text-altivum-gold text-xs uppercase tracking-wider mb-4">
-          {BRANCH_LABELS[guest.branch]}
-        </p>
+        <p className="text-altivum-gold text-xs uppercase tracking-wider mb-4">{BRANCH_LABELS[guest.branch]}</p>
       )}
 
       {/* Links */}

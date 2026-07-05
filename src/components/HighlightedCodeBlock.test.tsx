@@ -18,9 +18,7 @@ describe('HighlightedCodeBlock', () => {
   });
 
   it('should render the highlighted HTML once shiki loads', async () => {
-    const { container } = render(
-      <HighlightedCodeBlock code="const x = 1;" language="javascript" />
-    );
+    const { container } = render(<HighlightedCodeBlock code="const x = 1;" language="javascript" />);
 
     await waitFor(() => {
       // The mock returns a pre/code tag that gets rendered via innerHTML
@@ -36,9 +34,7 @@ describe('HighlightedCodeBlock', () => {
   });
 
   it('should not display filename when not provided', () => {
-    const { container } = render(
-      <HighlightedCodeBlock code="x = 1" language="python" />
-    );
+    const { container } = render(<HighlightedCodeBlock code="x = 1" language="python" />);
     // No filename div should exist
     expect(container.querySelector('.font-mono.text-xs')).not.toBeInTheDocument();
   });

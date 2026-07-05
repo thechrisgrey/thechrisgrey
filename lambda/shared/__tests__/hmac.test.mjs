@@ -72,7 +72,10 @@ for (const cfg of CONFIGS) {
 
   test(`[${cfg.name}] expired timestamp fails`, () => {
     const body = "{}";
-    const event = makeEvent({ body, headers: signWith(body, KEY, { offsetSeconds: -(SIGNATURE_MAX_AGE_SECONDS + 10) }) });
+    const event = makeEvent({
+      body,
+      headers: signWith(body, KEY, { offsetSeconds: -(SIGNATURE_MAX_AGE_SECONDS + 10) }),
+    });
     assert.deepEqual(verify(event, KEY), { valid: false, error: "expired_timestamp" });
   });
 
@@ -99,7 +102,10 @@ for (const cfg of CONFIGS) {
 
   test(`[${cfg.name}] right-length-but-wrong-bytes signature fails`, () => {
     const ts = String(Math.floor(Date.now() / 1000));
-    const event = makeEvent({ body: "{}", headers: { [cfg.timestampHeader]: ts, [cfg.signatureHeader]: "0".repeat(64) } });
+    const event = makeEvent({
+      body: "{}",
+      headers: { [cfg.timestampHeader]: ts, [cfg.signatureHeader]: "0".repeat(64) },
+    });
     assert.deepEqual(verify(event, KEY), { valid: false, error: "invalid_signature" });
   });
 

@@ -3,7 +3,15 @@ import { z } from "zod";
 import { putFact, MAX_FACT_LENGTH } from "../memory.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
-export function buildRememberFactTool({ docClient, PutCommand, deviceId, responseStream, metrics, requestId, timeoutMs }) {
+export function buildRememberFactTool({
+  docClient,
+  PutCommand,
+  deviceId,
+  responseStream,
+  metrics,
+  requestId,
+  timeoutMs,
+}) {
   return tool({
     name: "remember_fact",
     description:
@@ -17,7 +25,9 @@ export function buildRememberFactTool({ docClient, PutCommand, deviceId, respons
         .string()
         .min(4)
         .max(MAX_FACT_LENGTH)
-        .describe("Third-person fact about the visitor, e.g. 'Is preparing for SFAS' or 'Runs a fintech startup in Dallas'"),
+        .describe(
+          "Third-person fact about the visitor, e.g. 'Is preparing for SFAS' or 'Runs a fintech startup in Dallas'",
+        ),
     }),
     callback: async ({ fact }) => {
       if (!deviceId) {
@@ -41,18 +51,18 @@ export function buildRememberFactTool({ docClient, PutCommand, deviceId, respons
         // two are separable in CloudWatch and the visitor gets accurate copy.
         const timedOut = error?.name === "TimeoutError";
         metrics?.record(timedOut ? "ToolTimeout_RememberFact" : "ToolFailure_RememberFact");
-        console.error(JSON.stringify({
-          requestId,
-          event: "tool_error",
-          tool: "remember_fact",
-          error: error.name,
-          message: error.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "tool_error",
+            tool: "remember_fact",
+            error: error.name,
+            message: error.message,
+          }),
+        );
         return {
           ok: false,
-          error: timedOut
-            ? "Unable to save that right now — it timed out."
-            : "Unable to save that right now.",
+          error: timedOut ? "Unable to save that right now — it timed out." : "Unable to save that right now.",
         };
       }
     },

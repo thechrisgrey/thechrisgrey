@@ -10,15 +10,13 @@ const renderNotFound = () =>
       <MemoryRouter initialEntries={['/does-not-exist']}>
         <NotFound />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 
 describe('NotFound Page Integration', () => {
   it('renders the page heading and recovery copy', () => {
     renderNotFound();
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Page Not Found' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Page Not Found' })).toBeInTheDocument();
   });
 
   it('hides the decorative "404" glyph from the accessibility tree', () => {
@@ -30,14 +28,8 @@ describe('NotFound Page Integration', () => {
   it('exposes the primary recovery CTAs as routable links', () => {
     renderNotFound();
     expect(screen.getByRole('link', { name: 'Go Home' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Read the Blog' })).toHaveAttribute(
-      'href',
-      '/blog'
-    );
-    expect(screen.getByRole('link', { name: 'Get in Touch' })).toHaveAttribute(
-      'href',
-      '/contact'
-    );
+    expect(screen.getByRole('link', { name: 'Read the Blog' })).toHaveAttribute('href', '/blog');
+    expect(screen.getByRole('link', { name: 'Get in Touch' })).toHaveAttribute('href', '/contact');
   });
 
   it('gives the primary CTA a comfortable tap-target height and press feedback', () => {

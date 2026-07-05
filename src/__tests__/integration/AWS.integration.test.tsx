@@ -35,7 +35,7 @@ const renderAWS = () => {
       <MemoryRouter initialEntries={['/aws']}>
         <AWS />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -72,7 +72,7 @@ describe('AWS Page Integration', () => {
       expect(
         screen.getByText((_content, element) => {
           return element?.tagName === 'P' && element.textContent === 'AWS Community Builder';
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -81,7 +81,7 @@ describe('AWS Page Integration', () => {
       expect(
         screen.getByText((_content, element) => {
           return element?.tagName === 'P' && element.textContent?.trim() === 'AI Engineering';
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -92,7 +92,7 @@ describe('AWS Page Integration', () => {
           if (element?.tagName !== 'P') return false;
           const text = element.textContent || '';
           return text.includes('AWS Community Builders') && text.includes('program provides');
-        })
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -100,9 +100,7 @@ describe('AWS Page Integration', () => {
   describe('Infrastructure Topology section', () => {
     it('renders "The Stack" section heading', () => {
       renderAWS();
-      expect(
-        screen.getByRole('heading', { name: /the stack/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /the stack/i })).toBeInTheDocument();
     });
 
     it('renders all 6 cluster labels in the 2D fallback', () => {

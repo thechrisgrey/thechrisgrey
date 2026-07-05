@@ -1,28 +1,28 @@
-import { useState, useEffect, memo } from 'react'
-import { getHighlighter, isSupportedLanguage } from '../utils/shikiHighlighter'
+import { useState, useEffect, memo } from 'react';
+import { getHighlighter, isSupportedLanguage } from '../utils/shikiHighlighter';
 
 interface HighlightedCodeBlockProps {
-  code: string
-  language?: string
-  filename?: string
+  code: string;
+  language?: string;
+  filename?: string;
 }
 
 const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCodeBlockProps) => {
-  const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null)
+  const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function highlight() {
       try {
-        const lang = language && isSupportedLanguage(language) ? language : 'text'
-        const highlighter = await getHighlighter()
+        const lang = language && isSupportedLanguage(language) ? language : 'text';
+        const highlighter = await getHighlighter();
         const html = highlighter.codeToHtml(code, {
           lang,
           theme: 'github-dark',
-        })
+        });
         if (!cancelled) {
-          setHighlightedHtml(html)
+          setHighlightedHtml(html);
         }
       } catch {
         // Shiki failed to load or language unsupported — keep plain fallback
@@ -30,13 +30,13 @@ const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCode
     }
 
     if (code) {
-      highlight()
+      highlight();
     }
 
     return () => {
-      cancelled = true
-    }
-  }, [code, language])
+      cancelled = true;
+    };
+  }, [code, language]);
 
   return (
     <div className="my-6">
@@ -63,15 +63,11 @@ const HighlightedCodeBlock = memo(({ code, language, filename }: HighlightedCode
           <code>{code}</code>
         </pre>
       )}
-      {language && (
-        <div className="text-right text-xs text-altivum-silver mt-1">
-          {language}
-        </div>
-      )}
+      {language && <div className="text-right text-xs text-altivum-silver mt-1">{language}</div>}
     </div>
-  )
-})
+  );
+});
 
-HighlightedCodeBlock.displayName = 'HighlightedCodeBlock'
+HighlightedCodeBlock.displayName = 'HighlightedCodeBlock';
 
-export default HighlightedCodeBlock
+export default HighlightedCodeBlock;

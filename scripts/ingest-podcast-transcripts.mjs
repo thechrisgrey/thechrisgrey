@@ -105,8 +105,7 @@ function chunkCues(cues) {
       continue;
     }
     const spanned = cue.start - current.start;
-    const wouldOverflow =
-      spanned >= WINDOW_SECONDS || current.text.length + cue.text.length + 1 > WINDOW_MAX_CHARS;
+    const wouldOverflow = spanned >= WINDOW_SECONDS || current.text.length + cue.text.length + 1 > WINDOW_MAX_CHARS;
     if (wouldOverflow) {
       windows.push(current);
       current = { start: Math.floor(cue.start), text: cue.text };
@@ -195,7 +194,7 @@ async function main() {
   console.log(`     aws s3 sync ${STAGING_DIR} s3://${BUCKET}/ --region us-east-1 --delete`);
   console.log(`2. Start ingestion into the podcast KB:`);
   console.log(
-    `     aws bedrock-agent start-ingestion-job --knowledge-base-id ${KB_ID} --data-source-id ${DATA_SOURCE_ID} --region us-east-1`
+    `     aws bedrock-agent start-ingestion-job --knowledge-base-id ${KB_ID} --data-source-id ${DATA_SOURCE_ID} --region us-east-1`,
   );
   console.log('');
 

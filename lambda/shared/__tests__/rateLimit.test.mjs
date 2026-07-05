@@ -44,8 +44,7 @@ function throwingClient(error, { resetThrows = false } = {}) {
 }
 
 const OPTS = { table: "rl", ip: "1.2.3.4", maxRequests: 20, windowSeconds: 3600 };
-const conditionalFail = () =>
-  Object.assign(new Error("stale"), { name: "ConditionalCheckFailedException" });
+const conditionalFail = () => Object.assign(new Error("stale"), { name: "ConditionalCheckFailedException" });
 
 test("allows the maxRequests-th request (strict >, boundary is allowed)", async () => {
   const client = countingClient(20);
@@ -88,9 +87,7 @@ test("ConditionalCheckFailed whose reset also throws fails open with remaining -
 });
 
 test("any other DynamoDB error fails open with remaining -1", async () => {
-  const client = throwingClient(
-    Object.assign(new Error("boom"), { name: "ProvisionedThroughputExceededException" })
-  );
+  const client = throwingClient(Object.assign(new Error("boom"), { name: "ProvisionedThroughputExceededException" }));
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: -1 });
   assert.equal(client.calls.length, 1, "non-conditional errors must NOT trigger a reset send");

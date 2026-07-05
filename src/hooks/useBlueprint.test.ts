@@ -68,7 +68,10 @@ describe('useBlueprint', () => {
   });
 
   it('stores output + meta on a successful response', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, { ok: true, output: OUTPUT, meta: { tier: 'free', latency_ms: 1200 } })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => fakeResponse(200, { ok: true, output: OUTPUT, meta: { tier: 'free', latency_ms: 1200 } })),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -80,9 +83,7 @@ describe('useBlueprint', () => {
   });
 
   it('sends a signed-by-default POST with spec + deviceId in the body', async () => {
-    const fetchSpy = vi.fn(async () =>
-      fakeResponse(200, { ok: true, output: OUTPUT, meta: {} })
-    );
+    const fetchSpy = vi.fn(async () => fakeResponse(200, { ok: true, output: OUTPUT, meta: {} }));
     vi.stubGlobal('fetch', fetchSpy);
     const { result, act } = await setup();
     await act(async () => {
@@ -112,7 +113,10 @@ describe('useBlueprint', () => {
 
   for (const [status, body, kind] of errorCases) {
     it(`classifies HTTP ${status} as ${kind}`, async () => {
-      vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(status, body)));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => fakeResponse(status, body)),
+      );
       const { result, act } = await setup();
       await act(async () => {
         await result.current.generate(INPUT);
@@ -123,7 +127,12 @@ describe('useBlueprint', () => {
   }
 
   it('preserves validation details on a 400 invalid_input', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(400, { ok: false, error: 'validation', message: 'bad', details: { field: 'goal' } })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        fakeResponse(400, { ok: false, error: 'validation', message: 'bad', details: { field: 'goal' } }),
+      ),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -132,7 +141,10 @@ describe('useBlueprint', () => {
   });
 
   it('errors with unknown when an OK response is not ok-shaped', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, { ok: false })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => fakeResponse(200, { ok: false })),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -141,7 +153,10 @@ describe('useBlueprint', () => {
   });
 
   it('handles unparseable JSON on an error response without throwing', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(500, null, { jsonThrows: true })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => fakeResponse(500, null, { jsonThrows: true })),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -150,7 +165,12 @@ describe('useBlueprint', () => {
   });
 
   it('classifies a thrown network error as network', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('connection refused'); }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('connection refused');
+      }),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -159,7 +179,12 @@ describe('useBlueprint', () => {
   });
 
   it('classifies an AbortError as timeout', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw Object.assign(new Error('aborted'), { name: 'AbortError' }); }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw Object.assign(new Error('aborted'), { name: 'AbortError' });
+      }),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);
@@ -168,7 +193,10 @@ describe('useBlueprint', () => {
   });
 
   it('reset() clears output, meta, error and generating state', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, { ok: true, output: OUTPUT, meta: {} })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => fakeResponse(200, { ok: true, output: OUTPUT, meta: {} })),
+    );
     const { result, act } = await setup();
     await act(async () => {
       await result.current.generate(INPUT);

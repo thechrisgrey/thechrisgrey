@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Alti Chat Stream API
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Streaming chat endpoint powering Alti, the site's AI agent (Bedrock Claude
     Haiku 4.5 + Strands SDK + Knowledge Base RAG). Deployed as an AWS Lambda
@@ -40,9 +40,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ChatRequest"
+              $ref: '#/components/schemas/ChatRequest'
       responses:
-        "200":
+        '200':
           description: |
             Streamed response. Raw assistant text plus framed events. May instead
             carry a single `\x00SYS\x00`-prefixed system message on validation,
@@ -57,7 +57,7 @@ paths:
       summary: CORS preflight
       security: []
       responses:
-        "200":
+        '200':
           description: Empty body
   /forget:
     post:
@@ -72,14 +72,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ForgetRequest"
+              $ref: '#/components/schemas/ForgetRequest'
       responses:
-        "200":
+        '200':
           description: Forget result (streamed as a JSON string)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ForgetResponse"
+                $ref: '#/components/schemas/ForgetResponse'
 components:
   securitySchemes:
     sessionToken:
@@ -132,12 +132,12 @@ components:
           minItems: 1
           maxItems: 50
           items:
-            $ref: "#/components/schemas/ChatMessage"
+            $ref: '#/components/schemas/ChatMessage'
         pageContext:
-          $ref: "#/components/schemas/PageContext"
+          $ref: '#/components/schemas/PageContext'
         deviceId:
           type: string
-          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+          pattern: '^[a-zA-Z0-9_-]{8,64}$'
           description: Opaque device identifier; enables visitor memory when present.
     ForgetRequest:
       type: object
@@ -145,7 +145,7 @@ components:
       properties:
         deviceId:
           type: string
-          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+          pattern: '^[a-zA-Z0-9_-]{8,64}$'
     ForgetResponse:
       type: object
       required: [ok]

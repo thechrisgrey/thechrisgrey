@@ -89,6 +89,7 @@ fields @timestamp
 ### Cost Estimation Query
 
 Estimate costs based on token usage. Claude Haiku 4.5 pricing (as of Jan 2025):
+
 - Input: $0.80 per 1M tokens
 - Output: $4.00 per 1M tokens
 

@@ -48,7 +48,7 @@ const renderClaude = () => {
       <MemoryRouter initialEntries={['/claude']}>
         <Claude />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -83,7 +83,7 @@ describe('Claude Page Integration', () => {
             text.includes('AI systems I build') &&
             text.includes('Altivum Inc.')
           );
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -98,7 +98,7 @@ describe('Claude Page Integration', () => {
             text.includes('retrieval-augmented generation') &&
             text.includes('production-grade AI applications')
           );
-        })
+        }),
       ).toBeInTheDocument();
     });
 
@@ -108,11 +108,8 @@ describe('Claude Page Integration', () => {
         screen.getByText((_content, element) => {
           if (element?.tagName !== 'P') return false;
           const text = element.textContent || '';
-          return (
-            text.includes('applied side of AI engineering') &&
-            text.includes('building real systems')
-          );
-        })
+          return text.includes('applied side of AI engineering') && text.includes('building real systems');
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -120,9 +117,7 @@ describe('Claude Page Integration', () => {
   describe('Architecture X-Ray section', () => {
     it('renders "The Architecture" section heading', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /the architecture/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /the architecture/i })).toBeInTheDocument();
     });
 
     it('renders the pipeline diagram with accessible label', () => {
@@ -130,7 +125,7 @@ describe('Claude Page Integration', () => {
       expect(
         screen.getByRole('img', {
           name: /architecture pipeline diagram showing the alti chat data flow/i,
-        })
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -138,58 +133,36 @@ describe('Claude Page Integration', () => {
   describe('What I Build (Focus Areas) section', () => {
     it('renders the "What I Build" heading', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /what i build/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /what i build/i })).toBeInTheDocument();
     });
 
     it('renders all 3 focus area cards', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /conversational ai & rag/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('heading', { name: /ai-augmented development/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('heading', { name: /intelligent systems design/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /conversational ai & rag/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /ai-augmented development/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /intelligent systems design/i })).toBeInTheDocument();
     });
   });
 
   describe('How I Work With Claude section', () => {
     it('renders the "How I Work With Claude" heading', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /how i work with claude/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /how i work with claude/i })).toBeInTheDocument();
     });
 
     it('renders all 3 subsections (Production First, Human in the Loop, Full-Stack AI)', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /production first/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('heading', { name: /human in the loop/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('heading', { name: /full-stack ai/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /production first/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /human in the loop/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /full-stack ai/i })).toBeInTheDocument();
     });
   });
 
   describe('Anthropic Academy section', () => {
     it('renders the featured "Claude with Amazon Bedrock" certification', () => {
       renderClaude();
-      expect(
-        screen.getByRole('heading', { name: /claude with amazon bedrock/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByAltText(
-          'Certificate of Completion — Claude with Amazon Bedrock'
-        )
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /claude with amazon bedrock/i })).toBeInTheDocument();
+      expect(screen.getByAltText('Certificate of Completion — Claude with Amazon Bedrock')).toBeInTheDocument();
       expect(screen.getByText(/issued january 2026/i)).toBeInTheDocument();
     });
 
@@ -209,10 +182,7 @@ describe('Claude Page Integration', () => {
 
       const verifyLink = row!.querySelector('a');
       expect(verifyLink).not.toBeNull();
-      expect(verifyLink).toHaveAttribute(
-        'href',
-        'https://verify.skilljar.com/c/op29b22ona53'
-      );
+      expect(verifyLink).toHaveAttribute('href', 'https://verify.skilljar.com/c/op29b22ona53');
       expect(verifyLink).toHaveAttribute('target', '_blank');
       expect(verifyLink).toHaveAttribute('rel', 'noopener noreferrer');
     });
@@ -221,9 +191,7 @@ describe('Claude Page Integration', () => {
       renderClaude();
       const links = screen.getAllByRole('link', { name: /verify/i });
       const featuredLink = links.find(
-        (link) =>
-          link.getAttribute('href') ===
-          'https://verify.skilljar.com/c/chryt9ap866c'
+        (link) => link.getAttribute('href') === 'https://verify.skilljar.com/c/chryt9ap866c',
       );
       expect(featuredLink).toBeDefined();
       expect(featuredLink).toHaveAttribute('target', '_blank');
@@ -244,9 +212,7 @@ describe('Claude Page Integration', () => {
       renderClaude();
 
       await vi.waitFor(() => {
-        const scripts = document.querySelectorAll(
-          'script[type="application/ld+json"]'
-        );
+        const scripts = document.querySelectorAll('script[type="application/ld+json"]');
         const combined = Array.from(scripts)
           .map((s) => s.textContent || '')
           .join('\n');

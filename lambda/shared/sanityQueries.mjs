@@ -34,12 +34,34 @@ export const BLOG_FULL_POST_QUERY = `*[_type == "post" && slug.current == $slug]
 }`;
 
 const STOP_ONLY = new Set([
-  "the", "a", "an", "and", "or", "for", "to", "of", "in", "on", "at",
-  "is", "it", "be", "by", "as", "but", "if", "so", "do", "did", "was",
+  "the",
+  "a",
+  "an",
+  "and",
+  "or",
+  "for",
+  "to",
+  "of",
+  "in",
+  "on",
+  "at",
+  "is",
+  "it",
+  "be",
+  "by",
+  "as",
+  "but",
+  "if",
+  "so",
+  "do",
+  "did",
+  "was",
 ]);
 
 export function normalizeQuery(raw) {
-  return String(raw ?? "").trim().replace(/\s+/g, " ");
+  return String(raw ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 export function isMeaningful(query) {

@@ -72,7 +72,7 @@ export function useKbAdmin(getAccessToken: () => Promise<string | null>) {
       }
       return data;
     },
-    [getAccessToken]
+    [getAccessToken],
   );
 
   const fetchEntries = useCallback(async () => {
@@ -102,7 +102,7 @@ export function useKbAdmin(getAccessToken: () => Promise<string | null>) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const updateEntry = useCallback(
@@ -119,7 +119,7 @@ export function useKbAdmin(getAccessToken: () => Promise<string | null>) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const deleteEntry = useCallback(
@@ -133,7 +133,7 @@ export function useKbAdmin(getAccessToken: () => Promise<string | null>) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const publish = useCallback(async (): Promise<PublishResult> => {

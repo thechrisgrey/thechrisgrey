@@ -22,7 +22,7 @@ const NotFound = () => {
               fontSize: 'clamp(120px, 25vw, 200px)',
               fontWeight: 200,
               lineHeight: 1,
-              fontFamily: typography.heroHeader.fontFamily
+              fontFamily: typography.heroHeader.fontFamily,
             }}
           >
             404
@@ -68,19 +68,39 @@ const NotFound = () => {
             Or check out these pages:
           </p>
           <div className="flex flex-wrap justify-center gap-x-6">
-            <ViewTransitionLink to="/about" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
+            <ViewTransitionLink
+              to="/about"
+              className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
               About
             </ViewTransitionLink>
-            <ViewTransitionLink to="/altivum" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
+            <ViewTransitionLink
+              to="/altivum"
+              className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
               Altivum Inc.
             </ViewTransitionLink>
-            <ViewTransitionLink to="/podcast" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
+            <ViewTransitionLink
+              to="/podcast"
+              className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
               Podcast
             </ViewTransitionLink>
-            <ViewTransitionLink to="/beyond-the-assessment" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
+            <ViewTransitionLink
+              to="/beyond-the-assessment"
+              className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
               Book
             </ViewTransitionLink>
-            <ViewTransitionLink to="/chat" className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation" style={typography.smallText}>
+            <ViewTransitionLink
+              to="/chat"
+              className="inline-flex items-center min-h-[44px] px-2 text-altivum-silver hover:text-altivum-gold transition-colors touch-manipulation"
+              style={typography.smallText}
+            >
               AI Chat
             </ViewTransitionLink>
           </div>

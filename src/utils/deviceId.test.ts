@@ -1,18 +1,26 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import {
-  getOrCreateDeviceId,
-  clearDeviceId,
-  DEVICE_ID_STORAGE_KEY,
-} from './deviceId';
+import { getOrCreateDeviceId, clearDeviceId, DEVICE_ID_STORAGE_KEY } from './deviceId';
 
 class MemStorage implements Storage {
   private store = new Map<string, string>();
-  get length() { return this.store.size; }
-  clear() { this.store.clear(); }
-  getItem(k: string) { return this.store.has(k) ? this.store.get(k)! : null; }
-  key(i: number) { return Array.from(this.store.keys())[i] ?? null; }
-  removeItem(k: string) { this.store.delete(k); }
-  setItem(k: string, v: string) { this.store.set(k, String(v)); }
+  get length() {
+    return this.store.size;
+  }
+  clear() {
+    this.store.clear();
+  }
+  getItem(k: string) {
+    return this.store.has(k) ? this.store.get(k)! : null;
+  }
+  key(i: number) {
+    return Array.from(this.store.keys())[i] ?? null;
+  }
+  removeItem(k: string) {
+    this.store.delete(k);
+  }
+  setItem(k: string, v: string) {
+    this.store.set(k, String(v));
+  }
 }
 
 describe('deviceId', () => {
@@ -59,10 +67,14 @@ describe('deviceId', () => {
     const throwingStorage: Storage = {
       length: 0,
       clear: () => {},
-      getItem: () => { throw new Error('quota'); },
+      getItem: () => {
+        throw new Error('quota');
+      },
       key: () => null,
       removeItem: () => {},
-      setItem: () => { throw new Error('quota'); },
+      setItem: () => {
+        throw new Error('quota');
+      },
     };
     Object.defineProperty(window, 'localStorage', {
       configurable: true,

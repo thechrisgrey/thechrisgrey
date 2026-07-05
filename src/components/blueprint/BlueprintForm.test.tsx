@@ -8,9 +8,7 @@ const VALID_GOAL = 'A serverless RAG chat for my personal docs under thirty doll
 
 function setup(props?: Partial<Parameters<typeof BlueprintForm>[0]>) {
   const onSubmit = vi.fn<(input: BlueprintInput) => void>();
-  const utils = render(
-    <BlueprintForm onSubmit={onSubmit} isGenerating={false} {...props} />
-  );
+  const utils = render(<BlueprintForm onSubmit={onSubmit} isGenerating={false} {...props} />);
   return { onSubmit, ...utils };
 }
 
@@ -29,9 +27,7 @@ describe('BlueprintForm', () => {
       setup();
       expect(screen.getByLabelText('What are you building?')).toBeInTheDocument();
       expect(screen.getByLabelText('Workload type')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /generate blueprint/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /generate blueprint/i })).toBeInTheDocument();
     });
 
     it('renders all blueprint category options with their labels', () => {
@@ -43,7 +39,7 @@ describe('BlueprintForm', () => {
       expect(
         within(select).getByRole('option', {
           name: 'RAG (Retrieval-Augmented Generation)',
-        })
+        }),
       ).toBeInTheDocument();
       expect(within(select).getByRole('option', { name: 'AI Agent' })).toBeInTheDocument();
     });
@@ -56,9 +52,7 @@ describe('BlueprintForm', () => {
 
     it('shows the default helper text when the goal is empty', () => {
       setup();
-      expect(
-        screen.getByText('Describe the workload in your own words.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Describe the workload in your own words.')).toBeInTheDocument();
     });
 
     it('hides the advanced/optional fields by default', () => {
@@ -72,9 +66,7 @@ describe('BlueprintForm', () => {
   describe('goal validation', () => {
     it('disables submit when the goal is empty', () => {
       setup();
-      expect(
-        screen.getByRole('button', { name: /generate blueprint/i })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: /generate blueprint/i })).toBeDisabled();
     });
 
     it('disables submit and warns when the goal is too short', async () => {
@@ -82,21 +74,15 @@ describe('BlueprintForm', () => {
       setup();
       await user.type(screen.getByLabelText('What are you building?'), 'too short');
       expect(screen.getByText('At least 20 characters')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /generate blueprint/i })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: /generate blueprint/i })).toBeDisabled();
     });
 
     it('enables submit once the goal meets the minimum length', async () => {
       const user = userEvent.setup();
       setup();
       await user.type(screen.getByLabelText('What are you building?'), VALID_GOAL);
-      expect(
-        screen.getByText('Describe the workload in your own words.')
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /generate blueprint/i })
-      ).toBeEnabled();
+      expect(screen.getByText('Describe the workload in your own words.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /generate blueprint/i })).toBeEnabled();
     });
 
     it('reflects the trimmed character count in the counter', async () => {
@@ -176,9 +162,7 @@ describe('BlueprintForm', () => {
       const form = screen.getByLabelText('Blueprint spec form');
       (form as HTMLFormElement).requestSubmit();
       expect(onSubmit).not.toHaveBeenCalled();
-      expect(
-        screen.getByRole('button', { name: /generate blueprint/i })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: /generate blueprint/i })).toBeDisabled();
       // Ensure user is defined to keep the async setup consistent.
       expect(user).toBeDefined();
     });
@@ -317,10 +301,7 @@ describe('BlueprintForm', () => {
 
       await user.type(screen.getByLabelText('What are you building?'), VALID_GOAL);
       await user.click(screen.getByRole('button', { name: /optional details/i }));
-      await user.type(
-        screen.getByLabelText('Integrations (comma-separated)'),
-        'Stripe, , Salesforce ,'
-      );
+      await user.type(screen.getByLabelText('Integrations (comma-separated)'), 'Stripe, , Salesforce ,');
       await user.click(screen.getByRole('button', { name: /generate blueprint/i }));
 
       expect(lastInput(onSubmit).integrations).toEqual(['Stripe', 'Salesforce']);
@@ -337,10 +318,7 @@ describe('BlueprintForm', () => {
       await user.type(screen.getByLabelText('Monthly budget (USD)'), '250');
       await user.click(screen.getByRole('button', { name: 'GDPR' }));
       await user.click(screen.getByRole('button', { name: 'go' }));
-      await user.type(
-        screen.getByLabelText('Integrations (comma-separated)'),
-        'Stripe'
-      );
+      await user.type(screen.getByLabelText('Integrations (comma-separated)'), 'Stripe');
       await user.click(screen.getByRole('button', { name: /generate blueprint/i }));
 
       expect(lastInput(onSubmit)).toEqual({

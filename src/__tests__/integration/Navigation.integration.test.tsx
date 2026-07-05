@@ -11,7 +11,7 @@ const renderNavigation = (route = '/') => {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Navigation />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 };
 
@@ -104,33 +104,17 @@ describe('Navigation Integration', () => {
       await user.click(screen.getByRole('button', { name: /about menu/i }));
 
       await waitFor(() => {
-        expect(screen.getByRole('menuitem', { name: 'Personal Biography' })).toHaveAttribute(
+        expect(screen.getByRole('menuitem', { name: 'Personal Biography' })).toHaveAttribute('href', '/about');
+        expect(screen.getByRole('menuitem', { name: 'Altivum Inc' })).toHaveAttribute('href', '/altivum');
+        expect(screen.getByRole('menuitem', { name: 'The Altivum Foundation' })).toHaveAttribute('href', '/foundation');
+        expect(screen.getByRole('menuitem', { name: 'The Vector Podcast' })).toHaveAttribute('href', '/podcast');
+        expect(screen.getByRole('menuitem', { name: 'Beyond the Assessment' })).toHaveAttribute(
           'href',
-          '/about'
+          '/beyond-the-assessment',
         );
-        expect(screen.getByRole('menuitem', { name: 'Altivum Inc' })).toHaveAttribute(
-          'href',
-          '/altivum'
-        );
-        expect(
-          screen.getByRole('menuitem', { name: 'The Altivum Foundation' })
-        ).toHaveAttribute('href', '/foundation');
-        expect(screen.getByRole('menuitem', { name: 'The Vector Podcast' })).toHaveAttribute(
-          'href',
-          '/podcast'
-        );
-        expect(
-          screen.getByRole('menuitem', { name: 'Beyond the Assessment' })
-        ).toHaveAttribute('href', '/beyond-the-assessment');
-        expect(
-          screen.getByRole('menuitem', { name: 'Amazon Web Services' })
-        ).toHaveAttribute('href', '/aws');
-        expect(
-          screen.getByRole('menuitem', { name: 'Claude' })
-        ).toHaveAttribute('href', '/claude');
-        expect(
-          screen.getByRole('menuitem', { name: 'thechrisgrey Blueprint' })
-        ).toHaveAttribute('href', '/blueprint');
+        expect(screen.getByRole('menuitem', { name: 'Amazon Web Services' })).toHaveAttribute('href', '/aws');
+        expect(screen.getByRole('menuitem', { name: 'Claude' })).toHaveAttribute('href', '/claude');
+        expect(screen.getByRole('menuitem', { name: 'thechrisgrey Blueprint' })).toHaveAttribute('href', '/blueprint');
       });
     });
 

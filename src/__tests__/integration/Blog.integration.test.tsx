@@ -75,9 +75,7 @@ const mockPosts = [
     readingTime: 6,
     isFeatured: false,
     image: null,
-    tags: [
-      { _id: 'tag-3', title: 'Leadership', slug: { current: 'leadership' } },
-    ],
+    tags: [{ _id: 'tag-3', title: 'Leadership', slug: { current: 'leadership' } }],
     series: null,
     seriesOrder: null,
   },
@@ -108,7 +106,7 @@ const renderBlog = (route = '/blog') => {
       <MemoryRouter initialEntries={[route]}>
         <Blog />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -147,9 +145,7 @@ describe('Blog Page Integration', () => {
       renderBlog();
 
       await waitFor(() => {
-        expect(
-          screen.getByText('A deep dive into building production AI systems on AWS.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('A deep dive into building production AI systems on AWS.')).toBeInTheDocument();
       });
     });
 
@@ -304,9 +300,7 @@ describe('Blog Page Integration', () => {
         expect(screen.getByText('Cloud Architecture Series')).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByText('A multi-part series on cloud architecture.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('A multi-part series on cloud architecture.')).toBeInTheDocument();
 
       expect(screen.getByText('1 post in this series')).toBeInTheDocument();
     });

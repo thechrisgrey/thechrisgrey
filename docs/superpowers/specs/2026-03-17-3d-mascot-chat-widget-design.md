@@ -21,13 +21,13 @@ Replace the current gold circle FAB (floating action button) for the AI chat wid
 
 ### File Changes
 
-| File | Change |
-|------|--------|
-| `public/alti.glb` | NEW — Meshopt-compressed model served statically |
-| `src/components/chat/AltiMascot.tsx` | NEW — 3D canvas, model, lighting, hover animation |
-| `src/components/chat/ChatWidgetButton.tsx` | MODIFY — render AltiMascot instead of gold circle |
-| `src/components/chat/ChatWidget.tsx` | MINOR — pass `isOpen` to button for platform state |
-| `amplify.yml` | MODIFY — add cache header for `.glb` files |
+| File                                       | Change                                             |
+| ------------------------------------------ | -------------------------------------------------- |
+| `public/alti.glb`                          | NEW — Meshopt-compressed model served statically   |
+| `src/components/chat/AltiMascot.tsx`       | NEW — 3D canvas, model, lighting, hover animation  |
+| `src/components/chat/ChatWidgetButton.tsx` | MODIFY — render AltiMascot instead of gold circle  |
+| `src/components/chat/ChatWidget.tsx`       | MINOR — pass `isOpen` to button for platform state |
+| `amplify.yml`                              | MODIFY — add cache header for `.glb` files         |
 
 ### AltiMascot Component
 
@@ -52,16 +52,17 @@ AltiMascot (props: { isOpen })
 
 ### Interaction States
 
-| State | Model | Platform |
-|-------|-------|----------|
-| Idle | Static, scale 1.0 | Dark ellipse, subtle border |
-| Hover | Scale 1.1, smooth lerp | Unchanged |
-| Chat open | Static, scale 1.0 | Shows "X" close icon |
-| Chat open + hover | Scale 1.1 | "X" highlighted |
+| State             | Model                  | Platform                    |
+| ----------------- | ---------------------- | --------------------------- |
+| Idle              | Static, scale 1.0      | Dark ellipse, subtle border |
+| Hover             | Scale 1.1, smooth lerp | Unchanged                   |
+| Chat open         | Static, scale 1.0      | Shows "X" close icon        |
+| Chat open + hover | Scale 1.1              | "X" highlighted             |
 
 ### Accessibility
 
 The outer element in `ChatWidgetButton.tsx` remains a `<button>` to preserve:
+
 - Keyboard operability (Enter/Space activation)
 - `aria-label` and `aria-expanded` attributes
 - `focus-visible` ring styles
@@ -96,9 +97,11 @@ This gives smooth animation during hover transitions with zero cost at rest.
 ### Performance Strategy
 
 1. **Model compression**: One-time setup step:
+
    ```bash
    npx @gltf-transform/cli optimize alti.glb public/alti.glb --compress meshopt
    ```
+
    Meshopt runs entirely on the main thread with no Web Worker or CDN dependency, so no CSP changes are needed. Visually verify the output. If quality degrades, copy the original uncompressed file to `public/alti.glb` instead.
 
 2. **Lazy loading**: `React.lazy()` wraps AltiMascot. Loads only after page is interactive. No impact on LCP/FCP.
@@ -112,6 +115,7 @@ This gives smooth animation during hover transitions with zero cost at rest.
 No CSP changes needed. Three.js compiles WebGL shaders via `WebGLRenderingContext.compileShader()`, which is not governed by CSP directives. Meshopt compression (unlike Draco) does not spawn Web Workers or fetch from CDN, so the existing strict CSP (`worker-src 'none'`) is fully compatible.
 
 Add cache header for GLB files:
+
 ```yaml
 - pattern: '**/*.glb'
   headers:

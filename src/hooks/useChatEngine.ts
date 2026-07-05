@@ -89,10 +89,7 @@ export interface ChatEngineOptions {
 export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOptions) {
   const storageKey = options?.storageKey ?? CHAT_STORAGE_KEY;
   const seedMessages = options?.initialMessages ?? [initialWelcomeMessage];
-  const [messages, setMessages, clearMessages] = useSessionStorage<Message[]>(
-    storageKey,
-    seedMessages
-  );
+  const [messages, setMessages, clearMessages] = useSessionStorage<Message[]>(storageKey, seedMessages);
   const [isTyping, setIsTyping] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   // `streamingMessageId` state is what consumers (ChatWidgetPanel, AskTheVector,
@@ -166,14 +163,11 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
       setIsTyping(true);
 
       const allMessages = [
-        ...messagesRef.current.filter(
-          (m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0
-        ),
+        ...messagesRef.current.filter((m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0),
         userMessage,
       ];
-      const windowed = allMessages.length > MAX_HISTORY
-        ? allMessages.slice(allMessages.length - MAX_HISTORY)
-        : allMessages;
+      const windowed =
+        allMessages.length > MAX_HISTORY ? allMessages.slice(allMessages.length - MAX_HISTORY) : allMessages;
       const conversationHistory = windowed.map((msg) => ({
         role: msg.role,
         content: msg.content,
@@ -359,8 +353,8 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
                     !m.uiBlocks?.length &&
                     !m.toolActivity?.length &&
                     !m.memoryEvents?.length
-                  )
-              )
+                  ),
+              ),
             );
           }
         }
@@ -411,7 +405,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         }
       }
     },
-    [setMessages, pageContext]
+    [setMessages, pageContext],
   );
 
   const handleForgetMemory = useCallback(async (): Promise<{ ok: boolean; deleted?: number; error?: string }> => {
@@ -454,7 +448,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
     (suggestion: string) => {
       handleSend(suggestion);
     },
-    [handleSend]
+    [handleSend],
   );
 
   return {

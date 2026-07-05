@@ -76,12 +76,10 @@ function parseEvent(chunk) {
  * Mirrors lambda/blueprint/__tests__/harness.mjs `bedrockStreamResponse`:
  *   messageStart -> contentBlockDelta x N -> contentBlockStop -> messageStop -> metadata
  */
-function converseTextTurn(text, {
-  chunkSize = 8,
-  inputTokens = 150,
-  outputTokens = 300,
-  stopReason = "end_turn",
-} = {}) {
+function converseTextTurn(
+  text,
+  { chunkSize = 8, inputTokens = 150, outputTokens = 300, stopReason = "end_turn" } = {},
+) {
   const deltas = [];
   for (let i = 0; i < text.length; i += chunkSize) {
     deltas.push(text.slice(i, i + chunkSize));
@@ -354,10 +352,7 @@ test("index.mjs error classifier maps AbortError to the abort/timeout path, not 
   // An abort must take the first branch — never be reported as validation_failed.
   function classify(error) {
     if (error.name === "AbortError") return "abort_timeout";
-    if (
-      error.name === "ValidationException" &&
-      error.message?.toLowerCase().includes("guardrail")
-    ) {
+    if (error.name === "ValidationException" && error.message?.toLowerCase().includes("guardrail")) {
       return "guardrail_prestream";
     }
     if (error.name === "ThrottlingException" || error.name === "ServiceQuotaExceededException") {

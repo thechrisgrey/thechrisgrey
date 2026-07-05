@@ -1,9 +1,4 @@
-import {
-  Agent,
-  BedrockModel,
-  SlidingWindowConversationManager,
-  BeforeModelCallEvent,
-} from "@strands-agents/sdk";
+import { Agent, BedrockModel, SlidingWindowConversationManager, BeforeModelCallEvent } from "@strands-agents/sdk";
 import { emitEvent, EVENT_KINDS } from "./events.mjs";
 
 export const DEFAULT_REGION = "us-east-1";
@@ -103,14 +98,7 @@ function toolResultStatus(result) {
   return "success";
 }
 
-export async function streamAgentResponse({
-  agent,
-  userMessage,
-  responseStream,
-  cancelSignal,
-  metrics,
-  onText,
-} = {}) {
+export async function streamAgentResponse({ agent, userMessage, responseStream, cancelSignal, metrics, onText } = {}) {
   if (!agent) throw new Error("streamAgentResponse: agent is required");
   if (!userMessage) throw new Error("streamAgentResponse: userMessage is required");
   if (!responseStream) throw new Error("streamAgentResponse: responseStream is required");

@@ -33,9 +33,8 @@ const FALLBACK_CONTEXT_NOTE =
  * @returns {string}
  */
 export function buildAskAltiSystemPrompt(retrievedContext) {
-  const context = typeof retrievedContext === "string" && retrievedContext.trim()
-    ? retrievedContext.trim()
-    : FALLBACK_CONTEXT_NOTE;
+  const context =
+    typeof retrievedContext === "string" && retrievedContext.trim() ? retrievedContext.trim() : FALLBACK_CONTEXT_NOTE;
 
   return `${BASE_PROMPT}\nContext about Christian:\n\n${context}`;
 }

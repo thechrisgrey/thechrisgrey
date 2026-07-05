@@ -46,7 +46,9 @@ describe('AskTheVector', () => {
     setup();
     expect(screen.getByText('Ask The Vector')).toBeInTheDocument();
     expect(screen.getByText(/Try asking/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /What do guests say about leaving the military\?/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /What do guests say about leaving the military\?/i }),
+    ).toBeInTheDocument();
   });
 
   it('sends an example prompt when clicked', () => {

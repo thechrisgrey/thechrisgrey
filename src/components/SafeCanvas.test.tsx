@@ -53,9 +53,7 @@ describe('SafeCanvas', () => {
     // canvas shows through — NOT the full-screen "Something went wrong" page.
     expect(container).toBeEmptyDOMElement();
     expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /refresh page/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /refresh page/i })).not.toBeInTheDocument();
     errSpy.mockRestore();
   });
 });

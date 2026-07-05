@@ -23,16 +23,16 @@
 
 Implement in this order (rationale from the integrity review):
 
-| Step | Rec | Title | Why here | Hard dependency |
-|------|-----|-------|----------|-----------------|
-| 1 | **1** | Empty-assistant-message bug | Highest impact/effort; live bug; pure client logic; must precede Rec 7 (shared `handleSend`) | none |
-| 2 | **2** | Metrics IAM gap + drift check | HIGH security, LOW effort; land before Rec 5 (both edit `metrics/index.mjs`) | none |
-| 3 | **8** | Linkifier word-boundary | Smallest self-contained win; no shared files | none |
-| 4 | **7** | Streaming hardening (×3) | Shares `useChatEngine.ts` with Rec 1 — must follow it | **Rec 1** |
-| 5 | **5** | Rate-limiter tests + CI | Follows Rec 2 (both touch `metrics/index.mjs`); extends `package.json` | **Rec 2** |
-| 6 | **6** | SafeCanvas + WebGL gate | Lands the reconciled `Home.tsx`/`ChatWidgetButton.tsx` first | none |
-| 7 | **3** | Prerender step | Highest effort/risk; layers `isPrerender()` onto Rec 6's reconciled files | **Rec 6** |
-| 8 | **4** | Cognito bundle + doc drift | Lowest urgency; touches `package.json` last (after 2,3,5) | none |
+| Step | Rec   | Title                         | Why here                                                                                     | Hard dependency |
+| ---- | ----- | ----------------------------- | -------------------------------------------------------------------------------------------- | --------------- |
+| 1    | **1** | Empty-assistant-message bug   | Highest impact/effort; live bug; pure client logic; must precede Rec 7 (shared `handleSend`) | none            |
+| 2    | **2** | Metrics IAM gap + drift check | HIGH security, LOW effort; land before Rec 5 (both edit `metrics/index.mjs`)                 | none            |
+| 3    | **8** | Linkifier word-boundary       | Smallest self-contained win; no shared files                                                 | none            |
+| 4    | **7** | Streaming hardening (×3)      | Shares `useChatEngine.ts` with Rec 1 — must follow it                                        | **Rec 1**       |
+| 5    | **5** | Rate-limiter tests + CI       | Follows Rec 2 (both touch `metrics/index.mjs`); extends `package.json`                       | **Rec 2**       |
+| 6    | **6** | SafeCanvas + WebGL gate       | Lands the reconciled `Home.tsx`/`ChatWidgetButton.tsx` first                                 | none            |
+| 7    | **3** | Prerender step                | Highest effort/risk; layers `isPrerender()` onto Rec 6's reconciled files                    | **Rec 6**       |
+| 8    | **4** | Cognito bundle + doc drift    | Lowest urgency; touches `package.json` last (after 2,3,5)                                    | none            |
 
 **`package.json` is edited by Recs 2, 3, 5, and (optionally) 4.** Re-Read it before each edit. The edits are to different keys (`iam:drift` add, `build` line, `test:lambda` glob, optional `sideEffects`) so they do not overlap, but stale context will break an Edit.
 
@@ -78,17 +78,21 @@ const ChatWidgetButton = ({ isOpen, onClick }: ChatWidgetButtonProps) => {
 Same collision. Apply Rec 6's version first, then add `!isPrerender()`. The reconciled hero backdrop block (replacing current lines 117–126) is:
 
 ```tsx
-        {/* Living "signal field" backdrop. Mounted only when motion is allowed,
-            WebGL is supported, and we are not prerendering. */}
-        {!reducedMotion && checkWebGLSupport() && !isPrerender() && (
-          <div className="absolute inset-0" aria-hidden="true">
-            <SafeCanvas fallback={null}>
-              <Suspense fallback={null}>
-                <HeroCanvas heroRef={heroRef} />
-              </Suspense>
-            </SafeCanvas>
-          </div>
-        )}
+{
+  /* Living "signal field" backdrop. Mounted only when motion is allowed,
+            WebGL is supported, and we are not prerendering. */
+}
+{
+  !reducedMotion && checkWebGLSupport() && !isPrerender() && (
+    <div className="absolute inset-0" aria-hidden="true">
+      <SafeCanvas fallback={null}>
+        <Suspense fallback={null}>
+          <HeroCanvas heroRef={heroRef} />
+        </Suspense>
+      </SafeCanvas>
+    </div>
+  );
+}
 ```
 
 Required imports at the top of `Home.tsx` (combine — do not let Rec 3 drop `Suspense`): keep `Suspense` from `react`, and add `import SafeCanvas from '../components/SafeCanvas';` (Rec 6), `import { checkWebGLSupport } from '../utils/checkWebGL';` (Rec 6), `import { isPrerender } from '../utils/prerender';` (Rec 3). `HeroCanvas`'s fallback stays `null` because the base gradient at line 115 is the resting look (verified).
@@ -134,10 +138,10 @@ These fix concrete defects the integrity review found. **Apply them — the affe
 **PRC-6a (Rec 6, contradictory `beforeEach`):** Task 6.2 Step 1 gives two conflicting `beforeEach` bodies ("add one line" vs "reorder if needed"). The real `ChatWidgetButton.test.tsx` already has `reducedMotionRef` set then `vi.clearAllMocks()`. Make ONE exact edit: place `mockedCheckWebGL.mockReturnValue(true)` **after** `vi.clearAllMocks()` (because `clearAllMocks` resets the return value). Final `beforeEach`:
 
 ```ts
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockedCheckWebGL.mockReturnValue(true);
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockedCheckWebGL.mockReturnValue(true);
+});
 ```
 
 (Adapt to the file's existing `reducedMotionRef` line if present — keep it, just ensure the `mockReturnValue` is the last statement.)
@@ -150,7 +154,6 @@ These fix concrete defects the integrity review found. **Apply them — the affe
 
 Each section below is the granular, line-verified task list for one recommendation. Remember: the front-matter above overrides any section where they conflict (CR-* and PRC-*).
 
-
 ---
 
 ## Recommendation 1: Fix the empty-assistant-message conversation-poisoning bug
@@ -162,6 +165,7 @@ Each section below is the granular, line-verified task list for one recommendati
 **Depends on:** none
 
 **Files**
+
 - Modify: `src/hooks/useChatEngine.ts`
   - History builder, lines 147–157 (filter both empty-content and `isSystem` messages)
   - End-of-turn `firstOutput` cleanup, lines 303–314 (remove the dead empty placeholder)
@@ -172,33 +176,28 @@ Reference — current code being changed (verified line numbers):
 
 ```ts
 // src/hooks/useChatEngine.ts:147-157  (history builder)
-      const allMessages = [
-        ...messagesRef.current.filter((m) => m.id !== 'welcome'),
-        userMessage,
-      ];
-      const windowed = allMessages.length > MAX_HISTORY
-        ? allMessages.slice(allMessages.length - MAX_HISTORY)
-        : allMessages;
-      const conversationHistory = windowed.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+const allMessages = [...messagesRef.current.filter((m) => m.id !== 'welcome'), userMessage];
+const windowed = allMessages.length > MAX_HISTORY ? allMessages.slice(allMessages.length - MAX_HISTORY) : allMessages;
+const conversationHistory = windowed.map((msg) => ({
+  role: msg.role,
+  content: msg.content,
+}));
 ```
 
 ```ts
 // src/hooks/useChatEngine.ts:303-314  (end-of-turn, no output produced)
-          if (firstOutput) {
-            setIsTyping(false);
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: assistantMessageId,
-                role: 'assistant' as const,
-                content: 'I received an empty response. Please try again.',
-                timestamp: new Date(),
-              },
-            ]);
-          }
+if (firstOutput) {
+  setIsTyping(false);
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: assistantMessageId,
+      role: 'assistant' as const,
+      content: 'I received an empty response. Please try again.',
+      timestamp: new Date(),
+    },
+  ]);
+}
 ```
 
 Note for the implementer: the Lambda's guardrail/empty-text path (`lambda/chat-stream/index.mjs:310-332`) does NOT emit raw text — it sends a `GUARDRAIL` event plus a `\x00SYS\x00`-framed system message. The client's stream parser turns the SYS frame into a `part.kind === 'system'`, which `applyText(text, true)` (line 208) appends as a NEW message with `isSystem:true` (it does not fill the `assistantMessageId` placeholder). So on a guardrail turn, `firstOutput` becomes `false` (the SYS part counts as output), the `assistantMessageId` placeholder is created empty by `ensureMessage()` at line 274, and it lingers — that is the exact bubble we must drop. The history filter fix (Task 1.1) prevents replay; the cleanup fix (Task 1.2) removes the dead empty bubble from view.
@@ -210,102 +209,94 @@ Note for the implementer: the Lambda's guardrail/empty-text path (`lambda/chat-s
 - [ ] **Step 1: Write a failing regression test for the lingering empty placeholder.** Append this `describe` block at the end of `src/hooks/useChatEngine.test.ts`, immediately before the file's final closing `});` of the top-level `describe('useChatEngine', ...)`. It simulates a guardrail turn (SYS system message only, no text) for message #1, then sends message #2 and asserts the request body contains NO empty-content message.
 
 ```ts
-  describe('conversation-poisoning regression', () => {
-    it('should not replay a lingering empty assistant placeholder in the next request', async () => {
-      const encoder = new TextEncoder();
-      const SYSTEM_PREFIX = '\x00SYS\x00';
+describe('conversation-poisoning regression', () => {
+  it('should not replay a lingering empty assistant placeholder in the next request', async () => {
+    const encoder = new TextEncoder();
+    const SYSTEM_PREFIX = '\x00SYS\x00';
 
-      // Turn 1: backend empty-response path — only a SYS system message, no text.
-      const guardrailReader = {
-        read: vi
-          .fn()
-          .mockResolvedValueOnce({
-            done: false,
-            value: encoder.encode(
-              `${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`
-            ),
-          })
-          .mockResolvedValue({ done: true, value: undefined }),
-      };
-      // Turn 2: normal text reply.
-      const normalReader = {
-        read: vi
-          .fn()
-          .mockResolvedValueOnce({ done: false, value: encoder.encode('Sure thing') })
-          .mockResolvedValue({ done: true, value: undefined }),
-      };
-
-      const mockFetch = vi
+    // Turn 1: backend empty-response path — only a SYS system message, no text.
+    const guardrailReader = {
+      read: vi
         .fn()
-        .mockResolvedValueOnce({ ok: true, body: { getReader: () => guardrailReader } })
-        .mockResolvedValueOnce({ ok: true, body: { getReader: () => normalReader } });
-      vi.stubGlobal('fetch', mockFetch);
+        .mockResolvedValueOnce({
+          done: false,
+          value: encoder.encode(`${SYSTEM_PREFIX}I couldn't put together a response just now. Mind rephrasing?`),
+        })
+        .mockResolvedValue({ done: true, value: undefined }),
+    };
+    // Turn 2: normal text reply.
+    const normalReader = {
+      read: vi
+        .fn()
+        .mockResolvedValueOnce({ done: false, value: encoder.encode('Sure thing') })
+        .mockResolvedValue({ done: true, value: undefined }),
+    };
 
-      const { result } = renderHook(() => useChatEngine());
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, body: { getReader: () => guardrailReader } })
+      .mockResolvedValueOnce({ ok: true, body: { getReader: () => normalReader } });
+    vi.stubGlobal('fetch', mockFetch);
 
-      await act(async () => {
-        await result.current.handleSend('first');
-      });
-      await act(async () => {
-        await result.current.handleSend('second');
-      });
+    const { result } = renderHook(() => useChatEngine());
 
-      // The SECOND request body must not carry any empty-content message,
-      // and must not carry the system/error string as a fake assistant turn.
-      const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
-      expect(
-        secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)
-      ).toBe(false);
-      expect(
-        secondBody.messages.some((m: { content: string }) =>
-          m.content.includes("couldn't put together a response")
-        )
-      ).toBe(false);
+    await act(async () => {
+      await result.current.handleSend('first');
+    });
+    await act(async () => {
+      await result.current.handleSend('second');
     });
 
-    it('should not replay isSystem error bubbles as assistant turns', async () => {
-      const mockReader = {
-        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
-      };
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        body: { getReader: () => mockReader },
-      });
-      vi.stubGlobal('fetch', mockFetch);
-
-      // Seed sessionStorage with a non-empty isSystem assistant bubble.
-      window.sessionStorage.setItem(
-        CHAT_STORAGE_KEY,
-        JSON.stringify([
-          initialWelcomeMessage,
-          { id: 'user-1', role: 'user', content: 'earlier', timestamp: new Date() },
-          {
-            id: 'system-1',
-            role: 'assistant',
-            content: 'Rate limit exceeded.',
-            timestamp: new Date(),
-            isSystem: true,
-          },
-        ])
-      );
-
-      const { result } = renderHook(() => useChatEngine());
-
-      await act(async () => {
-        await result.current.handleSend('again');
-      });
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(
-        body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')
-      ).toBe(false);
-      // The real prior user turn is preserved.
-      expect(body.messages).toEqual([
-        { role: 'user', content: 'earlier' },
-        { role: 'user', content: 'again' },
-      ]);
-    });
+    // The SECOND request body must not carry any empty-content message,
+    // and must not carry the system/error string as a fake assistant turn.
+    const secondBody = JSON.parse(mockFetch.mock.calls[1][1].body);
+    expect(secondBody.messages.some((m: { content: string }) => m.content.trim().length === 0)).toBe(false);
+    expect(
+      secondBody.messages.some((m: { content: string }) => m.content.includes("couldn't put together a response")),
+    ).toBe(false);
   });
+
+  it('should not replay isSystem error bubbles as assistant turns', async () => {
+    const mockReader = {
+      read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+    };
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      body: { getReader: () => mockReader },
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    // Seed sessionStorage with a non-empty isSystem assistant bubble.
+    window.sessionStorage.setItem(
+      CHAT_STORAGE_KEY,
+      JSON.stringify([
+        initialWelcomeMessage,
+        { id: 'user-1', role: 'user', content: 'earlier', timestamp: new Date() },
+        {
+          id: 'system-1',
+          role: 'assistant',
+          content: 'Rate limit exceeded.',
+          timestamp: new Date(),
+          isSystem: true,
+        },
+      ]),
+    );
+
+    const { result } = renderHook(() => useChatEngine());
+
+    await act(async () => {
+      await result.current.handleSend('again');
+    });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.messages.some((m: { content: string }) => m.content === 'Rate limit exceeded.')).toBe(false);
+    // The real prior user turn is preserved.
+    expect(body.messages).toEqual([
+      { role: 'user', content: 'earlier' },
+      { role: 'user', content: 'again' },
+    ]);
+  });
+});
 ```
 
 - [ ] **Step 2: Run the new tests, expect FAIL.** The history builder currently only strips `id === 'welcome'`, so the empty placeholder and the `Rate limit exceeded.` bubble both leak into the body.
@@ -319,12 +310,10 @@ Expected: 2 failing tests (e.g. `expected true to be false` on the empty-content
 - [ ] **Step 3: Implement the sharpened filter.** Edit the history builder at `src/hooks/useChatEngine.ts:147-150` to also drop empty-trimmed-content messages and any `isSystem` message.
 
 ```ts
-      const allMessages = [
-        ...messagesRef.current.filter(
-          (m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0
-        ),
-        userMessage,
-      ];
+const allMessages = [
+  ...messagesRef.current.filter((m) => m.id !== 'welcome' && !m.isSystem && m.content.trim().length > 0),
+  userMessage,
+];
 ```
 
 - [ ] **Step 4: Run the new tests, expect PASS.**
@@ -360,39 +349,34 @@ On a guardrail turn the SYS frame flips `firstOutput` to `false`, so the `firstO
 - [ ] **Step 1: Write a failing test for the rendered dead bubble.** Append this test inside the `describe('conversation-poisoning regression', ...)` block added in Task 1.1.
 
 ```ts
-    it('should not leave a blank assistant bubble after a system-only turn', async () => {
-      const encoder = new TextEncoder();
-      const SYSTEM_PREFIX = '\x00SYS\x00';
-      const reader = {
-        read: vi
-          .fn()
-          .mockResolvedValueOnce({
-            done: false,
-            value: encoder.encode(`${SYSTEM_PREFIX}Rate limit exceeded.`),
-          })
-          .mockResolvedValue({ done: true, value: undefined }),
-      };
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } })
-      );
+it('should not leave a blank assistant bubble after a system-only turn', async () => {
+  const encoder = new TextEncoder();
+  const SYSTEM_PREFIX = '\x00SYS\x00';
+  const reader = {
+    read: vi
+      .fn()
+      .mockResolvedValueOnce({
+        done: false,
+        value: encoder.encode(`${SYSTEM_PREFIX}Rate limit exceeded.`),
+      })
+      .mockResolvedValue({ done: true, value: undefined }),
+  };
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => reader } }));
 
-      const { result } = renderHook(() => useChatEngine());
+  const { result } = renderHook(() => useChatEngine());
 
-      await act(async () => {
-        await result.current.handleSend('hello');
-      });
+  await act(async () => {
+    await result.current.handleSend('hello');
+  });
 
-      // No assistant message should have empty content.
-      const blankAssistant = result.current.messages.filter(
-        (m: Message) => m.role === 'assistant' && m.content.trim().length === 0
-      );
-      expect(blankAssistant).toHaveLength(0);
-      // The visible system message is still present.
-      expect(
-        result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')
-      ).toBe(true);
-    });
+  // No assistant message should have empty content.
+  const blankAssistant = result.current.messages.filter(
+    (m: Message) => m.role === 'assistant' && m.content.trim().length === 0,
+  );
+  expect(blankAssistant).toHaveLength(0);
+  // The visible system message is still present.
+  expect(result.current.messages.some((m: Message) => m.content === 'Rate limit exceeded.')).toBe(true);
+});
 ```
 
 - [ ] **Step 2: Run the test, expect FAIL.** The empty `assistantMessageId` placeholder created by `ensureMessage()` lingers.
@@ -406,27 +390,23 @@ Expected: `expected length 1 to be 0` (the blank placeholder is present).
 - [ ] **Step 3: Implement the end-of-turn cleanup.** Replace the `if (firstOutput)` block at `src/hooks/useChatEngine.ts:303-314` with one that ALSO prunes the empty placeholder when output WAS produced (the system-only / events-only case). The `assistantMessageId` is in closure scope here.
 
 ```ts
-          if (firstOutput) {
-            setIsTyping(false);
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: assistantMessageId,
-                role: 'assistant' as const,
-                content: 'I received an empty response. Please try again.',
-                timestamp: new Date(),
-              },
-            ]);
-          } else {
-            // Output WAS produced (e.g. a SYS system message or events only) but the
-            // assistant placeholder created by ensureMessage() never received any text.
-            // Drop the dead empty bubble so it neither renders nor poisons history.
-            setMessages((prev) =>
-              prev.filter(
-                (m) => !(m.id === assistantMessageId && m.content.trim().length === 0)
-              )
-            );
-          }
+if (firstOutput) {
+  setIsTyping(false);
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: assistantMessageId,
+      role: 'assistant' as const,
+      content: 'I received an empty response. Please try again.',
+      timestamp: new Date(),
+    },
+  ]);
+} else {
+  // Output WAS produced (e.g. a SYS system message or events only) but the
+  // assistant placeholder created by ensureMessage() never received any text.
+  // Drop the dead empty bubble so it neither renders nor poisons history.
+  setMessages((prev) => prev.filter((m) => !(m.id === assistantMessageId && m.content.trim().length === 0)));
+}
 ```
 
 - [ ] **Step 4: Run the new test, expect PASS.**
@@ -462,27 +442,24 @@ Not load-bearing for the poisoning bug — the Task 1.1/1.2 fixes resolve it reg
 - [ ] **Step 1: Write a test asserting unique, non-timestamp ids across two sends.** Append inside the `conversation-poisoning regression` block.
 
 ```ts
-    it('should assign unique message ids across rapid sends', async () => {
-      const mockReader = {
-        read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
-      };
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } })
-      );
+it('should assign unique message ids across rapid sends', async () => {
+  const mockReader = {
+    read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+  };
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, body: { getReader: () => mockReader } }));
 
-      const { result } = renderHook(() => useChatEngine());
+  const { result } = renderHook(() => useChatEngine());
 
-      await act(async () => {
-        await result.current.handleSend('one');
-      });
-      await act(async () => {
-        await result.current.handleSend('two');
-      });
+  await act(async () => {
+    await result.current.handleSend('one');
+  });
+  await act(async () => {
+    await result.current.handleSend('two');
+  });
 
-      const ids = result.current.messages.map((m: Message) => m.id);
-      expect(new Set(ids).size).toBe(ids.length); // all unique
-    });
+  const ids = result.current.messages.map((m: Message) => m.id);
+  expect(new Set(ids).size).toBe(ids.length); // all unique
+});
 ```
 
 - [ ] **Step 2: Run it (likely already PASSES with timestamp ids).**
@@ -502,7 +479,7 @@ Expected: passes today; this test guards against future regressions and document
 And `src/hooks/useChatEngine.ts:159`.
 
 ```ts
-      const assistantMessageId = `assistant-${crypto.randomUUID()}`;
+const assistantMessageId = `assistant-${crypto.randomUUID()}`;
 ```
 
 - [ ] **Step 4: Run the full file, expect PASS.**
@@ -541,18 +518,18 @@ npm run build
 
 Expected: build completes successfully (tsc passes, vite emits `dist/`). No commit needed if Tasks 1.1–1.3 already committed; if the build surfaces any incidental fix, commit it with a `chore(chat): ...` message.
 
-
 ---
 
 ## Recommendation 2: Patch the metrics Lambda DynamoDB IAM gap and add an IAM-drift check
 
-**Why it matters:** The metrics Lambda calls `checkRateLimit` (a DynamoDB `UpdateItem`) on two unauthenticated endpoints (`POST /vitals`, `POST /csp-report`), but its IAM policy grants zero DynamoDB actions. Because `checkRateLimit` *fails open* on any error, rate limiting is silently disabled on both public endpoints today — leaving them open to flooding (200/min and 100/min limits never enforced).
+**Why it matters:** The metrics Lambda calls `checkRateLimit` (a DynamoDB `UpdateItem`) on two unauthenticated endpoints (`POST /vitals`, `POST /csp-report`), but its IAM policy grants zero DynamoDB actions. Because `checkRateLimit` _fails open_ on any error, rate limiting is silently disabled on both public endpoints today — leaving them open to flooding (200/min and 100/min limits never enforced).
 
 **Impact:** HIGH (security — unauthenticated endpoints with no working rate limit) · **Effort:** LOW · **Risk:** LOW (adds a single scoped IAM action; mirrors a sibling Lambda's proven statement)
 
 **Depends on:** none
 
 **Files:**
+
 - **Modify** `lambda/metrics/iam-policy.json` (currently lines 1–24 — add a third statement)
 - **Modify** `lambda/metrics/index.mjs` (lines 228–234 and 248–254 — add `requestId`)
 - **Create** `scripts/iam-drift.sh` (new)
@@ -560,13 +537,14 @@ Expected: build completes successfully (tsc passes, vite emits `dist/`). No comm
 - **Test** `lambda/metrics/__tests__/iam-policy.test.mjs` (new — validates the merged JSON contract)
 
 **Verified facts (read before authoring):**
+
 - `lambda/metrics/iam-policy.json` has exactly two statements: `CloudWatchMetrics` and `CloudWatchLogs`. No `dynamodb:*`.
 - `lambda/kb-builder/iam-policy.json` lines 18–23 contain the correct mirror statement: `Sid: "RateLimitDynamoDB"`, `Action: "dynamodb:UpdateItem"`, `Resource: "arn:aws:dynamodb:us-east-1:205930636302:table/thechrisgrey-chat-ratelimit"`.
 - `lambda/shared/rateLimit.mjs` line 82 returns `{ allowed: true, remaining: -1 }` on any non-conditional error (fail-open), and lines 77–81 log structured JSON **only when `requestId` is truthy** (param defined at line 28, `requestId = null`).
-- `lambda/metrics/index.mjs` lines 228–234 and 248–254 call `checkRateLimit` *without* `requestId`. The handler already mints `const requestId = randomUUID();` at line 221 — it's in scope but unused at both call sites.
+- `lambda/metrics/index.mjs` lines 228–234 and 248–254 call `checkRateLimit` _without_ `requestId`. The handler already mints `const requestId = randomUUID();` at line 221 — it's in scope but unused at both call sites.
 - `lambda/chat-stream/index.mjs` line 161–168 is the reference pattern: it passes `requestId` into `checkRateLimit`.
 - **AWS CLI verified** (docs.aws.amazon.com, AWS CLI 2.34.63 reference): `aws iam get-role-policy --role-name <v> --policy-name <v>` and `aws iam put-role-policy --role-name <v> --policy-name <v> --policy-document <v>` (all three `put` flags required).
-- **Role-name trap (confirmed):** docs say chat-stream's role is `chat-stream-lambda-role` but CLAUDE.md (line 95) says the *real* role is `thechrisgrey-chat-stream-role`. Documented policy names also vary (`kb-builder-policy`, `thechrisgrey-blueprint-policy`, `chat-stream-permissions`). The `metrics`, `kb-sync`, and `mcp-server` role/policy names are **not documented anywhere in the repo**. A naive `thechrisgrey-<dir>-role` loop would mis-target. The drift script therefore uses an explicit, hand-verified map and **skips** any unmapped Lambda instead of guessing.
+- **Role-name trap (confirmed):** docs say chat-stream's role is `chat-stream-lambda-role` but CLAUDE.md (line 95) says the _real_ role is `thechrisgrey-chat-stream-role`. Documented policy names also vary (`kb-builder-policy`, `thechrisgrey-blueprint-policy`, `chat-stream-permissions`). The `metrics`, `kb-sync`, and `mcp-server` role/policy names are **not documented anywhere in the repo**. A naive `thechrisgrey-<dir>-role` loop would mis-target. The drift script therefore uses an explicit, hand-verified map and **skips** any unmapped Lambda instead of guessing.
 
 ---
 
@@ -606,20 +584,13 @@ The full merged file must read exactly:
     {
       "Sid": "CloudWatchMetrics",
       "Effect": "Allow",
-      "Action": [
-        "cloudwatch:PutMetricData",
-        "cloudwatch:GetMetricStatistics"
-      ],
+      "Action": ["cloudwatch:PutMetricData", "cloudwatch:GetMetricStatistics"],
       "Resource": "*"
     },
     {
       "Sid": "CloudWatchLogs",
       "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
       "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-metrics:*"
     },
     {
@@ -679,25 +650,22 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 - [ ] **Step 1: Write a failing test that asserts both call sites forward `requestId`.** Create `lambda/metrics/__tests__/requestId-propagation.test.mjs`. It mocks `checkRateLimit` via a captured spy through dependency injection — but since `index.mjs` imports `checkRateLimit` directly (not injected), the cheapest reliable check is a static-source assertion that both call sites include `requestId,`. Write:
 
 ```mjs
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, "..", "index.mjs"), "utf8");
+const src = readFileSync(join(here, '..', 'index.mjs'), 'utf8');
 
-test("both checkRateLimit calls forward requestId", () => {
+test('both checkRateLimit calls forward requestId', () => {
   // Each call block ends with "});" — count blocks that contain "requestId,"
-  const callBlocks = src.split("checkRateLimit(docClient, UpdateCommand, {").slice(1);
-  assert.equal(callBlocks.length, 2, "expected exactly 2 checkRateLimit call sites");
+  const callBlocks = src.split('checkRateLimit(docClient, UpdateCommand, {').slice(1);
+  assert.equal(callBlocks.length, 2, 'expected exactly 2 checkRateLimit call sites');
   for (const [i, block] of callBlocks.entries()) {
-    const body = block.slice(0, block.indexOf("});"));
-    assert.ok(
-      /\brequestId,/.test(body),
-      `checkRateLimit call #${i + 1} must pass requestId,`
-    );
+    const body = block.slice(0, block.indexOf('});'));
+    assert.ok(/\brequestId,/.test(body), `checkRateLimit call #${i + 1} must pass requestId,`);
   }
 });
 ```
@@ -713,51 +681,51 @@ Expected: a failing assertion like `checkRateLimit call #1 must pass requestId,`
 - [ ] **Step 3: Add `requestId` to the `/vitals` call site.** In `lambda/metrics/index.mjs`, change the block at lines 228–234:
 
 ```mjs
-      const { allowed: vitalsAllowed } = await checkRateLimit(docClient, UpdateCommand, {
-        table: "thechrisgrey-chat-ratelimit",
-        ip: clientIp,
-        prefix: "metrics-vitals-",
-        maxRequests: 200,
-        windowSeconds: 60,
-      });
+const { allowed: vitalsAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+  table: 'thechrisgrey-chat-ratelimit',
+  ip: clientIp,
+  prefix: 'metrics-vitals-',
+  maxRequests: 200,
+  windowSeconds: 60,
+});
 ```
 
 to:
 
 ```mjs
-      const { allowed: vitalsAllowed } = await checkRateLimit(docClient, UpdateCommand, {
-        table: "thechrisgrey-chat-ratelimit",
-        ip: clientIp,
-        prefix: "metrics-vitals-",
-        maxRequests: 200,
-        windowSeconds: 60,
-        requestId,
-      });
+const { allowed: vitalsAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+  table: 'thechrisgrey-chat-ratelimit',
+  ip: clientIp,
+  prefix: 'metrics-vitals-',
+  maxRequests: 200,
+  windowSeconds: 60,
+  requestId,
+});
 ```
 
 - [ ] **Step 4: Add `requestId` to the `/csp-report` call site.** In the same file, change the block at lines 248–254:
 
 ```mjs
-      const { allowed: cspAllowed } = await checkRateLimit(docClient, UpdateCommand, {
-        table: "thechrisgrey-chat-ratelimit",
-        ip: clientIp,
-        prefix: "metrics-csp-",
-        maxRequests: 100,
-        windowSeconds: 60,
-      });
+const { allowed: cspAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+  table: 'thechrisgrey-chat-ratelimit',
+  ip: clientIp,
+  prefix: 'metrics-csp-',
+  maxRequests: 100,
+  windowSeconds: 60,
+});
 ```
 
 to:
 
 ```mjs
-      const { allowed: cspAllowed } = await checkRateLimit(docClient, UpdateCommand, {
-        table: "thechrisgrey-chat-ratelimit",
-        ip: clientIp,
-        prefix: "metrics-csp-",
-        maxRequests: 100,
-        windowSeconds: 60,
-        requestId,
-      });
+const { allowed: cspAllowed } = await checkRateLimit(docClient, UpdateCommand, {
+  table: 'thechrisgrey-chat-ratelimit',
+  ip: clientIp,
+  prefix: 'metrics-csp-',
+  maxRequests: 100,
+  windowSeconds: 60,
+  requestId,
+});
 ```
 
 - [ ] **Step 5: Run the test, expect PASS.**
@@ -1025,18 +993,18 @@ last request status: 429
 
 **Done-when:** `lambda/metrics/iam-policy.json` carries the `RateLimitDynamoDB` statement; both `checkRateLimit` calls in `lambda/metrics/index.mjs` pass `requestId`; `node --test lambda/metrics/__tests__/requestId-propagation.test.mjs` passes; `npm run iam:drift` reports `OK metrics`; and a 201-request burst against `/vitals` returns 429.
 
-
 ---
 
 ## Recommendation 3: Add a post-build prerender step for crawler / social / LLM visibility
 
-**Why it matters:** This is a pure client-side-rendered SPA — `public/_redirects` serves the generic `index.html` for every route (its hardcoded `og:url`/`og:title` point at the homepage), and all per-route SEO is injected at runtime by `react-helmet-async` (`src/components/SEO.tsx`). Non-JS consumers (Open Graph scrapers, the X cardbot, LLM crawlers, first-wave Googlebot) therefore see homepage metadata for *every* URL, including each `/blog/:slug`, wasting the strong per-page JSON-LD `@graph` (the `BlogPosting` node built in `src/pages/BlogPost.tsx` lines 283-304).
+**Why it matters:** This is a pure client-side-rendered SPA — `public/_redirects` serves the generic `index.html` for every route (its hardcoded `og:url`/`og:title` point at the homepage), and all per-route SEO is injected at runtime by `react-helmet-async` (`src/components/SEO.tsx`). Non-JS consumers (Open Graph scrapers, the X cardbot, LLM crawlers, first-wave Googlebot) therefore see homepage metadata for _every_ URL, including each `/blog/:slug`, wasting the strong per-page JSON-LD `@graph` (the `BlogPosting` node built in `src/pages/BlogPost.tsx` lines 283-304).
 
 **Impact:** HIGH · **Effort:** MEDIUM (highest in this plan) · **Risk:** MEDIUM (the `_redirects` rewrite shadows prerendered HTML if mis-configured — its own step below).
 
 **Depends on:** none. (Independent of the other recommendations; touches `package.json`'s `build` chain and the 3D mount components.)
 
 **Files:**
+
 - **Create:** `scripts/prerender.js` (new, full content below)
 - **Modify:** `package.json` line 8 (insert `prerender` step into `build`)
 - **Modify:** `public/_redirects` line 1 (narrow the SPA catch-all so real files win)
@@ -1048,7 +1016,7 @@ last request status: 429
 - **Modify:** `package.json` devDependencies (add `puppeteer`)
 - **Test:** `src/utils/__tests__/prerender.test.ts` (new)
 
-> Note on the brief: the brief said to insert prerender "before generate-sitemap" — correct, but it must also run **after** `generate-rss` is *not* required; sitemap/RSS only write XML files and don't depend on per-route HTML, so the safe insertion point is immediately after `vite build` and before `generate-sitemap` (so a prerender failure aborts before we publish a sitemap that points at un-prerendered routes). Also: the brief named `/foundation` is a real static route (sitemap line 28) but `/aws` and `/claude` are *not* in `generate-sitemap.js`'s `staticPages` — to stay DRY we reuse the sitemap's exact route list, so prerender will cover exactly the 11 static routes + all blog slugs the sitemap already enumerates. `/admin` and `/blueprint` are intentionally excluded (not in the sitemap).
+> Note on the brief: the brief said to insert prerender "before generate-sitemap" — correct, but it must also run **after** `generate-rss` is _not_ required; sitemap/RSS only write XML files and don't depend on per-route HTML, so the safe insertion point is immediately after `vite build` and before `generate-sitemap` (so a prerender failure aborts before we publish a sitemap that points at un-prerendered routes). Also: the brief named `/foundation` is a real static route (sitemap line 28) but `/aws` and `/claude` are _not_ in `generate-sitemap.js`'s `staticPages` — to stay DRY we reuse the sitemap's exact route list, so prerender will cover exactly the 11 static routes + all blog slugs the sitemap already enumerates. `/admin` and `/blueprint` are intentionally excluded (not in the sitemap).
 
 ---
 
@@ -1150,19 +1118,21 @@ import { isPrerender } from '../utils/prerender';
 Then inside the component (after line 22, `const reducedMotion = ...`), add:
 
 ```tsx
-  const skip3D = isPrerender();
+const skip3D = isPrerender();
 ```
 
 Find the existing usage at line ~123 and guard it:
 
 ```tsx
-              <HeroCanvas heroRef={heroRef} />
+<HeroCanvas heroRef={heroRef} />
 ```
 
 becomes:
 
 ```tsx
-              {!skip3D && <HeroCanvas heroRef={heroRef} />}
+{
+  !skip3D && <HeroCanvas heroRef={heroRef} />;
+}
 ```
 
 - [ ] **Step 2: Gate `AltiMascot` in `src/components/chat/ChatWidgetButton.tsx`.** Current lines 1-3 and 18-20:
@@ -1172,10 +1142,11 @@ import { lazy, Suspense } from 'react';
 
 const AltiMascot = lazy(() => import('./AltiMascot'));
 ```
+
 ```tsx
-      <Suspense fallback={null}>
-        <AltiMascot isOpen={isOpen} />
-      </Suspense>
+<Suspense fallback={null}>
+  <AltiMascot isOpen={isOpen} />
+</Suspense>
 ```
 
 Edit the import block to:
@@ -1190,11 +1161,13 @@ const AltiMascot = lazy(() => import('./AltiMascot'));
 Edit the render to (render nothing 3D under prerender — the button stays in the DOM, just empty):
 
 ```tsx
-      {!isPrerender() && (
-        <Suspense fallback={null}>
-          <AltiMascot isOpen={isOpen} />
-        </Suspense>
-      )}
+{
+  !isPrerender() && (
+    <Suspense fallback={null}>
+      <AltiMascot isOpen={isOpen} />
+    </Suspense>
+  );
+}
 ```
 
 - [ ] **Step 3: Gate the AWS topology 3D.** First confirm the mount + export shape (do not guess):
@@ -1206,7 +1179,7 @@ grep -n "Canvas\|export default\|export function\|export const\|isPrerender" src
 Expected: a line with `<Canvas` and an `export default` (or named) for `TopologyScene`. Then add `import { isPrerender } from '../../utils/prerender';` at the top and wrap the returned `<Canvas ...>` JSX so that when `isPrerender()` is true the component returns `null` (the AWS page's existing 2D fallback `TopologyFallback2D` is what crawlers should see — verify it is already conditionally rendered alongside TopologyScene; if TopologyScene is the only mount, return the fallback instead of `null`). Example minimal guard at the top of the component body:
 
 ```tsx
-  if (isPrerender()) return null;
+if (isPrerender()) return null;
 ```
 
 - [ ] **Step 4: Lint + typecheck the gated files:**
@@ -1250,7 +1223,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </BrowserRouter>
     </LenisProvider>
   </React.StrictMode>,
-)
+);
 ```
 
 Append, after that closing `)`, a deferred flag set (two `rAF`s guarantee at least one paint + Helmet flush):
@@ -1262,9 +1235,9 @@ Append, after that closing `)`, a deferred flag set (two `rAF`s guarantee at lea
 // WebGL/GSAP work never lets the page reach a true idle state.
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
-    ;(window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__ = true
-  })
-})
+    (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__ = true;
+  });
+});
 ```
 
 - [ ] **Step 2: Typecheck:**
@@ -1353,8 +1326,17 @@ const client = createClient({
 
 // Mirror generate-sitemap.js staticPages (urls only).
 const STATIC_ROUTES = [
-  '/', '/about', '/altivum', '/foundation', '/podcast', '/blog',
-  '/contact', '/links', '/beyond-the-assessment', '/chat', '/privacy',
+  '/',
+  '/about',
+  '/altivum',
+  '/foundation',
+  '/podcast',
+  '/blog',
+  '/contact',
+  '/links',
+  '/beyond-the-assessment',
+  '/chat',
+  '/privacy',
 ];
 
 async function fetchBlogSlugs() {
@@ -1462,6 +1444,7 @@ npx tsc && npx vite build && node scripts/prerender.js
 ```
 
 Expected tail:
+
 ```
   ✓ / -> dist/index.html
   ✓ /about -> dist/about/index.html
@@ -1637,7 +1620,6 @@ git add scripts/__tests__/prerender.smoke.test.mjs && git commit -m "test(seo): 
 
 **Deployment note for the PR body:** This adds a Puppeteer/Chromium download to the Amplify build (us-east-2). Sanity is already reachable during the build (it powers `generate-sitemap`/`generate-rss`), so the GROQ enumeration works unchanged. If the Amplify build image lacks the libs Chromium needs, add to `amplify.yml` `preBuild.commands` (after `npm ci`): `yum install -y atk cups-libs gtk3 libXcomposite libXcursor libXdamage libXext libXi libXrandr libXScrnSaver libXtst pango alsa-lib 2>/dev/null || true` — verify in the first Amplify build log that `node scripts/prerender.js` reaches `Prerendered NN routes.` rather than a Chromium launch error.
 
-
 ---
 
 ## Recommendation 4: Stop shipping the Cognito SDK on every page; fix .env.example and doc drift
@@ -1649,6 +1631,7 @@ git add scripts/__tests__/prerender.smoke.test.mjs && git commit -m "test(seo): 
 **Depends on:** none
 
 **Files:**
+
 - **Modify** `src/hooks/index.ts` (line 5 — remove `export { useAuth }`)
 - **Modify** `src/pages/Admin.tsx` (line 3 — split `useAuth` import to direct path)
 - **Modify** `.env.example` (add `VITE_CHAT_SIGNING_KEY` + `VITE_METRICS_ENDPOINT`)
@@ -1658,6 +1641,7 @@ git add scripts/__tests__/prerender.smoke.test.mjs && git commit -m "test(seo): 
 - **Verify (read-only)** `vite.config.ts` (line 26 — `cognito` manualChunk), `dist/index.html` (build artifact)
 
 **Verified facts (corrections to brief):**
+
 - `dist/index.html` currently contains `<link rel="modulepreload" crossorigin href="/assets/cognito-DF_N2Cak.js">` — issue confirmed against the real artifact.
 - `useAuth` is reached via the barrel ONLY by `src/pages/Admin.tsx`. `AskTheVector.tsx`, `Chat.tsx`, `ChatWidgetPanel.tsx`, and `NewsletterForm.tsx` import the barrel but pull `useChatEngine`/`usePageContext`/`useFocusTrap` — none import `useAuth`. So removing the one re-export fully isolates Cognito.
 - `useAuth.test.ts` already imports from `./useAuth` directly (not the barrel), so removing the re-export does NOT break existing tests.
@@ -1910,11 +1894,13 @@ git add .env.example && git commit -m "docs(env): add VITE_CHAT_SIGNING_KEY + VI
 
 ```markdown
 <!-- docs/ci.md  —  BEFORE (line 36) -->
+
 - `.github/dependabot.yml` scans root `/` plus the four Lambda directories (`lambda/chat-stream`, `lambda/kb-builder`, `lambda/metrics`, `lambda/kb-sync`) weekly on Mondays.
 ```
 
 ```markdown
 <!-- docs/ci.md  —  AFTER (line 36) -->
+
 - `.github/dependabot.yml` scans root `/` plus the six Lambda directories (`lambda/chat-stream`, `lambda/kb-builder`, `lambda/metrics`, `lambda/kb-sync`, `lambda/blueprint`, `lambda/mcp-server`) and the shared `lambda/shared` package weekly on Mondays.
 ```
 
@@ -1958,11 +1944,13 @@ Expected: `20` (a single major version).
 
 ```markdown
 <!-- README.md  —  BEFORE (line 148) -->
+
 - Node.js 18.x or 20.x (see `.nvmrc`)
 ```
 
 ```markdown
 <!-- README.md  —  AFTER (line 148) -->
+
 - Node.js 20.x (see `.nvmrc`)
 ```
 
@@ -1980,7 +1968,6 @@ Expected: the prerequisites line now reads `- Node.js 20.x (see \`.nvmrc\`)` and
 git add README.md && git commit -m "docs(readme): pin Node version to 20.x to match .nvmrc"
 ```
 
-
 ---
 
 ## Recommendation 5: Unit-test the rate limiter and close handler / CI test gaps
@@ -1992,6 +1979,7 @@ git add README.md && git commit -m "docs(readme): pin Node version to 20.x to ma
 **Depends on:** none
 
 **Files**
+
 - **Create** `lambda/shared/__tests__/rateLimit.test.mjs` (new, ~120 lines)
 - **Create** `lambda/metrics/validation.mjs` (new, pure helpers extracted from `index.mjs`)
 - **Create** `lambda/metrics/__tests__/validation.test.mjs` (new)
@@ -2004,6 +1992,7 @@ git add README.md && git commit -m "docs(readme): pin Node version to 20.x to ma
 - **Create** `cypress/e2e/` — no new specs; existing 7 mock-stubbed specs are selected via the CI run
 
 Confirmed facts from reading the code:
+
 - `checkRateLimit` (`lambda/shared/rateLimit.mjs:21`) takes an **injected** `docClient` + `UpdateCommand`, exactly like `MetricsCollector` takes an injected client — so it tests with the same stubbed-`send` pattern as `lambda/shared/__tests__/metrics.test.mjs`.
 - Over-limit is **strict `>`** (`rateLimit.mjs:52`: `if (count > maxRequests)`). So `count === maxRequests` returns `{allowed:true, remaining:0}` and `count === maxRequests+1` returns `{allowed:false, remaining:0}`.
 - `ConditionalCheckFailedException` (line 58) triggers the stale-window reset → second `send` succeeds → `{allowed:true, remaining:maxRequests-1}`; if that reset `send` also throws → `{allowed:true, remaining:-1}` (line 74).
@@ -2019,9 +2008,9 @@ Confirmed facts from reading the code:
 - [ ] **Step 1: Write the failing test file** `lambda/shared/__tests__/rateLimit.test.mjs`. It mirrors the injected-client / stubbed-`send` pattern from `metrics.test.mjs`. The fake `UpdateCommand` records `input` (so we can assert on the two distinct expressions), and the fake client returns a scripted `Attributes.requestCount` for the first call and `{}` for the reset call.
 
 ```mjs
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { checkRateLimit } from "../rateLimit.mjs";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { checkRateLimit } from '../rateLimit.mjs';
 
 // Minimal stand-in for UpdateCommand: records input so we can assert on the
 // expression used (the over-limit reset uses a different UpdateExpression).
@@ -2058,69 +2047,66 @@ function throwingClient(error, { resetThrows = false } = {}) {
       calls.push(cmd.input);
       n += 1;
       if (n === 1) throw error;
-      if (resetThrows) throw new Error("reset-also-failed");
+      if (resetThrows) throw new Error('reset-also-failed');
       return {};
     },
   };
 }
 
-const OPTS = { table: "rl", ip: "1.2.3.4", maxRequests: 20, windowSeconds: 3600 };
-const conditionalFail = () =>
-  Object.assign(new Error("stale"), { name: "ConditionalCheckFailedException" });
+const OPTS = { table: 'rl', ip: '1.2.3.4', maxRequests: 20, windowSeconds: 3600 };
+const conditionalFail = () => Object.assign(new Error('stale'), { name: 'ConditionalCheckFailedException' });
 
-test("allows the maxRequests-th request (strict >, boundary is allowed)", async () => {
+test('allows the maxRequests-th request (strict >, boundary is allowed)', async () => {
   const client = countingClient(20);
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: 0 });
   assert.equal(client.calls.length, 1);
 });
 
-test("denies the maxRequests+1-th request", async () => {
+test('denies the maxRequests+1-th request', async () => {
   const client = countingClient(21);
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: false, remaining: 0 });
 });
 
-test("reports remaining = maxRequests - count below the limit", async () => {
+test('reports remaining = maxRequests - count below the limit', async () => {
   const client = countingClient(5);
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: 15 });
 });
 
-test("defaults count to 1 when Attributes is absent", async () => {
+test('defaults count to 1 when Attributes is absent', async () => {
   const client = { calls: [], send: async () => ({}) };
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: 19 });
 });
 
-test("ConditionalCheckFailed resets the stale window and re-allows", async () => {
+test('ConditionalCheckFailed resets the stale window and re-allows', async () => {
   const client = throwingClient(conditionalFail());
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: 19 });
-  assert.equal(client.calls.length, 2, "expected a reset send after the conditional failure");
+  assert.equal(client.calls.length, 2, 'expected a reset send after the conditional failure');
   // The reset uses SET requestCount = :one, not the ADD increment.
   assert.match(client.calls[1].UpdateExpression, /SET requestCount = :one/);
 });
 
-test("ConditionalCheckFailed whose reset also throws fails open with remaining -1", async () => {
+test('ConditionalCheckFailed whose reset also throws fails open with remaining -1', async () => {
   const client = throwingClient(conditionalFail(), { resetThrows: true });
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: -1 });
 });
 
-test("any other DynamoDB error fails open with remaining -1", async () => {
-  const client = throwingClient(
-    Object.assign(new Error("boom"), { name: "ProvisionedThroughputExceededException" })
-  );
+test('any other DynamoDB error fails open with remaining -1', async () => {
+  const client = throwingClient(Object.assign(new Error('boom'), { name: 'ProvisionedThroughputExceededException' }));
   const result = await checkRateLimit(client, FakeUpdateCommand, OPTS);
   assert.deepEqual(result, { allowed: true, remaining: -1 });
-  assert.equal(client.calls.length, 1, "non-conditional errors must NOT trigger a reset send");
+  assert.equal(client.calls.length, 1, 'non-conditional errors must NOT trigger a reset send');
 });
 
-test("applies the prefix to the partition key", async () => {
+test('applies the prefix to the partition key', async () => {
   const client = countingClient(1);
-  await checkRateLimit(client, FakeUpdateCommand, { ...OPTS, prefix: "metrics-vitals-" });
-  assert.ok(client.calls[0].Key.pk.startsWith("metrics-vitals-"));
+  await checkRateLimit(client, FakeUpdateCommand, { ...OPTS, prefix: 'metrics-vitals-' });
+  assert.ok(client.calls[0].Key.pk.startsWith('metrics-vitals-'));
 });
 ```
 
@@ -2131,6 +2117,7 @@ node --test lambda/shared/__tests__/rateLimit.test.mjs
 ```
 
 Expected tail:
+
 ```
 ℹ pass 8
 ℹ fail 0
@@ -2161,48 +2148,48 @@ The metrics handler's AWS clients are module-level singletons, so we extract the
 - [ ] **Step 1: Write the failing test file** `lambda/metrics/__tests__/validation.test.mjs` (imports a module that does not exist yet → FAIL).
 
 ```mjs
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { validateVitals, validateCspUri } from "../validation.mjs";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { validateVitals, validateCspUri } from '../validation.mjs';
 
-test("validateVitals rejects a missing name", () => {
+test('validateVitals rejects a missing name', () => {
   assert.equal(validateVitals({ value: 10 }).ok, false);
 });
 
-test("validateVitals rejects a non-numeric value", () => {
-  assert.equal(validateVitals({ name: "LCP", value: "10" }).ok, false);
+test('validateVitals rejects a non-numeric value', () => {
+  assert.equal(validateVitals({ name: 'LCP', value: '10' }).ok, false);
 });
 
-test("validateVitals rejects an out-of-range value", () => {
-  assert.equal(validateVitals({ name: "LCP", value: 60001 }).ok, false);
-  assert.equal(validateVitals({ name: "LCP", value: -1 }).ok, false);
+test('validateVitals rejects an out-of-range value', () => {
+  assert.equal(validateVitals({ name: 'LCP', value: 60001 }).ok, false);
+  assert.equal(validateVitals({ name: 'LCP', value: -1 }).ok, false);
 });
 
-test("validateVitals rejects an unknown metric name", () => {
-  assert.equal(validateVitals({ name: "BOGUS", value: 10 }).ok, false);
+test('validateVitals rejects an unknown metric name', () => {
+  assert.equal(validateVitals({ name: 'BOGUS', value: 10 }).ok, false);
 });
 
-test("validateVitals accepts a valid CLS sample with no rating", () => {
-  const r = validateVitals({ name: "CLS", value: 0.1 });
+test('validateVitals accepts a valid CLS sample with no rating', () => {
+  const r = validateVitals({ name: 'CLS', value: 0.1 });
   assert.equal(r.ok, true);
   assert.deepEqual(r.dimensions, []);
 });
 
-test("validateVitals attaches a Rating dimension only for valid ratings", () => {
-  assert.deepEqual(validateVitals({ name: "INP", value: 200, rating: "good" }).dimensions, [
-    { Name: "Rating", Value: "good" },
+test('validateVitals attaches a Rating dimension only for valid ratings', () => {
+  assert.deepEqual(validateVitals({ name: 'INP', value: 200, rating: 'good' }).dimensions, [
+    { Name: 'Rating', Value: 'good' },
   ]);
-  assert.deepEqual(validateVitals({ name: "INP", value: 200, rating: "bogus" }).dimensions, []);
+  assert.deepEqual(validateVitals({ name: 'INP', value: 200, rating: 'bogus' }).dimensions, []);
 });
 
-test("validateCspUri accepts known keywords and http(s) origins", () => {
-  assert.equal(validateCspUri("inline"), true);
-  assert.equal(validateCspUri("https://evil.example.com"), true);
+test('validateCspUri accepts known keywords and http(s) origins', () => {
+  assert.equal(validateCspUri('inline'), true);
+  assert.equal(validateCspUri('https://evil.example.com'), true);
 });
 
-test("validateCspUri rejects malformed blocked-uri values", () => {
-  assert.equal(validateCspUri("javascript:alert(1)"), false);
-  assert.equal(validateCspUri(""), false);
+test('validateCspUri rejects malformed blocked-uri values', () => {
+  assert.equal(validateCspUri('javascript:alert(1)'), false);
+  assert.equal(validateCspUri(''), false);
 });
 ```
 
@@ -2221,9 +2208,9 @@ Expected: `Cannot find module '.../lambda/metrics/validation.mjs'`.
 // Extracted from index.mjs so they can be unit-tested without the
 // module-level CloudWatch/DynamoDB singletons.
 
-export const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
-export const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
-export const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
+export const VALID_VITALS = new Set(['CLS', 'INP', 'FCP', 'LCP', 'TTFB']);
+export const VALID_RATINGS = new Set(['good', 'needs-improvement', 'poor']);
+export const VALID_CSP_KEYWORDS = new Set(['inline', 'eval', 'self', 'data', 'blob', 'unknown']);
 const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
 /**
@@ -2232,18 +2219,18 @@ const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
  */
 export function validateVitals(body) {
   const { name, value, rating } = body;
-  if (!name || typeof value !== "number") {
-    return { ok: false, status: 400, error: "name and numeric value are required" };
+  if (!name || typeof value !== 'number') {
+    return { ok: false, status: 400, error: 'name and numeric value are required' };
   }
   if (!Number.isFinite(value) || value < 0 || value > 60000) {
-    return { ok: false, status: 400, error: "value must be a finite number between 0 and 60000" };
+    return { ok: false, status: 400, error: 'value must be a finite number between 0 and 60000' };
   }
   if (!VALID_VITALS.has(name)) {
-    return { ok: false, status: 400, error: `Invalid metric name. Must be one of: ${[...VALID_VITALS].join(", ")}` };
+    return { ok: false, status: 400, error: `Invalid metric name. Must be one of: ${[...VALID_VITALS].join(', ')}` };
   }
   const dimensions = [];
   if (rating && VALID_RATINGS.has(rating)) {
-    dimensions.push({ Name: "Rating", Value: rating });
+    dimensions.push({ Name: 'Rating', Value: rating });
   }
   return { ok: true, dimensions };
 }
@@ -2258,15 +2245,15 @@ export function validateCspUri(blockedUri) {
 
 ```mjs
 // BEFORE (index.mjs:23-28)
-const VALID_VITALS = new Set(["CLS", "INP", "FCP", "LCP", "TTFB"]);
-const VALID_RATINGS = new Set(["good", "needs-improvement", "poor"]);
+const VALID_VITALS = new Set(['CLS', 'INP', 'FCP', 'LCP', 'TTFB']);
+const VALID_RATINGS = new Set(['good', 'needs-improvement', 'poor']);
 
 // Standard CSP blocked-uri values reported by browsers
-const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "blob", "unknown"]);
+const VALID_CSP_KEYWORDS = new Set(['inline', 'eval', 'self', 'data', 'blob', 'unknown']);
 const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
 // AFTER
-import { validateVitals, validateCspUri } from "./validation.mjs";
+import { validateVitals, validateCspUri } from './validation.mjs';
 ```
 
 Then replace the body of `handleVitals` (lines 46–62) so it delegates:
@@ -2305,14 +2292,14 @@ And replace the CSP check at lines 84–86:
 
 ```mjs
 // BEFORE (index.mjs:84-86)
-  if (!VALID_CSP_KEYWORDS.has(blockedUri) && !CSP_URI_PATTERN.test(blockedUri)) {
-    return respond(400, { error: "Invalid blocked-uri format" });
-  }
+if (!VALID_CSP_KEYWORDS.has(blockedUri) && !CSP_URI_PATTERN.test(blockedUri)) {
+  return respond(400, { error: 'Invalid blocked-uri format' });
+}
 
 // AFTER
-  if (!validateCspUri(blockedUri)) {
-    return respond(400, { error: "Invalid blocked-uri format" });
-  }
+if (!validateCspUri(blockedUri)) {
+  return respond(400, { error: 'Invalid blocked-uri format' });
+}
 ```
 
 - [ ] **Step 5: Run the new test, expect PASS, and lint the lambda.**
@@ -2338,40 +2325,40 @@ git add lambda/metrics/validation.mjs lambda/metrics/__tests__/validation.test.m
 - [ ] **Step 1: Write the failing test file** `lambda/kb-builder/__tests__/validation.test.mjs`.
 
 ```mjs
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { validateEntryFields, CATEGORY_ORDER } from "../validation.mjs";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { validateEntryFields, CATEGORY_ORDER } from '../validation.mjs';
 
-test("requireAll rejects a missing title/category/content", () => {
-  assert.match(validateEntryFields({ category: "biography", content: "x" }, true), /required/);
-  assert.equal(validateEntryFields({ title: "T", category: "biography", content: "x" }, true), null);
+test('requireAll rejects a missing title/category/content', () => {
+  assert.match(validateEntryFields({ category: 'biography', content: 'x' }, true), /required/);
+  assert.equal(validateEntryFields({ title: 'T', category: 'biography', content: 'x' }, true), null);
 });
 
-test("rejects an over-length title", () => {
-  assert.match(validateEntryFields({ title: "a".repeat(201) }), /at most 200/);
+test('rejects an over-length title', () => {
+  assert.match(validateEntryFields({ title: 'a'.repeat(201) }), /at most 200/);
 });
 
-test("rejects a category outside the allowlist", () => {
-  assert.match(validateEntryFields({ category: "bogus" }), /must be one of/);
+test('rejects a category outside the allowlist', () => {
+  assert.match(validateEntryFields({ category: 'bogus' }), /must be one of/);
   assert.equal(validateEntryFields({ category: CATEGORY_ORDER[0] }), null);
 });
 
-test("rejects over-length content", () => {
-  assert.match(validateEntryFields({ content: "a".repeat(50001) }), /at most 50000/);
+test('rejects over-length content', () => {
+  assert.match(validateEntryFields({ content: 'a'.repeat(50001) }), /at most 50000/);
 });
 
-test("rejects an unparseable date but accepts a valid one", () => {
-  assert.match(validateEntryFields({ date: "not-a-date" }), /valid date/);
-  assert.equal(validateEntryFields({ date: "2026-01-15" }), null);
+test('rejects an unparseable date but accepts a valid one', () => {
+  assert.match(validateEntryFields({ date: 'not-a-date' }), /valid date/);
+  assert.equal(validateEntryFields({ date: '2026-01-15' }), null);
 });
 
-test("rejects sortOrder outside 0..1000", () => {
+test('rejects sortOrder outside 0..1000', () => {
   assert.match(validateEntryFields({ sortOrder: -1 }), /between 0 and 1000/);
   assert.match(validateEntryFields({ sortOrder: 1001 }), /between 0 and 1000/);
   assert.equal(validateEntryFields({ sortOrder: 500 }), null);
 });
 
-test("empty patch (no fields, requireAll=false) is valid", () => {
+test('empty patch (no fields, requireAll=false) is valid', () => {
   assert.equal(validateEntryFields({}, false), null);
 });
 ```
@@ -2392,16 +2379,16 @@ Expected: `Cannot find module '.../lambda/kb-builder/validation.mjs'`.
 // Sanity client (which throws at import when SANITY_WRITE_TOKEN is unset).
 
 export const CATEGORY_ORDER = [
-  "biography",
-  "military",
-  "education",
-  "career",
-  "business",
-  "skills",
-  "awards",
-  "philosophy",
-  "podcast",
-  "book",
+  'biography',
+  'military',
+  'education',
+  'career',
+  'business',
+  'skills',
+  'awards',
+  'philosophy',
+  'podcast',
+  'book',
 ];
 
 const MAX_TITLE_LENGTH = 200;
@@ -2411,21 +2398,29 @@ const MAX_SORT_ORDER = 1000;
 
 export function validateEntryFields({ title, category, content, date, sortOrder }, requireAll = false) {
   if (requireAll && (!title || !category || !content)) {
-    return "title, category, and content are required";
+    return 'title, category, and content are required';
   }
-  if (title !== undefined && (typeof title !== "string" || title.length > MAX_TITLE_LENGTH)) {
+  if (title !== undefined && (typeof title !== 'string' || title.length > MAX_TITLE_LENGTH)) {
     return `title must be a string of at most ${MAX_TITLE_LENGTH} characters`;
   }
   if (category !== undefined && !CATEGORY_ORDER.includes(category)) {
-    return `category must be one of: ${CATEGORY_ORDER.join(", ")}`;
+    return `category must be one of: ${CATEGORY_ORDER.join(', ')}`;
   }
-  if (content !== undefined && (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH)) {
+  if (content !== undefined && (typeof content !== 'string' || content.length > MAX_CONTENT_LENGTH)) {
     return `content must be a string of at most ${MAX_CONTENT_LENGTH} characters`;
   }
-  if (date !== undefined && date !== null && (typeof date !== "string" || date.length > MAX_DATE_LENGTH || isNaN(Date.parse(date)))) {
-    return "date must be a valid date string";
+  if (
+    date !== undefined &&
+    date !== null &&
+    (typeof date !== 'string' || date.length > MAX_DATE_LENGTH || isNaN(Date.parse(date)))
+  ) {
+    return 'date must be a valid date string';
   }
-  if (sortOrder !== undefined && sortOrder !== null && (typeof sortOrder !== "number" || sortOrder < 0 || sortOrder > MAX_SORT_ORDER)) {
+  if (
+    sortOrder !== undefined &&
+    sortOrder !== null &&
+    (typeof sortOrder !== 'number' || sortOrder < 0 || sortOrder > MAX_SORT_ORDER)
+  ) {
     return `sortOrder must be a number between 0 and ${MAX_SORT_ORDER}`;
   }
   return null;
@@ -2438,7 +2433,7 @@ Replace the local `CATEGORY_ORDER` declaration (lines 38–49) and the `MAX_*` c
 
 ```mjs
 // ADD after the existing lambda-shared imports (index.mjs:12)
-import { CATEGORY_ORDER, validateEntryFields } from "./validation.mjs";
+import { CATEGORY_ORDER, validateEntryFields } from './validation.mjs';
 ```
 
 ```mjs
@@ -2532,63 +2527,64 @@ Expected: all 7 paths listed (no "No such file").
 - [ ] **Step 2: Append a `cypress-mocked` job to `.github/workflows/ci.yml`.** It mirrors the existing job's Node/cache setup (`actions/setup-node@v6` with `node-version-file: '.nvmrc'` + `cache: 'npm'`), builds the app with the same placeholder `VITE_*` env block already used by the `Build project` step, serves it with `vite preview --port 5173`, and runs Cypress against only the 7 mock-stubbed specs via `--spec`. Add this as a sibling job (same indentation level as `test-and-build:` and `lambda-audit:`):
 
 ```yaml
-  cypress-mocked:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+cypress-mocked:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Build project
-        run: npm run build
-        env:
-          VITE_CONTACT_ENDPOINT: https://placeholder.example.com
-          VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
-          VITE_CHAT_ENDPOINT: https://placeholder.example.com
-          VITE_CHAT_SIGNING_KEY: ci-placeholder-key
-          VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
-          VITE_COGNITO_CLIENT_ID: placeholder
-          VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
-          VITE_METRICS_ENDPOINT: https://placeholder.example.com
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_CONTACT_ENDPOINT: https://placeholder.example.com
+        VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
+        VITE_CHAT_ENDPOINT: https://placeholder.example.com
+        VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+        VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
+        VITE_COGNITO_CLIENT_ID: placeholder
+        VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
+        VITE_METRICS_ENDPOINT: https://placeholder.example.com
 
-      - name: Run mock-stubbed Cypress specs
-        uses: cypress-io/github-action@v6
-        with:
-          install: false
-          start: npx vite preview --port 5173
-          wait-on: 'http://localhost:5173'
-          wait-on-timeout: 60
-          # WebGL-dependent specs (home, navigation, mobile-navigation,
-          # chat-widget) are intentionally excluded — they use no intercepts and
-          # flake headless on CI. Only mock-stubbed flows run here.
-          spec: >-
-            cypress/e2e/404.cy.ts,
-            cypress/e2e/about-pages.cy.ts,
-            cypress/e2e/blog.cy.ts,
-            cypress/e2e/blog-post.cy.ts,
-            cypress/e2e/chat.cy.ts,
-            cypress/e2e/chat-agentic.cy.ts,
-            cypress/e2e/contact.cy.ts
+    - name: Run mock-stubbed Cypress specs
+      uses: cypress-io/github-action@v6
+      with:
+        install: false
+        start: npx vite preview --port 5173
+        wait-on: 'http://localhost:5173'
+        wait-on-timeout: 60
+        # WebGL-dependent specs (home, navigation, mobile-navigation,
+        # chat-widget) are intentionally excluded — they use no intercepts and
+        # flake headless on CI. Only mock-stubbed flows run here.
+        spec: >-
+          cypress/e2e/404.cy.ts,
+          cypress/e2e/about-pages.cy.ts,
+          cypress/e2e/blog.cy.ts,
+          cypress/e2e/blog-post.cy.ts,
+          cypress/e2e/chat.cy.ts,
+          cypress/e2e/chat-agentic.cy.ts,
+          cypress/e2e/contact.cy.ts
 
-      - name: Upload Cypress screenshots on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots/
-          retention-days: 7
-          if-no-files-found: ignore
+    - name: Upload Cypress screenshots on failure
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots/
+        retention-days: 7
+        if-no-files-found: ignore
 ```
 
 Notes baked into the yaml:
+
 - `cypress-io/github-action@v6` with `install: false` reuses the `npm ci` already run (Cypress is in `devDependencies` at `package.json:53`), avoiding a double install while still triggering the binary cache + `cypress run`.
 - `start` + `wait-on` boots `vite preview` (port 5173, matching `cypress.config.ts:5`) and blocks until it answers, then runs the specs and tears the server down automatically.
 - `cypress.config.ts:13` already sets `retries.runMode: 2`, so transient flakes auto-retry without extra config.
@@ -2600,6 +2596,7 @@ python3 -c "import yaml,sys; d=yaml.safe_load(open('.github/workflows/ci.yml'));
 ```
 
 Expected:
+
 ```
 jobs: ['test-and-build', 'lambda-audit', 'cypress-mocked']
 ```
@@ -2655,12 +2652,11 @@ Expected: `cypress.config.ts OK`.
 git add cypress.config.ts && git commit -m "docs(cypress): note which specs CI gates vs. skips for WebGL flakiness"
 ```
 
-
 ---
 
 ## Recommendation 6: Contain WebGL failures behind a reusable SafeCanvas + capability gate
 
-**Why it matters:** `ChatWidget` (with its 3D `AltiMascot`) is mounted in `App.tsx:85` *outside* the global `ErrorBoundary` (which wraps only `<main>` Routes at `App.tsx:46–82`), so an uncaught render-phase error in `AltiMascot` — a GLB parse failure, R3F init error, or `useGLTF` Suspense rejection — unmounts the entire app to a blank screen. `HeroCanvas` is inside the global boundary but still has no WebGL gate, so unsupported GPUs attempt a Canvas mount that can throw.
+**Why it matters:** `ChatWidget` (with its 3D `AltiMascot`) is mounted in `App.tsx:85` _outside_ the global `ErrorBoundary` (which wraps only `<main>` Routes at `App.tsx:46–82`), so an uncaught render-phase error in `AltiMascot` — a GLB parse failure, R3F init error, or `useGLTF` Suspense rejection — unmounts the entire app to a blank screen. `HeroCanvas` is inside the global boundary but still has no WebGL gate, so unsupported GPUs attempt a Canvas mount that can throw.
 
 **Impact:** High (eliminates a full-app blank-screen failure mode) · **Effort:** Medium · **Risk:** Low (additive wrapper + existing capability util; no behavior change on supported GPUs).
 
@@ -2669,6 +2665,7 @@ git add cypress.config.ts && git commit -m "docs(cypress): note which specs CI g
 **Correctness boundary (encode in every reviewer's head):** React error boundaries catch ONLY render / lifecycle / Suspense errors — NOT errors thrown inside the `rAF` loop (`useFrame`) nor from `webglcontextlost` DOM events (there is no `webglcontextlost` handler anywhere in `src/`). So the complete fix is BOTH layers: (a) a reusable `SafeCanvas` wrapper (Suspense + ErrorBoundary + fallback) that catches GLB-parse / R3F-init / `useGLTF`-Suspense errors at mount, AND (b) gating the mount behind the existing `checkWebGLSupport()` (`src/utils/checkWebGL.ts`) so unsupported GPUs never mount the canvas at all. `HeroCanvas` already has a static gradient behind it (`Home.tsx:115`) so its fallback is `null`; `AltiMascot` has NO static fallback today, so it needs a simple static icon/button fallback (NOT `null`).
 
 **Files**
+
 - Create: `src/components/SafeCanvas.tsx`
 - Create (test): `src/components/SafeCanvas.test.tsx`
 - Modify: `src/components/chat/ChatWidgetButton.tsx` (currently 1–25; `Suspense fallback={null}` at line 18)
@@ -2830,29 +2827,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 ```
 
 ```tsx
-  beforeEach(() => {
-    mockedCheckWebGL.mockReturnValue(true);
-  });
+beforeEach(() => {
+  mockedCheckWebGL.mockReturnValue(true);
+});
 
-  it('mounts the 3D mascot when WebGL is supported', async () => {
-    mockedCheckWebGL.mockReturnValue(true);
-    render(<ChatWidgetButton isOpen={false} onClick={vi.fn()} />);
-    expect(await screen.findByTestId('alti-mascot')).toBeInTheDocument();
-    expect(screen.queryByTestId('alti-fallback')).not.toBeInTheDocument();
-  });
+it('mounts the 3D mascot when WebGL is supported', async () => {
+  mockedCheckWebGL.mockReturnValue(true);
+  render(<ChatWidgetButton isOpen={false} onClick={vi.fn()} />);
+  expect(await screen.findByTestId('alti-mascot')).toBeInTheDocument();
+  expect(screen.queryByTestId('alti-fallback')).not.toBeInTheDocument();
+});
 
-  it('renders a static fallback (not the 3D mascot) when WebGL is unsupported, and stays clickable', async () => {
-    mockedCheckWebGL.mockReturnValue(false);
-    const onClick = vi.fn();
-    render(<ChatWidgetButton isOpen={false} onClick={onClick} />);
+it('renders a static fallback (not the 3D mascot) when WebGL is unsupported, and stays clickable', async () => {
+  mockedCheckWebGL.mockReturnValue(false);
+  const onClick = vi.fn();
+  render(<ChatWidgetButton isOpen={false} onClick={onClick} />);
 
-    expect(screen.getByTestId('alti-fallback')).toBeInTheDocument();
-    expect(screen.queryByTestId('alti-mascot')).not.toBeInTheDocument();
+  expect(screen.getByTestId('alti-fallback')).toBeInTheDocument();
+  expect(screen.queryByTestId('alti-mascot')).not.toBeInTheDocument();
 
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button'));
-    expect(onClick).toHaveBeenCalledOnce();
-  });
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button'));
+  expect(onClick).toHaveBeenCalledOnce();
+});
 ```
 
 - [ ] **Step 2: Run the test, expect FAIL** (no `alti-fallback`, gate not yet wired).
@@ -2885,8 +2882,7 @@ const MascotFallback = () => (
     data-testid="alti-fallback"
     className="w-16 h-16 flex items-center justify-center rounded-full"
     style={{
-      background:
-        'radial-gradient(circle at center, rgba(197,165,114,0.18) 0%, transparent 70%)',
+      background: 'radial-gradient(circle at center, rgba(197,165,114,0.18) 0%, transparent 70%)',
     }}
   >
     <span className="material-icons text-altivum-gold text-3xl">support_agent</span>
@@ -2955,35 +2951,35 @@ const mockedCheckWebGL = vi.mocked(checkWebGLSupport);
 Reset it in the existing `beforeEach` (currently lines 47–50) by adding one line:
 
 ```tsx
-  beforeEach(() => {
-    reducedMotionRef.current = false;
-    mockedCheckWebGL.mockReturnValue(true);
-    vi.clearAllMocks();
-  });
+beforeEach(() => {
+  reducedMotionRef.current = false;
+  mockedCheckWebGL.mockReturnValue(true);
+  vi.clearAllMocks();
+});
 ```
 
-> Note: `vi.clearAllMocks()` resets the `mockReturnValue`, so set it *after* — reorder if needed:
+> Note: `vi.clearAllMocks()` resets the `mockReturnValue`, so set it _after_ — reorder if needed:
 
 ```tsx
-  beforeEach(() => {
-    vi.clearAllMocks();
-    reducedMotionRef.current = false;
-    mockedCheckWebGL.mockReturnValue(true);
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+  reducedMotionRef.current = false;
+  mockedCheckWebGL.mockReturnValue(true);
+});
 ```
 
 Then add a third test after the existing two (after line 79):
 
 ```tsx
-  it('does not mount the Canvas when WebGL is unsupported, even with motion allowed', async () => {
-    reducedMotionRef.current = false;
-    mockedCheckWebGL.mockReturnValue(false);
-    renderHome();
+it('does not mount the Canvas when WebGL is unsupported, even with motion allowed', async () => {
+  reducedMotionRef.current = false;
+  mockedCheckWebGL.mockReturnValue(false);
+  renderHome();
 
-    expect(screen.getByAltText('Leadership Forged in Service')).toBeInTheDocument();
-    await Promise.resolve();
-    expect(screen.queryByTestId('hero-canvas')).not.toBeInTheDocument();
-  });
+  expect(screen.getByAltText('Leadership Forged in Service')).toBeInTheDocument();
+  await Promise.resolve();
+  expect(screen.queryByTestId('hero-canvas')).not.toBeInTheDocument();
+});
 ```
 
 - [ ] **Step 2: Run the test, expect FAIL** (gate not wired; Canvas still mounts when unsupported).
@@ -3006,35 +3002,39 @@ Compute the gate next to `reducedMotion` (currently line 22):
 
 ```tsx
 // line 22 — before:
-  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 // after:
-  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const webglOk = checkWebGLSupport();
+const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+const webglOk = checkWebGLSupport();
 ```
 
 Replace the hero backdrop block (currently lines 120–126):
 
 ```tsx
 // before (Home.tsx:120-126):
-        {!reducedMotion && (
-          <div className="absolute inset-0" aria-hidden="true">
-            <Suspense fallback={null}>
-              <HeroCanvas heroRef={heroRef} />
-            </Suspense>
-          </div>
-        )}
+{
+  !reducedMotion && (
+    <div className="absolute inset-0" aria-hidden="true">
+      <Suspense fallback={null}>
+        <HeroCanvas heroRef={heroRef} />
+      </Suspense>
+    </div>
+  );
+}
 ```
 
 ```tsx
 // after:
-        {!reducedMotion && webglOk && (
-          <div className="absolute inset-0" aria-hidden="true">
-            {/* Static gradient behind (above) is the fallback, so null is fine. */}
-            <SafeCanvas>
-              <HeroCanvas heroRef={heroRef} />
-            </SafeCanvas>
-          </div>
-        )}
+{
+  !reducedMotion && webglOk && (
+    <div className="absolute inset-0" aria-hidden="true">
+      {/* Static gradient behind (above) is the fallback, so null is fine. */}
+      <SafeCanvas>
+        <HeroCanvas heroRef={heroRef} />
+      </SafeCanvas>
+    </div>
+  );
+}
 ```
 
 > The `Suspense` import on line 1 (`import { lazy, Suspense, useRef }`) is still used elsewhere? Verify: it is only used here. After this edit, drop `Suspense` from the line-1 import to avoid an unused-import lint error.
@@ -3113,22 +3113,20 @@ Lower priority — parity only. `TopologyScene.tsx:312` uses `frameloop={framelo
 
 ```tsx
 // line 304 — before:
-  const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand'>('always');
+const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand'>('always');
 // after:
-  const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand' | 'never'>('always');
+const [frameloopMode, setFrameloopMode] = useState<'always' | 'demand' | 'never'>('always');
 ```
 
 - [ ] **Step 2: Drive `frameloop='never'` on tab hide in the public component.** Add a `docVisible` state + visibility listener to `TopologyScene` (the public function at `:302`), mirroring `HeroCanvas.tsx:113–120`, and force `'never'` when hidden. Add to the function body just after line 308 (`const onSelectCluster = ...`):
 
 ```tsx
-  const [docVisible, setDocVisible] = useState(() =>
-    typeof document === 'undefined' ? true : !document.hidden,
-  );
-  useEffect(() => {
-    const onVisibility = () => setDocVisible(!document.hidden);
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, []);
+const [docVisible, setDocVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden));
+useEffect(() => {
+  const onVisibility = () => setDocVisible(!document.hidden);
+  document.addEventListener('visibilitychange', onVisibility);
+  return () => document.removeEventListener('visibilitychange', onVisibility);
+}, []);
 ```
 
 > `useEffect` is already imported (line 1). Then change the Canvas frameloop prop (line 312):
@@ -3144,19 +3142,19 @@ Lower priority — parity only. `TopologyScene.tsx:312` uses `frameloop={framelo
 
 ```tsx
 // lines 165-171 — before:
-  useFrame(() => {
-    if (document.hidden && controlsRef.current) {
-      controlsRef.current.autoRotate = false;
-    } else if (controlsRef.current) {
-      controlsRef.current.autoRotate = autoRotate;
-    }
-  });
+useFrame(() => {
+  if (document.hidden && controlsRef.current) {
+    controlsRef.current.autoRotate = false;
+  } else if (controlsRef.current) {
+    controlsRef.current.autoRotate = autoRotate;
+  }
+});
 // after:
-  useFrame(() => {
-    if (controlsRef.current) {
-      controlsRef.current.autoRotate = autoRotate;
-    }
-  });
+useFrame(() => {
+  if (controlsRef.current) {
+    controlsRef.current.autoRotate = autoRotate;
+  }
+});
 ```
 
 - [ ] **Step 4: Verify the existing InfraTopology test still passes and the build is clean.**
@@ -3173,7 +3171,6 @@ Expected: `Tests 2 passed`; build completes with no tsc error on the widened `'n
 git add src/components/aws/TopologyScene.tsx && git commit -m "perf(3d): pause TopologyScene frameloop on tab hide for parity"
 ```
 
-
 ---
 
 ## Recommendation 7: Harden the chat streaming channel (3 independent fixes)
@@ -3185,6 +3182,7 @@ git add src/components/aws/TopologyScene.tsx && git commit -m "perf(3d): pause T
 **Depends on** Recommendation 1 — fix (2) edits `src/hooks/useChatEngine.ts` in the same `handleSend` region (`~129-356`) that Recommendation 1 touches. **Sequence this AFTER Recommendation 1 and re-verify the quoted line numbers before editing**, since they will have shifted.
 
 **Files**
+
 - Modify `lambda/chat-stream/agent.mjs` — fix (1): NUL-strip at line 110; fix (3): `buildAgent` at lines 43-61 + `streamAgentResponse` cancel wiring at lines 82-100.
 - Test `lambda/chat-stream/__tests__/agent.test.mjs` — add fix (1) test after line 124; add fix (3) tests after line 209.
 - Modify `src/hooks/useChatEngine.ts` — fix (2): capture identities at lines 133-134 + 159-160; guard `finally` at lines 348-353.
@@ -3192,6 +3190,7 @@ git add src/components/aws/TopologyScene.tsx && git commit -m "perf(3d): pause T
 - Reference only (do not edit): `lambda/chat-stream/events.mjs` (delim `\x00EVT\x00` at line 1), `lambda/chat-stream/index.mjs` (intentional NUL writes at 50/63/96), `lambda/chat-stream/prompts.mjs` (prompt-only cap at lines 34-35).
 
 **Verified facts that correct the brief**
+
 - The frontend test file is at `src/hooks/useChatEngine.test.ts` (colocated), **not** `src/hooks/__tests__/useChatEngine.test.ts`.
 - **Strands Agents SDK v1.0.0-rc.4 has NO declarative `maxIterations` / recursion-limit option.** I inspected the installed `AgentConfig` type (`node_modules/@strands-agents/sdk/dist/src/agent/agent.d.ts`) and the official agent-loop docs. The only loop-bounding mechanisms are `agent.cancel()` and the `cancelSignal` AbortSignal (already used for the 25s timeout). The canonical way to impose a programmatic tool-iteration cap is to **count loop cycles via the `BeforeModelCallEvent` hook** (which fires once per model invocation = once per loop cycle) and call `agent.cancel()` when the cap is exceeded. Fix (3) is implemented this way. Both `addHook(EventClass, cb)` and the `BeforeModelCallEvent` export are present and verified.
 
@@ -3204,28 +3203,31 @@ The event delimiter is `\x00EVT\x00` (`events.mjs:1`) and the system prefix is `
 - [ ] **Step 1: Write the failing test.** Append this after line 124 (end of the `"streamAgentResponse writes text deltas"` test) in `lambda/chat-stream/__tests__/agent.test.mjs`.
 
 ```mjs
-test("streamAgentResponse strips NUL from model text but keeps normal text", async () => {
+test('streamAgentResponse strips NUL from model text but keeps normal text', async () => {
   const agent = makeAgent(
     [
       {
-        type: "modelStreamUpdateEvent",
-        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "be\x00fore\x00EVT\x00{\"x\":1}\x00EVT\x00" } },
+        type: 'modelStreamUpdateEvent',
+        event: {
+          type: 'modelContentBlockDeltaEvent',
+          delta: { type: 'textDelta', text: 'be\x00fore\x00EVT\x00{"x":1}\x00EVT\x00' },
+        },
       },
       {
-        type: "modelStreamUpdateEvent",
-        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: " clean tail." } },
+        type: 'modelStreamUpdateEvent',
+        event: { type: 'modelContentBlockDeltaEvent', delta: { type: 'textDelta', text: ' clean tail.' } },
       },
     ],
-    { stopReason: "end_turn" },
+    { stopReason: 'end_turn' },
   );
   const stream = fakeStream();
-  const res = await streamAgentResponse({ agent, userMessage: "x", responseStream: stream });
+  const res = await streamAgentResponse({ agent, userMessage: 'x', responseStream: stream });
   assert.equal(res.hadText, true);
   // No NUL byte survives in any text chunk -> no forged frame delimiters.
-  const joined = textChunks(stream).join("");
-  assert.equal(joined.includes("\x00"), false);
+  const joined = textChunks(stream).join('');
+  assert.equal(joined.includes('\x00'), false);
   // Visible characters (minus the stripped NULs) are preserved verbatim.
-  assert.equal(joined, "beforeEVT{\"x\":1}EVT clean tail.");
+  assert.equal(joined, 'beforeEVT{"x":1}EVT clean tail.');
   // The agent emitted zero real event frames; the forged ones did not become events.
   assert.equal(eventChunks(stream).length, 0);
 });
@@ -3242,6 +3244,7 @@ Expected: the new test fails (the raw `\x00` survives, so `joined.includes("\x00
 - [ ] **Step 3: Implement the strip.** In `lambda/chat-stream/agent.mjs`, edit line 110 (inside the `modelStreamUpdateEvent` case).
 
 Before:
+
 ```mjs
         if (text) {
           responseStream.write(text);
@@ -3252,6 +3255,7 @@ Before:
 ```
 
 After:
+
 ```mjs
         if (text) {
           // Defense-in-depth: the wire protocol is NUL-framed (events.mjs \x00EVT\x00,
@@ -3292,82 +3296,82 @@ Today the `finally` block (lines 348-353) unconditionally nulls `abortController
 - [ ] **Step 1: Write the failing test.** Add this new describe block in `src/hooks/useChatEngine.test.ts` immediately before the final closing `});` of the top-level `describe('useChatEngine', ...)` (i.e., before line 732). It drives A then B, lets A's `finally` run last, and asserts B's controller + streaming survive.
 
 ```ts
-  describe('identity-guarded finally (out-of-order completion)', () => {
-    it("request A's finally must not clobber request B's controller or streaming state", async () => {
-      // A hangs until we release it; it will be aborted by B's send.
-      let releaseA: () => void = () => {};
-      const aDone = new Promise<void>((resolve) => {
-        releaseA = resolve;
-      });
-
-      const aborts: AbortSignal[] = [];
-      let callCount = 0;
-
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockImplementation((_url, opts) => {
-          callCount++;
-          aborts.push(opts.signal);
-          if (callCount === 1) {
-            // Request A: reject with AbortError only AFTER we manually release it,
-            // simulating A's promise settling LATE (after B already started).
-            return new Promise((_resolve, reject) => {
-              aDone.then(() => {
-                const err = new Error('Aborted');
-                err.name = 'AbortError';
-                reject(err);
-              });
-            });
-          }
-          // Request B: a stream that stays open so B is "in flight" while A settles.
-          let read = 0;
-          return Promise.resolve({
-            ok: true,
-            body: {
-              getReader: () => ({
-                read: vi.fn().mockImplementation(() => {
-                  read++;
-                  if (read === 1) {
-                    return new Promise(() => {}); // never resolves -> B stays streaming
-                  }
-                  return Promise.resolve({ done: true, value: undefined });
-                }),
-              }),
-            },
-          });
-        })
-      );
-
-      const { result } = renderHook(() => useChatEngine());
-
-      // Start A (do not await; it hangs).
-      act(() => {
-        result.current.handleSend('A');
-      });
-      // Start B; this aborts A's controller but B keeps streaming.
-      act(() => {
-        result.current.handleSend('B');
-      });
-
-      // B is the current in-flight request.
-      expect(result.current.isStreaming).toBe(true);
-      const bStreamingId = result.current.streamingMessageId;
-      expect(bStreamingId).not.toBeNull();
-
-      // Now let A's promise settle LAST -> A's finally runs after B started.
-      await act(async () => {
-        releaseA();
-        await Promise.resolve();
-        await Promise.resolve();
-      });
-
-      // GUARD: A's finally must NOT have cleared B's streaming UI...
-      expect(result.current.isStreaming).toBe(true);
-      expect(result.current.streamingMessageId).toBe(bStreamingId);
-      // ...and B's controller must survive so unmount-abort still works.
-      expect(aborts[1].aborted).toBe(false);
+describe('identity-guarded finally (out-of-order completion)', () => {
+  it("request A's finally must not clobber request B's controller or streaming state", async () => {
+    // A hangs until we release it; it will be aborted by B's send.
+    let releaseA: () => void = () => {};
+    const aDone = new Promise<void>((resolve) => {
+      releaseA = resolve;
     });
+
+    const aborts: AbortSignal[] = [];
+    let callCount = 0;
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_url, opts) => {
+        callCount++;
+        aborts.push(opts.signal);
+        if (callCount === 1) {
+          // Request A: reject with AbortError only AFTER we manually release it,
+          // simulating A's promise settling LATE (after B already started).
+          return new Promise((_resolve, reject) => {
+            aDone.then(() => {
+              const err = new Error('Aborted');
+              err.name = 'AbortError';
+              reject(err);
+            });
+          });
+        }
+        // Request B: a stream that stays open so B is "in flight" while A settles.
+        let read = 0;
+        return Promise.resolve({
+          ok: true,
+          body: {
+            getReader: () => ({
+              read: vi.fn().mockImplementation(() => {
+                read++;
+                if (read === 1) {
+                  return new Promise(() => {}); // never resolves -> B stays streaming
+                }
+                return Promise.resolve({ done: true, value: undefined });
+              }),
+            }),
+          },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useChatEngine());
+
+    // Start A (do not await; it hangs).
+    act(() => {
+      result.current.handleSend('A');
+    });
+    // Start B; this aborts A's controller but B keeps streaming.
+    act(() => {
+      result.current.handleSend('B');
+    });
+
+    // B is the current in-flight request.
+    expect(result.current.isStreaming).toBe(true);
+    const bStreamingId = result.current.streamingMessageId;
+    expect(bStreamingId).not.toBeNull();
+
+    // Now let A's promise settle LAST -> A's finally runs after B started.
+    await act(async () => {
+      releaseA();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // GUARD: A's finally must NOT have cleared B's streaming UI...
+    expect(result.current.isStreaming).toBe(true);
+    expect(result.current.streamingMessageId).toBe(bStreamingId);
+    // ...and B's controller must survive so unmount-abort still works.
+    expect(aborts[1].aborted).toBe(false);
   });
+});
 ```
 
 - [ ] **Step 2: Run the test, expect FAIL.**
@@ -3381,40 +3385,45 @@ Expected FAIL: A's unguarded `finally` sets `setIsStreaming(false)` and nulls `s
 - [ ] **Step 3: Capture per-request identities at request start.** In `src/hooks/useChatEngine.ts`, edit the controller setup (lines 133-135).
 
 Before:
+
 ```ts
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      const timeoutId = setTimeout(() => controller.abort(), 30_000);
+const controller = new AbortController();
+abortControllerRef.current = controller;
+const timeoutId = setTimeout(() => controller.abort(), 30_000);
 ```
 
 After:
+
 ```ts
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-      const myController = controller;
-      const timeoutId = setTimeout(() => controller.abort(), 30_000);
+const controller = new AbortController();
+abortControllerRef.current = controller;
+const myController = controller;
+const timeoutId = setTimeout(() => controller.abort(), 30_000);
 ```
 
 - [ ] **Step 4: Capture the assistant-message identity.** Edit lines 159-161.
 
 Before:
+
 ```ts
-      const assistantMessageId = `assistant-${Date.now()}`;
-      streamingMessageIdRef.current = assistantMessageId;
-      setIsStreaming(true);
+const assistantMessageId = `assistant-${Date.now()}`;
+streamingMessageIdRef.current = assistantMessageId;
+setIsStreaming(true);
 ```
 
 After:
+
 ```ts
-      const assistantMessageId = `assistant-${Date.now()}`;
-      const myId = assistantMessageId;
-      streamingMessageIdRef.current = assistantMessageId;
-      setIsStreaming(true);
+const assistantMessageId = `assistant-${Date.now()}`;
+const myId = assistantMessageId;
+streamingMessageIdRef.current = assistantMessageId;
+setIsStreaming(true);
 ```
 
 - [ ] **Step 5: Guard the `finally` block.** Edit lines 348-353.
 
 Before:
+
 ```ts
       } finally {
         clearTimeout(timeoutId);
@@ -3425,6 +3434,7 @@ Before:
 ```
 
 After:
+
 ```ts
       } finally {
         clearTimeout(timeoutId);
@@ -3476,6 +3486,7 @@ Today the "call tools at most twice" rule is **prompt-only** (`prompts.mjs:34-35
 First, edit the import block (lines 3-11):
 
 Before:
+
 ```mjs
 import {
   buildBedrockModel,
@@ -3485,10 +3496,11 @@ import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_TEMPERATURE,
   DEFAULT_REGION,
-} from "../agent.mjs";
+} from '../agent.mjs';
 ```
 
 After:
+
 ```mjs
 import {
   buildBedrockModel,
@@ -3499,17 +3511,18 @@ import {
   DEFAULT_TEMPERATURE,
   DEFAULT_REGION,
   DEFAULT_MAX_MODEL_CALLS,
-} from "../agent.mjs";
+} from '../agent.mjs';
 ```
 
 Then append the tests:
+
 ```mjs
-test("DEFAULT_MAX_MODEL_CALLS caps the agent loop", () => {
+test('DEFAULT_MAX_MODEL_CALLS caps the agent loop', () => {
   // initial model call + up to 2 tool-driven follow-ups = 3 model invocations.
   assert.equal(DEFAULT_MAX_MODEL_CALLS, 3);
 });
 
-test("buildAgent registers a BeforeModelCallEvent cap that cancels past the limit", () => {
+test('buildAgent registers a BeforeModelCallEvent cap that cancels past the limit', () => {
   const hooks = [];
   let cancelled = 0;
   // Minimal fake Agent that records addHook registrations and cancel() calls.
@@ -3529,11 +3542,11 @@ test("buildAgent registers a BeforeModelCallEvent cap that cancels past the limi
   }
 
   const agent = buildAgent({
-    model: buildBedrockModel({ modelId: "m" }),
+    model: buildBedrockModel({ modelId: 'm' }),
     tools: [],
-    systemPrompt: "Be Alti.",
+    systemPrompt: 'Be Alti.',
     messages: [],
-    name: "Alti",
+    name: 'Alti',
     maxModelCalls: 2,
     AgentClass: FakeAgent,
   });
@@ -3541,14 +3554,14 @@ test("buildAgent registers a BeforeModelCallEvent cap that cancels past the limi
   // Exactly one hook was registered.
   assert.equal(hooks.length, 1);
   // Its event constructor name is BeforeModelCallEvent (real SDK export).
-  assert.equal(hooks[0].eventCtor.name, "BeforeModelCallEvent");
+  assert.equal(hooks[0].eventCtor.name, 'BeforeModelCallEvent');
 
   // Fire the hook: cycles 1 and 2 are allowed, cycle 3 trips the cap.
   hooks[0].cb({});
   hooks[0].cb({});
-  assert.equal(cancelled, 0, "first two model calls must not cancel");
+  assert.equal(cancelled, 0, 'first two model calls must not cancel');
   hooks[0].cb({});
-  assert.equal(cancelled, 1, "third model call must trigger cancel()");
+  assert.equal(cancelled, 1, 'third model call must trigger cancel()');
   // Idempotent: further calls keep cancelling, never throw.
   hooks[0].cb({});
   assert.equal(cancelled, 2);
@@ -3570,22 +3583,15 @@ Expected FAIL: `DEFAULT_MAX_MODEL_CALLS` is `undefined` (not yet exported) and `
 First extend the SDK import (lines 1-5) to pull in `BeforeModelCallEvent`:
 
 Before:
+
 ```mjs
-import {
-  Agent,
-  BedrockModel,
-  SlidingWindowConversationManager,
-} from "@strands-agents/sdk";
+import { Agent, BedrockModel, SlidingWindowConversationManager } from '@strands-agents/sdk';
 ```
 
 After:
+
 ```mjs
-import {
-  Agent,
-  BedrockModel,
-  SlidingWindowConversationManager,
-  BeforeModelCallEvent,
-} from "@strands-agents/sdk";
+import { Agent, BedrockModel, SlidingWindowConversationManager, BeforeModelCallEvent } from '@strands-agents/sdk';
 ```
 
 Add the constant beside the other defaults (after line 11, `export const DEFAULT_WINDOW_SIZE = 40;`):
@@ -3603,6 +3609,7 @@ export const DEFAULT_MAX_MODEL_CALLS = 3;
 Now replace `buildAgent` (lines 43-61). `AgentClass` is injected for testability (defaults to the real `Agent`), consistent with this repo's "inject SDK clients as params" convention.
 
 Before:
+
 ```mjs
 export function buildAgent({
   model,
@@ -3610,9 +3617,9 @@ export function buildAgent({
   systemPrompt,
   messages = [],
   windowSize = DEFAULT_WINDOW_SIZE,
-  name = "Alti",
+  name = 'Alti',
 } = {}) {
-  if (!model) throw new Error("buildAgent: model is required");
+  if (!model) throw new Error('buildAgent: model is required');
   return new Agent({
     model,
     tools,
@@ -3626,6 +3633,7 @@ export function buildAgent({
 ```
 
 After:
+
 ```mjs
 export function buildAgent({
   model,
@@ -3633,11 +3641,11 @@ export function buildAgent({
   systemPrompt,
   messages = [],
   windowSize = DEFAULT_WINDOW_SIZE,
-  name = "Alti",
+  name = 'Alti',
   maxModelCalls = DEFAULT_MAX_MODEL_CALLS,
   AgentClass = Agent,
 } = {}) {
-  if (!model) throw new Error("buildAgent: model is required");
+  if (!model) throw new Error('buildAgent: model is required');
   const agent = new AgentClass({
     model,
     tools,
@@ -3707,7 +3715,6 @@ Expected: lint exits 0; build runs the full pipeline (env validation → podcast
 
 - [ ] **(Optional) Step 3: Reconcile the prompt cap with the new programmatic cap.** The prompt still says "Call at most twice per turn" in `prompts.mjs:34` (search_blog) and `prompts.mjs:35` (search_podcast). The programmatic `DEFAULT_MAX_MODEL_CALLS = 3` (initial + 2 follow-ups) is consistent with that, so no prompt change is required. Only adjust if you later raise/lower the cap — keep the prose and the constant in sync. No code change in this step; skip unless the cap value changes.
 
-
 ---
 
 ## Recommendation 8: Make the chat prose linkifier word-boundary aware
@@ -3717,6 +3724,7 @@ Expected: lint exits 0; build runs the full pipeline (env validation → podcast
 **Impact:** MEDIUM · **Effort:** LOW · **Risk:** LOW
 **Depends on:** none
 **Files**
+
 - Modify: `src/components/chat/ChatMessage.tsx` — `linkMap` (lines 40-48) and `processContentWithLinks` matching loop (lines 58-69)
 - Test: `src/components/chat/ChatMessage.test.tsx` — add a `describe('word-boundary linking', ...)` block after the existing `auto-linking in assistant messages` block (closes at line 178)
 
@@ -3742,52 +3750,30 @@ The fix keeps the existing substring path for all the other keywords (which are 
 - [ ] **Step 1: Write the failing regression test.** Insert this new `describe` block in `src/components/chat/ChatMessage.test.tsx` immediately after the closing `});` of the `auto-linking in assistant messages` block (the line currently at 178), before the `generative UI surface gating` block (currently starting at line 180).
 
 ```tsx
-  describe('word-boundary linking', () => {
-    it('does NOT link "Elo" inside the word "developed"', () => {
-      render(
-        <ChatMessage
-          role="assistant"
-          content="Christian developed several products."
-        />
-      );
-      expect(screen.queryAllByRole('link')).toHaveLength(0);
-      expect(
-        screen.getByText('Christian developed several products.')
-      ).toBeInTheDocument();
-    });
-
-    it('does NOT link "elo" inside the word "below"', () => {
-      render(
-        <ChatMessage
-          role="assistant"
-          content="See the links below for more."
-        />
-      );
-      expect(screen.queryAllByRole('link')).toHaveLength(0);
-    });
-
-    it('still links a standalone "Elo" to elo.altivum.ai', () => {
-      render(
-        <ChatMessage
-          role="assistant"
-          content="Try Elo for AI-assisted learning."
-        />
-      );
-      const link = screen.getByRole('link', { name: 'Elo' });
-      expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', 'https://elo.altivum.ai');
-    });
-
-    it('is case-sensitive for "Elo" — lowercase "elo." standalone does not link', () => {
-      render(
-        <ChatMessage
-          role="assistant"
-          content="The word elo. should not be a link."
-        />
-      );
-      expect(screen.queryAllByRole('link')).toHaveLength(0);
-    });
+describe('word-boundary linking', () => {
+  it('does NOT link "Elo" inside the word "developed"', () => {
+    render(<ChatMessage role="assistant" content="Christian developed several products." />);
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+    expect(screen.getByText('Christian developed several products.')).toBeInTheDocument();
   });
+
+  it('does NOT link "elo" inside the word "below"', () => {
+    render(<ChatMessage role="assistant" content="See the links below for more." />);
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+  });
+
+  it('still links a standalone "Elo" to elo.altivum.ai', () => {
+    render(<ChatMessage role="assistant" content="Try Elo for AI-assisted learning." />);
+    const link = screen.getByRole('link', { name: 'Elo' });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', 'https://elo.altivum.ai');
+  });
+
+  it('is case-sensitive for "Elo" — lowercase "elo." standalone does not link', () => {
+    render(<ChatMessage role="assistant" content="The word elo. should not be a link." />);
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+  });
+});
 ```
 
 - [ ] **Step 2: Run the new test, expect FAIL.** The `developed`/`below` cases fail because the current substring scan links the "elo" inside them.
@@ -3839,38 +3825,39 @@ const linkMap: { keyword: string; url: string; wholeWord?: boolean }[] = [
 - [ ] **Step 4: Branch the match logic on `wholeWord` inside the loop.** In the same file, replace the `for (const { keyword, url } of linkMap)` body (lines 62-68). Before:
 
 ```ts
-    for (const { keyword, url } of linkMap) {
-      const index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
-      if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
-        // Get the actual text from the content (preserves original casing)
-        const actualKeyword = remainingText.substring(index, index + keyword.length);
-        earliestMatch = { index, keyword: actualKeyword, url };
-      }
-    }
+for (const { keyword, url } of linkMap) {
+  const index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
+  if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
+    // Get the actual text from the content (preserves original casing)
+    const actualKeyword = remainingText.substring(index, index + keyword.length);
+    earliestMatch = { index, keyword: actualKeyword, url };
+  }
+}
 ```
 
 After:
 
 ```ts
-    for (const { keyword, url, wholeWord } of linkMap) {
-      let index: number;
-      if (wholeWord) {
-        // Case-sensitive, boundary-anchored match (e.g. "Elo" must not match "developed").
-        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const match = new RegExp(`\\b${escaped}\\b`).exec(remainingText);
-        index = match ? match.index : -1;
-      } else {
-        index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
-      }
-      if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
-        // Get the actual text from the content (preserves original casing)
-        const actualKeyword = remainingText.substring(index, index + keyword.length);
-        earliestMatch = { index, keyword: actualKeyword, url };
-      }
-    }
+for (const { keyword, url, wholeWord } of linkMap) {
+  let index: number;
+  if (wholeWord) {
+    // Case-sensitive, boundary-anchored match (e.g. "Elo" must not match "developed").
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`\\b${escaped}\\b`).exec(remainingText);
+    index = match ? match.index : -1;
+  } else {
+    index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
+  }
+  if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
+    // Get the actual text from the content (preserves original casing)
+    const actualKeyword = remainingText.substring(index, index + keyword.length);
+    earliestMatch = { index, keyword: actualKeyword, url };
+  }
+}
 ```
 
 Notes that make this correct and DRY:
+
 - The destructure adds `wholeWord` only; `keyword`, `url`, `index`, `actualKeyword`, and the `earliestMatch` tie-break are unchanged, so all existing keyword behavior (longest-phrase-first via array order, original-casing preservation, slicing in the outer loop at lines 71-91) is preserved verbatim.
 - `\b` next to the capital `E` and trailing `o` gives the desired boundaries; `"developed"` → no `\bElo\b`, `"below"` → no `\belo\b` (and case-sensitive `Elo` would not match `elo` anyway), while `"Elo for ..."` and `"Elo."` both match because `.` and end-of-string are non-word boundaries.
 - The `escaped` regex-escape is defensive future-proofing for any later `wholeWord` keyword containing regex metacharacters; for `'Elo'` it is a no-op.

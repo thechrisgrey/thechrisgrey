@@ -16,8 +16,7 @@ import { RenderUiInputSchema } from "./uiBlocks.mjs";
 import { emitEvent, EVENT_KINDS } from "./events.mjs";
 
 // Opus for visual composition (matches the blueprint Lambda's model). Overridable.
-export const GENUI_OPUS_MODEL_ID =
-  process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-6-v1";
+export const GENUI_OPUS_MODEL_ID = process.env.BEDROCK_OPUS_MODEL_ID || "us.anthropic.claude-opus-4-6-v1";
 
 // The trigger is the literal "gen-ui" / "gen ui" / "genui" command — an explicit,
 // unambiguous signal that the visitor wants a visual answer. \b guards against
@@ -52,9 +51,9 @@ function renderUiToolSpec() {
 
 function genUiSystem(retrievedContext) {
   return [
-    "You are Alti's visual composer for thechrisgrey.com. The visitor explicitly asked for a visual answer (a \"gen-ui\" request), so you MUST call render_ui.",
+    'You are Alti\'s visual composer for thechrisgrey.com. The visitor explicitly asked for a visual answer (a "gen-ui" request), so you MUST call render_ui.',
     "Choose the block type(s) that best answer their request and fill them concisely.",
-    "Ground every value strictly in the CONTEXT below plus what is broadly known about Christian Perez — Founder & CEO of Altivum Inc., former Green Beret (18D), host of The Vector Podcast, author of \"Beyond the Assessment.\" Never fabricate specifics, dates, or numbers.",
+    'Ground every value strictly in the CONTEXT below plus what is broadly known about Christian Perez — Founder & CEO of Altivum Inc., former Green Beret (18D), host of The Vector Podcast, author of "Beyond the Assessment." Never fabricate specifics, dates, or numbers.',
     retrievedContext ? `\nCONTEXT:\n${retrievedContext}` : "",
   ].join("\n");
 }
@@ -92,7 +91,11 @@ export async function renderGenUi({
     const resp = await bedrockClient.send(command, abortSignal ? { abortSignal } : undefined);
 
     const content = resp?.output?.message?.content || [];
-    const leadIn = content.map((c) => c.text).filter(Boolean).join(" ").trim();
+    const leadIn = content
+      .map((c) => c.text)
+      .filter(Boolean)
+      .join(" ")
+      .trim();
     const toolUse = content.find((c) => c.toolUse)?.toolUse;
 
     if (!toolUse) {

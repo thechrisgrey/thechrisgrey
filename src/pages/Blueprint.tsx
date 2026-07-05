@@ -43,12 +43,9 @@ function BlueprintHero() {
       <h1 className="text-white" style={typography.heroHeader}>
         AWS architecture, <span className="text-altivum-gold">on demand.</span>
       </h1>
-      <p
-        className="text-altivum-silver max-w-2xl mx-auto"
-        style={typography.subtitle}
-      >
-        Describe what you want to build. Claude Opus 4.6 returns a tight architecture,
-        diagram, IaC scaffold, cost estimate, and ready-to-use Claude Code artifacts.
+      <p className="text-altivum-silver max-w-2xl mx-auto" style={typography.subtitle}>
+        Describe what you want to build. Claude Opus 4.6 returns a tight architecture, diagram, IaC scaffold, cost
+        estimate, and ready-to-use Claude Code artifacts.
       </p>
     </section>
   );
@@ -90,10 +87,7 @@ function WaitlistPlaceholder() {
           subheading="Opus 4.6 generation is expensive, so we're launching to the waitlist first. Drop your email and we'll email you the moment it opens."
         />
       </div>
-      <p
-        className="text-center text-altivum-silver/60"
-        style={typography.smallText}
-      >
+      <p className="text-center text-altivum-silver/60" style={typography.smallText}>
         Launching soon.
       </p>
     </div>
@@ -170,16 +164,12 @@ export default function Blueprint() {
         {showForm && (
           <section aria-labelledby="form-heading" className="space-y-4">
             <div>
-              <h2
-                id="form-heading"
-                className="text-white mb-2"
-                style={typography.sectionHeader}
-              >
+              <h2 id="form-heading" className="text-white mb-2" style={typography.sectionHeader}>
                 Describe your project
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                Keep it short and specific. Opus gives back sharper blueprints when
-                you name constraints (budget, latency, compliance) up front.
+                Keep it short and specific. Opus gives back sharper blueprints when you name constraints (budget,
+                latency, compliance) up front.
               </p>
             </div>
             <BlueprintForm onSubmit={generate} isGenerating={isGenerating} />
@@ -188,11 +178,7 @@ export default function Blueprint() {
 
         {isGenerating && (
           <section aria-labelledby="loading-heading" className="space-y-4">
-            <h2
-              id="loading-heading"
-              className="text-white"
-              style={typography.sectionHeader}
-            >
+            <h2 id="loading-heading" className="text-white" style={typography.sectionHeader}>
               Working on your blueprint…
             </h2>
             <LoadingSkeleton />
@@ -206,27 +192,20 @@ export default function Blueprint() {
             role="alert"
           >
             <div className="flex items-start gap-3">
-              <span
-                className="material-icons text-rose-300 shrink-0"
-                aria-hidden="true"
-              >
+              <span className="material-icons text-rose-300 shrink-0" aria-hidden="true">
                 error_outline
               </span>
               <div className="min-w-0">
-                <h2
-                  id="error-heading"
-                  className="text-white mb-1"
-                  style={typography.cardTitleSmall}
-                >
+                <h2 id="error-heading" className="text-white mb-1" style={typography.cardTitleSmall}>
                   {error.kind === 'timeout'
                     ? 'Generation took too long.'
                     : error.kind === 'validation_failed'
-                    ? 'The model returned a low-quality blueprint.'
-                    : error.kind === 'invalid_input'
-                    ? 'Your spec needs a small fix.'
-                    : error.kind === 'not_configured'
-                    ? 'Blueprint is not configured in this environment.'
-                    : 'Something went wrong.'}
+                      ? 'The model returned a low-quality blueprint.'
+                      : error.kind === 'invalid_input'
+                        ? 'Your spec needs a small fix.'
+                        : error.kind === 'not_configured'
+                          ? 'Blueprint is not configured in this environment.'
+                          : 'Something went wrong.'}
                 </h2>
                 <p className="text-altivum-silver" style={typography.bodyText}>
                   {error.message}
@@ -238,10 +217,7 @@ export default function Blueprint() {
                     className="inline-flex items-center px-3 py-2 rounded-md border border-white/10 text-altivum-silver hover:border-altivum-gold/40 hover:text-white transition-colors"
                     style={typography.smallText}
                   >
-                    <span
-                      className="material-icons text-sm mr-1"
-                      aria-hidden="true"
-                    >
+                    <span className="material-icons text-sm mr-1" aria-hidden="true">
                       refresh
                     </span>
                     Try again
@@ -255,11 +231,7 @@ export default function Blueprint() {
         {isRateLimited && error && <RateLimitedCard message={error.message} />}
 
         {showResult && output && (
-          <section
-            ref={resultRef}
-            aria-labelledby="result-heading"
-            className="space-y-6"
-          >
+          <section ref={resultRef} aria-labelledby="result-heading" className="space-y-6">
             <h2 id="result-heading" className="sr-only">
               Generated blueprint
             </h2>

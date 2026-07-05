@@ -49,13 +49,15 @@ export function buildCitePassageTool({ sanityClient, responseStream, metrics, re
         };
       } catch (error) {
         metrics?.record("ToolFailure_CitePassage");
-        console.error(JSON.stringify({
-          requestId,
-          event: "tool_error",
-          tool: "cite_blog_passage",
-          error: error.name,
-          message: error.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "tool_error",
+            tool: "cite_blog_passage",
+            error: error.name,
+            message: error.message,
+          }),
+        );
         return { ok: false, error: "Unable to fetch citation right now." };
       }
     },

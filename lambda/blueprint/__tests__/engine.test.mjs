@@ -68,10 +68,7 @@ test("generateBlueprint returns invalid_input with field-level details", async (
 });
 
 test("generateBlueprint happy path: 1 Opus call + 1 Haiku call", async () => {
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     sanityClient: fakeSanityClient([]),
@@ -168,10 +165,7 @@ test("generateBlueprint survives Sanity failure (no examples)", async () => {
       throw new Error("Sanity is down");
     },
   };
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     sanityClient: brokenSanity,
@@ -192,10 +186,7 @@ test("generateBlueprint passes golden examples through when fetcher returns them
     isActive: true,
     sortOrder: 10,
   };
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     sanityClient: fakeSanityClient([example]),
@@ -210,10 +201,7 @@ test("generateBlueprint passes golden examples through when fetcher returns them
 });
 
 test("generateBlueprint still returns ok=true when Haiku flags issues (soft signal)", async () => {
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuWarnVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuWarnVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),
@@ -224,10 +212,7 @@ test("generateBlueprint still returns ok=true when Haiku flags issues (soft sign
 });
 
 test("generateBlueprint tolerates Haiku validator throwing", async () => {
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    new Error("Haiku exploded"),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), new Error("Haiku exploded")]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),
@@ -260,10 +245,7 @@ test("generateBlueprint meta aggregates Opus tokens across retries", async () =>
 
 test("generateBlueprint streams token deltas + status events when onProgress is provided", async () => {
   const outputJson = JSON.stringify(validBlueprintOutput());
-  const bedrock = scriptedBedrockClient([
-    { streamText: outputJson, chunkSize: 128 },
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([{ streamText: outputJson, chunkSize: 128 }, haikuOkVerdict()]);
   const events = [];
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
@@ -273,13 +255,7 @@ test("generateBlueprint streams token deltas + status events when onProgress is 
   assert.equal(res.ok, true, JSON.stringify(res));
 
   const phases = events.filter((e) => e.type === "status").map((e) => e.phase);
-  assert.deepEqual(phases, [
-    "validating_input",
-    "fetching_examples",
-    "generating",
-    "validating_output",
-    "done",
-  ]);
+  assert.deepEqual(phases, ["validating_input", "fetching_examples", "generating", "validating_output", "done"]);
 
   const tokenEvents = events.filter((e) => e.type === "token");
   assert.ok(tokenEvents.length > 1, "expected multiple token deltas");
@@ -294,23 +270,19 @@ test("generateBlueprint streams token deltas + status events when onProgress is 
 });
 
 test("generateBlueprint never throws from a broken onProgress callback", async () => {
-  const bedrock = scriptedBedrockClient([
-    { streamText: JSON.stringify(validBlueprintOutput()) },
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([{ streamText: JSON.stringify(validBlueprintOutput()) }, haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),
-    onProgress: () => { throw new Error("downstream stream torn down"); },
+    onProgress: () => {
+      throw new Error("downstream stream torn down");
+    },
   });
   assert.equal(res.ok, true, "engine must shrug off callback errors");
 });
 
 test("generateBlueprint stamps tier in meta", async () => {
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     tier: "pro",
     bedrockClient: bedrock,
@@ -350,10 +322,7 @@ test("generateBlueprint fails closed (guardrail_unavailable) when the input guar
 
 test("generateBlueprint proceeds to generation when the input guardrail passes", async () => {
   // Default guardrailAction is NONE, so the pre-check passes and generation runs.
-  const bedrock = scriptedBedrockClient([
-    opusResponseFromOutput(),
-    haikuOkVerdict(),
-  ]);
+  const bedrock = scriptedBedrockClient([opusResponseFromOutput(), haikuOkVerdict()]);
   const res = await generateBlueprint(validBlueprintInput(), {
     bedrockClient: bedrock,
     logger: silentLogger(),

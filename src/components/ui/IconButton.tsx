@@ -7,7 +7,7 @@ interface IconButtonProps {
 }
 
 export const IconButton = ({ icon, label, onClick, href, className = '' }: IconButtonProps) => {
-  const baseClasses = "p-2 rounded-md transition-colors focus:outline-hidden focus:ring-2 focus:ring-altivum-gold";
+  const baseClasses = 'p-2 rounded-md transition-colors focus:outline-hidden focus:ring-2 focus:ring-altivum-gold';
 
   if (href) {
     return (
@@ -18,18 +18,18 @@ export const IconButton = ({ icon, label, onClick, href, className = '' }: IconB
         target="_blank"
         rel="noopener noreferrer"
       >
-        <span className="material-icons" aria-hidden="true">{icon}</span>
+        <span className="material-icons" aria-hidden="true">
+          {icon}
+        </span>
       </a>
     );
   }
 
   return (
-    <button
-      onClick={onClick}
-      aria-label={label}
-      className={`${baseClasses} ${className}`}
-    >
-      <span className="material-icons" aria-hidden="true">{icon}</span>
+    <button onClick={onClick} aria-label={label} className={`${baseClasses} ${className}`}>
+      <span className="material-icons" aria-hidden="true">
+        {icon}
+      </span>
     </button>
   );
 };

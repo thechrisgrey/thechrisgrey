@@ -139,20 +139,26 @@ export function ArchitectureXRay() {
       const targetState: NodeState = shouldStop ? 'warning' : 'active';
 
       // Activate this node
-      tl.to({}, {
-        duration: 0.3,
-        onStart: () => {
-          setNodeStates((prev) => ({ ...prev, [nodeId]: targetState }));
+      tl.to(
+        {},
+        {
+          duration: 0.3,
+          onStart: () => {
+            setNodeStates((prev) => ({ ...prev, [nodeId]: targetState }));
+          },
         },
-      });
+      );
 
       if (shouldStop) break;
 
       // Activate the edge to the next node (if exists)
       if (i < pipelineEdges.length) {
-        tl.to({}, {
-          duration: 0.15,
-        });
+        tl.to(
+          {},
+          {
+            duration: 0.15,
+          },
+        );
       }
     }
   }, []);
@@ -196,131 +202,134 @@ export function ArchitectureXRay() {
     }, 20);
   }, [runPipelineAnimation]);
 
-  const handleTrace = useCallback(async (message: string) => {
-    // Always make a live API call -- the Lambda's 20/hour rate limit is the real protection
-    // Kill any in-flight request or animation
-    abortControllerRef.current?.abort();
-    timelineRef.current?.kill();
+  const handleTrace = useCallback(
+    async (message: string) => {
+      // Always make a live API call -- the Lambda's 20/hour rate limit is the real protection
+      // Kill any in-flight request or animation
+      abortControllerRef.current?.abort();
+      timelineRef.current?.kill();
 
-    // Reset all state for a fresh trace
-    setTraceState('tracing');
-    setResponseContent('');
-    setIsSystemMessage(false);
-    setExpandedNodeId(null);
-    setNodeStates(allDim());
+      // Reset all state for a fresh trace
+      setTraceState('tracing');
+      setResponseContent('');
+      setIsSystemMessage(false);
+      setExpandedNodeId(null);
+      setNodeStates(allDim());
 
-    // Start the pipeline animation
-    runPipelineAnimation();
+      // Start the pipeline animation
+      runPipelineAnimation();
 
-    const requestBody = JSON.stringify({
-      messages: [{ role: 'user', content: message }],
-      pageContext: {
-        currentPage: '/claude',
-        pageTitle: 'Claude',
-        section: 'Architecture X-Ray',
-        visitedPages: [],
-      },
-    });
-
-    // (Any previous in-flight request was already aborted at the top of this callback.)
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-    const timeoutId = setTimeout(() => controller.abort(), 30_000);
-
-    try {
-      const token = await getSessionToken('chat');
-
-      const response = await fetch(CHAT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      const requestBody = JSON.stringify({
+        messages: [{ role: 'user', content: message }],
+        pageContext: {
+          currentPage: '/claude',
+          pageTitle: 'Claude',
+          section: 'Architecture X-Ray',
+          visitedPages: [],
         },
-        body: requestBody,
-        signal: controller.signal,
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      // (Any previous in-flight request was already aborted at the top of this callback.)
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
-      const reader = response.body!.getReader();
-      const decoder = new TextDecoder();
+      try {
+        const token = await getSessionToken('chat');
 
-      let accumulated = '';
-      let isSys = false;
-      let firstChunk = true;
+        const response = await fetch(CHAT_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: requestBody,
+          signal: controller.signal,
+        });
 
-      let done = false;
-      while (!done) {
-        const result = await reader.read();
-        done = result.done;
-        if (done) break;
-        const value = result.value;
+        if (!response.ok) throw new Error('Failed to get response');
 
-        const chunk = decoder.decode(value, { stream: true });
+        const reader = response.body!.getReader();
+        const decoder = new TextDecoder();
 
-        if (firstChunk) {
-          firstChunk = false;
-          if (chunk.startsWith(SYSTEM_MESSAGE_PREFIX)) {
-            isSys = true;
-            accumulated = chunk.slice(SYSTEM_MESSAGE_PREFIX.length);
-            setIsSystemMessage(true);
+        let accumulated = '';
+        let isSys = false;
+        let firstChunk = true;
+
+        let done = false;
+        while (!done) {
+          const result = await reader.read();
+          done = result.done;
+          if (done) break;
+          const value = result.value;
+
+          const chunk = decoder.decode(value, { stream: true });
+
+          if (firstChunk) {
+            firstChunk = false;
+            if (chunk.startsWith(SYSTEM_MESSAGE_PREFIX)) {
+              isSys = true;
+              accumulated = chunk.slice(SYSTEM_MESSAGE_PREFIX.length);
+              setIsSystemMessage(true);
+            } else {
+              accumulated = chunk;
+            }
           } else {
-            accumulated = chunk;
+            accumulated += chunk;
+          }
+
+          setResponseContent(accumulated);
+        }
+
+        if (isSys) {
+          // System message: stop animation at guardrail node with warning
+          timelineRef.current?.kill();
+          setNodeStates((prev) => {
+            const states: Record<string, NodeState> = {};
+            // Activate nodes up to guardrail, set guardrail to warning
+            let hitGuardrail = false;
+            for (const node of pipelineNodes) {
+              if (node.id === 'guardrail-check') {
+                states[node.id] = 'warning';
+                hitGuardrail = true;
+              } else if (!hitGuardrail) {
+                states[node.id] = 'active';
+              } else {
+                states[node.id] = prev[node.id] === 'active' ? 'active' : 'dim';
+              }
+            }
+            return states;
+          });
+          setTraceState('error');
+
+          // Schedule replay with cached successful response if one exists
+          if (cachedTrace.current) {
+            replayTimeoutRef.current = setTimeout(() => {
+              replayWithCache();
+            }, 2000);
           }
         } else {
-          accumulated += chunk;
+          // Cache the successful response (used for error-recovery replay)
+          cachedTrace.current = { response: accumulated, isSystem: false };
+          setTraceState('complete');
         }
-
-        setResponseContent(accumulated);
-      }
-
-      if (isSys) {
-        // System message: stop animation at guardrail node with warning
+      } catch (error) {
         timelineRef.current?.kill();
-        setNodeStates((prev) => {
-          const states: Record<string, NodeState> = {};
-          // Activate nodes up to guardrail, set guardrail to warning
-          let hitGuardrail = false;
-          for (const node of pipelineNodes) {
-            if (node.id === 'guardrail-check') {
-              states[node.id] = 'warning';
-              hitGuardrail = true;
-            } else if (!hitGuardrail) {
-              states[node.id] = 'active';
-            } else {
-              states[node.id] = prev[node.id] === 'active' ? 'active' : 'dim';
-            }
-          }
-          return states;
-        });
-        setTraceState('error');
+        clearTimeout(timeoutId);
 
-        // Schedule replay with cached successful response if one exists
-        if (cachedTrace.current) {
-          replayTimeoutRef.current = setTimeout(() => {
-            replayWithCache();
-          }, 2000);
+        if (error instanceof Error && error.name === 'AbortError') {
+          setResponseContent('The request timed out. Please try again.');
+        } else {
+          setResponseContent('Something went wrong. Please try again.');
         }
-      } else {
-        // Cache the successful response (used for error-recovery replay)
-        cachedTrace.current = { response: accumulated, isSystem: false };
-        setTraceState('complete');
+        setTraceState('error');
+      } finally {
+        clearTimeout(timeoutId);
+        abortControllerRef.current = null;
       }
-    } catch (error) {
-      timelineRef.current?.kill();
-      clearTimeout(timeoutId);
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        setResponseContent('The request timed out. Please try again.');
-      } else {
-        setResponseContent('Something went wrong. Please try again.');
-      }
-      setTraceState('error');
-    } finally {
-      clearTimeout(timeoutId);
-      abortControllerRef.current = null;
-    }
-  }, [runPipelineAnimation, replayWithCache]);
+    },
+    [runPipelineAnimation, replayWithCache],
+  );
 
   const expandedNode = pipelineNodes.find((n) => n.id === expandedNodeId) ?? null;
 
@@ -366,8 +375,10 @@ export function ArchitectureXRay() {
               }
 
               const isActive =
-                nodeStates[edge.from] === 'active' || nodeStates[edge.to] === 'active' ||
-                nodeStates[edge.from] === 'warning' || nodeStates[edge.to] === 'warning';
+                nodeStates[edge.from] === 'active' ||
+                nodeStates[edge.to] === 'active' ||
+                nodeStates[edge.from] === 'warning' ||
+                nodeStates[edge.to] === 'warning';
 
               return (
                 <PipelineEdge
@@ -403,10 +414,7 @@ export function ArchitectureXRay() {
         </div>
 
         {/* Trace input */}
-        <TraceInput
-          onTrace={handleTrace}
-          disabled={traceState === 'tracing'}
-        />
+        <TraceInput onTrace={handleTrace} disabled={traceState === 'tracing'} />
 
         {/* Trace response bubble */}
         {traceState !== 'idle' && (

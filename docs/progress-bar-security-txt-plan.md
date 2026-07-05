@@ -9,9 +9,11 @@ Two low-effort enhancements to improve user experience and professionalism.
 ## Task 1: Reading Progress Bar
 
 ### Description
+
 A thin horizontal bar at the top of blog posts that fills from left to right as the user scrolls, providing visual feedback on reading progress.
 
 ### Design Specs
+
 - **Position:** Fixed at top of viewport (below navigation)
 - **Height:** 3px
 - **Color:** `altivum-gold` (#C5A572)
@@ -32,6 +34,7 @@ A thin horizontal bar at the top of blog posts that fills from left to right as 
    - Only shows on individual blog post pages
 
 ### Code Structure
+
 ```tsx
 // ReadingProgressBar.tsx
 - useState for progress (0-100)
@@ -41,6 +44,7 @@ A thin horizontal bar at the top of blog posts that fills from left to right as 
 ```
 
 ### Files to Create/Modify
+
 - `src/components/ReadingProgressBar.tsx` (create)
 - `src/pages/BlogPost.tsx` (add component)
 
@@ -49,14 +53,17 @@ A thin horizontal bar at the top of blog posts that fills from left to right as 
 ## Task 2: security.txt File
 
 ### Description
+
 A standardized file that tells security researchers how to report vulnerabilities. Located at `/.well-known/security.txt` per RFC 9116.
 
 ### Required Fields
+
 - **Contact:** Email or URL for reporting (admin@altivum.ai)
 - **Expires:** Date when the file should be considered stale
 - **Preferred-Languages:** en
 
 ### Optional Fields
+
 - **Policy:** Link to security/disclosure policy (skip for now)
 - **Canonical:** URL of this security.txt file
 
@@ -70,6 +77,7 @@ A standardized file that tells security researchers how to report vulnerabilitie
    - Set expiration 1 year from now
 
 ### File Content
+
 ```
 Contact: mailto:admin@altivum.ai
 Expires: 2027-01-18T00:00:00.000Z
@@ -78,6 +86,7 @@ Canonical: https://thechrisgrey.com/.well-known/security.txt
 ```
 
 ### Files to Create
+
 - `public/.well-known/security.txt` (create)
 
 ---
@@ -95,6 +104,7 @@ Canonical: https://thechrisgrey.com/.well-known/security.txt
 ## Rollback
 
 Both changes are additive and isolated:
+
 - Progress bar: Remove import from BlogPost.tsx, delete component
 - security.txt: Delete file from public/.well-known/
 

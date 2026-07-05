@@ -6,7 +6,6 @@ import { buildWebPageSchema } from '../utils/schemas';
 import { InfraTopology } from '../components/aws/InfraTopology';
 
 const AWS = () => {
-
   return (
     <div className="min-h-screen bg-altivum-dark">
       <SEO
@@ -15,14 +14,14 @@ const AWS = () => {
         keywords="AWS Community Builder, AI Engineering, Amazon Bedrock, cloud architecture, serverless, Christian Perez AWS, Amazon Web Services"
         url="https://thechrisgrey.com/aws"
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Amazon Web Services", url: "https://thechrisgrey.com/aws" },
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Amazon Web Services', url: 'https://thechrisgrey.com/aws' },
         ]}
         structuredData={[
           buildWebPageSchema({
-            name: "Amazon Web Services - Christian Perez",
-            description: "Christian Perez is an AWS Community Builder in AI Engineering.",
-            url: "https://thechrisgrey.com/aws",
+            name: 'Amazon Web Services - Christian Perez',
+            description: 'Christian Perez is an AWS Community Builder in AI Engineering.',
+            url: 'https://thechrisgrey.com/aws',
           }),
         ]}
       />
@@ -77,30 +76,27 @@ const AWS = () => {
 
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
-              The <span className="text-white">AWS Community Builders</span> program provides
-              technical resources, mentorship, and networking opportunities to AWS enthusiasts
-              and emerging thought leaders who are passionate about sharing knowledge and
-              connecting with the technical community.
+              The <span className="text-white">AWS Community Builders</span> program provides technical resources,
+              mentorship, and networking opportunities to AWS enthusiasts and emerging thought leaders who are
+              passionate about sharing knowledge and connecting with the technical community.
             </p>
           </div>
 
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
-              I was accepted into the program under the{' '}
-              <span className="text-altivum-gold">AI Engineering</span> track, reflecting
-              the work I do every day at <span className="text-white">Altivum Inc.</span> — building
-              production AI systems on AWS, from RAG-powered conversational agents to
-              serverless inference pipelines and intelligent document processing.
+              I was accepted into the program under the <span className="text-altivum-gold">AI Engineering</span> track,
+              reflecting the work I do every day at <span className="text-white">Altivum Inc.</span> — building
+              production AI systems on AWS, from RAG-powered conversational agents to serverless inference pipelines and
+              intelligent document processing.
             </p>
           </div>
 
           <div className="mb-20 md:mb-24">
             <p className="text-white/80" style={typography.subtitle}>
               This isn't a certification or a partnership. It's a{' '}
-              <span className="text-white">recognition of builders</span> — people
-              who are actively creating, learning, and sharing in the AWS ecosystem. For me,
-              it's an extension of the same mission: translating complex cloud and AI
-              capabilities into real-world impact.
+              <span className="text-white">recognition of builders</span> — people who are actively creating, learning,
+              and sharing in the AWS ecosystem. For me, it's an extension of the same mission: translating complex cloud
+              and AI capabilities into real-world impact.
             </p>
           </div>
         </div>

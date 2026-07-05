@@ -39,8 +39,7 @@ describe('Alti Chat Page', () => {
 
   it('should display the chat input field', () => {
     cy.get('textarea[aria-label="Type a message"]').should('be.visible');
-    cy.get('textarea[aria-label="Type a message"]')
-      .should('have.attr', 'placeholder', 'Ask me anything...');
+    cy.get('textarea[aria-label="Type a message"]').should('have.attr', 'placeholder', 'Ask me anything...');
   });
 
   it('should display a disabled send button when input is empty', () => {
@@ -107,8 +106,7 @@ describe('Alti Chat Page', () => {
     cy.get('textarea[aria-label="Type a message"]').type('Hello{shift+enter}World');
 
     // Message should not have been sent -- text should still be in the input
-    cy.get('textarea[aria-label="Type a message"]')
-      .should('contain.value', 'Hello');
+    cy.get('textarea[aria-label="Type a message"]').should('contain.value', 'Hello');
   });
 
   it('should show the Clear button after sending a message', () => {

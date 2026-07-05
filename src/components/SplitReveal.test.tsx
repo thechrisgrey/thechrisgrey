@@ -45,7 +45,9 @@ describe('SplitReveal', () => {
 
   it('applies className and style props', () => {
     const { container } = render(
-      <SplitReveal className="test-class" style={{ fontSize: '20px' }}>Word</SplitReveal>
+      <SplitReveal className="test-class" style={{ fontSize: '20px' }}>
+        Word
+      </SplitReveal>,
     );
     const el = container.firstChild as HTMLElement;
     expect(el).toHaveClass('test-class');

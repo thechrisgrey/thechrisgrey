@@ -26,10 +26,7 @@ test("VALID_PATHS is a superset of the canonical static route paths", () => {
   const allPaths = extractRoutePaths();
   // Sanity guard: if the `path:` key or quote style ever changes, this fails
   // loudly instead of passing vacuously on an empty set.
-  assert.ok(
-    allPaths.length > 10,
-    `expected to parse >10 path literals from src/routes.ts, got ${allPaths.length}`,
-  );
+  assert.ok(allPaths.length > 10, `expected to parse >10 path literals from src/routes.ts, got ${allPaths.length}`);
 
   // Parameterized paths (e.g. /blog/:slug) are matched at runtime by
   // BLOG_SLUG_PATTERN, not by the VALID_PATHS Set — exclude them here.

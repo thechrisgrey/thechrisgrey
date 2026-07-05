@@ -12,13 +12,7 @@ describe('typography', () => {
     'smallText',
   ] as const;
 
-  const requiredProperties = [
-    'fontFamily',
-    'fontWeight',
-    'letterSpacing',
-    'fontSize',
-    'lineHeight',
-  ] as const;
+  const requiredProperties = ['fontFamily', 'fontWeight', 'letterSpacing', 'fontSize', 'lineHeight'] as const;
 
   it('should export a typography object', () => {
     expect(typography).toBeDefined();

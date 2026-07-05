@@ -68,26 +68,16 @@ function CopyButton({ value, label }: CopyButtonProps) {
 
 export function McpInstallBadge() {
   return (
-    <section
-      className="py-20 md:py-28"
-      aria-labelledby="mcp-install-heading"
-    >
+    <section className="py-20 md:py-28" aria-labelledby="mcp-install-heading">
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-12">
-          <span className="text-altivum-gold/70 text-[11px] uppercase tracking-[0.25em]">
-            Model Context Protocol
-          </span>
-          <h2
-            id="mcp-install-heading"
-            className="text-white mt-3 mb-4"
-            style={typography.sectionHeader}
-          >
+          <span className="text-altivum-gold/70 text-[11px] uppercase tracking-[0.25em]">Model Context Protocol</span>
+          <h2 id="mcp-install-heading" className="text-white mt-3 mb-4" style={typography.sectionHeader}>
             Use Alti in Your AI Client
           </h2>
           <p className="text-altivum-silver max-w-2xl mx-auto" style={typography.bodyText}>
-            Alti is also available as a public MCP server. Add the endpoint to Claude Desktop,
-            Claude Cowork, Cursor, or any MCP-capable client to search Christian&apos;s blog and
-            talk to Alti without visiting the site.
+            Alti is also available as a public MCP server. Add the endpoint to Claude Desktop, Claude Cowork, Cursor, or
+            any MCP-capable client to search Christian&apos;s blog and talk to Alti without visiting the site.
           </p>
         </div>
 
@@ -100,9 +90,7 @@ export function McpInstallBadge() {
               >
                 Server URL
               </p>
-              <code className="text-altivum-gold font-mono text-sm sm:text-base break-all">
-                {MCP_ENDPOINT}
-              </code>
+              <code className="text-altivum-gold font-mono text-sm sm:text-base break-all">{MCP_ENDPOINT}</code>
             </div>
             <div className="shrink-0">
               <CopyButton value={MCP_ENDPOINT} label="Copy URL" />
@@ -111,10 +99,7 @@ export function McpInstallBadge() {
 
           <div className="mb-6">
             <div className="flex items-center justify-between gap-4 mb-2">
-              <p
-                className="text-altivum-silver/70 text-xs uppercase tracking-[0.2em]"
-                style={typography.smallText}
-              >
+              <p className="text-altivum-silver/70 text-xs uppercase tracking-[0.2em]" style={typography.smallText}>
                 Claude Desktop config
               </p>
               <CopyButton value={CLAUDE_DESKTOP_SNIPPET} label="Copy config" />
@@ -125,35 +110,23 @@ export function McpInstallBadge() {
             >
               <code>{CLAUDE_DESKTOP_SNIPPET}</code>
             </pre>
-            <p
-              className="text-altivum-silver/60 mt-3"
-              style={typography.smallText}
-            >
+            <p className="text-altivum-silver/60 mt-3" style={typography.smallText}>
               Claude Desktop reaches the server through{' '}
-              <code className="text-altivum-gold/90 font-mono">mcp-remote</code>, a small stdio
-              bridge. Alternatively, open Settings &rarr; Connectors &rarr; Add custom connector
-              and paste the URL above &mdash; no config file needed.
+              <code className="text-altivum-gold/90 font-mono">mcp-remote</code>, a small stdio bridge. Alternatively,
+              open Settings &rarr; Connectors &rarr; Add custom connector and paste the URL above &mdash; no config file
+              needed.
             </p>
           </div>
 
           <div>
-            <p
-              className="text-altivum-silver/70 text-xs uppercase tracking-[0.2em] mb-3"
-              style={typography.smallText}
-            >
+            <p className="text-altivum-silver/70 text-xs uppercase tracking-[0.2em] mb-3" style={typography.smallText}>
               Exposed tools
             </p>
             <ul className="space-y-3">
               {TOOLS.map((tool) => (
-                <li
-                  key={tool.name}
-                  className="border-l-2 border-altivum-gold/40 pl-3"
-                >
+                <li key={tool.name} className="border-l-2 border-altivum-gold/40 pl-3">
                   <p className="text-altivum-gold font-mono text-sm">{tool.name}</p>
-                  <p
-                    className="text-altivum-silver/80"
-                    style={typography.smallText}
-                  >
+                  <p className="text-altivum-silver/80" style={typography.smallText}>
                     {tool.description}
                   </p>
                 </li>
@@ -161,10 +134,7 @@ export function McpInstallBadge() {
             </ul>
           </div>
 
-          <p
-            className="text-altivum-silver/50 mt-6 text-xs"
-            style={typography.smallText}
-          >
+          <p className="text-altivum-silver/50 mt-6 text-xs" style={typography.smallText}>
             Public, unauthenticated, rate-limited to 60 requests per hour per IP.
           </p>
         </div>

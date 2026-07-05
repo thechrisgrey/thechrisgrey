@@ -38,8 +38,8 @@ const getWordCount = (body: SanityPost['body']): number => {
 
   const extractText = (blocks: typeof body): string => {
     return blocks
-      .filter(block => block._type === 'block')
-      .map(block => {
+      .filter((block) => block._type === 'block')
+      .map((block) => {
         if ('children' in block && Array.isArray(block.children)) {
           return block.children
             .filter((child: { _type: string }) => child._type === 'span')
@@ -52,7 +52,7 @@ const getWordCount = (body: SanityPost['body']): number => {
   };
 
   const text = extractText(body);
-  return text.split(/\s+/).filter(word => word.length > 0).length;
+  return text.split(/\s+/).filter((word) => word.length > 0).length;
 };
 
 /**
@@ -61,8 +61,8 @@ const getWordCount = (body: SanityPost['body']): number => {
 const extractYouTubeVideos = (body: SanityPost['body']): { videoId: string; title: string }[] => {
   if (!body) return [];
   return body
-    .filter(block => block._type === 'youtube')
-    .map(block => {
+    .filter((block) => block._type === 'youtube')
+    .map((block) => {
       const url = (block as { url?: string }).url || '';
       const caption = (block as { caption?: string }).caption;
       const videoId = getYouTubeId(url);
@@ -74,7 +74,7 @@ const extractYouTubeVideos = (body: SanityPost['body']): { videoId: string; titl
 function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySeriesPost[]; currentId: string }) {
   if (seriesPosts.length <= 1) return null;
 
-  const currentIndex = seriesPosts.findIndex(p => p._id === currentId);
+  const currentIndex = seriesPosts.findIndex((p) => p._id === currentId);
   const prevPost = currentIndex > 0 ? seriesPosts[currentIndex - 1] : null;
   const nextPost = currentIndex < seriesPosts.length - 1 ? seriesPosts[currentIndex + 1] : null;
 
@@ -83,8 +83,13 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
   return (
     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-4">
       {prevPost ? (
-        <ViewTransitionLink to={`/blog/${prevPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0">
-          <span className="material-icons text-sm shrink-0 group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <ViewTransitionLink
+          to={`/blog/${prevPost.slug.current}`}
+          className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm min-w-0"
+        >
+          <span className="material-icons text-sm shrink-0 group-hover:-translate-x-1 transition-transform">
+            arrow_back
+          </span>
           <div className="min-w-0">
             <div className="text-xs text-altivum-silver uppercase tracking-wider mb-0.5">
               {prevPost.seriesOrder != null ? `Part ${prevPost.seriesOrder}` : 'Previous'}
@@ -92,18 +97,27 @@ function SeriesNavigation({ seriesPosts, currentId }: { seriesPosts: SanitySerie
             <div className="truncate">{prevPost.title}</div>
           </div>
         </ViewTransitionLink>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
       {nextPost ? (
-        <ViewTransitionLink to={`/blog/${nextPost.slug.current}`} className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0">
+        <ViewTransitionLink
+          to={`/blog/${nextPost.slug.current}`}
+          className="group flex items-center gap-2 text-altivum-silver hover:text-altivum-gold transition-colors text-sm text-right min-w-0"
+        >
           <div className="min-w-0">
             <div className="text-xs text-altivum-silver uppercase tracking-wider mb-0.5">
               {nextPost.seriesOrder != null ? `Part ${nextPost.seriesOrder}` : 'Next'}
             </div>
             <div className="truncate">{nextPost.title}</div>
           </div>
-          <span className="material-icons text-sm shrink-0 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          <span className="material-icons text-sm shrink-0 group-hover:translate-x-1 transition-transform">
+            arrow_forward
+          </span>
         </ViewTransitionLink>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
     </div>
   );
 }
@@ -171,7 +185,9 @@ const BlogPost = () => {
     // Blog for the same suppression rationale.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPost();
-    return () => { abortControllerRef.current?.abort(); };
+    return () => {
+      abortControllerRef.current?.abort();
+    };
   }, [fetchPost]);
 
   // Share functionality
@@ -192,7 +208,7 @@ const BlogPost = () => {
     window.open(
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`,
       '_blank',
-      'noopener,noreferrer'
+      'noopener,noreferrer',
     );
   };
 
@@ -200,7 +216,7 @@ const BlogPost = () => {
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
       '_blank',
-      'noopener,noreferrer'
+      'noopener,noreferrer',
     );
   };
 
@@ -283,49 +299,55 @@ const BlogPost = () => {
       <SEO
         title={post.seoTitle || post.title}
         description={post.seoDescription || post.excerpt}
-        image={post.image?.asset ? urlFor(post.image).width(1200).height(630).auto('format').quality(85).url() : undefined}
+        image={
+          post.image?.asset ? urlFor(post.image).width(1200).height(630).auto('format').quality(85).url() : undefined
+        }
         url={shareUrl}
         type="article"
         datePublished={post.publishedAt}
         dateModified={post._updatedAt || post.publishedAt}
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Blog", url: "https://thechrisgrey.com/blog" },
-          { name: post.title, url: shareUrl }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Blog', url: 'https://thechrisgrey.com/blog' },
+          { name: post.title, url: shareUrl },
         ]}
         structuredData={[
           {
-            "@type": "BlogPosting",
-            "@id": `${shareUrl}/#article`,
-            "headline": post.title,
-            "description": post.excerpt,
-            "datePublished": post.publishedAt,
-            "dateModified": post._updatedAt || post.publishedAt,
-            "wordCount": post.body ? getWordCount(post.body) : undefined,
+            '@type': 'BlogPosting',
+            '@id': `${shareUrl}/#article`,
+            headline: post.title,
+            description: post.excerpt,
+            datePublished: post.publishedAt,
+            dateModified: post._updatedAt || post.publishedAt,
+            wordCount: post.body ? getWordCount(post.body) : undefined,
             // Reference the canonical Person node (emitted in the default @graph by
             // buildPersonSchema) rather than re-declaring a partial Person with a
             // colliding @id, which would leak per-post tag titles onto the global
             // Person identity.
-            "author": {
-              "@id": "https://thechrisgrey.com/#person"
+            author: {
+              '@id': 'https://thechrisgrey.com/#person',
             },
-            "publisher": {
-              "@id": "https://altivum.ai/#organization"
+            publisher: {
+              '@id': 'https://altivum.ai/#organization',
             },
-            "image": post.image?.asset ? urlFor(post.image).width(1200).auto('format').quality(85).url() : "https://thechrisgrey.com/og.png",
-            "articleSection": post.category,
-            "keywords": post.tags?.map(t => t.title).join(', ') || '',
-            "mainEntityOfPage": {
-              "@type": "WebPage",
-              "@id": shareUrl
+            image: post.image?.asset
+              ? urlFor(post.image).width(1200).auto('format').quality(85).url()
+              : 'https://thechrisgrey.com/og.png',
+            articleSection: post.category,
+            keywords: post.tags?.map((t) => t.title).join(', ') || '',
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': shareUrl,
             },
-            "inLanguage": "en-US"
+            inLanguage: 'en-US',
           },
-          ...extractYouTubeVideos(post.body).map(v => buildVideoObjectSchema({
-            videoId: v.videoId,
-            title: v.title,
-            uploadDate: post.publishedAt,
-          }))
+          ...extractYouTubeVideos(post.body).map((v) =>
+            buildVideoObjectSchema({
+              videoId: v.videoId,
+              title: v.title,
+              uploadDate: post.publishedAt,
+            }),
+          ),
         ]}
       />
 
@@ -384,7 +406,7 @@ const BlogPost = () => {
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-8">
-              {post.tags.map(tag => (
+              {post.tags.map((tag) => (
                 <ViewTransitionLink
                   key={tag._id}
                   to={`/blog?tag=${tag.slug.current}`}
@@ -430,10 +452,7 @@ const BlogPost = () => {
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           {post.body ? (
             <div className="prose prose-invert prose-lg max-w-none">
-              <PortableText
-                value={post.body}
-                components={portableTextComponents}
-              />
+              <PortableText value={post.body} components={portableTextComponents} />
             </div>
           ) : (
             <p className="text-altivum-silver" style={typography.bodyText}>
@@ -482,9 +501,7 @@ const BlogPost = () => {
                   <h3 className="text-white font-medium">{post.series.title}</h3>
                 </div>
               </div>
-              {post.series.description && (
-                <p className="text-altivum-silver/70 text-sm">{post.series.description}</p>
-              )}
+              {post.series.description && <p className="text-altivum-silver/70 text-sm">{post.series.description}</p>}
               <ViewTransitionLink
                 to={`/blog?series=${post.series.slug.current}`}
                 className="inline-flex items-center mt-4 text-altivum-gold text-sm hover:underline"
@@ -492,9 +509,7 @@ const BlogPost = () => {
                 View all posts in this series
                 <span className="material-icons text-sm ml-1">arrow_forward</span>
               </ViewTransitionLink>
-              {post.seriesPosts && (
-                <SeriesNavigation seriesPosts={post.seriesPosts} currentId={post._id} />
-              )}
+              {post.seriesPosts && <SeriesNavigation seriesPosts={post.seriesPosts} currentId={post._id} />}
             </div>
           </div>
         </section>
@@ -510,16 +525,11 @@ const BlogPost = () => {
               className="w-20 h-20 rounded-full object-cover border-2 border-altivum-gold/30 shrink-0"
             />
             <div>
-              <h3 className="text-white font-semibold text-lg mb-1">
-                About the Author
-              </h3>
-              <p className="text-altivum-gold text-sm mb-3">
-                Christian Perez - Founder & CEO, Altivum Inc.
-              </p>
+              <h3 className="text-white font-semibold text-lg mb-1">About the Author</h3>
+              <p className="text-altivum-gold text-sm mb-3">Christian Perez - Founder & CEO, Altivum Inc.</p>
               <p className="text-altivum-silver text-sm leading-relaxed mb-4">
-                Former Green Beret, host of The Vector Podcast, and author of "Beyond the Assessment."
-                Christian writes about AI adoption, veteran entrepreneurship, and lessons learned from
-                a decade in Special Operations.
+                Former Green Beret, host of The Vector Podcast, and author of "Beyond the Assessment." Christian writes
+                about AI adoption, veteran entrepreneurship, and lessons learned from a decade in Special Operations.
               </p>
               <ViewTransitionLink
                 to="/about"
@@ -542,11 +552,7 @@ const BlogPost = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {post.relatedPosts.map((relatedPost: SanityPostPreview) => (
-                <ViewTransitionLink
-                  key={relatedPost._id}
-                  to={`/blog/${relatedPost.slug.current}`}
-                  className="group"
-                >
+                <ViewTransitionLink key={relatedPost._id} to={`/blog/${relatedPost.slug.current}`} className="group">
                   <div className="relative overflow-hidden rounded-lg mb-4 aspect-video">
                     <div className="absolute inset-0 bg-altivum-navy/20 group-hover:bg-transparent transition-colors duration-300 z-10"></div>
                     {relatedPost.image?.asset ? (
@@ -568,7 +574,10 @@ const BlogPost = () => {
                   <div className="text-xs text-altivum-gold uppercase tracking-wider font-medium mb-2">
                     {relatedPost.category}
                   </div>
-                  <h3 className="text-white group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>
+                  <h3
+                    className="text-white group-hover:text-altivum-gold transition-colors"
+                    style={typography.cardTitleSmall}
+                  >
                     {relatedPost.title}
                   </h3>
                 </ViewTransitionLink>

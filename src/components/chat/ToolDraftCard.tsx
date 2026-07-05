@@ -249,10 +249,7 @@ const ToolDraftCard = memo(function ToolDraftCard({ action, onDismiss, onAccept 
         </p>
         <ul className="space-y-3 mb-3">
           {action.results.map((result) => (
-            <li
-              key={result.slug}
-              className="border-l-2 border-altivum-gold/40 pl-3"
-            >
+            <li key={result.slug} className="border-l-2 border-altivum-gold/40 pl-3">
               <p className="text-altivum-gold" style={typography.bodyText}>
                 {result.title}
               </p>

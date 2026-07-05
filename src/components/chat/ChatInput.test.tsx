@@ -117,14 +117,10 @@ describe('ChatInput', () => {
     it('should clear the textarea after successful submit', async () => {
       const user = userEvent.setup();
       render(<ChatInput onSend={mockOnSend} />);
-      const textarea = screen.getByPlaceholderText(
-        'Ask me anything...'
-      ) as HTMLTextAreaElement;
+      const textarea = screen.getByPlaceholderText('Ask me anything...') as HTMLTextAreaElement;
 
       await user.type(textarea, 'Hello');
-      await user.click(
-        screen.getByRole('button', { name: /send message/i })
-      );
+      await user.click(screen.getByRole('button', { name: /send message/i }));
 
       expect(textarea.value).toBe('');
     });

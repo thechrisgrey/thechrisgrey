@@ -117,11 +117,13 @@ export async function validateWithHaiku(bedrockClient, output, opts = {}) {
     return {
       ok: true,
       confidence: "low",
-      issues: [{
-        field: "_meta",
-        severity: "warn",
-        note: `Haiku validator response was not parseable: ${parsed.error}`,
-      }],
+      issues: [
+        {
+          field: "_meta",
+          severity: "warn",
+          note: `Haiku validator response was not parseable: ${parsed.error}`,
+        },
+      ],
       usage,
     };
   }

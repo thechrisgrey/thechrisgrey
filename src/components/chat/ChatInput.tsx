@@ -15,20 +15,24 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useImperativeHandle(ref, () => ({
-    prefill: (newValue: string) => {
-      setValue(newValue);
-      // Defer focus + caret-to-end until after React commits the new value to the DOM.
-      requestAnimationFrame(() => {
-        const ta = textareaRef.current;
-        if (!ta) return;
-        ta.focus();
-        const len = newValue.length;
-        ta.setSelectionRange(len, len);
-        ta.scrollTop = ta.scrollHeight;
-      });
-    },
-  }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      prefill: (newValue: string) => {
+        setValue(newValue);
+        // Defer focus + caret-to-end until after React commits the new value to the DOM.
+        requestAnimationFrame(() => {
+          const ta = textareaRef.current;
+          if (!ta) return;
+          ta.focus();
+          const len = newValue.length;
+          ta.setSelectionRange(len, len);
+          ta.scrollTop = ta.scrollHeight;
+        });
+      },
+    }),
+    [],
+  );
 
   const adjustHeight = () => {
     const textarea = textareaRef.current;
@@ -64,10 +68,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
 
   return (
     <div className="border-t border-white/10 bg-altivum-navy/50 backdrop-blur-xs p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-4xl mx-auto"
-      >
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
         <div className="relative">
           <textarea
             ref={textareaRef}
@@ -90,9 +91,7 @@ const ChatInput = ({ onSend, disabled = false, ref }: ChatInputProps) => {
             type="submit"
             disabled={!hasValue || disabled}
             className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
-              hasValue && !disabled
-                ? 'text-altivum-gold hover:text-white'
-                : 'text-altivum-silver/50 cursor-not-allowed'
+              hasValue && !disabled ? 'text-altivum-gold hover:text-white' : 'text-altivum-silver/50 cursor-not-allowed'
             }`}
             aria-label="Send message"
           >

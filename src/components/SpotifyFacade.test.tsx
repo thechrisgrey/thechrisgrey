@@ -44,10 +44,7 @@ describe('SpotifyFacade', () => {
     await user.click(screen.getByRole('button'));
 
     const iframe = screen.getByTitle('The Vector Podcast');
-    expect(iframe).toHaveAttribute(
-      'sandbox',
-      'allow-scripts allow-same-origin allow-popups allow-presentation',
-    );
+    expect(iframe).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation');
   });
 
   it('should not show the facade button after loading', async () => {

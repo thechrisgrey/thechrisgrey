@@ -1,14 +1,14 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { HelmetProvider } from 'react-helmet-async'
-import App from './App.tsx'
-import LenisProvider from './components/LenisProvider.tsx'
-import './index.css'
-import { initWebVitals } from './utils/webVitals'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import App from './App.tsx';
+import LenisProvider from './components/LenisProvider.tsx';
+import './index.css';
+import { initWebVitals } from './utils/webVitals';
 
 // Initialize Web Vitals tracking
-initWebVitals()
+initWebVitals();
 
 // NOTE: The build-time prerender crawl's readiness signal
 // (window.__PRERENDER_READY__) is set by a useEffect in src/components/SEO.tsx,
@@ -27,4 +27,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       </BrowserRouter>
     </LenisProvider>
   </React.StrictMode>,
-)
+);

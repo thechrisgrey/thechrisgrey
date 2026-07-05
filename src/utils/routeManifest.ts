@@ -6,7 +6,7 @@ import { ROUTES } from '../routes';
  * unless the route sets `noPrefetch: true`.
  */
 const routeImports = new Map<string, () => Promise<unknown>>(
-  ROUTES.filter((r) => !r.noPrefetch).map((r) => [r.path, r.importer])
+  ROUTES.filter((r) => !r.noPrefetch).map((r) => [r.path, r.importer]),
 );
 
 /**

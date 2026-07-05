@@ -14,9 +14,7 @@ const Privacy = () => {
   // to PostHog. Computed once at mount (lazy initializer, no effect). isPrerender()
   // short-circuits before any localStorage access so the button never serializes
   // into the prerendered HTML — same client-only pattern as ConsentBanner.
-  const [showResetPreference] = useState(
-    () => !isPrerender() && isPostHogConfigured() && getConsent() === 'granted',
-  );
+  const [showResetPreference] = useState(() => !isPrerender() && isPostHogConfigured() && getConsent() === 'granted');
 
   const resetAnalyticsPreference = () => {
     clearConsent();
@@ -31,17 +29,18 @@ const Privacy = () => {
         description="Privacy policy for thechrisgrey.com - how we collect, use, and protect your personal information."
         url="https://thechrisgrey.com/privacy"
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Privacy Policy", url: "https://thechrisgrey.com/privacy" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Privacy Policy', url: 'https://thechrisgrey.com/privacy' },
         ]}
         structuredData={[
           buildWebPageSchema({
-            name: "Privacy Policy - Christian Perez",
-            description: "Privacy policy for thechrisgrey.com - how we collect, use, and protect your personal information.",
-            url: "https://thechrisgrey.com/privacy",
+            name: 'Privacy Policy - Christian Perez',
+            description:
+              'Privacy policy for thechrisgrey.com - how we collect, use, and protect your personal information.',
+            url: 'https://thechrisgrey.com/privacy',
             breadcrumbs: [
-              { name: "Home", url: "https://thechrisgrey.com" },
-              { name: "Privacy Policy", url: "https://thechrisgrey.com/privacy" }
+              { name: 'Home', url: 'https://thechrisgrey.com' },
+              { name: 'Privacy Policy', url: 'https://thechrisgrey.com/privacy' },
             ],
           }),
         ]}
@@ -66,17 +65,15 @@ const Privacy = () => {
       <section className="py-24 bg-altivum-dark">
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <div className="space-y-12">
-
             {/* Introduction */}
             <div>
               <h2 className="text-white mb-4" style={typography.sectionHeader}>
                 Introduction
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                This Privacy Policy explains how Christian Perez and Altivum Inc. ("we," "us," or "our")
-                collect, use, and protect your personal information when you visit thechrisgrey.com
-                (the "Site"). We are committed to protecting your privacy and being transparent about
-                our data practices.
+                This Privacy Policy explains how Christian Perez and Altivum Inc. ("we," "us," or "our") collect, use,
+                and protect your personal information when you visit thechrisgrey.com (the "Site"). We are committed to
+                protecting your privacy and being transparent about our data practices.
               </p>
             </div>
 
@@ -92,16 +89,30 @@ const Privacy = () => {
                   </h3>
                   <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                      <span><strong className="text-white">Contact Form:</strong> Name, email address, subject, and message content when you reach out to us.</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">
+                        •
+                      </span>
+                      <span>
+                        <strong className="text-white">Contact Form:</strong> Name, email address, subject, and message
+                        content when you reach out to us.
+                      </span>
                     </li>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                      <span><strong className="text-white">Newsletter:</strong> Email address if you subscribe to updates.</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">
+                        •
+                      </span>
+                      <span>
+                        <strong className="text-white">Newsletter:</strong> Email address if you subscribe to updates.
+                      </span>
                     </li>
                     <li className="flex items-start">
-                      <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                      <span><strong className="text-white">AI Chat:</strong> Messages you send when using the chat feature. These are processed to generate responses but are not permanently stored.</span>
+                      <span className="text-altivum-gold mr-3" aria-hidden="true">
+                        •
+                      </span>
+                      <span>
+                        <strong className="text-white">AI Chat:</strong> Messages you send when using the chat feature.
+                        These are processed to generate responses but are not permanently stored.
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -110,9 +121,9 @@ const Privacy = () => {
                     Information Collected Automatically
                   </h3>
                   <p className="text-altivum-silver" style={typography.bodyText}>
-                    When you visit the Site, we may automatically collect standard web server log information,
-                    including your IP address, browser type, device information, and pages visited. This
-                    information helps us understand how visitors use the Site and improve its functionality.
+                    When you visit the Site, we may automatically collect standard web server log information, including
+                    your IP address, browser type, device information, and pages visited. This information helps us
+                    understand how visitors use the Site and improve its functionality.
                   </p>
                 </div>
               </div>
@@ -125,23 +136,33 @@ const Privacy = () => {
               </h2>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
                   <span>Respond to your inquiries and messages</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
                   <span>Send newsletter updates if you have subscribed</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
                   <span>Provide AI-powered chat responses about my background and work</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
                   <span>Improve the Site's functionality and user experience</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
                   <span>Protect against spam and abuse</span>
                 </li>
               </ul>
@@ -157,25 +178,43 @@ const Privacy = () => {
               </p>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Amazon Web Services (AWS):</strong> Cloud hosting, serverless functions, and AI processing via Amazon Bedrock.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Amazon Web Services (AWS):</strong> Cloud hosting, serverless
+                    functions, and AI processing via Amazon Bedrock.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">AWS Amplify:</strong> Website hosting and deployment.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">AWS Amplify:</strong> Website hosting and deployment.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Sanity.io:</strong> Content management system for blog content.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Sanity.io:</strong> Content management system for blog content.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Cloudflare:</strong> DNS, security, and privacy-friendly web analytics.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Cloudflare:</strong> DNS, security, and privacy-friendly web
+                    analytics.
+                  </span>
                 </li>
               </ul>
               <p className="text-altivum-silver mt-4" style={typography.bodyText}>
-                These services have their own privacy policies governing how they handle data.
-                We encourage you to review their policies for more information.
+                These services have their own privacy policies governing how they handle data. We encourage you to
+                review their policies for more information.
               </p>
             </div>
 
@@ -185,22 +224,22 @@ const Privacy = () => {
                 Cookies & Tracking
               </h2>
               <p className="text-altivum-silver mb-4" style={typography.bodyText}>
-                This Site uses minimal cookies necessary for basic functionality. We do not use
-                third-party advertising trackers or sell your data to advertisers.
+                This Site uses minimal cookies necessary for basic functionality. We do not use third-party advertising
+                trackers or sell your data to advertisers.
               </p>
               <p className="text-altivum-silver" style={typography.bodyText}>
                 We use <strong className="text-white">Cloudflare Web Analytics</strong> and{' '}
-                <strong className="text-white">Plausible</strong> to understand how visitors use our Site.
-                These services are privacy-friendly: they do not use cookies, do not track individual users
-                across sites, and do not collect personal information &mdash; only aggregate data such as page
-                views, visitor counts, and referral sources.
+                <strong className="text-white">Plausible</strong> to understand how visitors use our Site. These
+                services are privacy-friendly: they do not use cookies, do not track individual users across sites, and
+                do not collect personal information &mdash; only aggregate data such as page views, visitor counts, and
+                referral sources.
               </p>
               <p className="text-altivum-silver mt-4" style={typography.bodyText}>
-                With your consent, we additionally use <strong className="text-white">PostHog</strong> for
-                product analytics and session insights that help us improve the Site. PostHog uses cookies and
-                is enabled <em>only</em> if you accept it on the consent banner &mdash; declining keeps the Site
-                completely cookie-free. Form fields you enter (such as your email) are never recorded. You can
-                withdraw your consent at any time.
+                With your consent, we additionally use <strong className="text-white">PostHog</strong> for product
+                analytics and session insights that help us improve the Site. PostHog uses cookies and is enabled{' '}
+                <em>only</em> if you accept it on the consent banner &mdash; declining keeps the Site completely
+                cookie-free. Form fields you enter (such as your email) are never recorded. You can withdraw your
+                consent at any time.
               </p>
               {showResetPreference && (
                 <button
@@ -208,7 +247,9 @@ const Privacy = () => {
                   onClick={resetAnalyticsPreference}
                   className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-altivum-gold/40 text-altivum-gold text-sm rounded-md hover:bg-altivum-gold/10 active:scale-[0.98] transition-all duration-200 touch-manipulation focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
                 >
-                  <span className="material-icons text-base" aria-hidden="true">tune</span>
+                  <span className="material-icons text-base" aria-hidden="true">
+                    tune
+                  </span>
                   Reset analytics preference
                 </button>
               )}
@@ -221,20 +262,38 @@ const Privacy = () => {
               </h2>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Contact submissions:</strong> Retained for business communication purposes.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Contact submissions:</strong> Retained for business communication
+                    purposes.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Newsletter subscriptions:</strong> Retained until you unsubscribe.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Newsletter subscriptions:</strong> Retained until you unsubscribe.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">AI chat messages:</strong> Processed in real-time and not permanently stored.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">AI chat messages:</strong> Processed in real-time and not permanently
+                    stored.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Server logs:</strong> Retained according to standard AWS practices.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Server logs:</strong> Retained according to standard AWS practices.
+                  </span>
                 </li>
               </ul>
             </div>
@@ -249,20 +308,38 @@ const Privacy = () => {
               </p>
               <ul className="text-altivum-silver space-y-2" style={typography.bodyText}>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Access:</strong> Request a copy of the personal data we hold about you.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Access:</strong> Request a copy of the personal data we hold about
+                    you.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Deletion:</strong> Request that we delete your personal data.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Deletion:</strong> Request that we delete your personal data.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Correction:</strong> Request that we correct inaccurate data.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Correction:</strong> Request that we correct inaccurate data.
+                  </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-altivum-gold mr-3" aria-hidden="true">•</span>
-                  <span><strong className="text-white">Opt-out:</strong> Unsubscribe from marketing communications at any time.</span>
+                  <span className="text-altivum-gold mr-3" aria-hidden="true">
+                    •
+                  </span>
+                  <span>
+                    <strong className="text-white">Opt-out:</strong> Unsubscribe from marketing communications at any
+                    time.
+                  </span>
                 </li>
               </ul>
               <p className="text-altivum-silver mt-4" style={typography.bodyText}>
@@ -276,14 +353,14 @@ const Privacy = () => {
                 Data Security
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                We take reasonable measures to protect your personal information. The Site uses
-                HTTPS encryption for all data transmission. Our infrastructure is hosted on AWS,
-                which maintains robust security certifications and practices. However, no method
-                of transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+                We take reasonable measures to protect your personal information. The Site uses HTTPS encryption for all
+                data transmission. Our infrastructure is hosted on AWS, which maintains robust security certifications
+                and practices. However, no method of transmission over the internet is 100% secure, and we cannot
+                guarantee absolute security.
               </p>
               <p className="text-altivum-silver mt-4" style={typography.bodyText}>
-                We do not sell, rent, or share your personal information with third parties for
-                their marketing purposes.
+                We do not sell, rent, or share your personal information with third parties for their marketing
+                purposes.
               </p>
             </div>
 
@@ -293,9 +370,9 @@ const Privacy = () => {
                 Children's Privacy
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                This Site is not intended for children under the age of 13. We do not knowingly
-                collect personal information from children under 13. If you believe we have
-                collected information from a child under 13, please contact us immediately.
+                This Site is not intended for children under the age of 13. We do not knowingly collect personal
+                information from children under 13. If you believe we have collected information from a child under 13,
+                please contact us immediately.
               </p>
             </div>
 
@@ -305,9 +382,8 @@ const Privacy = () => {
                 Changes to This Policy
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                We may update this Privacy Policy from time to time. Any changes will be posted
-                on this page with an updated "Last updated" date. We encourage you to review
-                this policy periodically.
+                We may update this Privacy Policy from time to time. Any changes will be posted on this page with an
+                updated "Last updated" date. We encourage you to review this policy periodically.
               </p>
             </div>
 
@@ -317,22 +393,27 @@ const Privacy = () => {
                 Contact Us
               </h2>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                If you have any questions about this Privacy Policy or our data practices,
-                please contact us at:
+                If you have any questions about this Privacy Policy or our data practices, please contact us at:
               </p>
               <div className="mt-4 p-6 bg-altivum-navy/50 border-l-4 border-altivum-gold">
                 <p className="text-white" style={typography.bodyText}>
                   Christian Perez
                 </p>
                 <p className="text-altivum-silver" style={typography.bodyText}>
-                  Email: <a href="mailto:admin@altivum.ai" className="text-altivum-gold hover:underline">admin@altivum.ai</a>
+                  Email:{' '}
+                  <a href="mailto:admin@altivum.ai" className="text-altivum-gold hover:underline">
+                    admin@altivum.ai
+                  </a>
                 </p>
                 <p className="text-altivum-silver mt-2" style={typography.bodyText}>
-                  Or use our <ViewTransitionLink to="/contact" className="text-altivum-gold hover:underline">contact form</ViewTransitionLink>.
+                  Or use our{' '}
+                  <ViewTransitionLink to="/contact" className="text-altivum-gold hover:underline">
+                    contact form
+                  </ViewTransitionLink>
+                  .
                 </p>
               </div>
             </div>
-
           </div>
         </div>
       </section>

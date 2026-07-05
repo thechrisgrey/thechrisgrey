@@ -61,10 +61,7 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       // React Compiler-derived strict rules introduced in eslint-plugin-react-hooks v6/v7.
       // These flag real anti-patterns (synchronous setState inside useEffect, refs read
       // during render, components defined inside other components, locals mutated after
@@ -111,10 +108,7 @@ export default [
     },
     rules: {
       'no-console': 'off',
-      'no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
 

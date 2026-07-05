@@ -37,9 +37,7 @@ const mockedIsPrerender = vi.mocked(isPrerender);
 
 // Lenis context — no instance needed for these assertions.
 vi.mock('../../hooks/useLenis', async () => {
-  const actual = await vi.importActual<typeof import('../../hooks/useLenis')>(
-    '../../hooks/useLenis',
-  );
+  const actual = await vi.importActual<typeof import('../../hooks/useLenis')>('../../hooks/useLenis');
   return {
     ...actual,
     useLenisContext: () => ({ lenis: null, scrollTo: () => {} }),

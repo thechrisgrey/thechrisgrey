@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Alti MCP Server
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Public Model Context Protocol (MCP) server exposing Alti's tools
     (`ask_alti`, `search_blog`, `get_blog_post`) over Streamable HTTP.
@@ -39,41 +39,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/JsonRpcRequest"
+              $ref: '#/components/schemas/JsonRpcRequest'
       responses:
-        "200":
+        '200':
           description: JSON-RPC result or error envelope
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonRpcResponse"
-        "202":
+                $ref: '#/components/schemas/JsonRpcResponse'
+        '202':
           description: Notification accepted (no response body)
-        "400":
+        '400':
           description: Parse error (-32700) or invalid request (-32600)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonRpcResponse"
-        "405":
+                $ref: '#/components/schemas/JsonRpcResponse'
+        '405':
           description: Method not allowed on this endpoint (-32600)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonRpcResponse"
-        "429":
+                $ref: '#/components/schemas/JsonRpcResponse'
+        '429':
           description: Rate limit exceeded (-32000)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonRpcResponse"
+                $ref: '#/components/schemas/JsonRpcResponse'
     options:
       tags: [mcp]
       operationId: mcpPreflight
       summary: CORS preflight
       security: []
       responses:
-        "204":
+        '204':
           description: No content
   /health:
     get:
@@ -82,7 +82,7 @@ paths:
       summary: Liveness probe
       security: []
       responses:
-        "200":
+        '200':
           description: Server is up
           content:
             application/json:
@@ -100,9 +100,9 @@ components:
       properties:
         jsonrpc:
           type: string
-          const: "2.0"
+          const: '2.0'
         id:
-          type: [string, number, "null"]
+          type: [string, number, 'null']
           description: Omit for notifications (server replies 202 with no body).
         method:
           type: string
@@ -116,14 +116,14 @@ components:
       properties:
         jsonrpc:
           type: string
-          const: "2.0"
+          const: '2.0'
         id:
-          type: [string, number, "null"]
+          type: [string, number, 'null']
         result:
           type: object
           additionalProperties: true
         error:
-          $ref: "#/components/schemas/JsonRpcError"
+          $ref: '#/components/schemas/JsonRpcError'
     JsonRpcError:
       type: object
       required: [code, message]

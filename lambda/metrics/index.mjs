@@ -1,12 +1,5 @@
-import {
-  CloudWatchClient,
-  PutMetricDataCommand,
-  GetMetricStatisticsCommand,
-} from "@aws-sdk/client-cloudwatch";
-import {
-  CognitoIdentityProviderClient,
-  GetUserCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
+import { CloudWatchClient, PutMetricDataCommand, GetMetricStatisticsCommand } from "@aws-sdk/client-cloudwatch";
+import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createHash, randomUUID } from "crypto";
@@ -75,9 +68,7 @@ async function handleCspReport(body) {
 
   // Use bucketed dimension to prevent CloudWatch cardinality explosion
   const bucket = `csp-bucket-${hashBucket(blockedUri)}`;
-  await putMetric("CSPViolation", 1, [
-    { Name: "BlockedBucket", Value: bucket },
-  ]);
+  await putMetric("CSPViolation", 1, [{ Name: "BlockedBucket", Value: bucket }]);
   return respond(200, { received: true });
 }
 
@@ -138,9 +129,7 @@ async function handleHealth(authHeader) {
     getMetricAverage("FCP"),
     getMetricAverage("TTFB"),
   ]);
-  const [lcp, cls, inp, fcp, ttfb] = vitalsResults.map((r) =>
-    settledValue(r, { average: null, count: 0 })
-  );
+  const [lcp, cls, inp, fcp, ttfb] = vitalsResults.map((r) => settledValue(r, { average: null, count: 0 }));
 
   const metricResults = await Promise.allSettled([
     getMetricSum("CSPViolation"),
@@ -169,9 +158,7 @@ async function handleHealth(authHeader) {
     kbLatency,
     bedrockLatency,
     totalLatency,
-  ] = metricResults.map((r, i) =>
-    settledValue(r, i >= 9 ? { average: null, count: 0 } : 0)
-  );
+  ] = metricResults.map((r, i) => settledValue(r, i >= 9 ? { average: null, count: 0 } : 0));
   const guardrails = guardrailStream + guardrailPreStream;
 
   const kbTotal = kbSuccesses + kbFailures;

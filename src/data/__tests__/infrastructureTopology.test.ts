@@ -23,9 +23,7 @@ describe('infrastructureTopology', () => {
   });
 
   it('cluster positions are unique (no two clusters at same x,y,z)', () => {
-    const positionKeys = clusters.map(
-      (c) => `${c.position[0]},${c.position[1]},${c.position[2]}`
-    );
+    const positionKeys = clusters.map((c) => `${c.position[0]},${c.position[1]},${c.position[2]}`);
     const uniqueKeys = new Set(positionKeys);
     expect(uniqueKeys.size).toBe(clusters.length);
   });

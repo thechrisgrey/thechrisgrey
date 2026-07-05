@@ -30,9 +30,7 @@ if (!process.env.KB_RETRIEVE_CONTRACT_TESTS) {
     () => {},
   );
 } else {
-  const { BedrockAgentRuntimeClient, RetrieveCommand } = await import(
-    "@aws-sdk/client-bedrock-agent-runtime"
-  );
+  const { BedrockAgentRuntimeClient, RetrieveCommand } = await import("@aws-sdk/client-bedrock-agent-runtime");
 
   const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
   const knowledgeBaseId = process.env.KB_ID || "ARFYABW8HP";
@@ -75,12 +73,13 @@ if (!process.env.KB_RETRIEVE_CONTRACT_TESTS) {
       const metrics = recordingMetrics();
       // 1ms ceiling forces the AbortController path; retrieveContext must swallow
       // the AbortError and return null rather than throwing into the agent loop.
-      const result = await retrieveContext(
-        agentClient,
-        RetrieveCommand,
-        "anything",
-        { knowledgeBaseId, requestId: "contract-timeout", metrics, timeoutMs: 1, numberOfResults: 1 },
-      );
+      const result = await retrieveContext(agentClient, RetrieveCommand, "anything", {
+        knowledgeBaseId,
+        requestId: "contract-timeout",
+        metrics,
+        timeoutMs: 1,
+        numberOfResults: 1,
+      });
       assert.equal(result, null, "an aborted retrieval must return null");
       const names = metrics.records.map((r) => r.name);
       assert.ok(names.includes("KBRetrievalFailure"), "a timed-out retrieval must record KBRetrievalFailure");

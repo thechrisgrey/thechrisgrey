@@ -55,14 +55,16 @@ export async function getFacts(docClient, QueryCommand, deviceId, { limit = MAX_
   let lastKey;
 
   while (collected.length < limit) {
-    const result = await docClient.send(new QueryCommand({
-      TableName: MEMORY_TABLE,
-      KeyConditionExpression: "deviceHash = :d",
-      ExpressionAttributeValues: { ":d": deviceHash },
-      ScanIndexForward: false,
-      Limit: Math.min(limit * 2, 100),
-      ExclusiveStartKey: lastKey,
-    }));
+    const result = await docClient.send(
+      new QueryCommand({
+        TableName: MEMORY_TABLE,
+        KeyConditionExpression: "deviceHash = :d",
+        ExpressionAttributeValues: { ":d": deviceHash },
+        ScanIndexForward: false,
+        Limit: Math.min(limit * 2, 100),
+        ExclusiveStartKey: lastKey,
+      }),
+    );
 
     const items = result.Items || [];
     for (const item of items) {
@@ -97,16 +99,18 @@ export async function putFact(docClient, PutCommand, deviceId, content, { timeou
 
   // Bound the DynamoDB write so a hung dependency can't block the agent turn.
   await withTimeout(
-    docClient.send(new PutCommand({
-      TableName: MEMORY_TABLE,
-      Item: {
-        deviceHash,
-        factId,
-        content: sanitized,
-        createdAt: now,
-        ttl,
-      },
-    })),
+    docClient.send(
+      new PutCommand({
+        TableName: MEMORY_TABLE,
+        Item: {
+          deviceHash,
+          factId,
+          content: sanitized,
+          createdAt: now,
+          ttl,
+        },
+      }),
+    ),
     timeoutMs,
     "putFact",
   );
@@ -144,14 +148,16 @@ export async function forgetDevice(docClient, QueryCommand, BatchWriteCommand, d
   let deleted = 0;
   let lastKey;
   do {
-    const page = await docClient.send(new QueryCommand({
-      TableName: MEMORY_TABLE,
-      KeyConditionExpression: "deviceHash = :d",
-      ExpressionAttributeValues: { ":d": deviceHash },
-      ProjectionExpression: "deviceHash, factId",
-      ExclusiveStartKey: lastKey,
-      Limit: 100,
-    }));
+    const page = await docClient.send(
+      new QueryCommand({
+        TableName: MEMORY_TABLE,
+        KeyConditionExpression: "deviceHash = :d",
+        ExpressionAttributeValues: { ":d": deviceHash },
+        ProjectionExpression: "deviceHash, factId",
+        ExclusiveStartKey: lastKey,
+        Limit: 100,
+      }),
+    );
 
     const items = page.Items || [];
     if (items.length === 0) break;

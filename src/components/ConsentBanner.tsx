@@ -16,9 +16,7 @@ import ViewTransitionLink from './ViewTransitionLink';
 const ConsentBanner = () => {
   // Computed once at mount (no effect). isPrerender() short-circuits before any
   // localStorage access so the banner never serializes into prerendered HTML.
-  const [visible, setVisible] = useState(
-    () => !isPrerender() && isPostHogConfigured() && getConsent() === null,
-  );
+  const [visible, setVisible] = useState(() => !isPrerender() && isPostHogConfigured() && getConsent() === null);
 
   if (!visible) return null;
 
@@ -43,8 +41,8 @@ const ConsentBanner = () => {
         <span className="text-altivum-gold text-[11px] uppercase tracking-widest font-medium">Analytics</span>
       </div>
       <p className="text-altivum-silver mb-4" style={typography.smallText}>
-        I use privacy-respecting analytics to understand what&rsquo;s helpful and improve the site.
-        Form fields are never recorded. Okay to turn it on?{' '}
+        I use privacy-respecting analytics to understand what&rsquo;s helpful and improve the site. Form fields are
+        never recorded. Okay to turn it on?{' '}
         <ViewTransitionLink to="/privacy" className="text-altivum-gold/90 hover:text-altivum-gold underline">
           Privacy policy
         </ViewTransitionLink>

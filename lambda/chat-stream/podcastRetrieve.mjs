@@ -20,13 +20,7 @@
  *          Structured chunks, or [] on empty/error (never throws).
  */
 export async function retrievePodcastChunks(agentClient, RetrieveCommand, query, opts) {
-  const {
-    knowledgeBaseId,
-    requestId,
-    metrics,
-    timeoutMs = 4000,
-    numberOfResults = 4,
-  } = opts;
+  const { knowledgeBaseId, requestId, metrics, timeoutMs = 4000, numberOfResults = 4 } = opts;
 
   if (!knowledgeBaseId) {
     return [];
@@ -75,12 +69,14 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
       .filter((c) => c.text && c.videoId && c.startSeconds !== null);
 
     metrics?.record("PodcastKBRetrievalSuccess");
-    console.log(JSON.stringify({
-      requestId,
-      event: "podcast_kb_retrieval_success",
-      chunks: chunks.length,
-      latencyMs: elapsed,
-    }));
+    console.log(
+      JSON.stringify({
+        requestId,
+        event: "podcast_kb_retrieval_success",
+        chunks: chunks.length,
+        latencyMs: elapsed,
+      }),
+    );
     return chunks;
   } catch (error) {
     const elapsed = Date.now() - start;
@@ -90,13 +86,15 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
       console.error(JSON.stringify({ requestId, event: "podcast_kb_retrieval_timeout", latencyMs: elapsed }));
       metrics?.record("PodcastKBRetrievalTimeout");
     } else {
-      console.error(JSON.stringify({
-        requestId,
-        event: "podcast_kb_retrieval_error",
-        error: error.name,
-        message: error.message,
-        latencyMs: elapsed,
-      }));
+      console.error(
+        JSON.stringify({
+          requestId,
+          event: "podcast_kb_retrieval_error",
+          error: error.name,
+          message: error.message,
+          latencyMs: elapsed,
+        }),
+      );
       metrics?.record("PodcastKBRetrievalFailure");
     }
     return [];

@@ -18,7 +18,10 @@ function guardrailClient(action, { throwError = null, throwTimes = Infinity } = 
     calls: [],
     async send(cmd) {
       this.calls.push(cmd);
-      if (throwError && throws < throwTimes) { throws++; throw throwError; }
+      if (throwError && throws < throwTimes) {
+        throws++;
+        throw throwError;
+      }
       return { action };
     },
   };

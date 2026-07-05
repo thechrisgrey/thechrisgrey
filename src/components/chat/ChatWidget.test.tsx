@@ -26,7 +26,7 @@ describe('ChatWidget', () => {
     render(
       <MemoryRouter>
         <ChatWidget />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
   it('should render the button initially', () => {

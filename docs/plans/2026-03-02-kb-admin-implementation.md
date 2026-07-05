@@ -15,6 +15,7 @@
 This task creates the new document type in Sanity. Since there's no local Sanity Studio in this project, we use the MCP `deploy_schema` tool.
 
 **Files:**
+
 - None (Sanity cloud schema deployment)
 
 **Step 1: Deploy the kbEntry schema to Sanity**
@@ -31,7 +32,7 @@ Use the Sanity MCP tool `deploy_schema` with project ID `k5950b3w`, dataset `pro
       "name": "title",
       "type": "string",
       "title": "Title",
-      "validation": [{"required": true}]
+      "validation": [{ "required": true }]
     },
     {
       "name": "category",
@@ -39,26 +40,26 @@ Use the Sanity MCP tool `deploy_schema` with project ID `k5950b3w`, dataset `pro
       "title": "Category",
       "options": {
         "list": [
-          {"title": "Biography", "value": "biography"},
-          {"title": "Career", "value": "career"},
-          {"title": "Military", "value": "military"},
-          {"title": "Education", "value": "education"},
-          {"title": "Business", "value": "business"},
-          {"title": "Philosophy", "value": "philosophy"},
-          {"title": "Podcast", "value": "podcast"},
-          {"title": "Book", "value": "book"},
-          {"title": "Skills", "value": "skills"},
-          {"title": "Awards", "value": "awards"}
+          { "title": "Biography", "value": "biography" },
+          { "title": "Career", "value": "career" },
+          { "title": "Military", "value": "military" },
+          { "title": "Education", "value": "education" },
+          { "title": "Business", "value": "business" },
+          { "title": "Philosophy", "value": "philosophy" },
+          { "title": "Podcast", "value": "podcast" },
+          { "title": "Book", "value": "book" },
+          { "title": "Skills", "value": "skills" },
+          { "title": "Awards", "value": "awards" }
         ]
       },
-      "validation": [{"required": true}]
+      "validation": [{ "required": true }]
     },
     {
       "name": "content",
       "type": "text",
       "title": "Content",
       "description": "Plain text content for the Knowledge Base. No rich text needed.",
-      "validation": [{"required": true}]
+      "validation": [{ "required": true }]
     },
     {
       "name": "date",
@@ -85,8 +86,8 @@ Use the Sanity MCP tool `deploy_schema` with project ID `k5950b3w`, dataset `pro
       "title": "Category, then Date",
       "name": "categoryDate",
       "by": [
-        {"field": "category", "direction": "asc"},
-        {"field": "date", "direction": "desc"}
+        { "field": "category", "direction": "asc" },
+        { "field": "date", "direction": "desc" }
       ]
     }
   ]
@@ -111,6 +112,7 @@ git commit -m "docs: add KB admin design and implementation plan"
 This task is done via AWS CLI. Creates the admin auth infrastructure.
 
 **Files:**
+
 - None (AWS infrastructure)
 
 **Step 1: Create the Cognito User Pool**
@@ -172,6 +174,7 @@ aws cognito-idp admin-set-user-password \
 **Step 5: Add env vars to `.env.local` and `.env.example`**
 
 Add to `.env.local`:
+
 ```
 VITE_COGNITO_USER_POOL_ID=<POOL_ID>
 VITE_COGNITO_CLIENT_ID=<CLIENT_ID>
@@ -179,6 +182,7 @@ VITE_KB_BUILDER_ENDPOINT=https://placeholder.lambda-url.us-east-1.on.aws
 ```
 
 Add to `.env.example`:
+
 ```
 # KB Admin (Cognito)
 VITE_COGNITO_USER_POOL_ID=us-east-1_XXXXXXXXX
@@ -193,6 +197,7 @@ VITE_KB_BUILDER_ENDPOINT=https://YOUR-FUNCTION-URL.lambda-url.us-east-1.on.aws/
 This Lambda handles CRUD for Sanity kbEntry documents and the document assembly + S3 upload.
 
 **Files:**
+
 - Create: `lambda/kb-builder/index.mjs`
 - Create: `lambda/kb-builder/package.json`
 - Create: `lambda/kb-builder/iam-policy.json`
@@ -237,60 +242,57 @@ This Lambda handles CRUD for Sanity kbEntry documents and the document assembly 
 **Step 3: Create `lambda/kb-builder/index.mjs`**
 
 ```javascript
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import {
-  CognitoIdentityProviderClient,
-  GetUserCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
-import { createClient } from "@sanity/client";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { CognitoIdentityProviderClient, GetUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { createClient } from '@sanity/client';
 
-const s3Client = new S3Client({ region: "us-east-1" });
-const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
+const s3Client = new S3Client({ region: 'us-east-1' });
+const cognitoClient = new CognitoIdentityProviderClient({ region: 'us-east-1' });
 
-const S3_BUCKET = "thechrisgrey-kb-source";
-const S3_KEY = "knowledge-base.txt";
+const S3_BUCKET = 'thechrisgrey-kb-source';
+const S3_KEY = 'knowledge-base.txt';
 
 // Sanity client with write token (set in Lambda environment variables)
 const sanityClient = createClient({
-  projectId: "k5950b3w",
-  dataset: "production",
-  apiVersion: "2024-01-01",
+  projectId: 'k5950b3w',
+  dataset: 'production',
+  apiVersion: '2024-01-01',
   token: process.env.SANITY_WRITE_TOKEN,
   useCdn: false,
 });
 
 // Category display order for the assembled document
 const CATEGORY_ORDER = [
-  "biography",
-  "military",
-  "education",
-  "career",
-  "business",
-  "skills",
-  "awards",
-  "philosophy",
-  "podcast",
-  "book",
+  'biography',
+  'military',
+  'education',
+  'career',
+  'business',
+  'skills',
+  'awards',
+  'philosophy',
+  'podcast',
+  'book',
 ];
 
 const CATEGORY_LABELS = {
-  biography: "BIOGRAPHY",
-  military: "MILITARY SERVICE",
-  education: "EDUCATION",
-  career: "CAREER",
-  business: "BUSINESS & ENTREPRENEURSHIP",
-  skills: "SKILLS & EXPERTISE",
-  awards: "AWARDS & RECOGNITION",
-  philosophy: "PHILOSOPHY & LEADERSHIP",
-  podcast: "THE VECTOR PODCAST",
-  book: "BEYOND THE ASSESSMENT",
+  biography: 'BIOGRAPHY',
+  military: 'MILITARY SERVICE',
+  education: 'EDUCATION',
+  career: 'CAREER',
+  business: 'BUSINESS & ENTREPRENEURSHIP',
+  skills: 'SKILLS & EXPERTISE',
+  awards: 'AWARDS & RECOGNITION',
+  philosophy: 'PHILOSOPHY & LEADERSHIP',
+  podcast: 'THE VECTOR PODCAST',
+  book: 'BEYOND THE ASSESSMENT',
 };
 
 /**
  * Validate Cognito token. Returns user info or null.
  */
 async function validateToken(authHeader) {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
   }
 
@@ -301,7 +303,7 @@ async function validateToken(authHeader) {
     const response = await cognitoClient.send(command);
     return response;
   } catch (error) {
-    console.error("Token validation failed:", error.name);
+    console.error('Token validation failed:', error.name);
     return null;
   }
 }
@@ -310,14 +312,12 @@ async function validateToken(authHeader) {
  * Fetch all kbEntry documents from Sanity
  */
 async function fetchEntries(activeOnly = false) {
-  const filter = activeOnly
-    ? '*[_type == "kbEntry" && isActive == true]'
-    : '*[_type == "kbEntry"]';
+  const filter = activeOnly ? '*[_type == "kbEntry" && isActive == true]' : '*[_type == "kbEntry"]';
 
   return sanityClient.fetch(
     `${filter} | order(category asc, sortOrder asc, date desc) {
       _id, _createdAt, _updatedAt, title, category, content, date, sortOrder, isActive
-    }`
+    }`,
   );
 }
 
@@ -328,7 +328,7 @@ function assembleDocument(entries) {
   const grouped = {};
 
   for (const entry of entries) {
-    const cat = entry.category || "biography";
+    const cat = entry.category || 'biography';
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(entry);
   }
@@ -340,34 +340,34 @@ function assembleDocument(entries) {
     if (!items || items.length === 0) continue;
 
     const label = CATEGORY_LABELS[category] || category.toUpperCase();
-    const lines = [`=== ${label} ===`, ""];
+    const lines = [`=== ${label} ===`, ''];
 
     for (const item of items) {
       const dateStr = item.date
-        ? ` (${new Date(item.date).toLocaleDateString("en-US", { year: "numeric", month: "long" })})`
-        : "";
+        ? ` (${new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })})`
+        : '';
       lines.push(`${item.title}${dateStr}`);
       lines.push(item.content);
-      lines.push("");
+      lines.push('');
     }
 
-    sections.push(lines.join("\n"));
+    sections.push(lines.join('\n'));
   }
 
   // Handle any categories not in CATEGORY_ORDER
   for (const [category, items] of Object.entries(grouped)) {
     if (CATEGORY_ORDER.includes(category)) continue;
     const label = category.toUpperCase();
-    const lines = [`=== ${label} ===`, ""];
+    const lines = [`=== ${label} ===`, ''];
     for (const item of items) {
       lines.push(item.title);
       lines.push(item.content);
-      lines.push("");
+      lines.push('');
     }
-    sections.push(lines.join("\n"));
+    sections.push(lines.join('\n'));
   }
 
-  return sections.join("\n\n");
+  return sections.join('\n\n');
 }
 
 /**
@@ -378,7 +378,7 @@ async function uploadToS3(document) {
     Bucket: S3_BUCKET,
     Key: S3_KEY,
     Body: document,
-    ContentType: "text/plain; charset=utf-8",
+    ContentType: 'text/plain; charset=utf-8',
   });
   return s3Client.send(command);
 }
@@ -390,10 +390,10 @@ function respond(statusCode, body) {
   return {
     statusCode,
     headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://thechrisgrey.com",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': 'https://thechrisgrey.com',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     },
     body: JSON.stringify(body),
   };
@@ -401,7 +401,7 @@ function respond(statusCode, body) {
 
 export const handler = async (event) => {
   // Handle CORS preflight
-  if (event.requestContext?.http?.method === "OPTIONS") {
+  if (event.requestContext?.http?.method === 'OPTIONS') {
     return respond(200, { ok: true });
   }
 
@@ -409,30 +409,30 @@ export const handler = async (event) => {
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
   const user = await validateToken(authHeader);
   if (!user) {
-    return respond(401, { error: "Unauthorized" });
+    return respond(401, { error: 'Unauthorized' });
   }
 
   const method = event.requestContext?.http?.method;
-  const path = event.rawPath || "";
+  const path = event.rawPath || '';
 
   try {
     // GET /entries — list all entries
-    if (method === "GET" && path === "/entries") {
+    if (method === 'GET' && path === '/entries') {
       const entries = await fetchEntries(false);
       return respond(200, { entries });
     }
 
     // POST /entries — create entry
-    if (method === "POST" && path === "/entries") {
-      const body = JSON.parse(event.body || "{}");
+    if (method === 'POST' && path === '/entries') {
+      const body = JSON.parse(event.body || '{}');
       const { title, category, content, date, sortOrder, isActive } = body;
 
       if (!title || !category || !content) {
-        return respond(400, { error: "title, category, and content are required" });
+        return respond(400, { error: 'title, category, and content are required' });
       }
 
       const doc = {
-        _type: "kbEntry",
+        _type: 'kbEntry',
         title,
         category,
         content,
@@ -446,11 +446,11 @@ export const handler = async (event) => {
     }
 
     // PUT /entries/:id — update entry
-    if (method === "PUT" && path.startsWith("/entries/")) {
-      const id = path.split("/entries/")[1];
-      if (!id) return respond(400, { error: "Missing entry ID" });
+    if (method === 'PUT' && path.startsWith('/entries/')) {
+      const id = path.split('/entries/')[1];
+      if (!id) return respond(400, { error: 'Missing entry ID' });
 
-      const body = JSON.parse(event.body || "{}");
+      const body = JSON.parse(event.body || '{}');
       const patch = sanityClient.patch(id);
 
       if (body.title !== undefined) patch.set({ title: body.title });
@@ -465,37 +465,37 @@ export const handler = async (event) => {
     }
 
     // DELETE /entries/:id — delete entry
-    if (method === "DELETE" && path.startsWith("/entries/")) {
-      const id = path.split("/entries/")[1];
-      if (!id) return respond(400, { error: "Missing entry ID" });
+    if (method === 'DELETE' && path.startsWith('/entries/')) {
+      const id = path.split('/entries/')[1];
+      if (!id) return respond(400, { error: 'Missing entry ID' });
 
       await sanityClient.delete(id);
       return respond(200, { deleted: true });
     }
 
     // POST /publish — rebuild document and upload to S3
-    if (method === "POST" && path === "/publish") {
+    if (method === 'POST' && path === '/publish') {
       const entries = await fetchEntries(true);
 
       if (entries.length === 0) {
-        return respond(400, { error: "No active entries to publish" });
+        return respond(400, { error: 'No active entries to publish' });
       }
 
       const document = assembleDocument(entries);
       await uploadToS3(document);
 
       return respond(200, {
-        message: "Knowledge Base document published",
+        message: 'Knowledge Base document published',
         entryCount: entries.length,
         documentSize: document.length,
         publishedAt: new Date().toISOString(),
       });
     }
 
-    return respond(404, { error: "Not found" });
+    return respond(404, { error: 'Not found' });
   } catch (error) {
-    console.error("Handler error:", error);
-    return respond(500, { error: "Internal server error" });
+    console.error('Handler error:', error);
+    return respond(500, { error: 'Internal server error' });
   }
 };
 ```
@@ -585,6 +585,7 @@ git commit -m "feat: add kb-builder Lambda for admin CRUD and S3 publish"
 Frontend Cognito authentication hook.
 
 **Files:**
+
 - Create: `src/hooks/useAuth.ts`
 - Modify: `src/hooks/index.ts:1-5`
 
@@ -694,9 +695,7 @@ export function useAuth() {
     if (stored) {
       try {
         const tokens: AuthTokens = JSON.parse(stored);
-        await cognitoClient.send(
-          new GlobalSignOutCommand({ AccessToken: tokens.accessToken })
-        );
+        await cognitoClient.send(new GlobalSignOutCommand({ AccessToken: tokens.accessToken }));
       } catch {
         // Sign out locally even if remote sign out fails
       }
@@ -755,6 +754,7 @@ git commit -m "feat: add useAuth hook for Cognito authentication"
 API hook for communicating with the kb-builder Lambda.
 
 **Files:**
+
 - Create: `src/hooks/useKbAdmin.ts`
 - Modify: `src/hooks/index.ts`
 
@@ -835,7 +835,7 @@ export function useKbAdmin(getAccessToken: () => string | null) {
       }
       return data;
     },
-    [getAccessToken]
+    [getAccessToken],
   );
 
   const fetchEntries = useCallback(async () => {
@@ -865,7 +865,7 @@ export function useKbAdmin(getAccessToken: () => string | null) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const updateEntry = useCallback(
@@ -882,7 +882,7 @@ export function useKbAdmin(getAccessToken: () => string | null) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const deleteEntry = useCallback(
@@ -896,7 +896,7 @@ export function useKbAdmin(getAccessToken: () => string | null) {
         throw err;
       }
     },
-    [authFetch, fetchEntries]
+    [authFetch, fetchEntries],
   );
 
   const publish = useCallback(async (): Promise<PublishResult> => {
@@ -951,12 +951,14 @@ git commit -m "feat: add useKbAdmin hook for KB entry CRUD and publish"
 The main admin page with login, entry management, and publish functionality.
 
 **Files:**
+
 - Create: `src/pages/Admin.tsx`
 - Modify: `src/App.tsx:24,34,69`
 
 **Step 1: Create `src/pages/Admin.tsx`**
 
 This is the largest file. It contains:
+
 - Login form (shown when not authenticated)
 - Dashboard with entry list, grouped by category
 - Add/edit entry form (inline)
@@ -1571,6 +1573,7 @@ git commit -m "feat: add admin page with login, entry CRUD, and publish"
 Wire up the new endpoints in env validation, CSP, and preconnects.
 
 **Files:**
+
 - Modify: `scripts/validate-env.js:5-8`
 - Modify: `amplify.yml:31`
 - Modify: `index.html:50-52`
@@ -1643,29 +1646,33 @@ git commit -m "feat: add KB admin env vars, CSP, and preconnects"
 Document the new admin page infrastructure.
 
 **Files:**
+
 - Modify: `CLAUDE.md`
 
 **Step 1: Add Admin section to CLAUDE.md**
 
 Add after the "### AI Chat" section a new section:
 
-```markdown
+````markdown
 ### KB Admin (`/admin`)
 
 Protected admin page for managing the AI chat's Knowledge Base content.
 
 **Authentication:**
+
 - AWS Cognito User Pool: `thechrisgrey-admin-pool` (us-east-1)
 - Single admin user, no self-signup
 - Tokens stored in sessionStorage (1-hour expiry)
 
 **Data Flow:**
+
 1. Admin creates/edits `kbEntry` documents via kb-builder Lambda → Sanity CMS
 2. "Publish to KB" reads all active entries, assembles structured text document
 3. Uploads `knowledge-base.txt` to `s3://thechrisgrey-kb-source/`
 4. Existing kb-sync Lambda triggers Bedrock re-ingestion automatically
 
 **KB Builder Lambda** (`lambda/kb-builder/`):
+
 - Function: `thechrisgrey-kb-builder` (us-east-1)
 - Endpoints: GET/POST/PUT/DELETE `/entries`, POST `/publish`
 - Validates Cognito token on every request
@@ -1673,17 +1680,21 @@ Protected admin page for managing the AI chat's Knowledge Base content.
 - IAM Role: `thechrisgrey-kb-builder-role`
 
 **Sanity Document Type:** `kbEntry`
+
 - Fields: title, category, content (plain text), date, sortOrder, isActive
 - Categories: biography, career, military, education, business, philosophy, podcast, book, skills, awards
 
 **Deployment:**
+
 ```bash
 cd lambda/kb-builder
 npm install
 zip -r function.zip index.mjs package.json node_modules
 aws lambda update-function-code --function-name thechrisgrey-kb-builder --zip-file fileb://function.zip --region us-east-1
 ```
-```
+````
+
+````
 
 **Step 2: Add new env vars to the Environment Variables section**
 
@@ -1693,7 +1704,7 @@ Append to the existing list:
 - `VITE_COGNITO_USER_POOL_ID`: Cognito User Pool ID for admin auth
 - `VITE_COGNITO_CLIENT_ID`: Cognito App Client ID for admin auth
 - `VITE_KB_BUILDER_ENDPOINT`: Lambda Function URL for KB admin operations
-```
+````
 
 **Step 3: Add to Key Files section**
 

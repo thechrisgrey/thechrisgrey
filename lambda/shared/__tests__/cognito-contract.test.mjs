@@ -43,11 +43,8 @@ if (!process.env.COGNITO_CONTRACT_TESTS) {
     assert.fail(`COGNITO_CONTRACT_TESTS is set but ${missing.join(", ")} not provided.`);
   });
 } else {
-  const {
-    CognitoIdentityProviderClient,
-    InitiateAuthCommand,
-    GetUserCommand,
-  } = await import("@aws-sdk/client-cognito-identity-provider");
+  const { CognitoIdentityProviderClient, InitiateAuthCommand, GetUserCommand } =
+    await import("@aws-sdk/client-cognito-identity-provider");
 
   const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
   const ClientId = process.env.COGNITO_CLIENT_ID;

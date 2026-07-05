@@ -83,11 +83,7 @@ function SignalField({ driver, animate }: SignalFieldProps) {
     mat.uniforms.uPointer.value.set(sp.x, sp.y);
 
     // Lerp scroll toward its target; the driver decays scroll to 0 each frame.
-    smoothedScroll.current = THREE.MathUtils.lerp(
-      smoothedScroll.current,
-      driver.current.scroll,
-      0.08,
-    );
+    smoothedScroll.current = THREE.MathUtils.lerp(smoothedScroll.current, driver.current.scroll, 0.08);
     mat.uniforms.uScroll.value = smoothedScroll.current;
   });
 
@@ -118,9 +114,7 @@ const HeroCanvas = ({ heroRef }: HeroCanvasProps) => {
   const { lenis } = useLenisContext();
 
   // Mirror AltiMascot: pause the render loop entirely when the tab is hidden.
-  const [docVisible, setDocVisible] = useState(() =>
-    typeof document === 'undefined' ? true : !document.hidden,
-  );
+  const [docVisible, setDocVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden));
   useEffect(() => {
     const onVisibility = () => setDocVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
@@ -186,11 +180,7 @@ const HeroCanvas = ({ heroRef }: HeroCanvasProps) => {
 
   // Match AltiMascot's frameloop policy: never when hidden, demand (one render)
   // under reduced motion, always otherwise.
-  const frameloop: 'always' | 'demand' | 'never' = reducedMotion
-    ? 'demand'
-    : docVisible
-      ? 'always'
-      : 'never';
+  const frameloop: 'always' | 'demand' | 'never' = reducedMotion ? 'demand' : docVisible ? 'always' : 'never';
 
   return (
     <Canvas

@@ -29,8 +29,8 @@ const CAPABILITIES: Capability[] = [
   {
     icon: 'menu_book',
     title: 'Search the blog',
-    description: "Find what Christian has written on a topic and read the best match.",
-    example: "What has he written about Strands agents?",
+    description: 'Find what Christian has written on a topic and read the best match.',
+    example: 'What has he written about Strands agents?',
   },
   {
     icon: 'edit_note',
@@ -41,7 +41,8 @@ const CAPABILITIES: Capability[] = [
   {
     icon: 'auto_awesome_mosaic',
     title: 'Show visual answers',
-    description: 'Start with "gen-ui" and say what you want — a comparison, timeline, stat row, or link grid — and Alti renders it on demand.',
+    description:
+      'Start with "gen-ui" and say what you want — a comparison, timeline, stat row, or link grid — and Alti renders it on demand.',
     example: 'Use gen-ui to compare his military and tech careers.',
   },
   {
@@ -70,10 +71,7 @@ const CapabilityIntro = memo(function CapabilityIntro({
   const [expanded, setExpanded] = useState(initiallyExpanded);
 
   return (
-    <section
-      aria-label="What Alti can do"
-      className="border-b border-white/10 bg-altivum-dark/60 backdrop-blur-xs"
-    >
+    <section aria-label="What Alti can do" className="border-b border-white/10 bg-altivum-dark/60 backdrop-blur-xs">
       <div className="max-w-4xl mx-auto px-6">
         <button
           type="button"
@@ -83,19 +81,13 @@ const CapabilityIntro = memo(function CapabilityIntro({
           className="w-full flex items-center justify-between py-3 -mx-2 px-2 rounded-md hover:bg-white/2 transition-colors duration-200 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-altivum-gold focus-visible:outline-offset-2"
         >
           <span className="flex items-center gap-2.5">
-            <span
-              className="material-icons text-altivum-gold/70 text-base leading-none"
-              aria-hidden="true"
-            >
+            <span className="material-icons text-altivum-gold/70 text-base leading-none" aria-hidden="true">
               auto_awesome
             </span>
             <span className="text-white" style={typography.bodyText}>
               What Alti can do
             </span>
-            <span
-              className="text-altivum-silver/50 hidden sm:inline"
-              style={typography.smallText}
-            >
+            <span className="text-altivum-silver/50 hidden sm:inline" style={typography.smallText}>
               &middot; search, draft, navigate, remember
             </span>
           </span>
@@ -118,10 +110,7 @@ const CapabilityIntro = memo(function CapabilityIntro({
         >
           <div className="overflow-hidden">
             <div className="pt-1 pb-5">
-              <p
-                className="text-altivum-silver/80 mb-4"
-                style={typography.smallText}
-              >
+              <p className="text-altivum-silver/80 mb-4" style={typography.smallText}>
                 Alti is more than a chat &mdash; he has tools. Try asking him to&hellip;
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -145,20 +134,14 @@ const CapabilityIntro = memo(function CapabilityIntro({
                         {cap.title}
                       </span>
                     </div>
-                    <p
-                      className="text-altivum-silver/70 mb-2.5"
-                      style={typography.smallText}
-                    >
+                    <p className="text-altivum-silver/70 mb-2.5" style={typography.smallText}>
                       {cap.description}
                     </p>
                     <p
                       className="text-altivum-gold/75 italic group-hover:text-altivum-gold flex items-start gap-1.5 transition-colors duration-200"
                       style={typography.smallText}
                     >
-                      <span
-                        className="material-icons text-xs leading-tight mt-0.5 shrink-0"
-                        aria-hidden="true"
-                      >
+                      <span className="material-icons text-xs leading-tight mt-0.5 shrink-0" aria-hidden="true">
                         north_east
                       </span>
                       <span>&ldquo;{cap.example}&rdquo;</span>
@@ -166,12 +149,9 @@ const CapabilityIntro = memo(function CapabilityIntro({
                   </button>
                 ))}
               </div>
-              <p
-                className="text-altivum-silver/50 mt-4 text-center"
-                style={typography.smallText}
-              >
-                Tap a card to drop it into your message. Results deep-link to the
-                page, post, or moment &mdash; and you can ask Alti to forget you anytime.
+              <p className="text-altivum-silver/50 mt-4 text-center" style={typography.smallText}>
+                Tap a card to drop it into your message. Results deep-link to the page, post, or moment &mdash; and you
+                can ask Alti to forget you anytime.
               </p>
             </div>
           </div>

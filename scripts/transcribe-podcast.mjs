@@ -41,7 +41,11 @@ const AUDIO_TMP = join(ROOT, '.transcribe-audio');
 const aws = (args) =>
   execFileSync('aws', [...args, '--region', REGION], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 
-const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const norm = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchText(url) {
@@ -72,13 +76,17 @@ function matchEpisodes(eps, items) {
   const out = [];
   for (const e of eps) {
     const a = new Set(norm(e.title).split(' '));
-    let best = -1, score = 0;
+    let best = -1,
+      score = 0;
     items.forEach((it, idx) => {
       if (used.has(idx)) return;
       const b = new Set(norm(it.title).split(' '));
       const inter = [...a].filter((x) => b.has(x)).length;
       const s = inter / new Set([...a, ...b]).size;
-      if (s > score) { score = s; best = idx; }
+      if (s > score) {
+        score = s;
+        best = idx;
+      }
     });
     if (best >= 0 && score > 0.5) {
       used.add(best);
@@ -91,23 +99,32 @@ function matchEpisodes(eps, items) {
 /** Transcribe results.items -> sentence-level cues [{start, dur, text}]. */
 function itemsToCues(items) {
   const cues = [];
-  let words = [], start = null, lastEnd = 0;
+  let words = [],
+    start = null,
+    lastEnd = 0;
   const flush = () => {
     if (words.length) {
-      const text = words.join(' ').replace(/\s+([.,!?;:])/g, '$1').trim();
+      const text = words
+        .join(' ')
+        .replace(/\s+([.,!?;:])/g, '$1')
+        .trim();
       if (text) cues.push({ start: Math.floor(start), dur: Math.max(0, lastEnd - start), text });
     }
-    words = []; start = null;
+    words = [];
+    start = null;
   };
   for (const it of items) {
     const content = it.alternatives?.[0]?.content;
     if (!content) continue;
     if (it.type === 'punctuation') {
       if (words.length) words[words.length - 1] += content;
-      if (/[.!?]/.test(content)) { if (lastEnd - (start ?? lastEnd) >= 6) flush(); }
+      if (/[.!?]/.test(content)) {
+        if (lastEnd - (start ?? lastEnd) >= 6) flush();
+      }
       continue;
     }
-    const s = parseFloat(it.start_time), e = parseFloat(it.end_time);
+    const s = parseFloat(it.start_time),
+      e = parseFloat(it.end_time);
     if (start === null) start = s;
     words.push(content);
     lastEnd = e;
@@ -126,29 +143,52 @@ async function main() {
   const matched = matchEpisodes(eps, items);
   console.log(`Matched ${matched.length} episodes to RSS audio:`);
   matched.forEach((m) => console.log(`  ${m.videoId}  ${m.title.slice(0, 60)}`));
-  if (!matched.length) { console.error('No audio matched — aborting.'); process.exit(1); }
+  if (!matched.length) {
+    console.error('No audio matched — aborting.');
+    process.exit(1);
+  }
 
   // Temp bucket for audio + transcribe output.
-  try { aws(['s3api', 'head-bucket', '--bucket', TMP_BUCKET]); }
-  catch { aws(['s3api', 'create-bucket', '--bucket', TMP_BUCKET]); console.log(`created ${TMP_BUCKET}`); }
+  try {
+    aws(['s3api', 'head-bucket', '--bucket', TMP_BUCKET]);
+  } catch {
+    aws(['s3api', 'create-bucket', '--bucket', TMP_BUCKET]);
+    console.log(`created ${TMP_BUCKET}`);
+  }
 
   const jobs = [];
   for (const m of matched) {
     const transcriptPath = join(TRANSCRIPTS_DIR, `${m.videoId}.json`);
-    if (existsSync(transcriptPath)) { console.log(`skip ${m.videoId} (transcript exists)`); continue; }
+    if (existsSync(transcriptPath)) {
+      console.log(`skip ${m.videoId} (transcript exists)`);
+      continue;
+    }
     const mp3 = join(AUDIO_TMP, `${m.videoId}.mp3`);
     console.log(`downloading ${m.videoId}...`);
     await download(m.mp3, mp3);
     aws(['s3', 'cp', mp3, `s3://${TMP_BUCKET}/audio/${m.videoId}.mp3`]);
     const jobName = `tcg-${m.videoId}`;
-    try { aws(['transcribe', 'delete-transcription-job', '--transcription-job-name', jobName]); } catch { /* none */ }
-    aws(['transcribe', 'start-transcription-job',
-      '--transcription-job-name', jobName,
-      '--language-code', 'en-US',
-      '--media-format', 'mp3',
-      '--media', `MediaFileUri=s3://${TMP_BUCKET}/audio/${m.videoId}.mp3`,
-      '--output-bucket-name', TMP_BUCKET,
-      '--output-key', `transcripts/${m.videoId}.json`]);
+    try {
+      aws(['transcribe', 'delete-transcription-job', '--transcription-job-name', jobName]);
+    } catch {
+      /* none */
+    }
+    aws([
+      'transcribe',
+      'start-transcription-job',
+      '--transcription-job-name',
+      jobName,
+      '--language-code',
+      'en-US',
+      '--media-format',
+      'mp3',
+      '--media',
+      `MediaFileUri=s3://${TMP_BUCKET}/audio/${m.videoId}.mp3`,
+      '--output-bucket-name',
+      TMP_BUCKET,
+      '--output-key',
+      `transcripts/${m.videoId}.json`,
+    ]);
     jobs.push({ ...m, jobName, transcriptPath });
     console.log(`started transcribe job ${jobName}`);
   }
@@ -182,10 +222,14 @@ async function main() {
   console.log('=== Syncing to S3 ===');
   aws(['s3', 'sync', staging, `s3://${SRC_BUCKET}/`, '--delete']);
   console.log('=== Starting ingestion job ===');
-  const job = JSON.parse(aws(['bedrock-agent', 'start-ingestion-job',
-    '--knowledge-base-id', KB_ID, '--data-source-id', DS_ID]));
+  const job = JSON.parse(
+    aws(['bedrock-agent', 'start-ingestion-job', '--knowledge-base-id', KB_ID, '--data-source-id', DS_ID]),
+  );
   console.log(`ingestion job: ${job.ingestionJob.ingestionJobId} (${job.ingestionJob.status})`);
   console.log('\nDone. Temp audio bucket retained for debugging:', TMP_BUCKET);
 }
 
-main().catch((e) => { console.error('transcribe-podcast failed:', e); process.exit(1); });
+main().catch((e) => {
+  console.error('transcribe-podcast failed:', e);
+  process.exit(1);
+});

@@ -7,7 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
  */
 export function useSessionStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, (value: T | ((prev: T) => T)) => void, () => void] {
   // Initialize state from sessionStorage or use initial value
   const [storedValue, setStoredValue] = useState<T>(() => {

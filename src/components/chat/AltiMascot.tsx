@@ -66,9 +66,7 @@ const AltiMascot = ({ isOpen }: AltiMascotProps) => {
   const handleHoverChange = useCallback((h: boolean) => setHovered(h), []);
 
   const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const [docVisible, setDocVisible] = useState(() =>
-    typeof document === 'undefined' ? true : !document.hidden
-  );
+  const [docVisible, setDocVisible] = useState(() => (typeof document === 'undefined' ? true : !document.hidden));
   useEffect(() => {
     const onVisibility = () => setDocVisible(!document.hidden);
     document.addEventListener('visibilitychange', onVisibility);
@@ -79,11 +77,7 @@ const AltiMascot = ({ isOpen }: AltiMascotProps) => {
   // animation) and pause the render loop entirely when the tab is backgrounded —
   // so it stops burning GPU/battery off-screen. dpr is capped and antialias is off
   // (negligible at 64x64) to keep it light on mobile/high-DPI screens.
-  const frameloop: 'always' | 'demand' | 'never' = reducedMotion
-    ? 'demand'
-    : docVisible
-      ? 'always'
-      : 'never';
+  const frameloop: 'always' | 'demand' | 'never' = reducedMotion ? 'demand' : docVisible ? 'always' : 'never';
 
   return (
     <div className="flex flex-col items-center">
@@ -116,11 +110,7 @@ const AltiMascot = ({ isOpen }: AltiMascotProps) => {
           transition: 'background 0.3s ease, box-shadow 0.3s ease',
         }}
       >
-        {isOpen && (
-          <span className="material-icons text-altivum-silver text-[10px] leading-none">
-            close
-          </span>
-        )}
+        {isOpen && <span className="material-icons text-altivum-silver text-[10px] leading-none">close</span>}
       </div>
     </div>
   );

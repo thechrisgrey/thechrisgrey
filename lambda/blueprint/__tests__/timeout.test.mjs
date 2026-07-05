@@ -28,14 +28,8 @@ import { silentLogger, validBlueprintInput } from "./harness.mjs";
 // ── resolveOpusDeadlineMs (pure) ───────────────────────────────────────────
 
 test("resolveOpusDeadlineMs anchors the deadline at now + remaining - buffer", () => {
-  assert.equal(
-    resolveOpusDeadlineMs(150_000, 1_000_000),
-    1_000_000 + 150_000 - OPUS_TIMEOUT_BUFFER_MS,
-  );
-  assert.equal(
-    resolveOpusDeadlineMs(40_000, 5_000),
-    5_000 + 40_000 - OPUS_TIMEOUT_BUFFER_MS,
-  );
+  assert.equal(resolveOpusDeadlineMs(150_000, 1_000_000), 1_000_000 + 150_000 - OPUS_TIMEOUT_BUFFER_MS);
+  assert.equal(resolveOpusDeadlineMs(40_000, 5_000), 5_000 + 40_000 - OPUS_TIMEOUT_BUFFER_MS);
 });
 
 test("resolveOpusDeadlineMs returns null when there is no Lambda window", () => {
@@ -57,10 +51,7 @@ test("opusTimeoutForDeadline caps at OPUS_TIMEOUT_MS when the deadline is far of
   // Exact cap boundary: deadline - now === cap.
   assert.equal(opusTimeoutForDeadline(deadline, deadline - OPUS_TIMEOUT_MS), OPUS_TIMEOUT_MS);
   // Just inside the cap pins the inflection point.
-  assert.equal(
-    opusTimeoutForDeadline(deadline, deadline - (OPUS_TIMEOUT_MS - 1_000)),
-    OPUS_TIMEOUT_MS - 1_000,
-  );
+  assert.equal(opusTimeoutForDeadline(deadline, deadline - (OPUS_TIMEOUT_MS - 1_000)), OPUS_TIMEOUT_MS - 1_000);
 });
 
 test("opusTimeoutForDeadline scales down as now approaches the shared deadline", () => {
@@ -72,10 +63,7 @@ test("opusTimeoutForDeadline scales down as now approaches the shared deadline",
 test("opusTimeoutForDeadline floors at OPUS_TIMEOUT_FLOOR_MS at or past the deadline", () => {
   const deadline = 1_000_000;
   // Exact floor boundary: deadline - now === floor.
-  assert.equal(
-    opusTimeoutForDeadline(deadline, deadline - OPUS_TIMEOUT_FLOOR_MS),
-    OPUS_TIMEOUT_FLOOR_MS,
-  );
+  assert.equal(opusTimeoutForDeadline(deadline, deadline - OPUS_TIMEOUT_FLOOR_MS), OPUS_TIMEOUT_FLOOR_MS);
   assert.equal(opusTimeoutForDeadline(deadline, deadline), OPUS_TIMEOUT_FLOOR_MS);
   assert.equal(opusTimeoutForDeadline(deadline, deadline + 50_000), OPUS_TIMEOUT_FLOOR_MS);
 });
@@ -137,14 +125,11 @@ function abortingBedrockClient() {
 
 test("streamOpus honors a passed timeoutMs and reports it on abort", { timeout: 2000 }, async () => {
   const bedrock = abortingBedrockClient();
-  await assert.rejects(
-    streamOpus(bedrock, { system: "s", user: "u", timeoutMs: 60, onChunk: () => {} }),
-    (err) => {
-      assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
-      assert.equal(err.timeoutMs, 60, "BedrockTimeoutError must carry the actual timeout used");
-      return true;
-    },
-  );
+  await assert.rejects(streamOpus(bedrock, { system: "s", user: "u", timeoutMs: 60, onChunk: () => {} }), (err) => {
+    assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
+    assert.equal(err.timeoutMs, 60, "BedrockTimeoutError must carry the actual timeout used");
+    return true;
+  });
 });
 
 test("streamOpus surfaces a timeout when ConverseStream ends GRACEFULLY on abort", { timeout: 2000 }, async () => {
@@ -164,7 +149,7 @@ test("streamOpus surfaces a timeout when ConverseStream ends GRACEFULLY on abort
                 if (signal?.aborted) return { done: true };
                 if (!yielded) {
                   yielded = true;
-                  return { value: { contentBlockDelta: { delta: { text: "{\"partial\": \"trunc" } } }, done: false };
+                  return { value: { contentBlockDelta: { delta: { text: '{"partial": "trunc' } } }, done: false };
                 }
                 await new Promise((resolve) => {
                   if (signal?.aborted) return resolve();
@@ -178,26 +163,20 @@ test("streamOpus surfaces a timeout when ConverseStream ends GRACEFULLY on abort
       };
     },
   };
-  await assert.rejects(
-    streamOpus(client, { system: "s", user: "u", timeoutMs: 50, onChunk: () => {} }),
-    (err) => {
-      assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
-      assert.equal(err.timeoutMs, 50);
-      return true;
-    },
-  );
+  await assert.rejects(streamOpus(client, { system: "s", user: "u", timeoutMs: 50, onChunk: () => {} }), (err) => {
+    assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
+    assert.equal(err.timeoutMs, 50);
+    return true;
+  });
 });
 
 test("invokeOpus honors a passed timeoutMs and reports it on abort", { timeout: 2000 }, async () => {
   const bedrock = abortingBedrockClient();
-  await assert.rejects(
-    invokeOpus(bedrock, { system: "s", user: "u", timeoutMs: 60 }),
-    (err) => {
-      assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
-      assert.equal(err.timeoutMs, 60);
-      return true;
-    },
-  );
+  await assert.rejects(invokeOpus(bedrock, { system: "s", user: "u", timeoutMs: 60 }), (err) => {
+    assert.ok(err instanceof BedrockTimeoutError, `expected BedrockTimeoutError, got ${err?.name}`);
+    assert.equal(err.timeoutMs, 60);
+    return true;
+  });
 });
 
 // ── deadline threading through generateBlueprint (both Opus paths) ──────────
@@ -220,14 +199,18 @@ test("generateBlueprint threads the deadline into the STREAMING Opus call", { ti
   assert.equal(res.error, "opus_timeout", "a past deadline must abort Opus, not hang to the 110s cap");
 });
 
-test("generateBlueprint threads the deadline into the BLOCKING Opus call (no onProgress)", { timeout: 8000 }, async () => {
-  const bedrock = abortingBedrockClient();
-  const res = await generateBlueprint(validBlueprintInput(), {
-    bedrockClient: bedrock,
-    logger: silentLogger(),
-    opusDeadlineMs: Date.now() - 1,
-    // no onProgress → blocking invokeOpus branch (the path the MCP wrapper uses)
-  });
-  assert.equal(res.ok, false);
-  assert.equal(res.error, "opus_timeout", "the blocking path must also honor the deadline, not fall back to 110s");
-});
+test(
+  "generateBlueprint threads the deadline into the BLOCKING Opus call (no onProgress)",
+  { timeout: 8000 },
+  async () => {
+    const bedrock = abortingBedrockClient();
+    const res = await generateBlueprint(validBlueprintInput(), {
+      bedrockClient: bedrock,
+      logger: silentLogger(),
+      opusDeadlineMs: Date.now() - 1,
+      // no onProgress → blocking invokeOpus branch (the path the MCP wrapper uses)
+    });
+    assert.equal(res.ok, false);
+    assert.equal(res.error, "opus_timeout", "the blocking path must also honor the deadline, not fall back to 110s");
+  },
+);

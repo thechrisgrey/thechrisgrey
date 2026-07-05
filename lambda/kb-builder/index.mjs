@@ -1,8 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import {
-  CognitoIdentityProviderClient,
-  GetUserCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createClient } from "@sanity/client";
@@ -50,14 +47,12 @@ const CATEGORY_LABELS = {
 };
 
 async function fetchEntries(activeOnly = false) {
-  const filter = activeOnly
-    ? '*[_type == "kbEntry" && isActive == true]'
-    : '*[_type == "kbEntry"]';
+  const filter = activeOnly ? '*[_type == "kbEntry" && isActive == true]' : '*[_type == "kbEntry"]';
 
   return sanityClient.fetch(
     `${filter} | order(category asc, sortOrder asc, date desc) {
       _id, _createdAt, _updatedAt, title, category, content, date, sortOrder, isActive
-    }`
+    }`,
   );
 }
 
@@ -251,12 +246,16 @@ export const handler = async (event) => {
       const document = assembleDocument(entries);
       await uploadToS3(document);
 
-      return respond(200, {
-        message: "Knowledge Base document published",
-        entryCount: entries.length,
-        documentSize: document.length,
-        publishedAt: new Date().toISOString(),
-      }, CORS_ORIGIN);
+      return respond(
+        200,
+        {
+          message: "Knowledge Base document published",
+          entryCount: entries.length,
+          documentSize: document.length,
+          publishedAt: new Date().toISOString(),
+        },
+        CORS_ORIGIN,
+      );
     }
 
     return respond(404, { error: "Not found" }, CORS_ORIGIN);

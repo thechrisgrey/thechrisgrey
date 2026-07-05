@@ -25,11 +25,7 @@ import { buildRememberFactTool } from "./rememberFact.mjs";
  * }} deps
  */
 export function buildTools(deps) {
-  const tools = [
-    buildNavigateTool(deps),
-    buildDraftMessageTool(deps),
-    buildDraftNewsletterTool(deps),
-  ];
+  const tools = [buildNavigateTool(deps), buildDraftMessageTool(deps), buildDraftNewsletterTool(deps)];
 
   if (deps.sanityClient) {
     tools.push(buildCitePassageTool(deps));

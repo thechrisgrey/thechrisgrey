@@ -10,7 +10,7 @@ const renderSEO = (props: Parameters<typeof SEO>[0]) => {
   return render(
     <HelmetProvider>
       <SEO {...props} />
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 
@@ -188,9 +188,7 @@ describe('SEO', () => {
     delete (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__;
     renderSEO({ title: 'Test', description: 'desc' });
     await waitFor(() => {
-      expect(
-        (window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__
-      ).toBe(true);
+      expect((window as unknown as { __PRERENDER_READY__?: boolean }).__PRERENDER_READY__).toBe(true);
     });
   });
 
@@ -199,9 +197,7 @@ describe('SEO', () => {
     await waitFor(() => {
       expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
     });
-    const json = JSON.parse(
-      document.querySelector('script[type="application/ld+json"]')!.textContent!
-    );
+    const json = JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!);
     expect(json['@context']).toBe('https://schema.org');
     expect(Array.isArray(json['@graph'])).toBe(true);
     const types = json['@graph'].map((n: Record<string, unknown>) => n['@type']);
@@ -234,9 +230,7 @@ describe('SEO', () => {
     await waitFor(() => {
       expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
     });
-    const graph = JSON.parse(
-      document.querySelector('script[type="application/ld+json"]')!.textContent!
-    );
+    const graph = JSON.parse(document.querySelector('script[type="application/ld+json"]')!.textContent!);
 
     const memberIds = (graph['@graph'] as Array<Record<string, unknown>>)
       .map((node) => node['@id'])

@@ -33,10 +33,18 @@ export function validateEntryFields({ title, category, content, date, sortOrder 
   if (content !== undefined && (typeof content !== "string" || content.length > MAX_CONTENT_LENGTH)) {
     return `content must be a string of at most ${MAX_CONTENT_LENGTH} characters`;
   }
-  if (date !== undefined && date !== null && (typeof date !== "string" || date.length > MAX_DATE_LENGTH || isNaN(Date.parse(date)))) {
+  if (
+    date !== undefined &&
+    date !== null &&
+    (typeof date !== "string" || date.length > MAX_DATE_LENGTH || isNaN(Date.parse(date)))
+  ) {
     return "date must be a valid date string";
   }
-  if (sortOrder !== undefined && sortOrder !== null && (typeof sortOrder !== "number" || sortOrder < 0 || sortOrder > MAX_SORT_ORDER)) {
+  if (
+    sortOrder !== undefined &&
+    sortOrder !== null &&
+    (typeof sortOrder !== "number" || sortOrder < 0 || sortOrder > MAX_SORT_ORDER)
+  ) {
     return `sortOrder must be a number between 0 and ${MAX_SORT_ORDER}`;
   }
   return null;

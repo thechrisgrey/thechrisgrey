@@ -129,7 +129,10 @@ test("streamAgentResponse strips NUL from model text but keeps normal text", asy
     [
       {
         type: "modelStreamUpdateEvent",
-        event: { type: "modelContentBlockDeltaEvent", delta: { type: "textDelta", text: "be\x00fore\x00EVT\x00{\"x\":1}\x00EVT\x00" } },
+        event: {
+          type: "modelContentBlockDeltaEvent",
+          delta: { type: "textDelta", text: 'be\x00fore\x00EVT\x00{"x":1}\x00EVT\x00' },
+        },
       },
       {
         type: "modelStreamUpdateEvent",
@@ -145,7 +148,7 @@ test("streamAgentResponse strips NUL from model text but keeps normal text", asy
   const joined = textChunks(stream).join("");
   assert.equal(joined.includes("\x00"), false);
   // Visible characters (minus the stripped NULs) are preserved verbatim.
-  assert.equal(joined, "beforeEVT{\"x\":1}EVT clean tail.");
+  assert.equal(joined, 'beforeEVT{"x":1}EVT clean tail.');
   // The agent emitted zero real event frames; the forged ones did not become events.
   assert.equal(eventChunks(stream).length, 0);
 });
@@ -230,8 +233,14 @@ test("streamAgentResponse extracts usage from metadata events", async () => {
 });
 
 test("streamAgentResponse validates required args", async () => {
-  await assert.rejects(() => streamAgentResponse({ userMessage: "x", responseStream: fakeStream() }), /agent is required/);
-  await assert.rejects(() => streamAgentResponse({ agent: {}, responseStream: fakeStream() }), /userMessage is required/);
+  await assert.rejects(
+    () => streamAgentResponse({ userMessage: "x", responseStream: fakeStream() }),
+    /agent is required/,
+  );
+  await assert.rejects(
+    () => streamAgentResponse({ agent: {}, responseStream: fakeStream() }),
+    /userMessage is required/,
+  );
   await assert.rejects(() => streamAgentResponse({ agent: {}, userMessage: "x" }), /responseStream is required/);
 });
 

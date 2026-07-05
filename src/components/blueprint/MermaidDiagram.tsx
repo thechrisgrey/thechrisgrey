@@ -12,9 +12,7 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
   // Single state slot for the async render result so the source-change reset
   // is one setState call (not two), removing the cascading-render anti-pattern
   // that react-hooks/set-state-in-effect flags.
-  const [render, setRender] = useState<{ svg: string | null; error: string | null }>(
-    { svg: null, error: null },
-  );
+  const [render, setRender] = useState<{ svg: string | null; error: string | null }>({ svg: null, error: null });
   const [showSource, setShowSource] = useState(false);
 
   useEffect(() => {
@@ -36,8 +34,7 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
           startOnLoad: false,
           theme: 'dark',
           securityLevel: 'strict',
-          fontFamily:
-            '"SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif',
+          fontFamily: '"SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif',
           themeVariables: {
             primaryColor: '#1A2332',
             primaryTextColor: '#FFFFFF',
@@ -62,10 +59,7 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
         setRender({ svg: sanitized, error: null });
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error
-            ? err.message
-            : 'Failed to render the diagram.';
+        const message = err instanceof Error ? err.message : 'Failed to render the diagram.';
         setRender({ svg: null, error: message });
       }
     })();
@@ -98,18 +92,14 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
       </div>
 
       {showSource ? (
-        <pre
-          className="p-4 text-altivum-silver overflow-x-auto"
-          style={typography.smallText}
-        >
+        <pre className="p-4 text-altivum-silver overflow-x-auto" style={typography.smallText}>
           {source}
         </pre>
       ) : (
         <div ref={containerRef} className="p-4 overflow-x-auto" aria-live="polite">
           {error ? (
             <div className="text-altivum-silver/80" style={typography.smallText}>
-              <span className="text-rose-300">Diagram render failed.</span> You can still read
-              the Mermaid source below.
+              <span className="text-rose-300">Diagram render failed.</span> You can still read the Mermaid source below.
               <pre className="mt-2 text-altivum-silver overflow-x-auto">{source}</pre>
             </div>
           ) : svg === null ? (
@@ -128,10 +118,7 @@ export function MermaidDiagram({ source }: MermaidDiagramProps) {
           ) : (
             // Sanitized via DOMPurify above + mermaid strict mode; no user-typed
             // HTML reaches this path — only rendered-then-sanitized SVG.
-            <div
-              className="mermaid-rendered flex justify-center"
-              dangerouslySetInnerHTML={{ __html: svg }}
-            />
+            <div className="mermaid-rendered flex justify-center" dangerouslySetInnerHTML={{ __html: svg }} />
           )}
         </div>
       )}

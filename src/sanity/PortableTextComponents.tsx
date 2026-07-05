@@ -1,10 +1,10 @@
-import { PortableTextComponents } from '@portabletext/react'
-import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types'
-import { isRenderableImageSource } from './guards'
-import YouTubeFacade from '../components/YouTubeFacade'
-import HighlightedCodeBlock from '../components/HighlightedCodeBlock'
-import SanityResponsiveImage from '../components/SanityResponsiveImage'
-import { getYouTubeId } from '../utils/youtube'
+import { PortableTextComponents } from '@portabletext/react';
+import type { CodeBlock, Callout, YouTube, Divider, PullQuote, BookReference } from './types';
+import { isRenderableImageSource } from './guards';
+import YouTubeFacade from '../components/YouTubeFacade';
+import HighlightedCodeBlock from '../components/HighlightedCodeBlock';
+import SanityResponsiveImage from '../components/SanityResponsiveImage';
+import { getYouTubeId } from '../utils/youtube';
 
 // Callout icons and styles based on type
 const calloutStyles = {
@@ -32,7 +32,7 @@ const calloutStyles = {
     icon: 'priority_high',
     label: 'Important',
   },
-}
+};
 
 export const portableTextComponents: PortableTextComponents = {
   types: {
@@ -40,7 +40,7 @@ export const portableTextComponents: PortableTextComponents = {
     image: ({ value }) => {
       // Validate the asset is actually renderable before handing it to urlFor —
       // a malformed/un-dereferenced image would otherwise throw in the builder.
-      if (!isRenderableImageSource(value)) return null
+      if (!isRenderableImageSource(value)) return null;
       return (
         <figure className="my-8">
           <div className="relative w-full rounded-lg" style={{ aspectRatio: '4 / 3' }}>
@@ -54,70 +54,55 @@ export const portableTextComponents: PortableTextComponents = {
             />
           </div>
           {value.caption && (
-            <figcaption className="text-center text-sm text-altivum-silver/70 mt-3">
-              {value.caption}
-            </figcaption>
+            <figcaption className="text-center text-sm text-altivum-silver/70 mt-3">{value.caption}</figcaption>
           )}
         </figure>
-      )
+      );
     },
 
     // Code blocks with syntax highlighting
     codeBlock: ({ value }: { value: CodeBlock }) => (
-      <HighlightedCodeBlock
-        code={value.code?.code || ''}
-        language={value.code?.language}
-        filename={value.filename}
-      />
+      <HighlightedCodeBlock code={value.code?.code || ''} language={value.code?.language} filename={value.filename} />
     ),
 
     // Callout boxes (Note, Tip, Warning, Important)
     callout: ({ value }: { value: Callout }) => {
-      const style = calloutStyles[value.type] || calloutStyles.note
+      const style = calloutStyles[value.type] || calloutStyles.note;
       return (
-        <div
-          className={`my-6 p-4 ${style.bg} border-l-4 ${style.border} rounded-r-lg`}
-        >
+        <div className={`my-6 p-4 ${style.bg} border-l-4 ${style.border} rounded-r-lg`}>
           <div className="flex items-start gap-3">
             <span className="material-icons text-xl mt-0.5">{style.icon}</span>
             <div>
               <div className="font-semibold text-white mb-1">{style.label}</div>
-              <p className="text-altivum-silver text-sm leading-relaxed">
-                {value.text}
-              </p>
+              <p className="text-altivum-silver text-sm leading-relaxed">{value.text}</p>
             </div>
           </div>
         </div>
-      )
+      );
     },
 
     // YouTube embeds
     youtube: ({ value }: { value: YouTube }) => {
-      const videoId = getYouTubeId(value.url)
-      if (!videoId) return null
+      const videoId = getYouTubeId(value.url);
+      if (!videoId) return null;
       return (
         <figure className="my-8">
           <div className="relative aspect-video rounded-lg overflow-hidden bg-altivum-navy">
-            <YouTubeFacade
-              videoId={videoId}
-              title={value.caption || 'YouTube video'}
-            />
+            <YouTubeFacade videoId={videoId} title={value.caption || 'YouTube video'} />
           </div>
           {value.caption && (
-            <figcaption className="text-center text-sm text-altivum-silver/70 mt-3">
-              {value.caption}
-            </figcaption>
+            <figcaption className="text-center text-sm text-altivum-silver/70 mt-3">{value.caption}</figcaption>
           )}
         </figure>
-      )
+      );
     },
 
     // Dividers / horizontal rules
     divider: ({ value }: { value: Divider }) => {
-      const style = value.style || 'line'
+      const style = value.style || 'line';
 
       if (style === 'space') {
-        return <div className="my-12" aria-hidden="true" />
+        return <div className="my-12" aria-hidden="true" />;
       }
 
       if (style === 'dots') {
@@ -127,13 +112,11 @@ export const portableTextComponents: PortableTextComponents = {
             <span className="w-1.5 h-1.5 rounded-full bg-altivum-gold/60" />
             <span className="w-1.5 h-1.5 rounded-full bg-altivum-gold/60" />
           </div>
-        )
+        );
       }
 
       // Default: line
-      return (
-        <hr className="my-10 border-0 h-px bg-linear-to-r from-transparent via-altivum-gold/40 to-transparent" />
-      )
+      return <hr className="my-10 border-0 h-px bg-linear-to-r from-transparent via-altivum-gold/40 to-transparent" />;
     },
 
     // Pull quotes - prominent callout for key insights
@@ -144,12 +127,10 @@ export const portableTextComponents: PortableTextComponents = {
             "{value.quote}"
           </blockquote>
           {value.attribution && (
-            <figcaption className="mt-4 text-center text-altivum-silver text-sm">
-              — {value.attribution}
-            </figcaption>
+            <figcaption className="mt-4 text-center text-altivum-silver text-sm">— {value.attribution}</figcaption>
           )}
         </figure>
-      )
+      );
     },
 
     // Book references - cards for recommended reading
@@ -169,54 +150,33 @@ export const portableTextComponents: PortableTextComponents = {
             </div>
           )}
           <div className="flex flex-col justify-center">
-            <div className="text-xs uppercase tracking-wider text-altivum-gold mb-1">
-              Recommended Reading
-            </div>
+            <div className="text-xs uppercase tracking-wider text-altivum-gold mb-1">Recommended Reading</div>
             <h4 className="text-lg font-semibold text-white mb-1">{value.title}</h4>
             <p className="text-sm text-altivum-silver mb-2">by {value.author}</p>
-            {value.description && (
-              <p className="text-sm text-altivum-silver/80 leading-relaxed">
-                {value.description}
-              </p>
-            )}
+            {value.description && <p className="text-sm text-altivum-silver/80 leading-relaxed">{value.description}</p>}
           </div>
         </div>
-      )
+      );
 
       if (value.link) {
         return (
-          <a
-            href={value.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block no-underline"
-          >
+          <a href={value.link} target="_blank" rel="noopener noreferrer" className="block no-underline">
             {content}
           </a>
-        )
+        );
       }
 
-      return content
+      return content;
     },
   },
 
   block: {
     // Headings
-    h2: ({ children }) => (
-      <h2 className="text-2xl font-semibold text-white mt-10 mb-4">{children}</h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="text-xl font-semibold text-white mt-8 mb-3">{children}</h3>
-    ),
-    h4: ({ children }) => (
-      <h4 className="text-lg font-semibold text-white mt-6 mb-2">{children}</h4>
-    ),
+    h2: ({ children }) => <h2 className="text-2xl font-semibold text-white mt-10 mb-4">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-semibold text-white mt-8 mb-3">{children}</h3>,
+    h4: ({ children }) => <h4 className="text-lg font-semibold text-white mt-6 mb-2">{children}</h4>,
     // Normal paragraph
-    normal: ({ children }) => (
-      <p className="text-altivum-silver mb-6 leading-relaxed font-light">
-        {children}
-      </p>
-    ),
+    normal: ({ children }) => <p className="text-altivum-silver mb-6 leading-relaxed font-light">{children}</p>,
     // Blockquote
     blockquote: ({ children }) => (
       <blockquote className="border-l-4 border-altivum-gold pl-6 my-6 italic text-altivum-silver/90">
@@ -227,14 +187,10 @@ export const portableTextComponents: PortableTextComponents = {
 
   marks: {
     // Text formatting
-    strong: ({ children }) => (
-      <strong className="font-semibold text-white">{children}</strong>
-    ),
+    strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
     em: ({ children }) => <em className="italic">{children}</em>,
     underline: ({ children }) => <span className="underline">{children}</span>,
-    'strike-through': ({ children }) => (
-      <span className="line-through">{children}</span>
-    ),
+    'strike-through': ({ children }) => <span className="line-through">{children}</span>,
     code: ({ children }) => (
       <code className="bg-altivum-navy/50 px-1.5 py-0.5 rounded-sm text-sm font-mono text-altivum-gold">
         {children}
@@ -242,9 +198,9 @@ export const portableTextComponents: PortableTextComponents = {
     ),
     // Links
     link: ({ children, value }) => {
-      const href = value?.href || ''
-      const isExternal = href.startsWith('http')
-      const opensInNewTab = value?.openInNewTab || isExternal
+      const href = value?.href || '';
+      const isExternal = href.startsWith('http');
+      const opensInNewTab = value?.openInNewTab || isExternal;
       return (
         <a
           href={href}
@@ -254,20 +210,14 @@ export const portableTextComponents: PortableTextComponents = {
         >
           {children}
         </a>
-      )
+      );
     },
   },
 
   list: {
-    bullet: ({ children }) => (
-      <ul className="list-disc list-inside mb-6 space-y-2 text-altivum-silver">
-        {children}
-      </ul>
-    ),
+    bullet: ({ children }) => <ul className="list-disc list-inside mb-6 space-y-2 text-altivum-silver">{children}</ul>,
     number: ({ children }) => (
-      <ol className="list-decimal list-inside mb-6 space-y-2 text-altivum-silver">
-        {children}
-      </ol>
+      <ol className="list-decimal list-inside mb-6 space-y-2 text-altivum-silver">{children}</ol>
     ),
   },
 
@@ -275,4 +225,4 @@ export const portableTextComponents: PortableTextComponents = {
     bullet: ({ children }) => <li className="leading-relaxed">{children}</li>,
     number: ({ children }) => <li className="leading-relaxed">{children}</li>,
   },
-}
+};

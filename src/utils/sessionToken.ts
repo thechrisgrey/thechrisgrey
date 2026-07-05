@@ -77,7 +77,9 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
       // Dedupe concurrent issuance: one Turnstile challenge + one fetch serves
       // every caller waiting on a refresh, and mints both scopes at once.
       if (!inflight) {
-        inflight = refresh().finally(() => { inflight = null; });
+        inflight = refresh().finally(() => {
+          inflight = null;
+        });
       }
       await inflight;
     } catch (err) {
@@ -110,5 +112,4 @@ export const sessionTokens = createSessionTokenManager({
 });
 
 /** Get a valid bearer token for the given scope ("" if tokens aren't configured). */
-export const getSessionToken = (scope: SessionScope): Promise<string> =>
-  sessionTokens.getToken(scope);
+export const getSessionToken = (scope: SessionScope): Promise<string> => sessionTokens.getToken(scope);

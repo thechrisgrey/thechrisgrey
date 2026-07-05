@@ -21,7 +21,7 @@ export const BLOG_LISTING_QUERY = `{
   },
   "tags": *[_type == "tag"] | order(title asc) { _id, title, slug },
   "series": *[_type == "series"] | order(title asc) { _id, title, slug, description }
-}`
+}`;
 
 // Fetch a single post by slug (for post detail view)
 export const POST_BY_SLUG_QUERY = `*[
@@ -68,8 +68,7 @@ export const POST_BY_SLUG_QUERY = `*[
     },
     null
   )
-}`
-
+}`;
 
 // Fetch all podcast guests
 export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order asc) {
@@ -84,4 +83,4 @@ export const PODCAST_GUESTS_QUERY = `*[_type == "podcastGuest"] | order(order as
   websiteUrl,
   websiteLabel,
   order
-}`
+}`;

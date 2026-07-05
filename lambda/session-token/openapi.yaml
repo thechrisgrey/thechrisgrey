@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Session Token Issuer API
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Mints short-lived, device-bound, scoped session tokens (chat + blueprint)
     that the chat and blueprint Lambdas verify. Replaces the old model of
@@ -32,45 +32,45 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/IssueRequest"
+              $ref: '#/components/schemas/IssueRequest'
       responses:
-        "200":
+        '200':
           description: Tokens issued
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IssueResponse"
-        "400":
+                $ref: '#/components/schemas/IssueResponse'
+        '400':
           description: invalid_json or invalid_device_id
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "403":
+                $ref: '#/components/schemas/Error'
+        '403':
           description: forbidden_origin or turnstile_failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "405":
+                $ref: '#/components/schemas/Error'
+        '405':
           description: method_not_allowed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "429":
+                $ref: '#/components/schemas/Error'
+        '429':
           description: rate_limited
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     options:
       tags: [token]
       operationId: tokenPreflight
       summary: CORS preflight (normally answered by the Function URL CORS layer)
       security: []
       responses:
-        "204":
+        '204':
           description: No content
 components:
   schemas:
@@ -80,7 +80,7 @@ components:
       properties:
         deviceId:
           type: string
-          pattern: "^[a-zA-Z0-9_-]{8,64}$"
+          pattern: '^[a-zA-Z0-9_-]{8,64}$'
         turnstileToken:
           type: string
           description: Cloudflare Turnstile response token (required when Turnstile is enabled).

@@ -9,17 +9,8 @@ import { AdminLogin, EntryForm, EntryList, SiteHealthPanel } from '../components
 // Main admin dashboard
 function AdminDashboard() {
   const { logout, getAccessToken } = useAuth();
-  const {
-    entries,
-    isLoading,
-    isPublishing,
-    error,
-    fetchEntries,
-    createEntry,
-    updateEntry,
-    deleteEntry,
-    publish,
-  } = useKbAdmin(getAccessToken);
+  const { entries, isLoading, isPublishing, error, fetchEntries, createEntry, updateEntry, deleteEntry, publish } =
+    useKbAdmin(getAccessToken);
 
   const [healthExpanded, setHealthExpanded] = useState(false);
   const { data: healthData, isLoading: healthLoading } = useSiteHealth(getAccessToken, healthExpanded);
@@ -32,16 +23,12 @@ function AdminDashboard() {
     fetchEntries();
   }, [fetchEntries]);
 
-  const handleCreate = async (
-    data: Omit<KbEntry, '_id' | '_createdAt' | '_updatedAt'>
-  ) => {
+  const handleCreate = async (data: Omit<KbEntry, '_id' | '_createdAt' | '_updatedAt'>) => {
     await createEntry(data);
     setShowForm(false);
   };
 
-  const handleUpdate = async (
-    data: Omit<KbEntry, '_id' | '_createdAt' | '_updatedAt'>
-  ) => {
+  const handleUpdate = async (data: Omit<KbEntry, '_id' | '_createdAt' | '_updatedAt'>) => {
     if (!editingEntry) return;
     await updateEntry(editingEntry._id, data);
     setEditingEntry(null);
@@ -60,7 +47,7 @@ function AdminDashboard() {
     try {
       const result = await publish();
       setPublishResult(
-        `Published ${result.entryCount} entries (${Math.round(result.documentSize / 1024)}KB). KB sync triggered.`
+        `Published ${result.entryCount} entries (${Math.round(result.documentSize / 1024)}KB). KB sync triggered.`,
       );
       setTimeout(() => setPublishResult(null), 10000);
     } catch {
@@ -111,11 +98,7 @@ function AdminDashboard() {
             {publishResult}
           </div>
         )}
-        {error && (
-          <div className="mb-6 p-4 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-6 p-4 bg-red-900/30 border-l-4 border-red-500 text-red-300 text-sm">{error}</div>}
 
         {/* Stats bar */}
         <div className="grid grid-cols-3 gap-4 mb-8">

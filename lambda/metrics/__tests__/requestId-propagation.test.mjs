@@ -80,9 +80,7 @@ function rateLimitErrorRequestId(calls) {
 // True if checkRateLimit fell back to its NON-structured log, which only
 // happens when requestId was falsy (undefined / not forwarded).
 function usedFallbackLog(calls) {
-  return calls.some(
-    (args) => typeof args[0] === "string" && args[0].startsWith("Rate limit error:")
-  );
+  return calls.some((args) => typeof args[0] === "string" && args[0].startsWith("Rate limit error:"));
 }
 
 test("/vitals rate-limit check forwards a real requestId to checkRateLimit", async () => {
@@ -93,7 +91,7 @@ test("/vitals rate-limit check forwards a real requestId to checkRateLimit", asy
         method: "POST",
         path: "/vitals",
         body: JSON.stringify({ name: "LCP", value: 1234, rating: "good" }),
-      })
+      }),
     );
   });
 
@@ -106,12 +104,12 @@ test("/vitals rate-limit check forwards a real requestId to checkRateLimit", asy
   const requestId = rateLimitErrorRequestId(calls);
   assert.ok(
     typeof requestId === "string" && requestId.length > 0,
-    `expected a forwarded requestId in the rate_limit_error log; got ${JSON.stringify(requestId)}`
+    `expected a forwarded requestId in the rate_limit_error log; got ${JSON.stringify(requestId)}`,
   );
   assert.match(
     requestId,
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    "forwarded requestId must be the handler's randomUUID()"
+    "forwarded requestId must be the handler's randomUUID()",
   );
   // If requestId were undefined, checkRateLimit would have used the fallback log.
   assert.equal(usedFallbackLog(calls), false, "checkRateLimit must not fall back to the unstructured log");
@@ -125,7 +123,7 @@ test("/csp-report rate-limit check forwards a real requestId to checkRateLimit",
         method: "POST",
         path: "/csp-report",
         body: JSON.stringify({ "csp-report": { "blocked-uri": "inline" } }),
-      })
+      }),
     );
   });
 
@@ -134,12 +132,12 @@ test("/csp-report rate-limit check forwards a real requestId to checkRateLimit",
   const requestId = rateLimitErrorRequestId(calls);
   assert.ok(
     typeof requestId === "string" && requestId.length > 0,
-    `expected a forwarded requestId in the rate_limit_error log; got ${JSON.stringify(requestId)}`
+    `expected a forwarded requestId in the rate_limit_error log; got ${JSON.stringify(requestId)}`,
   );
   assert.match(
     requestId,
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    "forwarded requestId must be the handler's randomUUID()"
+    "forwarded requestId must be the handler's randomUUID()",
   );
   assert.equal(usedFallbackLog(calls), false, "checkRateLimit must not fall back to the unstructured log");
 });

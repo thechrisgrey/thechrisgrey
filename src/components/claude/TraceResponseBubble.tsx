@@ -20,11 +20,7 @@ export function TraceResponseBubble({ content, isStreaming, isSystemMessage }: T
           Off-topic
         </span>
       )}
-      <p
-        className={`text-sm leading-relaxed ${
-          isSystemMessage ? 'text-amber-400' : 'text-altivum-silver'
-        }`}
-      >
+      <p className={`text-sm leading-relaxed ${isSystemMessage ? 'text-amber-400' : 'text-altivum-silver'}`}>
         {content}
         {isStreaming && (
           <span

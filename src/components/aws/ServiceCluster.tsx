@@ -44,12 +44,7 @@ export function ServiceCluster({ cluster, isSelected, onClick }: ServiceClusterP
       {/* Wireframe sphere */}
       <mesh>
         <sphereGeometry args={[cluster.size, 16, 16]} />
-        <meshBasicMaterial
-          wireframe
-          color="#C5A572"
-          transparent
-          opacity={opacity}
-        />
+        <meshBasicMaterial wireframe color="#C5A572" transparent opacity={opacity} />
       </mesh>
 
       {/* Cluster label */}
@@ -64,13 +59,7 @@ export function ServiceCluster({ cluster, isSelected, onClick }: ServiceClusterP
       </Text>
 
       {/* Service count */}
-      <Text
-        position={[0, cluster.size + 0.35, 0]}
-        color="#9BA6B8"
-        fontSize={0.12}
-        anchorX="center"
-        anchorY="middle"
-      >
+      <Text position={[0, cluster.size + 0.35, 0]} color="#9BA6B8" fontSize={0.12} anchorX="center" anchorY="middle">
         {`${cluster.services.length} service${cluster.services.length !== 1 ? 's' : ''}`}
       </Text>
     </group>

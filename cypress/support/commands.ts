@@ -67,9 +67,7 @@ Cypress.Commands.add('verifyFooter', () => {
 Cypress.Commands.add('verifySEO', (title: string, description = true) => {
   cy.title().should('contain', title);
   if (description) {
-    cy.get('head meta[name="description"]')
-      .should('have.attr', 'content')
-      .and('not.be.empty');
+    cy.get('head meta[name="description"]').should('have.attr', 'content').and('not.be.empty');
   }
 });
 

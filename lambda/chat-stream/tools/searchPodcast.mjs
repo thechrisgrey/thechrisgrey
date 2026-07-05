@@ -50,9 +50,7 @@ export function buildSearchPodcastTool({
         .string()
         .min(2, "Query must be at least 2 characters")
         .max(120, "Query too long")
-        .describe(
-          "Topic, phrase, or question to search the podcast for, e.g. 'women veterans' or 'AI in defense'",
-        ),
+        .describe("Topic, phrase, or question to search the podcast for, e.g. 'women veterans' or 'AI in defense'"),
     }),
     callback: async ({ query }) => {
       const normalized = normalizeQuery(query);
@@ -113,13 +111,15 @@ export function buildSearchPodcastTool({
         };
       } catch (error) {
         metrics?.record("ToolFailure_SearchPodcast");
-        console.error(JSON.stringify({
-          requestId,
-          event: "tool_error",
-          tool: "search_podcast",
-          error: error.name,
-          message: error.message,
-        }));
+        console.error(
+          JSON.stringify({
+            requestId,
+            event: "tool_error",
+            tool: "search_podcast",
+            error: error.name,
+            message: error.message,
+          }),
+        );
         return { ok: false, error: "Unable to search the podcast right now." };
       }
     },

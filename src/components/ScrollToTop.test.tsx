@@ -14,7 +14,7 @@ describe('ScrollToTop', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <ScrollToTop />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(window.scrollTo).toHaveBeenCalledWith({
@@ -28,7 +28,7 @@ describe('ScrollToTop', () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={['/page1']}>
         <ScrollToTop />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(window.scrollTo).toHaveBeenCalledTimes(1);
@@ -39,7 +39,7 @@ describe('ScrollToTop', () => {
     render(
       <MemoryRouter initialEntries={['/page2']}>
         <ScrollToTop />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(window.scrollTo).toHaveBeenCalledTimes(2);
@@ -49,7 +49,7 @@ describe('ScrollToTop', () => {
     const { container } = render(
       <MemoryRouter>
         <ScrollToTop />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(container.innerHTML).toBe('');
@@ -59,11 +59,9 @@ describe('ScrollToTop', () => {
     render(
       <MemoryRouter initialEntries={['/about']}>
         <ScrollToTop />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
-    expect(window.scrollTo).toHaveBeenCalledWith(
-      expect.objectContaining({ behavior: 'instant' })
-    );
+    expect(window.scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'instant' }));
   });
 });

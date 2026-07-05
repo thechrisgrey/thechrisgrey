@@ -12,9 +12,7 @@ function formatUsd(n: number): string {
 
 export function CostCard({ cost }: CostCardProps) {
   const isFree = cost.monthly_high_usd === 0;
-  const range = isFree
-    ? 'Free tier'
-    : `${formatUsd(cost.monthly_low_usd)} – ${formatUsd(cost.monthly_high_usd)}`;
+  const range = isFree ? 'Free tier' : `${formatUsd(cost.monthly_low_usd)} – ${formatUsd(cost.monthly_high_usd)}`;
 
   return (
     <div className="p-5 rounded-lg bg-altivum-navy/60 border border-white/5">
@@ -39,11 +37,7 @@ export function CostCard({ cost }: CostCardProps) {
         </p>
         <ul className="space-y-1.5">
           {cost.assumptions.map((assumption, idx) => (
-            <li
-              key={idx}
-              className="flex gap-2 text-altivum-silver/90"
-              style={typography.smallText}
-            >
+            <li key={idx} className="flex gap-2 text-altivum-silver/90" style={typography.smallText}>
               <span className="text-altivum-gold/60" aria-hidden="true">
                 •
               </span>

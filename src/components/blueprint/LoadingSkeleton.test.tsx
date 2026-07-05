@@ -13,17 +13,13 @@ describe('LoadingSkeleton', () => {
 
   it('should render the default thinking message when no message prop is given', () => {
     render(<LoadingSkeleton />);
-    expect(
-      screen.getByText('Opus 4.6 is thinking this through…')
-    ).toBeInTheDocument();
+    expect(screen.getByText('Opus 4.6 is thinking this through…')).toBeInTheDocument();
   });
 
   it('should render a custom message when the message prop is provided', () => {
     render(<LoadingSkeleton message="Provisioning your stack…" />);
     expect(screen.getByText('Provisioning your stack…')).toBeInTheDocument();
-    expect(
-      screen.queryByText('Opus 4.6 is thinking this through…')
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Opus 4.6 is thinking this through…')).not.toBeInTheDocument();
   });
 
   it('should render every progress message in a list', () => {

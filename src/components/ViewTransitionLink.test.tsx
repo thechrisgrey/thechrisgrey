@@ -15,7 +15,7 @@ const renderLink = (props: Partial<React.ComponentProps<typeof ViewTransitionLin
       <ViewTransitionLink to="/about" {...props}>
         About Page
       </ViewTransitionLink>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 };
 

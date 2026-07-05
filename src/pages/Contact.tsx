@@ -20,11 +20,43 @@ type ContactChannel = {
 
 const CONTACT_CHANNELS: ContactChannel[] = [
   { kind: 'icon', icon: 'phone', href: SOCIAL_LINKS.phone, title: 'Phone', detail: '(615) 219-9425' },
-  { kind: 'icon', icon: 'email', href: SOCIAL_LINKS.altivumEmail, title: 'General Inquiries', detail: 'info@altivum.ai' },
-  { kind: 'icon', icon: 'business_center', href: SOCIAL_LINKS.altivumLogicEmail, title: 'Altivum Logic Services', detail: 'logic@altivum.ai' },
-  { kind: 'icon', icon: 'person', href: SOCIAL_LINKS.email, title: 'Direct Email', detail: 'christian.perez@altivum.ai' },
-  { kind: 'svg', platform: 'linkedin', href: SOCIAL_LINKS.linkedin, external: true, title: 'LinkedIn', detail: 'Connect professionally' },
-  { kind: 'svg', platform: 'github', href: SOCIAL_LINKS.github, external: true, title: 'GitHub', detail: 'View open-source projects' },
+  {
+    kind: 'icon',
+    icon: 'email',
+    href: SOCIAL_LINKS.altivumEmail,
+    title: 'General Inquiries',
+    detail: 'info@altivum.ai',
+  },
+  {
+    kind: 'icon',
+    icon: 'business_center',
+    href: SOCIAL_LINKS.altivumLogicEmail,
+    title: 'Altivum Logic Services',
+    detail: 'logic@altivum.ai',
+  },
+  {
+    kind: 'icon',
+    icon: 'person',
+    href: SOCIAL_LINKS.email,
+    title: 'Direct Email',
+    detail: 'christian.perez@altivum.ai',
+  },
+  {
+    kind: 'svg',
+    platform: 'linkedin',
+    href: SOCIAL_LINKS.linkedin,
+    external: true,
+    title: 'LinkedIn',
+    detail: 'Connect professionally',
+  },
+  {
+    kind: 'svg',
+    platform: 'github',
+    href: SOCIAL_LINKS.github,
+    external: true,
+    title: 'GitHub',
+    detail: 'View open-source projects',
+  },
 ];
 
 const Contact = () => {
@@ -33,7 +65,7 @@ const Contact = () => {
     email: '',
     subject: '',
     message: '',
-    website: '' // honeypot field
+    website: '', // honeypot field
   });
   const [formStatus, setFormStatus] = useState<{
     type: 'idle' | 'loading' | 'error';
@@ -45,8 +77,10 @@ const Contact = () => {
 
   // Dirty-form detection
   const isDirty = !!(
-    formData.name.trim() || formData.email.trim() ||
-    formData.subject.trim() || formData.message.trim()
+    formData.name.trim() ||
+    formData.email.trim() ||
+    formData.subject.trim() ||
+    formData.message.trim()
   );
 
   // Browser beforeunload guard for tab close/refresh
@@ -118,7 +152,7 @@ const Contact = () => {
           name: formData.name.trim(),
           email: formData.email.trim(),
           message: `Subject: ${formData.subject.trim() || 'No subject'}\n\n${formData.message.trim()}`,
-          website: formData.website // honeypot
+          website: formData.website, // honeypot
         }),
         signal: controller.signal,
       });
@@ -133,12 +167,12 @@ const Contact = () => {
       } else if (response.status === 429) {
         setFormStatus({
           type: 'error',
-          message: 'Too many requests. Please try again in a few minutes.'
+          message: 'Too many requests. Please try again in a few minutes.',
         });
       } else {
         setFormStatus({
           type: 'error',
-          message: result.error || 'Failed to send message. Please try again.'
+          message: result.error || 'Failed to send message. Please try again.',
         });
       }
     } catch (error) {
@@ -146,12 +180,12 @@ const Contact = () => {
       if (error instanceof Error && error.name === 'AbortError') {
         setFormStatus({
           type: 'error',
-          message: 'Request timed out. Please try again.'
+          message: 'Request timed out. Please try again.',
         });
       } else {
         setFormStatus({
           type: 'error',
-          message: 'Network error. Please check your connection and try again.'
+          message: 'Network error. Please check your connection and try again.',
         });
       }
     } finally {
@@ -161,10 +195,10 @@ const Contact = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear this field's validation error as the user corrects it
     if (fieldErrors[name as FieldName]) {
-      setFieldErrors(prev => {
+      setFieldErrors((prev) => {
         const next = { ...prev };
         delete next[name as FieldName];
         return next;
@@ -181,8 +215,8 @@ const Contact = () => {
         url="https://thechrisgrey.com/contact"
         faq={contactFAQs}
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Contact", url: "https://thechrisgrey.com/contact" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Contact', url: 'https://thechrisgrey.com/contact' },
         ]}
         structuredData={[buildContactPageSchema()]}
       />
@@ -196,8 +230,8 @@ const Contact = () => {
             <div className="h-px w-24 bg-altivum-gold mb-8"></div>
 
             <p className="text-altivum-silver" style={typography.subtitle}>
-              Whether you're interested in cloud migration, AI integration, speaking engagements,
-              or collaboration opportunities, I'd love to hear from you.
+              Whether you're interested in cloud migration, AI integration, speaking engagements, or collaboration
+              opportunities, I'd love to hear from you.
             </p>
           </div>
         </div>
@@ -224,7 +258,10 @@ const Contact = () => {
                   { icon: 'rocket_launch', title: 'Entrepreneurship', desc: 'Building veteran-owned businesses' },
                   { icon: 'psychology', title: 'Leadership', desc: 'Special Operations lessons for business' },
                 ].map((topic) => (
-                  <div key={topic.title} className="p-5 bg-altivum-dark/50 border border-white/5 hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300">
+                  <div
+                    key={topic.title}
+                    className="p-5 bg-altivum-dark/50 border border-white/5 hover:border-altivum-gold/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-altivum-gold/5 transition-all duration-300"
+                  >
                     <span className="material-icons text-altivum-gold mb-3 block">{topic.icon}</span>
                     <h3 className="text-white text-sm font-medium mb-1">{topic.title}</h3>
                     <p className="text-altivum-silver text-xs">{topic.desc}</p>
@@ -288,7 +325,10 @@ const Contact = () => {
               </h2>
               <form className="space-y-10" onSubmit={handleSubmit}>
                 <div className="group">
-                  <label htmlFor="name" className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest">
+                  <label
+                    htmlFor="name"
+                    className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest"
+                  >
                     Name *
                   </label>
                   <input
@@ -313,7 +353,10 @@ const Contact = () => {
                 </div>
 
                 <div className="group">
-                  <label htmlFor="email" className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest">
+                  <label
+                    htmlFor="email"
+                    className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest"
+                  >
                     Email *
                   </label>
                   <input
@@ -337,7 +380,10 @@ const Contact = () => {
                 </div>
 
                 <div className="group">
-                  <label htmlFor="subject" className="block text-xs font-medium text-altivum-silver mb-3 uppercase tracking-widest">
+                  <label
+                    htmlFor="subject"
+                    className="block text-xs font-medium text-altivum-silver mb-3 uppercase tracking-widest"
+                  >
                     Subject
                   </label>
                   <input
@@ -353,7 +399,10 @@ const Contact = () => {
                 </div>
 
                 <div className="group">
-                  <label htmlFor="message" className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest">
+                  <label
+                    htmlFor="message"
+                    className="block text-xs font-medium text-altivum-gold mb-3 uppercase tracking-widest"
+                  >
                     Message *
                   </label>
                   <textarea
@@ -378,7 +427,10 @@ const Contact = () => {
                 </div>
 
                 {/* Honeypot field - hidden from users */}
-                <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+                <div
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
+                  aria-hidden="true"
+                >
                   <label htmlFor="website">Website (leave blank)</label>
                   <input
                     type="text"
@@ -414,9 +466,7 @@ const Contact = () => {
                       : 'bg-altivum-gold text-altivum-dark hover:bg-white hover:shadow-[0_0_30px_rgba(197,165,114,0.3)]'
                   }`}
                 >
-                  <span className="relative z-10">
-                    {formStatus.type === 'loading' ? 'Sending...' : 'Send Message'}
-                  </span>
+                  <span className="relative z-10">{formStatus.type === 'loading' ? 'Sending...' : 'Send Message'}</span>
                   {formStatus.type !== 'loading' && (
                     <span className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
                   )}
@@ -431,8 +481,8 @@ const Contact = () => {
                   Other Ways to Connect
                 </h2>
                 <p className="text-altivum-silver" style={typography.bodyText}>
-                  Prefer a different communication method? I'm available through various channels
-                  and typically respond within 24-48 hours.
+                  Prefer a different communication method? I'm available through various channels and typically respond
+                  within 24-48 hours.
                 </p>
               </div>
 
@@ -454,7 +504,12 @@ const Contact = () => {
                         )}
                       </div>
                       <div>
-                        <h3 className="text-white mb-1 group-hover:text-altivum-gold transition-colors" style={typography.cardTitleSmall}>{channel.title}</h3>
+                        <h3
+                          className="text-white mb-1 group-hover:text-altivum-gold transition-colors"
+                          style={typography.cardTitleSmall}
+                        >
+                          {channel.title}
+                        </h3>
                         <p className="text-altivum-silver text-sm">{channel.detail}</p>
                       </div>
                     </div>
@@ -463,7 +518,10 @@ const Contact = () => {
               </div>
 
               {/* Location & Availability */}
-              <div className="pt-8 border-t border-white/3" style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}>
+              <div
+                className="pt-8 border-t border-white/3"
+                style={{ borderImage: 'linear-gradient(to right, transparent, rgba(197,165,114,0.15), transparent) 1' }}
+              >
                 <h3 className="text-white mb-4" style={typography.cardTitleSmall}>
                   Availability
                 </h3>

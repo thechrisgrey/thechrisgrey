@@ -27,21 +27,21 @@ vi.mock('gsap/ScrollTrigger', () => ({
 
 describe('FadeReveal', () => {
   it('renders children content', () => {
-    render(<FadeReveal><p>Hello World</p></FadeReveal>);
+    render(
+      <FadeReveal>
+        <p>Hello World</p>
+      </FadeReveal>,
+    );
     expect(screen.getByText('Hello World')).toBeInTheDocument();
   });
 
   it('applies className prop', () => {
-    const { container } = render(
-      <FadeReveal className="custom-fade">Content</FadeReveal>
-    );
+    const { container } = render(<FadeReveal className="custom-fade">Content</FadeReveal>);
     expect(container.firstChild).toHaveClass('custom-fade');
   });
 
   it('applies style prop merged with opacity', () => {
-    const { container } = render(
-      <FadeReveal style={{ fontSize: '16px' }}>Content</FadeReveal>
-    );
+    const { container } = render(<FadeReveal style={{ fontSize: '16px' }}>Content</FadeReveal>);
     const el = container.firstChild as HTMLElement;
     expect(el).toHaveStyle({ fontSize: '16px', opacity: '0' });
   });
@@ -77,7 +77,7 @@ describe('FadeReveal', () => {
       <FadeReveal>
         <span>First</span>
         <span>Second</span>
-      </FadeReveal>
+      </FadeReveal>,
     );
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();

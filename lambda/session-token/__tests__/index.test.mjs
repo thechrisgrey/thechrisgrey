@@ -20,7 +20,9 @@ function fakeDocClient(requestCount) {
   };
 }
 class FakeUpdateCommand {
-  constructor(input) { this.input = input; }
+  constructor(input) {
+    this.input = input;
+  }
 }
 
 function baseConfig(overrides = {}) {
@@ -71,7 +73,9 @@ test("non-POST is rejected with 405", async () => {
 });
 
 test("a request from a disallowed Origin is rejected with 403", async () => {
-  const res = await makeHandler()(makeEvent({ origin: "https://evil.example", body: { deviceId: DEVICE_ID, turnstileToken: "t" } }));
+  const res = await makeHandler()(
+    makeEvent({ origin: "https://evil.example", body: { deviceId: DEVICE_ID, turnstileToken: "t" } }),
+  );
   assert.equal(res.statusCode, 403);
 });
 
@@ -87,7 +91,7 @@ test("an invalid deviceId shape is rejected with 400", async () => {
 
 test("a failing Turnstile check is rejected with 403", async () => {
   const res = await makeHandler({ turnstilePass: false })(
-    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "bad-token" } })
+    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "bad-token" } }),
   );
   assert.equal(res.statusCode, 403);
   assert.equal(JSON.parse(res.body).error, "turnstile_failed");
@@ -96,7 +100,7 @@ test("a failing Turnstile check is rejected with 403", async () => {
 test("exceeding the per-IP issuance limit is rejected with 429", async () => {
   // requestCount above maxIssuancePerHour => checkRateLimit returns not allowed
   const res = await makeHandler({ requestCount: 61 })(
-    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "t" } })
+    makeEvent({ body: { deviceId: DEVICE_ID, turnstileToken: "t" } }),
   );
   assert.equal(res.statusCode, 429);
 });
@@ -145,6 +149,8 @@ test("verifyTurnstile returns false when siteverify reports failure", async () =
 });
 
 test("verifyTurnstile fails closed when the network call throws", async () => {
-  const fakeFetch = async () => { throw new Error("network down"); };
+  const fakeFetch = async () => {
+    throw new Error("network down");
+  };
   assert.equal(await verifyTurnstile("token", "secret", "1.2.3.4", fakeFetch), false);
 });

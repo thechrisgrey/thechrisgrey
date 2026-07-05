@@ -1,11 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  BASE_SYSTEM_PROMPT,
-  buildVisitorContext,
-  buildMemoryContext,
-  buildSystemPrompt,
-} from "../prompts.mjs";
+import { BASE_SYSTEM_PROMPT, buildVisitorContext, buildMemoryContext, buildSystemPrompt } from "../prompts.mjs";
 
 test("buildVisitorContext returns empty string for null", () => {
   assert.equal(buildVisitorContext(null), "");
@@ -115,22 +110,13 @@ test("buildMemoryContext renders strings as bullet list", () => {
 });
 
 test("buildMemoryContext accepts {content} objects", () => {
-  const out = buildMemoryContext([
-    { content: "Lives in Austin" },
-    { content: "Enjoys long-form podcasts" },
-  ]);
+  const out = buildMemoryContext([{ content: "Lives in Austin" }, { content: "Enjoys long-form podcasts" }]);
   assert.match(out, /- Lives in Austin/);
   assert.match(out, /- Enjoys long-form podcasts/);
 });
 
 test("buildMemoryContext filters blanks and non-strings", () => {
-  const out = buildMemoryContext([
-    "   ",
-    null,
-    undefined,
-    { content: "" },
-    { content: "Real fact" },
-  ]);
+  const out = buildMemoryContext(["   ", null, undefined, { content: "" }, { content: "Real fact" }]);
   assert.match(out, /- Real fact/);
   assert.doesNotMatch(out, /- \n/);
 });

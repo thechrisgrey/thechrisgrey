@@ -15,11 +15,16 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
         className="w-full flex items-center justify-between p-4 bg-altivum-navy/30 hover:bg-altivum-navy/50 transition-colors text-left"
       >
         <div className="flex items-center gap-2">
-          <span className="material-icons text-altivum-gold text-lg" aria-hidden="true">monitoring</span>
+          <span className="material-icons text-altivum-gold text-lg" aria-hidden="true">
+            monitoring
+          </span>
           <span className="text-sm font-medium text-white uppercase tracking-wider">Site Health</span>
           <span className="text-xs text-altivum-silver">(24h)</span>
         </div>
-        <span className={`material-icons text-altivum-silver text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} aria-hidden="true">
+        <span
+          className={`material-icons text-altivum-silver text-sm transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        >
           expand_more
         </span>
       </button>
@@ -28,7 +33,9 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
           {isLoading && !data ? (
             <p className="text-altivum-silver text-sm">Loading metrics...</p>
           ) : !data ? (
-            <p className="text-altivum-silver text-sm">No health data available. Metrics endpoint may not be configured.</p>
+            <p className="text-altivum-silver text-sm">
+              No health data available. Metrics endpoint may not be configured.
+            </p>
           ) : (
             <div className="space-y-4">
               {/* Web Vitals */}
@@ -38,9 +45,12 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                   {(['lcp', 'cls', 'inp', 'fcp', 'ttfb'] as const).map((key) => {
                     const vital = data.vitals[key];
                     const label = key.toUpperCase();
-                    const value = vital.average !== null
-                      ? key === 'cls' ? vital.average.toFixed(3) : `${Math.round(vital.average)}ms`
-                      : '--';
+                    const value =
+                      vital.average !== null
+                        ? key === 'cls'
+                          ? vital.average.toFixed(3)
+                          : `${Math.round(vital.average)}ms`
+                        : '--';
                     return (
                       <div key={key} className="p-3 bg-white/5 rounded-sm">
                         <div className="text-lg text-white font-semibold">{value}</div>
@@ -56,13 +66,17 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
                 <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Chat Pipeline</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-3 bg-white/5 rounded-sm">
-                    <div className={`text-lg font-semibold ${data.chat.kbSuccessRate !== null && parseFloat(data.chat.kbSuccessRate) >= 95 ? 'text-green-400' : data.chat.kbSuccessRate !== null ? 'text-amber-400' : 'text-altivum-silver'}`}>
+                    <div
+                      className={`text-lg font-semibold ${data.chat.kbSuccessRate !== null && parseFloat(data.chat.kbSuccessRate) >= 95 ? 'text-green-400' : data.chat.kbSuccessRate !== null ? 'text-amber-400' : 'text-altivum-silver'}`}
+                    >
                       {data.chat.kbSuccessRate !== null ? `${data.chat.kbSuccessRate}%` : '--'}
                     </div>
                     <div className="text-xs text-altivum-silver uppercase tracking-wider">KB Success</div>
                   </div>
                   <div className="p-3 bg-white/5 rounded-sm">
-                    <div className={`text-lg font-semibold ${data.chat.kbFailures > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    <div
+                      className={`text-lg font-semibold ${data.chat.kbFailures > 0 ? 'text-red-400' : 'text-green-400'}`}
+                    >
                       {data.chat.kbFailures}
                     </div>
                     <div className="text-xs text-altivum-silver uppercase tracking-wider">KB Failures</div>
@@ -80,7 +94,9 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
               {/* Performance */}
               {data.performance && (
                 <div>
-                  <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Performance (avg)</h4>
+                  <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">
+                    Performance (avg)
+                  </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
@@ -112,26 +128,26 @@ function SiteHealthPanel({ expanded, onToggle, data, isLoading }: SiteHealthPane
               {/* Costs */}
               {data.costs && (
                 <div>
-                  <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">Token Usage (24h)</h4>
+                  <h4 className="text-xs font-medium text-altivum-gold uppercase tracking-wider mb-2">
+                    Token Usage (24h)
+                  </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
-                        {data.costs.bedrockInputTokens > 0
-                          ? data.costs.bedrockInputTokens.toLocaleString()
-                          : '--'}
+                        {data.costs.bedrockInputTokens > 0 ? data.costs.bedrockInputTokens.toLocaleString() : '--'}
                       </div>
                       <div className="text-xs text-altivum-silver uppercase tracking-wider">Input Tokens</div>
                     </div>
                     <div className="p-3 bg-white/5 rounded-sm">
                       <div className="text-lg text-white font-semibold">
-                        {data.costs.bedrockOutputTokens > 0
-                          ? data.costs.bedrockOutputTokens.toLocaleString()
-                          : '--'}
+                        {data.costs.bedrockOutputTokens > 0 ? data.costs.bedrockOutputTokens.toLocaleString() : '--'}
                       </div>
                       <div className="text-xs text-altivum-silver uppercase tracking-wider">Output Tokens</div>
                     </div>
                     <div className="p-3 bg-white/5 rounded-sm">
-                      <div className={`text-lg font-semibold ${data.costs.malformedRequests > 0 ? 'text-amber-400' : 'text-green-400'}`}>
+                      <div
+                        className={`text-lg font-semibold ${data.costs.malformedRequests > 0 ? 'text-amber-400' : 'text-green-400'}`}
+                      >
                         {data.costs.malformedRequests}
                       </div>
                       <div className="text-xs text-altivum-silver uppercase tracking-wider">Malformed Req</div>

@@ -76,7 +76,7 @@ const renderPage = (PageComponent: React.ComponentType, route: string) => {
       <MemoryRouter initialEntries={[route]}>
         <PageComponent />
       </MemoryRouter>
-    </HelmetProvider>
+    </HelmetProvider>,
   );
 };
 

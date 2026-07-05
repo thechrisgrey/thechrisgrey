@@ -4,19 +4,13 @@
     {
       "Sid": "CloudWatchLogs",
       "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
       "Resource": "arn:aws:logs:us-east-1:205930636302:log-group:/aws/lambda/thechrisgrey-mcp-server:*"
     },
     {
       "Sid": "CloudWatchMetrics",
       "Effect": "Allow",
-      "Action": [
-        "cloudwatch:PutMetricData"
-      ],
+      "Action": ["cloudwatch:PutMetricData"],
       "Resource": "*",
       "Condition": {
         "StringEquals": {
@@ -27,9 +21,7 @@
     {
       "Sid": "BedrockInvokeModel",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel"
-      ],
+      "Action": ["bedrock:InvokeModel"],
       "Resource": [
         "arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-*",
         "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-haiku-*",
@@ -39,28 +31,19 @@
     {
       "Sid": "BedrockGuardrail",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:ApplyGuardrail"
-      ],
-      "Resource": [
-        "arn:aws:bedrock:us-east-1:205930636302:guardrail/5kofhp46ssob"
-      ]
+      "Action": ["bedrock:ApplyGuardrail"],
+      "Resource": ["arn:aws:bedrock:us-east-1:205930636302:guardrail/5kofhp46ssob"]
     },
     {
       "Sid": "BedrockKnowledgeBaseRetrieve",
       "Effect": "Allow",
-      "Action": [
-        "bedrock:Retrieve"
-      ],
+      "Action": ["bedrock:Retrieve"],
       "Resource": "arn:aws:bedrock:us-east-1:205930636302:knowledge-base/ARFYABW8HP"
     },
     {
       "Sid": "DynamoDbRateLimit",
       "Effect": "Allow",
-      "Action": [
-        "dynamodb:UpdateItem",
-        "dynamodb:GetItem"
-      ],
+      "Action": ["dynamodb:UpdateItem", "dynamodb:GetItem"],
       "Resource": "arn:aws:dynamodb:*:*:table/thechrisgrey-chat-ratelimit"
     }
   ]

@@ -92,12 +92,8 @@ Style rules:
  */
 export function formatExampleForPrompt(example) {
   const { spec, output } = example;
-  const services = output.services
-    .map((s) => `  - ${s.service}: ${s.purpose}`)
-    .join("\n");
-  const artifacts = output.claude_artifacts
-    .map((a) => `  - ${a.kind}: ${a.name} — ${a.description}`)
-    .join("\n");
+  const services = output.services.map((s) => `  - ${s.service}: ${s.purpose}`).join("\n");
+  const artifacts = output.claude_artifacts.map((a) => `  - ${a.kind}: ${a.name} — ${a.description}`).join("\n");
   const costLo = output.cost_estimate.monthly_low_usd;
   const costHi = output.cost_estimate.monthly_high_usd;
 
@@ -149,10 +145,7 @@ export function selectExamples(allExamples, spec, limit = 3) {
  * @returns {string}
  */
 export function formatSpecForPrompt(spec) {
-  const lines = [
-    `Goal: ${spec.goal}`,
-    `Category: ${spec.category}`,
-  ];
+  const lines = [`Goal: ${spec.goal}`, `Category: ${spec.category}`];
 
   if (spec.scale) {
     const { traffic, data_volume, latency_budget } = spec.scale;
@@ -201,9 +194,7 @@ export function buildSystemPrompt({ examples = [], principles = ARCHITECTURE_PRI
     );
   }
 
-  sections.push(
-    `Valid categories: ${BLUEPRINT_CATEGORIES.join(", ")}.`,
-  );
+  sections.push(`Valid categories: ${BLUEPRINT_CATEGORIES.join(", ")}.`);
 
   return sections.join("\n\n");
 }

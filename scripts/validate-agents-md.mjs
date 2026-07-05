@@ -40,11 +40,7 @@ for (const name of [...referencedScripts].sort()) {
 // 2. Inline-code file/dir references must be tracked in git.
 // Files legitimately documented but intentionally gitignored (developer-created).
 const untrackedAllowlist = new Set(['.env', '.env.local']);
-const trackedFiles = new Set(
-  execSync('git ls-files', { cwd: repoRoot, encoding: 'utf8' })
-    .split('\n')
-    .filter(Boolean),
-);
+const trackedFiles = new Set(execSync('git ls-files', { cwd: repoRoot, encoding: 'utf8' }).split('\n').filter(Boolean));
 const trackedDirs = new Set();
 for (const file of trackedFiles) {
   const parts = file.split('/');
@@ -76,9 +72,7 @@ for (const match of prose.matchAll(/`([^`]+)`/g)) inlineTokens.add(match[1].trim
 for (const token of [...inlineTokens].sort()) {
   if (!isPathLike(token) || untrackedAllowlist.has(token)) continue;
   const normalized = token.replace(/^\.\//, '');
-  const exists = normalized.endsWith('/')
-    ? trackedDirs.has(normalized)
-    : trackedFiles.has(normalized);
+  const exists = normalized.endsWith('/') ? trackedDirs.has(normalized) : trackedFiles.has(normalized);
   if (!exists) {
     errors.push(`references \`${token}\` which is not a tracked file/dir in git.`);
   }

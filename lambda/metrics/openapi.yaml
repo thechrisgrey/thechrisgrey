@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Site Metrics API
-  version: "1.0.0"
+  version: '1.0.0'
   description: |
     Ingests Web Vitals and CSP violation reports into CloudWatch
     (namespace `TheChrisGrey/SiteMetrics`) and exposes an authenticated health
@@ -26,9 +26,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Vital"
+              $ref: '#/components/schemas/Vital'
       responses:
-        "200":
+        '200':
           description: Metric received
           content:
             application/json:
@@ -36,7 +36,7 @@ paths:
                 type: object
                 properties:
                   received: { type: boolean }
-        "202":
+        '202':
           description: Accepted but the CloudWatch write was deferred.
           content:
             application/json:
@@ -45,8 +45,8 @@ paths:
                 properties:
                   received: { type: boolean }
                   note: { type: string }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
   /csp-report:
     post:
       tags: [csp]
@@ -61,9 +61,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CspReport"
+              $ref: '#/components/schemas/CspReport'
       responses:
-        "200":
+        '200':
           description: Report received
           content:
             application/json:
@@ -71,13 +71,13 @@ paths:
                 type: object
                 properties:
                   received: { type: boolean }
-        "400":
+        '400':
           description: Invalid blocked-uri format
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-        "429": { $ref: "#/components/responses/TooManyRequests" }
+                $ref: '#/components/schemas/Error'
+        '429': { $ref: '#/components/responses/TooManyRequests' }
   /health:
     get:
       tags: [health]
@@ -87,13 +87,13 @@ paths:
       security:
         - cognito: []
       responses:
-        "200":
+        '200':
           description: Health aggregate
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthReport"
-        "401": { $ref: "#/components/responses/Unauthorized" }
+                $ref: '#/components/schemas/HealthReport'
+        '401': { $ref: '#/components/responses/Unauthorized' }
 components:
   securitySchemes:
     cognito:
@@ -106,19 +106,19 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     Unauthorized:
       description: Missing or invalid Cognito token
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
     TooManyRequests:
       description: Rate limit exceeded
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
   schemas:
     Vital:
       type: object
@@ -155,7 +155,7 @@ components:
         chat:
           type: object
           properties:
-            kbSuccessRate: { type: [string, "null"] }
+            kbSuccessRate: { type: [string, 'null'] }
             kbFailures: { type: number }
             kbSuccesses: { type: number }
             guardrailInterventions: { type: number }

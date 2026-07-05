@@ -36,8 +36,14 @@ test("BlueprintInputSchema rejects unknown categories", () => {
 
 test("BlueprintInputSchema exposes all 8 expected categories", () => {
   const expected = [
-    "ai-agent", "rag", "data-pipeline", "realtime-app",
-    "batch-etl", "web-api", "iot-ingest", "ml-training",
+    "ai-agent",
+    "rag",
+    "data-pipeline",
+    "realtime-app",
+    "batch-etl",
+    "web-api",
+    "iot-ingest",
+    "ml-training",
   ];
   assert.deepEqual([...BLUEPRINT_CATEGORIES].sort(), [...expected].sort());
 });
@@ -71,20 +77,24 @@ test("BlueprintOutputSchema rejects empty services array", () => {
 });
 
 test("BlueprintOutputSchema rejects single-service (min is 2)", () => {
-  const result = BlueprintOutputSchema.safeParse(validBlueprintOutput({
-    services: [validBlueprintOutput().services[0]],
-  }));
+  const result = BlueprintOutputSchema.safeParse(
+    validBlueprintOutput({
+      services: [validBlueprintOutput().services[0]],
+    }),
+  );
   assert.equal(result.success, false);
 });
 
 test("BlueprintOutputSchema rejects cost estimate above 100k", () => {
-  const result = BlueprintOutputSchema.safeParse(validBlueprintOutput({
-    cost_estimate: {
-      monthly_low_usd: 0,
-      monthly_high_usd: 200_000,
-      assumptions: ["This is way more expensive than we allow."],
-    },
-  }));
+  const result = BlueprintOutputSchema.safeParse(
+    validBlueprintOutput({
+      cost_estimate: {
+        monthly_low_usd: 0,
+        monthly_high_usd: 200_000,
+        assumptions: ["This is way more expensive than we allow."],
+      },
+    }),
+  );
   assert.equal(result.success, false);
 });
 
@@ -94,25 +104,31 @@ test("BlueprintOutputSchema rejects an empty next_steps array", () => {
 });
 
 test("BlueprintOutputSchema rejects an unknown artifact kind", () => {
-  const result = BlueprintOutputSchema.safeParse(validBlueprintOutput({
-    claude_artifacts: [{
-      kind: "plugin",
-      name: "nope",
-      description: "Unknown kind that should not validate",
-      body: "x".repeat(150),
-    }],
-  }));
+  const result = BlueprintOutputSchema.safeParse(
+    validBlueprintOutput({
+      claude_artifacts: [
+        {
+          kind: "plugin",
+          name: "nope",
+          description: "Unknown kind that should not validate",
+          body: "x".repeat(150),
+        },
+      ],
+    }),
+  );
   assert.equal(result.success, false);
 });
 
 test("BlueprintOutputSchema rejects an unknown IaC tool", () => {
-  const result = BlueprintOutputSchema.safeParse(validBlueprintOutput({
-    iac_scaffold: {
-      tool: "pulumi",
-      rationale: "Pulumi is lovely but not in our allowlist yet",
-      snippet: "const foo = 'bar';\nconst baz = 'qux';\nconsole.log(foo, baz);",
-    },
-  }));
+  const result = BlueprintOutputSchema.safeParse(
+    validBlueprintOutput({
+      iac_scaffold: {
+        tool: "pulumi",
+        rationale: "Pulumi is lovely but not in our allowlist yet",
+        snippet: "const foo = 'bar';\nconst baz = 'qux';\nconsole.log(foo, baz);",
+      },
+    }),
+  );
   assert.equal(result.success, false);
 });
 

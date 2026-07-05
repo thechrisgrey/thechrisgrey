@@ -321,9 +321,7 @@ async function crawl() {
             writeFileSync(outFile, html, 'utf-8');
           }
           ok += 1;
-          console.log(
-            `  [prerender] ok ${route} -> ${outFiles.map((f) => f.replace(DIST, 'dist')).join(' , ')}`,
-          );
+          console.log(`  [prerender] ok ${route} -> ${outFiles.map((f) => f.replace(DIST, 'dist')).join(' , ')}`);
         } finally {
           await page.close();
         }
@@ -344,8 +342,7 @@ async function crawl() {
   // default so normal-build output is unchanged; never fatal here (main() owns
   // the STRICT exit decision so the non-fatal default is preserved).
   const checkCritical =
-    process.env.CHECK_PRERENDER_CRITICAL_ROUTES === 'true' ||
-    process.env.STRICT_PRERENDER === 'true';
+    process.env.CHECK_PRERENDER_CRITICAL_ROUTES === 'true' || process.env.STRICT_PRERENDER === 'true';
   if (checkCritical && skippedCritical.length) {
     console.error(
       `[prerender] CRITICAL: ${skippedCritical.length} of ${CRITICAL_ROUTES.length} critical ` +

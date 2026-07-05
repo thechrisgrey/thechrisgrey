@@ -17,31 +17,12 @@ export const BLUEPRINT_CATEGORIES = [
   'ml-training',
 ] as const;
 
-export const COMPLIANCE_REGIMES = [
-  'hipaa',
-  'pci',
-  'soc2',
-  'fedramp',
-  'gdpr',
-  'ccpa',
-] as const;
+export const COMPLIANCE_REGIMES = ['hipaa', 'pci', 'soc2', 'fedramp', 'gdpr', 'ccpa'] as const;
 
-export const PREFERRED_LANGUAGES = [
-  'typescript',
-  'javascript',
-  'python',
-  'go',
-  'rust',
-  'java',
-] as const;
+export const PREFERRED_LANGUAGES = ['typescript', 'javascript', 'python', 'go', 'rust', 'java'] as const;
 
 export const IAC_TOOLS = ['cdk', 'sam', 'terraform'] as const;
-export const ARTIFACT_KINDS = [
-  'skill',
-  'slash_command',
-  'subagent',
-  'mcp_tool',
-] as const;
+export const ARTIFACT_KINDS = ['skill', 'slash_command', 'subagent', 'mcp_tool'] as const;
 export const COST_SIGNALS = ['free-tier', 'low', 'medium', 'high'] as const;
 
 export type BlueprintCategory = (typeof BLUEPRINT_CATEGORIES)[number];

@@ -46,10 +46,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
   const goalTooShort = trimmedGoal.length > 0 && trimmedGoal.length < MIN_GOAL_LENGTH;
   const goalTooLong = trimmedGoal.length > MAX_GOAL_LENGTH;
   const canSubmit =
-    !disabled &&
-    !isGenerating &&
-    trimmedGoal.length >= MIN_GOAL_LENGTH &&
-    trimmedGoal.length <= MAX_GOAL_LENGTH;
+    !disabled && !isGenerating && trimmedGoal.length >= MIN_GOAL_LENGTH && trimmedGoal.length <= MAX_GOAL_LENGTH;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -89,11 +86,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
   return (
     <form onSubmit={handleSubmit} className="space-y-6" aria-label="Blueprint spec form">
       <div>
-        <label
-          htmlFor="blueprint-goal"
-          className="block mb-2 text-altivum-silver"
-          style={typography.smallText}
-        >
+        <label htmlFor="blueprint-goal" className="block mb-2 text-altivum-silver" style={typography.smallText}>
           What are you building?
         </label>
         <textarea
@@ -122,11 +115,7 @@ export function BlueprintForm({ onSubmit, isGenerating, disabled }: BlueprintFor
       </div>
 
       <div>
-        <label
-          htmlFor="blueprint-category"
-          className="block mb-2 text-altivum-silver"
-          style={typography.smallText}
-        >
+        <label htmlFor="blueprint-category" className="block mb-2 text-altivum-silver" style={typography.smallText}>
           Workload type
         </label>
         <select

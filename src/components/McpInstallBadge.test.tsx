@@ -40,9 +40,7 @@ describe('McpInstallBadge', () => {
 
   it('mentions the rate limit in the footer', () => {
     render(<McpInstallBadge />);
-    expect(
-      screen.getByText(/rate-limited to 60 requests per hour per IP/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/rate-limited to 60 requests per hour per IP/i)).toBeInTheDocument();
   });
 
   it('copies the server URL to the clipboard when the URL copy button is clicked', async () => {

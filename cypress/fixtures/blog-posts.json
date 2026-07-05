@@ -44,9 +44,7 @@
       "readingTime": 6,
       "isFeatured": false,
       "image": null,
-      "tags": [
-        { "_id": "tag-5", "title": "Philosophy", "slug": { "current": "philosophy" } }
-      ],
+      "tags": [{ "_id": "tag-5", "title": "Philosophy", "slug": { "current": "philosophy" } }],
       "series": null,
       "seriesOrder": null
     },

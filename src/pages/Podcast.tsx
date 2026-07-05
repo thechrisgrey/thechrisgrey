@@ -5,7 +5,13 @@ import tvpLogo from '../assets/tvp.png';
 // Profile image served from public/ at full quality (no Vite optimization)
 const profileImage = '/profile1.jpeg';
 import { podcastFAQs, buildPodcastSeriesSchema, buildVideoObjectSchema } from '../utils/schemas';
-import { PODCAST_EPISODES, PODCAST_PLATFORMS, SPOTIFY_EMBED_URL, LATEST_VIDEO_ID, LATEST_EPISODE_DATE } from '../data/podcastEpisodes';
+import {
+  PODCAST_EPISODES,
+  PODCAST_PLATFORMS,
+  SPOTIFY_EMBED_URL,
+  LATEST_VIDEO_ID,
+  LATEST_EPISODE_DATE,
+} from '../data/podcastEpisodes';
 import EpisodeCard from '../components/EpisodeCard';
 import AskTheVector from '../components/podcast/AskTheVector';
 import SubscribePlatforms from '../components/SubscribePlatforms';
@@ -37,7 +43,8 @@ const Podcast = () => {
     // Guests are supplementary — the section degrades gracefully to empty on
     // failure. We still validate the shape and classify/log errors so a real
     // outage or schema drift is observable rather than silently swallowed.
-    podcastClient.fetch<PodcastGuest[]>(PODCAST_GUESTS_QUERY)
+    podcastClient
+      .fetch<PodcastGuest[]>(PODCAST_GUESTS_QUERY)
       .then((data) => {
         if (isPodcastGuestArray(data)) {
           setGuests(data);
@@ -67,17 +74,21 @@ const Podcast = () => {
         url="https://thechrisgrey.com/podcast"
         faq={podcastFAQs}
         breadcrumbs={[
-          { name: "Home", url: "https://thechrisgrey.com" },
-          { name: "Podcast", url: "https://thechrisgrey.com/podcast" }
+          { name: 'Home', url: 'https://thechrisgrey.com' },
+          { name: 'Podcast', url: 'https://thechrisgrey.com/podcast' },
         ]}
         structuredData={[
           buildPodcastSeriesSchema(),
-          ...(LATEST_VIDEO_ID && LATEST_EPISODE_DATE ? [buildVideoObjectSchema({
-            videoId: LATEST_VIDEO_ID,
-            title: featuredEpisode?.title || 'The Vector Podcast',
-            description: featuredEpisode?.description,
-            uploadDate: LATEST_EPISODE_DATE,
-          })] : [])
+          ...(LATEST_VIDEO_ID && LATEST_EPISODE_DATE
+            ? [
+                buildVideoObjectSchema({
+                  videoId: LATEST_VIDEO_ID,
+                  title: featuredEpisode?.title || 'The Vector Podcast',
+                  description: featuredEpisode?.description,
+                  uploadDate: LATEST_EPISODE_DATE,
+                }),
+              ]
+            : []),
         ]}
       />
 
@@ -101,18 +112,14 @@ const Podcast = () => {
                 <div className="text-4xl font-light text-altivum-gold" style={{ fontWeight: 200 }}>
                   {PODCAST_EPISODES.length}
                 </div>
-                <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">
-                  Episodes
-                </div>
+                <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">Episodes</div>
               </div>
               {LATEST_EPISODE_DATE && (
                 <div className="text-center">
                   <div className="text-4xl font-light text-altivum-gold whitespace-nowrap" style={{ fontWeight: 200 }}>
                     {formatMonthYear(LATEST_EPISODE_DATE)}
                   </div>
-                  <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">
-                    Latest episode
-                  </div>
+                  <div className="text-sm text-altivum-silver uppercase tracking-wider mt-1">Latest episode</div>
                 </div>
               )}
             </div>
@@ -132,10 +139,9 @@ const Podcast = () => {
           </h2>
           <div className="h-px w-24 bg-altivum-gold mx-auto mb-8"></div>
           <p className="text-altivum-silver leading-relaxed" style={typography.subtitle}>
-            The Vector Podcast delivers mission-focused conversations at the intersection of
-            veteran experience, small business, and modern technology. We break down artificial
-            intelligence, cloud solutions, and entrepreneurship into clear, actionable insights
-            anyone can apply.
+            The Vector Podcast delivers mission-focused conversations at the intersection of veteran experience, small
+            business, and modern technology. We break down artificial intelligence, cloud solutions, and
+            entrepreneurship into clear, actionable insights anyone can apply.
           </p>
         </div>
       </section>
@@ -146,9 +152,7 @@ const Podcast = () => {
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-2 bg-altivum-gold/10 rounded-md mb-4">
-              <span className="text-altivum-gold font-semibold text-sm uppercase tracking-wider">
-                Latest Episode
-              </span>
+              <span className="text-altivum-gold font-semibold text-sm uppercase tracking-wider">Latest Episode</span>
             </div>
             <h2 className="text-white" style={typography.sectionHeader}>
               Now Playing
@@ -173,7 +177,8 @@ const Podcast = () => {
               <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wider font-medium mb-4">
                 {featuredEpisode.episodeNumber && (
                   <span className="text-altivum-gold">
-                    {featuredEpisode.seasonNumber ? `S${featuredEpisode.seasonNumber} ` : ''}Episode {featuredEpisode.episodeNumber}
+                    {featuredEpisode.seasonNumber ? `S${featuredEpisode.seasonNumber} ` : ''}Episode{' '}
+                    {featuredEpisode.episodeNumber}
                   </span>
                 )}
                 <span className="text-altivum-silver">|</span>
@@ -234,10 +239,7 @@ const Podcast = () => {
       <section className="py-16 bg-altivum-dark">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <div className="rounded-xl overflow-hidden">
-            <SpotifyFacade
-              embedUrl={SPOTIFY_EMBED_URL}
-              title="The Vector Podcast"
-            />
+            <SpotifyFacade embedUrl={SPOTIFY_EMBED_URL} title="The Vector Podcast" />
           </div>
         </div>
       </section>
@@ -281,21 +283,21 @@ const Podcast = () => {
         <>
           <div className="h-px bg-linear-to-r from-transparent via-altivum-gold/15 to-transparent" />
           <section className="py-24 bg-altivum-dark">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-white mb-4" style={typography.sectionHeader}>
-                Featured Veterans
-              </h2>
-              <div className="h-px w-24 bg-altivum-gold mx-auto"></div>
-            </div>
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-white mb-4" style={typography.sectionHeader}>
+                  Featured Veterans
+                </h2>
+                <div className="h-px w-24 bg-altivum-gold mx-auto"></div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {guests.map((guest) => (
-                <GuestCard key={guest._id} guest={guest} />
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {guests.map((guest) => (
+                  <GuestCard key={guest._id} guest={guest} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
         </>
       )}
 
@@ -326,11 +328,7 @@ const Podcast = () => {
         <div className="max-w-4xl mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-altivum-gold/30 shrink-0">
-              <img
-                src={profileImage}
-                alt="Christian Perez"
-                className="w-full h-full object-cover"
-              />
+              <img src={profileImage} alt="Christian Perez" className="w-full h-full object-cover" />
             </div>
             <div className="text-center md:text-left">
               <h3 className="text-white mb-2" style={typography.cardTitleLarge}>
@@ -340,10 +338,10 @@ const Podcast = () => {
                 Christian Perez
               </h4>
               <p className="text-altivum-silver" style={typography.bodyText}>
-                Former Green Beret, Founder & CEO of Altivum Inc., and passionate advocate
-                for veteran entrepreneurship. Christian brings unique insights from his journey
-                transitioning from Special Operations to tech leadership, exploring how emerging
-                technology can empower individuals and organizations to adapt and excel.
+                Former Green Beret, Founder & CEO of Altivum Inc., and passionate advocate for veteran entrepreneurship.
+                Christian brings unique insights from his journey transitioning from Special Operations to tech
+                leadership, exploring how emerging technology can empower individuals and organizations to adapt and
+                excel.
               </p>
             </div>
           </div>

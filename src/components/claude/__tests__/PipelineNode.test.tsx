@@ -26,7 +26,7 @@ function renderNode(overrides: Partial<React.ComponentProps<typeof PipelineNode>
   return render(
     <svg>
       <PipelineNode {...defaultProps} {...overrides} />
-    </svg>
+    </svg>,
   );
 }
 

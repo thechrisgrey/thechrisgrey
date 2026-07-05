@@ -167,7 +167,7 @@ describe('NewsletterForm', () => {
       mockFetch.mockReturnValueOnce(
         new Promise((resolve) => {
           resolvePromise = resolve;
-        })
+        }),
       );
 
       render(<NewsletterForm />);

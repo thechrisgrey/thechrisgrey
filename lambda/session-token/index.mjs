@@ -21,8 +21,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { issueSessionToken } from "lambda-shared/sessionToken";
 
-const TURNSTILE_VERIFY_URL =
-  "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
 
 /**
@@ -67,15 +66,8 @@ function hashDeviceId(deviceId) {
  * @param {object} deps.config
  */
 export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile, config }) {
-  const {
-    signingKey,
-    turnstileSecret,
-    allowedOrigins,
-    rateLimitTable,
-    chatTtl,
-    blueprintTtl,
-    maxIssuancePerHour,
-  } = config;
+  const { signingKey, turnstileSecret, allowedOrigins, rateLimitTable, chatTtl, blueprintTtl, maxIssuancePerHour } =
+    config;
 
   // CORS is handled SOLELY by the Lambda Function URL CORS config (single source
   // of truth). The handler must NOT also emit Access-Control-* headers, or the
@@ -166,24 +158,26 @@ const SIGNING_KEY = process.env.SESSION_TOKEN_KEY || "";
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || "";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://thechrisgrey.com";
 const RATE_LIMIT_TABLE =
-  process.env.SESSION_RATE_LIMIT_TABLE ||
-  process.env.CHAT_RATE_LIMIT_TABLE ||
-  "thechrisgrey-chat-ratelimit";
+  process.env.SESSION_RATE_LIMIT_TABLE || process.env.CHAT_RATE_LIMIT_TABLE || "thechrisgrey-chat-ratelimit";
 const CHAT_TTL = parseInt(process.env.SESSION_CHAT_TTL || "1800", 10); // 30 min
 const BLUEPRINT_TTL = parseInt(process.env.SESSION_BLUEPRINT_TTL || "600", 10); // 10 min
 const MAX_ISSUANCE_PER_HOUR = parseInt(process.env.SESSION_MAX_ISSUANCE || "60", 10);
 
 if (!SIGNING_KEY) {
-  console.warn(JSON.stringify({
-    event: "startup_warning",
-    message: "SESSION_TOKEN_KEY not set — issued tokens will not be verifiable by the chat/blueprint Lambdas",
-  }));
+  console.warn(
+    JSON.stringify({
+      event: "startup_warning",
+      message: "SESSION_TOKEN_KEY not set — issued tokens will not be verifiable by the chat/blueprint Lambdas",
+    }),
+  );
 }
 if (!TURNSTILE_SECRET) {
-  console.warn(JSON.stringify({
-    event: "startup_warning",
-    message: "TURNSTILE_SECRET not set — Turnstile verification DISABLED (dev only)",
-  }));
+  console.warn(
+    JSON.stringify({
+      event: "startup_warning",
+      message: "TURNSTILE_SECRET not set — Turnstile verification DISABLED (dev only)",
+    }),
+  );
 }
 
 const dynamoClient = new DynamoDBClient({ region: REGION });

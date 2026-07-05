@@ -8,16 +8,9 @@ interface RateLimitedCardProps {
 export function RateLimitedCard({ message }: RateLimitedCardProps) {
   return (
     <div className="space-y-6">
-      <div
-        className="p-6 rounded-lg border border-altivum-gold/30 bg-altivum-navy/60"
-        role="status"
-        aria-live="polite"
-      >
+      <div className="p-6 rounded-lg border border-altivum-gold/30 bg-altivum-navy/60" role="status" aria-live="polite">
         <div className="flex items-start gap-3">
-          <span
-            className="material-icons text-altivum-gold shrink-0"
-            aria-hidden="true"
-          >
+          <span className="material-icons text-altivum-gold shrink-0" aria-hidden="true">
             hourglass_bottom
           </span>
           <div className="min-w-0">
@@ -28,9 +21,8 @@ export function RateLimitedCard({ message }: RateLimitedCardProps) {
               {message}
             </p>
             <p className="text-altivum-silver/80 mt-3" style={typography.smallText}>
-              Opus 4.6 is expensive to run at scale, so the free tier is intentionally
-              limited. A higher-limit Pro tier is coming — join the waitlist below to
-              hear about it first.
+              Opus 4.6 is expensive to run at scale, so the free tier is intentionally limited. A higher-limit Pro tier
+              is coming — join the waitlist below to hear about it first.
             </p>
           </div>
         </div>
