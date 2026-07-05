@@ -12,6 +12,7 @@
  */
 
 import { z } from "zod";
+import { createLogger } from "lambda-shared/logger";
 import { RenderUiInputSchema } from "./uiBlocks.mjs";
 import { emitEvent, EVENT_KINDS } from "./events.mjs";
 
@@ -76,6 +77,7 @@ export async function renderGenUi({
   abortSignal,
 }) {
   const messages = [...history, { role: "user", content: [{ text: userMessage }] }];
+  const log = createLogger(requestId, { service: "chat-stream" });
 
   try {
     const command = new ConverseCommand({
@@ -100,7 +102,7 @@ export async function renderGenUi({
 
     if (!toolUse) {
       metrics?.record("GenUiNoTool");
-      console.error(JSON.stringify({ requestId, event: "genui_no_tool" }));
+      log.error("genui_no_tool");
       return { ok: false, error: "no_tool_use" };
     }
 
@@ -109,7 +111,7 @@ export async function renderGenUi({
       parsed = RenderUiInputSchema.parse(toolUse.input);
     } catch (e) {
       metrics?.record("GenUiInvalidBlocks");
-      console.error(JSON.stringify({ requestId, event: "genui_invalid_blocks", message: e?.message }));
+      log.error("genui_invalid_blocks", { message: e?.message });
       return { ok: false, error: "invalid_blocks" };
     }
 
@@ -129,7 +131,7 @@ export async function renderGenUi({
     return { ok: true, blockCount: parsed.blocks.length };
   } catch (error) {
     metrics?.record("GenUiError");
-    console.error(JSON.stringify({ requestId, event: "genui_error", error: error?.name, message: error?.message }));
+    log.error("genui_error", { error: error?.name, message: error?.message });
     return { ok: false, error: "genui_failed" };
   }
 }

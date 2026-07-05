@@ -1,3 +1,5 @@
+import { createLogger } from "lambda-shared/logger";
+
 /**
  * Retrieve relevant passages from the dedicated Vector Podcast Knowledge Base,
  * preserving the per-chunk metadata (videoId, startSeconds, episodeTitle) that
@@ -21,6 +23,7 @@
  */
 export async function retrievePodcastChunks(agentClient, RetrieveCommand, query, opts) {
   const { knowledgeBaseId, requestId, metrics, timeoutMs = 4000, numberOfResults = 4 } = opts;
+  const log = createLogger(requestId, { service: "chat-stream" });
 
   if (!knowledgeBaseId) {
     return [];
@@ -50,7 +53,7 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
     metrics?.record("PodcastKBRetrievalLatency", elapsed, "Milliseconds");
 
     if (!response.retrievalResults || response.retrievalResults.length === 0) {
-      console.log(JSON.stringify({ requestId, event: "podcast_kb_retrieval_empty", latencyMs: elapsed }));
+      log.info("podcast_kb_retrieval_empty", { latencyMs: elapsed });
       return [];
     }
 
@@ -69,32 +72,17 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
       .filter((c) => c.text && c.videoId && c.startSeconds !== null);
 
     metrics?.record("PodcastKBRetrievalSuccess");
-    console.log(
-      JSON.stringify({
-        requestId,
-        event: "podcast_kb_retrieval_success",
-        chunks: chunks.length,
-        latencyMs: elapsed,
-      }),
-    );
+    log.info("podcast_kb_retrieval_success", { chunks: chunks.length, latencyMs: elapsed });
     return chunks;
   } catch (error) {
     const elapsed = Date.now() - start;
     metrics?.record("PodcastKBRetrievalLatency", elapsed, "Milliseconds");
 
     if (error.name === "AbortError") {
-      console.error(JSON.stringify({ requestId, event: "podcast_kb_retrieval_timeout", latencyMs: elapsed }));
+      log.error("podcast_kb_retrieval_timeout", { latencyMs: elapsed });
       metrics?.record("PodcastKBRetrievalTimeout");
     } else {
-      console.error(
-        JSON.stringify({
-          requestId,
-          event: "podcast_kb_retrieval_error",
-          error: error.name,
-          message: error.message,
-          latencyMs: elapsed,
-        }),
-      );
+      log.error("podcast_kb_retrieval_error", { error: error.name, message: error.message, latencyMs: elapsed });
       metrics?.record("PodcastKBRetrievalFailure");
     }
     return [];

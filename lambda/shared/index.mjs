@@ -5,6 +5,7 @@ export { verifySignature, SIGNATURE_MAX_AGE_SECONDS } from "./hmac.mjs";
 export { issueSessionToken, verifySessionToken, SESSION_TOKEN_VERSION } from "./sessionToken.mjs";
 export { authenticateRequest } from "./requestAuth.mjs";
 export { MetricsCollector, MAX_METRICS_PER_CALL } from "./metrics.mjs";
+export { createLogger, redact, LEVELS } from "./logger.mjs";
 export {
   SITE_ORIGIN,
   BLOG_SEARCH_QUERY,

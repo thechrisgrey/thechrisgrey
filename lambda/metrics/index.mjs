@@ -6,6 +6,7 @@ import { createHash, randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
+import { createLogger } from "lambda-shared/logger";
 import { validateVitals, validateCspUri } from "./validation.mjs";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
@@ -198,6 +199,7 @@ export const handler = async (event) => {
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
   const clientIp = event.requestContext?.http?.sourceIp || "unknown";
+  const log = createLogger(requestId, { service: "metrics" });
 
   try {
     if (method === "POST" && path === "/vitals") {
@@ -249,7 +251,7 @@ export const handler = async (event) => {
 
     return respond(404, { error: "Not found" });
   } catch (error) {
-    console.error(JSON.stringify({ requestId, event: "handler_error", error: error.name, message: error.message }));
+    log.error("handler_error", { error: error.name, message: error.message });
     return respond(500, { error: "Internal server error" });
   }
 };

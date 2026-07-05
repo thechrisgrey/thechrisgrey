@@ -15,6 +15,11 @@
  * @param {{ allowlist?: string }} [options] - Override the allowlist source (defaults to ADMIN_ALLOWLIST env).
  * @returns {Promise<any>} The GetUser response if authenticated AND authorized, else null.
  */
+
+import { createLogger } from "./logger.mjs";
+
+const log = createLogger(null, { service: "auth" });
+
 export async function validateCognitoToken(
   cognitoClient,
   GetUserCommand,
@@ -29,7 +34,7 @@ export async function validateCognitoToken(
     .filter(Boolean);
 
   if (allowed.length === 0) {
-    console.error("ADMIN_ALLOWLIST is empty — denying admin access (fail closed).");
+    log.error("allowlist_empty", { message: "ADMIN_ALLOWLIST is empty — denying admin access (fail closed)" });
     return null;
   }
 
@@ -45,13 +50,13 @@ export async function validateCognitoToken(
     const emailVerified = attrs.find((a) => a.Name === "email_verified")?.Value === "true";
 
     if (!email || !emailVerified || !allowed.includes(email)) {
-      console.error("Cognito user not authorized for admin:", email || "(no email)");
+      log.warn("user_not_authorized", { email: email || "(no email)" });
       return null;
     }
 
     return response;
   } catch (error) {
-    console.error("Token validation failed:", error.name);
+    log.error("token_validation_failed", { error: error.name });
     return null;
   }
 }

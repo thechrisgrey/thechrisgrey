@@ -1,3 +1,5 @@
+import { createLogger } from "lambda-shared/logger";
+
 /**
  * Retrieve relevant context from a Bedrock Knowledge Base.
  *
@@ -14,6 +16,7 @@
  */
 export async function retrieveContext(agentClient, RetrieveCommand, query, opts) {
   const { knowledgeBaseId, requestId, metrics, timeoutMs = 4000, numberOfResults = 5 } = opts;
+  const log = createLogger(requestId, { service: "chat-stream" });
 
   const start = Date.now();
   try {
@@ -39,7 +42,7 @@ export async function retrieveContext(agentClient, RetrieveCommand, query, opts)
     metrics.record("KBRetrievalLatency", elapsed, "Milliseconds");
 
     if (!response.retrievalResults || response.retrievalResults.length === 0) {
-      console.log(JSON.stringify({ requestId, event: "kb_retrieval_empty", latencyMs: elapsed }));
+      log.info("kb_retrieval_empty", { latencyMs: elapsed });
       return null;
     }
 
@@ -48,32 +51,17 @@ export async function retrieveContext(agentClient, RetrieveCommand, query, opts)
       .map((result) => result.content.text);
 
     metrics.record("KBRetrievalSuccess");
-    console.log(
-      JSON.stringify({
-        requestId,
-        event: "kb_retrieval_success",
-        chunks: contextChunks.length,
-        latencyMs: elapsed,
-      }),
-    );
+    log.info("kb_retrieval_success", { chunks: contextChunks.length, latencyMs: elapsed });
     return contextChunks.join("\n\n---\n\n");
   } catch (error) {
     const elapsed = Date.now() - start;
     metrics.record("KBRetrievalLatency", elapsed, "Milliseconds");
 
     if (error.name === "AbortError") {
-      console.error(JSON.stringify({ requestId, event: "kb_retrieval_timeout", latencyMs: elapsed }));
+      log.error("kb_retrieval_timeout", { latencyMs: elapsed });
       metrics.record("KBRetrievalTimeout");
     } else {
-      console.error(
-        JSON.stringify({
-          requestId,
-          event: "kb_retrieval_error",
-          error: error.name,
-          message: error.message,
-          latencyMs: elapsed,
-        }),
-      );
+      log.error("kb_retrieval_error", { error: error.name, message: error.message, latencyMs: elapsed });
     }
     metrics.record("KBRetrievalFailure");
     return null;

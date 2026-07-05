@@ -5,6 +5,9 @@ import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-r
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
+import { createLogger } from "lambda-shared/logger";
+import { MetricsCollector } from "lambda-shared/metrics";
+import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { buildMcpServer } from "./server.mjs";
 import { buildSearchBlogMcpTool } from "./tools/searchBlog.mjs";
 import { buildGetBlogPostMcpTool } from "./tools/getBlogPost.mjs";
@@ -29,6 +32,7 @@ const ddbBase = new DynamoDBClient({ region: REGION });
 const docClient = DynamoDBDocumentClient.from(ddbBase);
 const bedrockClient = new BedrockRuntimeClient({ region: REGION });
 const agentClient = new BedrockAgentRuntimeClient({ region: REGION });
+const cloudwatchClient = new CloudWatchClient({ region: REGION });
 const sanityClient = SANITY_PROJECT_ID
   ? createSanityClient({
       projectId: SANITY_PROJECT_ID,
@@ -40,15 +44,10 @@ const sanityClient = SANITY_PROJECT_ID
   : null;
 const kbCache = createKbCache();
 
-// Minimal in-module metrics placeholder. A future step wires this to CloudWatch
-// via the same MetricsBuffer pattern the chat-stream Lambda uses.
-const metrics = {
-  record(name) {
-    if (process.env.MCP_METRICS_DEBUG === "1") {
-      console.log(JSON.stringify({ event: "mcp_metric", name }));
-    }
-  },
-};
+// CloudWatch metrics via the shared MetricsCollector (same pattern as
+// chat-stream and blueprint). The namespace is dedicated so MCP alarms
+// are isolated from other services.
+const METRICS_NAMESPACE = "TheChrisGrey/McpServer";
 
 function hashIp(ip) {
   return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 24);
@@ -87,6 +86,8 @@ export const handler = async (event) => {
   const method = event?.requestContext?.http?.method || "POST";
   const path = event?.rawPath || "/";
   const requestId = event?.requestContext?.requestId || crypto.randomUUID();
+  const log = createLogger(requestId, { service: "mcp-server" });
+  const metrics = new MetricsCollector(cloudwatchClient, METRICS_NAMESPACE);
 
   // CORS preflight
   if (method === "OPTIONS") {
@@ -120,6 +121,7 @@ export const handler = async (event) => {
     });
     if (rlResult && !rlResult.allowed) {
       metrics.record("McpRateLimitRejection");
+      await metrics.flush();
       return jsonRpcResponse(429, {
         jsonrpc: "2.0",
         id: null,
@@ -132,7 +134,7 @@ export const handler = async (event) => {
     }
   } catch (err) {
     // Rate limiter fails open per shared implementation; log and proceed.
-    console.error(JSON.stringify({ requestId, event: "mcp_ratelimit_error", message: err?.message }));
+    log.error("mcp_ratelimit_error", { message: err?.message });
   }
 
   const body = parseBody(event.body);
@@ -181,8 +183,11 @@ export const handler = async (event) => {
 
   // Notifications (null response) should return 202 Accepted per MCP guidance.
   if (rpcResponse === null) {
+    await metrics.flush();
     return { statusCode: 202, headers: corsHeaders(), body: "" };
   }
 
+  metrics.record("McpRequestComplete");
+  await metrics.flush();
   return jsonRpcResponse(200, rpcResponse);
 };

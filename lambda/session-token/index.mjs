@@ -20,6 +20,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { issueSessionToken } from "lambda-shared/sessionToken";
+import { createLogger } from "lambda-shared/logger";
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
@@ -93,8 +94,9 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
     }
 
     const origin = event.headers?.origin || event.headers?.Origin || "";
+    const log = createLogger(requestId, { service: "session-token" });
     if (allowedOrigins.length && !allowedOrigins.includes(origin)) {
-      console.log(JSON.stringify({ requestId, event: "origin_rejected", origin }));
+      log.info("origin_rejected", { origin });
       return reply(403, { error: "forbidden_origin" });
     }
 
@@ -123,7 +125,7 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
       requestId,
     });
     if (!rl.allowed) {
-      console.log(JSON.stringify({ requestId, event: "issuance_rate_limited" }));
+      log.info("issuance_rate_limited");
       return reply(429, { error: "rate_limited" });
     }
 
@@ -132,7 +134,7 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
     if (turnstileSecret) {
       const ok = await verifyTurnstile(body.turnstileToken, turnstileSecret, clientIp);
       if (!ok) {
-        console.log(JSON.stringify({ requestId, event: "turnstile_failed" }));
+        log.info("turnstile_failed");
         return reply(403, { error: "turnstile_failed" });
       }
     }
@@ -141,7 +143,7 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
     const chatToken = issueSessionToken({ deviceHash, scope: "chat" }, signingKey, chatTtl);
     const blueprintToken = issueSessionToken({ deviceHash, scope: "blueprint" }, signingKey, blueprintTtl);
 
-    console.log(JSON.stringify({ requestId, event: "tokens_issued" }));
+    log.info("tokens_issued");
     return reply(200, {
       chatToken,
       blueprintToken,

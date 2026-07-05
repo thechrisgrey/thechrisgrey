@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { createLogger } from "./logger.mjs";
 
 /**
  * Atomic DynamoDB-based rate limiter with sliding windows.
@@ -75,7 +76,8 @@ export async function checkRateLimit(
       }
     }
     if (requestId) {
-      console.error(JSON.stringify({ requestId, event: "rate_limit_error", error: error.name }));
+      const log = createLogger(requestId, { service: "rate-limit" });
+      log.error("rate_limit_error", { error: error.name });
     } else {
       console.error("Rate limit error:", error.name);
     }

@@ -6,10 +6,13 @@
 
 import { BedrockAgentClient, StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
+import { createLogger } from "lambda-shared/logger";
 
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 const DATA_SOURCE_ID = "TXQTRAJOSD";
 const NAMESPACE = "TheChrisGrey/SiteMetrics";
+
+const log = createLogger(null, { service: "kb-sync" });
 
 const client = new BedrockAgentClient({ region: "us-east-1" });
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
@@ -29,7 +32,7 @@ async function publishMetric(metricName, value = 1) {
         ],
       }),
     )
-    .catch((err) => console.error("Metric publish failed:", err.name));
+    .catch((err) => log.error("metric_publish_failed", { error: err.name }));
 }
 
 export const handler = async (event) => {
@@ -41,7 +44,7 @@ export const handler = async (event) => {
     bucket: r.s3?.bucket?.name,
   }));
 
-  console.log(JSON.stringify({ event: "s3_trigger", changes: eventSummary }));
+  log.info("s3_trigger", { changes: eventSummary });
 
   try {
     const command = new StartIngestionJobCommand({
@@ -51,13 +54,10 @@ export const handler = async (event) => {
 
     const response = await client.send(command);
 
-    console.log(
-      JSON.stringify({
-        event: "kb_sync_started",
-        ingestionJobId: response.ingestionJob?.ingestionJobId,
-        status: response.ingestionJob?.status,
-      }),
-    );
+    log.info("kb_sync_started", {
+      ingestionJobId: response.ingestionJob?.ingestionJobId,
+      status: response.ingestionJob?.status,
+    });
 
     await publishMetric("KBSyncTriggered");
 
@@ -70,13 +70,7 @@ export const handler = async (event) => {
       }),
     };
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        event: "kb_sync_failure",
-        error: error.name,
-        message: error.message,
-      }),
-    );
+    log.error("kb_sync_failure", { error: error.name, message: error.message });
 
     await publishMetric("KBSyncFailure");
 

@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
+import { createLogger } from "lambda-shared/logger";
 import { CATEGORY_ORDER, validateEntryFields } from "./validation.mjs";
 
 const s3Client = new S3Client({ region: "us-east-1" });
@@ -119,7 +120,8 @@ export const handler = async (event) => {
   const requestId = randomUUID();
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
-  console.log(JSON.stringify({ requestId, event: "request_start", method, path }));
+  const log = createLogger(requestId, { service: "kb-builder" });
+  log.info("request_start", { method, path });
 
   const authHeader = event.headers?.authorization || event.headers?.Authorization;
   const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
@@ -260,7 +262,7 @@ export const handler = async (event) => {
 
     return respond(404, { error: "Not found" }, CORS_ORIGIN);
   } catch (error) {
-    console.error(JSON.stringify({ requestId, event: "handler_error", error: error.name, message: error.message }));
+    log.error("handler_error", { error: error.name, message: error.message });
     return respond(500, { error: "Internal server error" }, CORS_ORIGIN);
   }
 };

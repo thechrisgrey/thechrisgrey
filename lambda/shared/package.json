@@ -13,7 +13,8 @@
     "./hmac": "./hmac.mjs",
     "./sessionToken": "./sessionToken.mjs",
     "./requestAuth": "./requestAuth.mjs",
-    "./metrics": "./metrics.mjs"
+    "./metrics": "./metrics.mjs",
+    "./logger": "./logger.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.1068.0"

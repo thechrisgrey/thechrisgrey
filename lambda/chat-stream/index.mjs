@@ -15,6 +15,7 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 
 import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
+import { createLogger } from "lambda-shared/logger";
 import { validateInput, validatePageContext, getLatestUserMessage } from "./validation.mjs";
 import { buildSystemPrompt } from "./prompts.mjs";
 import { retrieveContext } from "./kbRetrieve.mjs";
@@ -98,6 +99,7 @@ function writeForgetResult(responseStream, payload) {
 }
 
 async function handleForget(event, responseStream, requestId, metrics) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   try {
     const body = JSON.parse(event.body || "{}");
     const deviceId = validateDeviceId(body.deviceId);
@@ -110,18 +112,11 @@ async function handleForget(event, responseStream, requestId, metrics) {
     const { deleted } = await forgetDevice(docClient, QueryCommand, BatchWriteCommand, deviceId);
     metrics.record("MemoryForget");
     metrics.record("MemoryForgetDeleted", deleted);
-    console.log(JSON.stringify({ requestId, event: "memory_forget", deleted }));
+    log.info("memory_forget", { deleted });
     writeForgetResult(responseStream, { ok: true, deleted });
     await metrics.flush();
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        requestId,
-        event: "forget_error",
-        error: error.name,
-        message: error.message,
-      }),
-    );
+    log.error("forget_error", { error: error.name, message: error.message });
     metrics.record("ForgetFailure");
     writeForgetResult(responseStream, { ok: false, error: "Unable to clear memory right now." });
     await metrics.flush();
@@ -137,6 +132,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
 
   const requestId = randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/SiteMetrics");
+  const log = createLogger(requestId, { service: "chat-stream" });
   const requestStart = Date.now();
 
   // Accept EITHER a server-issued session token (new model) OR the legacy
@@ -148,7 +144,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
   });
   if (!auth.valid) {
     metrics.record("AuthRejection");
-    console.log(JSON.stringify({ requestId, event: "auth_rejected", method: auth.method, reason: auth.error }));
+    log.info("auth_rejected", { method: auth.method, reason: auth.error });
     writeSystemMessage(responseStream, "Unable to process request.");
     await metrics.flush();
     return;
@@ -164,7 +160,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
 
   try {
     const clientIp = event.requestContext?.http?.sourceIp || "unknown";
-    console.log(JSON.stringify({ requestId, event: "request_start", ip: clientIp.substring(0, 8) + "..." }));
+    log.info("request_start", { ip: clientIp.substring(0, 8) + "..." });
 
     const rateLimitStart = Date.now();
     const rateLimit = await checkRateLimit(docClient, UpdateCommand, {
@@ -189,7 +185,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       body = JSON.parse(event.body || "{}");
     } catch {
       metrics.record("MalformedRequest");
-      console.error(JSON.stringify({ requestId, event: "malformed_json" }));
+      log.error("malformed_json");
       writeSystemMessage(responseStream, "Invalid request format.");
       await metrics.flush();
       return;
@@ -224,14 +220,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
         metrics.record("MemoryFactsLoaded", facts.length);
       } catch (err) {
         metrics.record("MemoryLoadFailure");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "memory_load_failure",
-            error: err.name,
-            message: err.message,
-          }),
-        );
+        log.error("memory_load_failure", { error: err.name, message: err.message });
         facts = [];
       }
     }
@@ -346,19 +335,15 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     if (result.usage) {
       if (result.usage.inputTokens != null) metrics.record("BedrockInputTokens", result.usage.inputTokens);
       if (result.usage.outputTokens != null) metrics.record("BedrockOutputTokens", result.usage.outputTokens);
-      console.log(
-        JSON.stringify({
-          requestId,
-          event: "token_usage",
-          inputTokens: result.usage.inputTokens,
-          outputTokens: result.usage.outputTokens,
-        }),
-      );
+      log.info("token_usage", {
+        inputTokens: result.usage.inputTokens,
+        outputTokens: result.usage.outputTokens,
+      });
     }
 
     if (result.guardrailIntervened) {
       metrics.record("GuardrailInterventionStream");
-      console.log(JSON.stringify({ requestId, event: "guardrail_intervened" }));
+      log.info("guardrail_intervened");
       if (!result.hadText) {
         writeSystemMessage(
           responseStream,
@@ -381,19 +366,12 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     }
 
     metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
-    console.log(JSON.stringify({ requestId, event: "request_complete", totalMs: Date.now() - requestStart }));
+    log.info("request_complete", { totalMs: Date.now() - requestStart });
 
     responseStream.end();
     await metrics.flush();
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        requestId,
-        event: "request_error",
-        error: error.name,
-        message: error.message,
-      }),
-    );
+    log.error("request_error", { error: error.name, message: error.message });
 
     if (error.name === "AbortError") {
       metrics.record("AgentTimeout");
@@ -403,7 +381,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     }
 
     if (error.name === "ValidationException" && error.message?.toLowerCase().includes("guardrail")) {
-      console.log(JSON.stringify({ requestId, event: "guardrail_intervened_prestream" }));
+      log.info("guardrail_intervened_prestream");
       metrics.record("GuardrailInterventionPreStream");
       writeSystemMessage(
         responseStream,

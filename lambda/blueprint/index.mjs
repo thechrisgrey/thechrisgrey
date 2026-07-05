@@ -33,6 +33,7 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 
 import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
+import { createLogger } from "lambda-shared/logger";
 import { generateBlueprint } from "./engine.mjs";
 import { resolveOpusDeadlineMs } from "./bedrock.mjs";
 import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
@@ -97,7 +98,7 @@ function hashDeviceId(deviceId) {
 }
 
 function logStructured(requestId, event, extra = {}) {
-  console.log(JSON.stringify({ requestId, event, ...extra }));
+  createLogger(requestId, { service: "blueprint" }).info(event, extra);
 }
 
 export const handler = awslambda.streamifyResponse(async (event, responseStream, context) => {

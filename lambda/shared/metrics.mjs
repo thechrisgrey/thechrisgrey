@@ -1,4 +1,5 @@
 import { PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
+import { createLogger } from "./logger.mjs";
 
 export const MAX_METRICS_PER_CALL = 20;
 
@@ -42,13 +43,10 @@ export class MetricsCollector {
     await Promise.all(
       batches.map((batch) =>
         this.client.send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: batch })).catch((err) =>
-          console.error(
-            JSON.stringify({
-              event: "metrics_flush_error",
-              error: err.name,
-              message: err.message,
-            }),
-          ),
+          createLogger(null, { service: "metrics-collector" }).error("metrics_flush_error", {
+            error: err.name,
+            message: err.message,
+          }),
         ),
       ),
     );
