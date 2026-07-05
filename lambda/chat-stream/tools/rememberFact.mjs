@@ -3,6 +3,8 @@ import { z } from "zod";
 import { putFact, MAX_FACT_LENGTH } from "../memory.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 export function buildRememberFactTool({
   docClient,
   PutCommand,
@@ -12,7 +14,7 @@ export function buildRememberFactTool({
   requestId,
   timeoutMs,
 }) {
-  return tool({
+  return _tool({
     name: "remember_fact",
     description:
       "Save a short, voluntarily-shared fact about the visitor so you can recall it in future conversations. " +

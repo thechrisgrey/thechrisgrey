@@ -10,7 +10,7 @@ export const SIGNATURE_MAX_AGE_SECONDS = 300;
  * its x-blueprint-* pair via `options`.
  *
  * @param {object} event - The Lambda event (Function URL shape).
- * @param {string} signingKey - Shared secret. Empty string disables verification.
+ * @param {string|undefined} signingKey - Shared secret. Empty string disables verification.
  * @param {{ signatureHeader?: string, timestampHeader?: string }} [options]
  * @returns {{ valid: true } | { valid: false, error: string }}
  */

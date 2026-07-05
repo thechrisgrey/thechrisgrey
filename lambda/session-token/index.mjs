@@ -46,7 +46,7 @@ export async function verifyTurnstile(token, secret, remoteip, fetchImpl = fetch
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: form.toString(),
     });
-    const data = await res.json();
+    const data = /** @type {any} */ (await res.json());
     return data?.success === true;
   } catch {
     return false;

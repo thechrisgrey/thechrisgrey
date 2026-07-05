@@ -3,8 +3,10 @@ import { z } from "zod";
 import { isValidPath } from "../validation.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 export function buildNavigateTool({ responseStream, metrics }) {
-  return tool({
+  return _tool({
     name: "navigate_to",
     description:
       "Suggest that the visitor navigate to a specific page on thechrisgrey.com. " +

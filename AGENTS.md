@@ -35,6 +35,7 @@ app can talk to its backends. Never commit `.env` or `.env.local`.
 | `npm run preview`                 | Serve the production build locally          |
 | `npm run lint`                    | ESLint on `src/` (`--max-warnings 0`)       |
 | `npm run lint:lambda`             | ESLint on `lambda/` `.mjs` handlers         |
+| `npm run tsc:lambda`              | Type-check Lambda `.mjs` files via tsc      |
 | `npm run format`                  | Prettier auto-format all files (`--write`)  |
 | `npm run format:check`            | Prettier check (CI gate, no writes)         |
 | `npm test`                        | Vitest run (frontend unit + integration)    |
@@ -79,8 +80,8 @@ exercise the real deployed path before claiming it works. Distrust mocks that
 assume behavior the live SDK may not exhibit.
 
 Run before finishing any change: `npm run format:check`, `npm run lint`, `npm run
-lint:lambda` (if you touched `lambda/`), `npm test`, and `npm run test:lambda`
-(if you touched `lambda/`).
+lint:lambda` and `npm run tsc:lambda` (if you touched `lambda/`), `npm test`, and
+`npm run test:lambda` (if you touched `lambda/`).
 
 If you edit this file, run `npm run validate:agents` to confirm it stays in
 sync with the code. That check verifies every documented `npm run` command, file
@@ -108,6 +109,20 @@ docs/                Internal plans and runbooks
 
 - **TypeScript strict mode** is on for `src/` (`tsconfig.json`); keep it type-clean
   (`noUnusedLocals`/`noUnusedParameters` are enforced). Do not add `@ts-nocheck`.
+  Lambda `.mjs` files are type-checked via `lambda/tsconfig.json` (`checkJs` +
+  JSDoc annotations); run `npm run tsc:lambda` to verify.
+- **Naming conventions** are enforced by `@typescript-eslint/naming-convention`
+  in ESLint:
+  - **Variables:** `camelCase` (e.g. `const url = ...`), `UPPER_CASE` for
+    constants (e.g. `const SITE_ORIGIN = ...`), `PascalCase` for React component
+    assignments (e.g. `const MyComponent = () => {}`). `snake_case` is allowed
+    only for destructured variables matching external API response keys.
+  - **Functions:** `camelCase` for utilities (e.g. `validateInput`), `PascalCase`
+    for React components (e.g. `function About() {}`).
+  - **Types/Interfaces/Classes:** `PascalCase` (e.g. `SanityPost`, `BlueprintOutput`).
+  - **Parameters:** `camelCase` with leading underscore allowed for unused params
+    (e.g. `_key`). `PascalCase` allowed for React component params (e.g. `Tag`).
+  - **Enum members / Type parameters:** `PascalCase`.
 - **Comments:** default to none. Add one only for a non-obvious constraint,
   invariant, or workaround. Code should be self-documenting. No em dashes in prose.
 - **Routing is single-source-of-truth:** add/change routes in `src/routes.ts`.

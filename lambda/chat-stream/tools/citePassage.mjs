@@ -3,8 +3,10 @@ import { z } from "zod";
 import { BLOG_CITE_QUERY, SITE_ORIGIN } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 export function buildCitePassageTool({ sanityClient, responseStream, metrics, requestId }) {
-  return tool({
+  return _tool({
     name: "cite_blog_passage",
     description:
       "Retrieve a short citation for a specific blog post so the reply can include an authoritative reference with a link. " +

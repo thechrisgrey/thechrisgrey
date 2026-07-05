@@ -39,6 +39,10 @@ export const GUARDRAIL_VERSION = process.env.GUARDRAIL_VERSION || "5";
 // our own directive system prompt as a prompt-attack and flagged generated
 // IAM/architecture output as policy violations. The input pre-check blocks
 // malicious specs (prompt injection, abuse) without touching the output.
+/**
+ * @param {string} text
+ * @returns {any[]}
+ */
 function userMessages(text) {
   return [{ role: "user", content: [{ text }] }];
 }
@@ -59,7 +63,7 @@ function userMessages(text) {
  * @param {object} bedrockClient - BedrockRuntimeClient (injected for tests).
  * @param {string} text - The user-supplied input to assess.
  * @param {object} [opts]
- * @param {string} [opts.requestId]
+ * @param {string|null} [opts.requestId]
  * @param {string} [opts.guardrailId=GUARDRAIL_ID]
  * @param {string} [opts.guardrailVersion=GUARDRAIL_VERSION]
  * @param {number} [opts.maxAttempts=2] - Total attempts (1 retry).
@@ -153,7 +157,7 @@ export const OPUS_TIMEOUT_FLOOR_MS = 5_000;
  *
  * @param {number} [remainingMs] - context.getRemainingTimeInMillis() at the
  *   anchor instant.
- * @param {number} nowMs - Date.now() at the same instant (handler start).
+ * @param {number} [nowMs] - Date.now() at the same instant (handler start).
  * @param {object} [opts]
  * @param {number} [opts.buffer=OPUS_TIMEOUT_BUFFER_MS]
  * @returns {number|null} epoch-ms deadline, or null when there is no Lambda
@@ -173,7 +177,7 @@ export function resolveOpusDeadlineMs(remainingMs, nowMs, { buffer = OPUS_TIMEOU
  * static cap, so off-Lambda behavior is unchanged.
  *
  * @param {number|null} [deadlineMs] - from resolveOpusDeadlineMs.
- * @param {number} nowMs - Date.now() at the start of this attempt.
+ * @param {number} [nowMs] - Date.now() at the start of this attempt.
  * @param {object} [opts]
  * @param {number} [opts.floor=OPUS_TIMEOUT_FLOOR_MS]
  * @param {number} [opts.cap=OPUS_TIMEOUT_MS]
@@ -184,7 +188,7 @@ export function opusTimeoutForDeadline(
   nowMs,
   { floor = OPUS_TIMEOUT_FLOOR_MS, cap = OPUS_TIMEOUT_MS } = {},
 ) {
-  if (deadlineMs == null || !Number.isFinite(deadlineMs) || !Number.isFinite(nowMs)) {
+  if (deadlineMs == null || !Number.isFinite(deadlineMs) || typeof nowMs !== "number" || !Number.isFinite(nowMs)) {
     return cap;
   }
   return Math.max(floor, Math.min(cap, Math.round(deadlineMs - nowMs)));
@@ -247,7 +251,7 @@ export function parseConverseResponse(response) {
  * @param {number} opts.maxTokens
  * @param {number} opts.temperature
  * @param {number} opts.timeoutMs
- * @param {string} [opts.requestId]
+ * @param {string|null} [opts.requestId]
  * @returns {Promise<{ text: string, usage: object, latencyMs: number }>}
  */
 export async function invokeClaude(
@@ -308,6 +312,14 @@ export async function invokeClaude(
  * Invoke Opus for generation. Temperature 0.3 for moderate creativity
  * with high schema fidelity. Blocking — callers waiting on full output
  * use this path; callers that want streaming feedback use streamOpus().
+ *
+ * @param {object} bedrockClient
+ * @param {object} opts
+ * @param {string} opts.system
+ * @param {string} opts.user
+ * @param {string|null} [opts.requestId]
+ * @param {number} [opts.timeoutMs=OPUS_TIMEOUT_MS]
+ * @returns {Promise<{ text: string, usage: object, latencyMs: number }>}
  */
 export async function invokeOpus(bedrockClient, { system, user, requestId = null, timeoutMs = OPUS_TIMEOUT_MS }) {
   return invokeClaude(bedrockClient, {
@@ -331,7 +343,8 @@ export async function invokeOpus(bedrockClient, { system, user, requestId = null
  * @param {string} opts.system
  * @param {string} opts.user
  * @param {(text: string) => void} [opts.onChunk]
- * @param {string} [opts.requestId]
+ * @param {string|null} [opts.requestId]
+ * @param {number} [opts.timeoutMs=OPUS_TIMEOUT_MS]
  * @returns {Promise<{ text: string, usage: object, latencyMs: number, stop_reason?: string }>}
  */
 export async function streamOpus(
@@ -443,6 +456,13 @@ export async function streamOpus(
 /**
  * Invoke Haiku 4.5 for validation. Temperature 0.0 — we want consistent
  * classifications, not creative critiques.
+ *
+ * @param {object} bedrockClient
+ * @param {object} opts
+ * @param {string} opts.system
+ * @param {string} opts.user
+ * @param {string|null} [opts.requestId]
+ * @returns {Promise<{ text: string, usage: object, latencyMs: number }>}
  */
 export async function invokeHaiku(bedrockClient, { system, user, requestId = null }) {
   return invokeClaude(bedrockClient, {

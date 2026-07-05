@@ -10,19 +10,8 @@ import { buildRememberFactTool } from "./rememberFact.mjs";
 /**
  * Build the tool list for an agent invocation.
  *
- * @param {{
- *   responseStream: { write: (s: string) => void },
- *   metrics?: { record: (n: string, v?: number, u?: string) => void },
- *   sanityClient?: { fetch: (q: string, p?: object) => Promise<unknown> },
- *   agentClient?: { send: (cmd: unknown, opts?: unknown) => Promise<unknown> },
- *   RetrieveCommand?: new (input: unknown) => unknown,
- *   podcastKbId?: string | null,
- *   docClient?: { send: (cmd: unknown) => Promise<unknown> },
- *   PutCommand?: new (input: unknown) => unknown,
- *   deviceId?: string | null,
- *   surface?: 'page' | 'widget',
- *   requestId?: string,
- * }} deps
+ * @param {any} deps - Shared dependencies (responseStream, metrics, clients, etc.)
+ * @returns {any[]}
  */
 export function buildTools(deps) {
   const tools = [buildNavigateTool(deps), buildDraftMessageTool(deps), buildDraftNewsletterTool(deps)];

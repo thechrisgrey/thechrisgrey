@@ -6,8 +6,8 @@ import { createHash } from "crypto";
  * Uses ADD + ConditionExpression for race-condition-free counting.
  * Fails open on DynamoDB errors (availability > strictness).
  *
- * @param {import("@aws-sdk/lib-dynamodb").DynamoDBDocumentClient} docClient
- * @param {typeof import("@aws-sdk/lib-dynamodb").UpdateCommand} UpdateCommand
+ * @param {any} docClient - Injected DynamoDBDocumentClient (duck-typed: must have .send)
+ * @param {any} UpdateCommand - Injected UpdateCommand constructor
  * @param {object} opts
  * @param {string} opts.table        - DynamoDB table name
  * @param {string} opts.ip           - Client IP address

@@ -4,6 +4,8 @@ import { normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 import { retrievePodcastChunks } from "../podcastRetrieve.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 const MAX_CITATIONS = 3;
 
 /**
@@ -37,7 +39,7 @@ export function buildSearchPodcastTool({
   metrics,
   requestId,
 }) {
-  return tool({
+  return _tool({
     name: "search_podcast",
     description:
       "Search The Vector Podcast for what a guest or Christian actually said about a topic. " +

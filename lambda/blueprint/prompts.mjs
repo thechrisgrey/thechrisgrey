@@ -180,7 +180,7 @@ export function formatSpecForPrompt(spec) {
  * section so they can be swapped/re-ordered without touching the principles.
  *
  * @param {object} opts
- * @param {Array<object>} opts.examples - 0–3 GoldenExample docs.
+ * @param {Array<object>} [opts.examples] - 0–3 GoldenExample docs.
  * @param {string} [opts.principles=ARCHITECTURE_PRINCIPLES] - Overridable for tests.
  * @returns {string}
  */

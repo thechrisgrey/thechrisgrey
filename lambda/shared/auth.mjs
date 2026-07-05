@@ -9,11 +9,11 @@
  *
  * Fails closed: if the allowlist is empty/unset, NO caller is authorized.
  *
- * @param {import("@aws-sdk/client-cognito-identity-provider").CognitoIdentityProviderClient} cognitoClient
- * @param {import("@aws-sdk/client-cognito-identity-provider").GetUserCommand} GetUserCommand
+ * @param {any} cognitoClient - Injected CognitoIdentityProviderClient (duck-typed: must have .send)
+ * @param {any} GetUserCommand - Injected GetUserCommand constructor
  * @param {string|undefined} authHeader - The `Authorization` header value (e.g. "Bearer xxx").
  * @param {{ allowlist?: string }} [options] - Override the allowlist source (defaults to ADMIN_ALLOWLIST env).
- * @returns {Promise<object|null>} The GetUser response if authenticated AND authorized, else null.
+ * @returns {Promise<any>} The GetUser response if authenticated AND authorized, else null.
  */
 export async function validateCognitoToken(
   cognitoClient,

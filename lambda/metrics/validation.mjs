@@ -8,7 +8,7 @@ export const VALID_CSP_KEYWORDS = new Set(["inline", "eval", "self", "data", "bl
 const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
 /**
- * @param {{name?: unknown, value?: unknown, rating?: unknown}} body
+ * @param {{name?: string, value?: number, rating?: string}} body
  * @returns {{ok:true, dimensions:Array}|{ok:false, status:number, error:string}}
  */
 export function validateVitals(body) {

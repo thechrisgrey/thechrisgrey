@@ -14,6 +14,16 @@ export const DEFAULT_WINDOW_SIZE = 40;
 // cancelSignal timeout wired in index.mjs.
 export const DEFAULT_MAX_MODEL_CALLS = 3;
 
+/**
+ * @param {object} [opts]
+ * @param {string} [opts.modelId]
+ * @param {string} [opts.region]
+ * @param {string} [opts.guardrailId]
+ * @param {string} [opts.guardrailVersion]
+ * @param {number} [opts.maxTokens]
+ * @param {number} [opts.temperature]
+ * @returns {import("@strands-agents/sdk").BedrockModel}
+ */
 export function buildBedrockModel({
   modelId,
   region = DEFAULT_REGION,
@@ -44,6 +54,18 @@ export function buildBedrockModel({
   return new BedrockModel(config);
 }
 
+/**
+ * @param {object} [opts]
+ * @param {any} [opts.model]
+ * @param {any[]} [opts.tools]
+ * @param {string} [opts.systemPrompt]
+ * @param {any[]} [opts.messages]
+ * @param {number} [opts.windowSize]
+ * @param {string} [opts.name]
+ * @param {number} [opts.maxModelCalls]
+ * @param {any} [opts.AgentClass]
+ * @returns {import("@strands-agents/sdk").Agent}
+ */
 export function buildAgent({
   model,
   tools = [],
@@ -98,6 +120,16 @@ function toolResultStatus(result) {
   return "success";
 }
 
+/**
+ * @param {object} [opts]
+ * @param {any} [opts.agent]
+ * @param {string} [opts.userMessage]
+ * @param {any} [opts.responseStream]
+ * @param {AbortSignal} [opts.cancelSignal]
+ * @param {any} [opts.metrics]
+ * @param {(text: string) => void} [opts.onText]
+ * @returns {Promise<{ hadText: boolean, usage: any, guardrailIntervened: boolean, stopReason: string|null }>}
+ */
 export async function streamAgentResponse({ agent, userMessage, responseStream, cancelSignal, metrics, onText } = {}) {
   if (!agent) throw new Error("streamAgentResponse: agent is required");
   if (!userMessage) throw new Error("streamAgentResponse: userMessage is required");

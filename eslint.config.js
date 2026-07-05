@@ -62,6 +62,49 @@ export default [
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // Enforce consistent naming conventions across the codebase.
+      // Variables: camelCase (snake_case not allowed), UPPER_CASE for constants,
+      // PascalCase for React component assignments (const MyComponent = () => {}).
+      // Functions: camelCase for utilities, PascalCase for React components.
+      // Types/Interfaces/Classes: PascalCase.
+      // Parameters: camelCase, leading underscore allowed for unused params.
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'variable',
+          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+          leadingUnderscore: 'allow',
+        },
+        // Destructured variables may use snake_case to match external API response keys.
+        {
+          selector: 'variable',
+          modifiers: ['destructured'],
+          format: ['camelCase', 'UPPER_CASE', 'PascalCase', 'snake_case'],
+          leadingUnderscore: 'allow',
+        },
+        {
+          selector: 'function',
+          format: ['camelCase', 'PascalCase'],
+        },
+        {
+          selector: 'typeLike',
+          format: ['PascalCase'],
+        },
+        // Parameters: camelCase for normal params, PascalCase for React component params (e.g. Tag, PageComponent).
+        {
+          selector: 'parameter',
+          format: ['camelCase', 'PascalCase'],
+          leadingUnderscore: 'allow',
+        },
+        {
+          selector: 'enumMember',
+          format: ['PascalCase'],
+        },
+        {
+          selector: 'typeParameter',
+          format: ['PascalCase'],
+        },
+      ],
       // React Compiler-derived strict rules introduced in eslint-plugin-react-hooks v6/v7.
       // These flag real anti-patterns (synchronous setState inside useEffect, refs read
       // during render, components defined inside other components, locals mutated after

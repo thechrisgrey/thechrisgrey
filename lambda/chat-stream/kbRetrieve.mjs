@@ -2,7 +2,7 @@
  * Retrieve relevant context from a Bedrock Knowledge Base.
  *
  * @param {object} agentClient - BedrockAgentRuntimeClient instance (injected).
- * @param {Function} RetrieveCommand - RetrieveCommand constructor (injected).
+ * @param {any} RetrieveCommand - RetrieveCommand constructor (injected).
  * @param {string} query - User query.
  * @param {object} opts
  * @param {string} opts.knowledgeBaseId

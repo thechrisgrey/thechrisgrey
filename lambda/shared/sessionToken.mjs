@@ -42,8 +42,8 @@ export function issueSessionToken({ deviceHash, scope }, key, ttlSeconds) {
  * (parity with hmac.mjs — local/dev only).
  * @param {string} token
  * @param {string} key
- * @param {{ scope: string }} options
- * @returns {{ valid: true, deviceHash: string } | { valid: false, error: string }}
+ * @param {{ scope?: string }} [options] - Required scope to verify against.
+ * @returns {{ valid: true, deviceHash?: string } | { valid: false, error: string }}
  */
 export function verifySessionToken(token, key, { scope } = {}) {
   if (!key) {

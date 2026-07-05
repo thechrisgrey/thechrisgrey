@@ -17,10 +17,10 @@ import { verifySessionToken } from "./sessionToken.mjs";
  * After the transition window, callers drop the legacy branch and require a token.
  *
  * @param {object} event - Lambda Function URL event
- * @param {object} opts
- * @param {string} opts.sessionKey - server-only session-token signing key ("" disables the token path)
- * @param {string} opts.scope - required token scope ("chat" | "blueprint")
- * @param {string} opts.legacyKey - legacy shared HMAC key ("" disables legacy verification)
+ * @param {object} [opts] - Auth options
+ * @param {string} [opts.sessionKey] - server-only session-token signing key ("" disables the token path)
+ * @param {string} [opts.scope] - required token scope ("chat" | "blueprint")
+ * @param {string} [opts.legacyKey] - legacy shared HMAC key ("" disables legacy verification)
  * @param {{signatureHeader?:string,timestampHeader?:string}} [opts.legacySigOptions]
  * @returns {{valid:true, method:"token"|"legacy", deviceHash?:string} | {valid:false, method:"token"|"legacy", error:string}}
  */

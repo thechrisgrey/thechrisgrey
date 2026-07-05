@@ -101,7 +101,7 @@ export function validateSchema(data) {
  * @param {object} bedrockClient
  * @param {object} output - Schema-valid BlueprintOutput.
  * @param {object} [opts]
- * @param {string} [opts.requestId]
+ * @param {string|null} [opts.requestId]
  * @returns {Promise<{ ok: boolean, confidence: string, issues: Array<object>, usage: object }>}
  */
 export async function validateWithHaiku(bedrockClient, output, opts = {}) {

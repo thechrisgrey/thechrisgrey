@@ -3,8 +3,10 @@ import { z } from "zod";
 import { BLOG_SEARCH_QUERY, SITE_ORIGIN, normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 export function buildSearchBlogTool({ sanityClient, responseStream, metrics, requestId }) {
-  return tool({
+  return _tool({
     name: "search_blog",
     description:
       "Search Christian's blog for posts matching a keyword or short phrase. " +

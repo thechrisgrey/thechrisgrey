@@ -8,7 +8,7 @@
  * build "Play at MM:SS" citation cards.
  *
  * @param {object} agentClient - BedrockAgentRuntimeClient instance (injected).
- * @param {Function} RetrieveCommand - RetrieveCommand constructor (injected).
+ * @param {any} RetrieveCommand - RetrieveCommand constructor (injected).
  * @param {string} query - User query.
  * @param {object} opts
  * @param {string} opts.knowledgeBaseId - The podcast KB id (PODCAST_KB_ID).

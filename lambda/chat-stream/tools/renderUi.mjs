@@ -2,6 +2,8 @@ import { tool } from "@strands-agents/sdk";
 import { RenderUiInputSchema } from "../uiBlocks.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+const _tool = /** @type {any} */ (tool);
+
 /**
  * render_ui — Strands tool that lets Alti compose a small visual block to enrich a
  * text answer (timeline, comparison, stat row, profile, explainer, or link grid).
@@ -15,7 +17,7 @@ import { emitEvent, EVENT_KINDS } from "../events.mjs";
  * receives it, so the model cannot emit blocks there.
  */
 export function buildRenderUiTool({ responseStream, metrics, requestId }) {
-  return tool({
+  return _tool({
     name: "render_ui",
     description:
       "Render a small visual block to supplement your answer: a timeline, a side-by-side comparison, " +

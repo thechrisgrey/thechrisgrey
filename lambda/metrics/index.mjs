@@ -110,6 +110,10 @@ async function getMetricSum(metricName, periodHours = 24) {
   return result.Datapoints?.[0]?.Sum ?? 0;
 }
 
+/**
+ * @param {PromiseSettledResult<any>} result
+ * @param {any} [fallback=null]
+ */
 function settledValue(result, fallback = null) {
   if (result.status === "fulfilled") return result.value;
   console.error("Metric fetch failed:", result.reason?.message || result.reason);

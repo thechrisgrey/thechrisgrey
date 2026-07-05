@@ -9,6 +9,7 @@
     "build:analyze": "tsc && vite build && npx vite-bundle-visualizer",
     "lint": "eslint src --max-warnings 0",
     "lint:lambda": "eslint lambda --max-warnings 0",
+    "tsc:lambda": "tsc --project lambda/tsconfig.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "validate:agents": "node scripts/validate-agents-md.mjs",
@@ -44,11 +45,13 @@
     "three": "^0.184.0"
   },
   "devDependencies": {
+    "@aws-sdk/lib-dynamodb": "^3.1079.0",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/aws-lambda": "^8.10.162",
     "@types/dompurify": "^3.2.0",
     "@types/node": "^22.19.21",
     "@types/react": "^19.2.14",
