@@ -33,9 +33,9 @@ PASS=0
 FAIL=0
 SKIP=0
 
-report_pass() { echo "[PASS] $1"; ((PASS++)); }
-report_fail() { echo "[FAIL] $1 — $2"; ((FAIL++)); }
-report_skip() { echo "[SKIP] $1 — $2"; ((SKIP++)); }
+report_pass() { echo "[PASS] $1"; PASS=$((PASS + 1)); }
+report_fail() { echo "[FAIL] $1 — $2"; FAIL=$((FAIL + 1)); }
+report_skip() { echo "[SKIP] $1 — $2"; SKIP=$((SKIP + 1)); }
 
 echo "=== Post-Deploy Health Check (region: ${REGION}) ==="
 echo ""
@@ -60,9 +60,9 @@ else
   ALARM_COUNT=0
   ALARM_IN_ALARM=0
   while IFS=$'\t' read -r name state; do
-    ((ALARM_COUNT++))
+    ALARM_COUNT=$((ALARM_COUNT + 1))
     if [[ "$state" == "ALARM" ]]; then
-      ((ALARM_IN_ALARM++))
+      ALARM_IN_ALARM=$((ALARM_IN_ALARM + 1))
       report_fail "alarm: $name" "state is ALARM"
     elif "$VERBOSE"; then
       echo "  $name: $state"
@@ -84,7 +84,7 @@ echo ""
 echo "--- Lambda Health Endpoints ---"
 
 # MCP server health (public, no auth needed)
-MCP_ENDPOINT="${MCP_ENDPOINT:-https://thechrisgrey-mcp.lambda-url.us-east-1.on.aws}"
+MCP_ENDPOINT="${MCP_ENDPOINT:-https://sytc64zth4weo5rn4a5zjtzfai0xynwg.lambda-url.us-east-1.on.aws}"
 MCP_HEALTH_URL="${MCP_ENDPOINT}/health"
 
 MCP_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "$MCP_HEALTH_URL" 2>/dev/null || echo "000")
@@ -165,7 +165,7 @@ for fn in "${LAMBDA_FUNCTIONS[@]}"; do
     --start-time "$(($(date +%s) - 900))" \
     --end-time "$(date +%s)" \
     --query-string 'fields @timestamp
-| filter $.level = "error" or $.event = "handler_error" or $.event = "kb_sync_failure" or $.event = "request_error"
+| filter level = "error" or event = "handler_error" or event = "kb_sync_failure" or event = "request_error"
 | stats count(*) as errorCount
 ' \
     --query 'queryId' \
