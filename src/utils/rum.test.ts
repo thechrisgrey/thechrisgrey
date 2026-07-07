@@ -17,11 +17,11 @@ describe('rum', () => {
     expect(isRumInitialized).toBe(false);
   });
 
-  it('is initialized when both VITE_RUM_APP_MONITOR_ID and VITE_RUM_IDENTITY_POOL_ID are set', async () => {
+  it('is not initialized in test environment even when env vars are set', async () => {
     vi.stubEnv('VITE_RUM_APP_MONITOR_ID', 'test-monitor-id');
     vi.stubEnv('VITE_RUM_IDENTITY_POOL_ID', 'us-east-1:test-pool-id');
     const { isRumInitialized } = await import('./rum');
-    expect(isRumInitialized).toBe(true);
+    expect(isRumInitialized).toBe(false);
   });
 
   it('captureError falls back to console.error when RUM is not initialized', async () => {

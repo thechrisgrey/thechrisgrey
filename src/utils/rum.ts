@@ -21,7 +21,10 @@ const IDENTITY_POOL_ID = import.meta.env.VITE_RUM_IDENTITY_POOL_ID || '';
 const REGION = import.meta.env.VITE_RUM_REGION || 'us-east-1';
 const RELEASE_ID = import.meta.env.VITE_RUM_RELEASE_ID || 'dev';
 
-const isInitialized = APP_MONITOR_ID.length > 0 && IDENTITY_POOL_ID.length > 0;
+// Skip initialization in test environments to avoid Cognito network calls.
+const isTestEnv = import.meta.env.MODE === 'test' || !!import.meta.env.VITEST;
+
+const isInitialized = !isTestEnv && APP_MONITOR_ID.length > 0 && IDENTITY_POOL_ID.length > 0;
 
 let awsRum: AwsRum | null = null;
 
