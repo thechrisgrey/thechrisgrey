@@ -1,6 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+
+// Sentry source map upload is only active when SENTRY_AUTH_TOKEN is set in the
+// build environment (Amplify env vars, NOT committed). Without it, the plugin
+// is a no-op and sourcemaps are not generated.
+const sentryEnabled = !!process.env.SENTRY_AUTH_TOKEN && !!process.env.VITE_SENTRY_DSN;
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,6 +21,18 @@ export default defineConfig({
       png: { quality: 80 },
       webp: { quality: 80 },
     }),
+    ...(sentryEnabled
+      ? [
+          sentryVitePlugin({
+            org: process.env.SENTRY_ORG,
+            project: process.env.SENTRY_PROJECT,
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            // Upload sourcemaps then delete them from the build output so they
+            // are not deployed publicly.
+            sourcemaps: { filesToDeleteAfterUpload: ['dist/**/*.js.map'] },
+          }),
+        ]
+      : []),
   ],
   build: {
     // Vite 8 bundles with Rolldown (not Rollup). The object form of
@@ -48,7 +66,7 @@ export default defineConfig({
         },
       },
     },
-    sourcemap: false,
+    sourcemap: sentryEnabled ? 'hidden' : false,
     minify: 'terser',
     terserOptions: {
       compress: {

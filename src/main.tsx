@@ -6,6 +6,7 @@ import App from './App.tsx';
 import LenisProvider from './components/LenisProvider.tsx';
 import './index.css';
 import { initWebVitals } from './utils/webVitals';
+import './utils/sentry';
 
 // Initialize Web Vitals tracking
 initWebVitals();

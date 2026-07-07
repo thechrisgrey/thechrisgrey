@@ -21,6 +21,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { issueSessionToken } from "lambda-shared/sessionToken";
 import { createLogger } from "lambda-shared/logger";
+import { withTimeout } from "lambda-shared/timeout";
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
@@ -42,11 +43,15 @@ export async function verifyTurnstile(token, secret, remoteip, fetchImpl = fetch
     form.set("response", token || "");
     if (remoteip) form.set("remoteip", remoteip);
 
-    const res = await fetchImpl(TURNSTILE_VERIFY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: form.toString(),
-    });
+    const res = await withTimeout(
+      fetchImpl(TURNSTILE_VERIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString(),
+      }),
+      5000,
+      "turnstile_verify",
+    );
     const data = /** @type {any} */ (await res.json());
     return data?.success === true;
   } catch {
@@ -89,6 +94,12 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
       // isn't invoked for OPTIONS when CORS is configured); this is a safe fallback.
       return { statusCode: 204, body: "" };
     }
+
+    // Health check (no auth required — used by post-deploy checks and monitoring)
+    if (method === "GET") {
+      return reply(200, { ok: true, service: "session-token", version: "1.0.0" });
+    }
+
     if (method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
     }

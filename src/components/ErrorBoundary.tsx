@@ -1,6 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { typography } from '../utils/typography';
+import { captureError, isSentryInitialized } from '../utils/sentry';
 
 interface Props {
   children: ReactNode;
@@ -26,7 +27,14 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    if (isSentryInitialized) {
+      captureError(error, {
+        componentStack: errorInfo.componentStack,
+        pageName: this.props.pageName || 'unknown',
+      });
+    } else {
+      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    }
   }
 
   handleReset = () => {

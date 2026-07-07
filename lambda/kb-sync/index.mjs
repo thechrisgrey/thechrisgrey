@@ -7,6 +7,7 @@
 import { BedrockAgentClient, StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { createLogger } from "lambda-shared/logger";
+import { withTimeout } from "lambda-shared/timeout";
 
 const KNOWLEDGE_BASE_ID = "ARFYABW8HP";
 const DATA_SOURCE_ID = "TXQTRAJOSD";
@@ -52,7 +53,7 @@ export const handler = async (event) => {
       dataSourceId: DATA_SOURCE_ID,
     });
 
-    const response = await client.send(command);
+    const response = await withTimeout(client.send(command), 15000, "bedrock_start_ingestion");
 
     log.info("kb_sync_started", {
       ingestionJobId: response.ingestionJob?.ingestionJobId,

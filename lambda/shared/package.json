@@ -14,7 +14,8 @@
     "./sessionToken": "./sessionToken.mjs",
     "./requestAuth": "./requestAuth.mjs",
     "./metrics": "./metrics.mjs",
-    "./logger": "./logger.mjs"
+    "./logger": "./logger.mjs",
+    "./timeout": "./timeout.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.1068.0"

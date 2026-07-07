@@ -67,8 +67,16 @@ test("OPTIONS preflight returns 204 (CORS headers come from the Function URL lay
   assert.equal(res.headers?.["Access-Control-Allow-Origin"], undefined);
 });
 
-test("non-POST is rejected with 405", async () => {
+test("GET /health returns 200 with service info (no auth required)", async () => {
   const res = await makeHandler()(makeEvent({ method: "GET" }));
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.service, "session-token");
+});
+
+test("non-POST, non-GET, non-OPTIONS is rejected with 405", async () => {
+  const res = await makeHandler()(makeEvent({ method: "DELETE" }));
   assert.equal(res.statusCode, 405);
 });
 

@@ -7,6 +7,7 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
 import { createLogger } from "lambda-shared/logger";
+import { withTimeout } from "lambda-shared/timeout";
 import { validateVitals, validateCspUri } from "./validation.mjs";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
@@ -29,7 +30,7 @@ async function putMetric(metricName, value, dimensions = []) {
       },
     ],
   });
-  await cloudwatch.send(command);
+  await withTimeout(cloudwatch.send(command), 5000, "cloudwatch_put_metric");
 }
 
 async function handleVitals(body) {
@@ -86,7 +87,7 @@ async function getMetricAverage(metricName, periodHours = 24) {
     Statistics: ["Average", "SampleCount"],
   });
 
-  const result = await cloudwatch.send(command);
+  const result = await withTimeout(cloudwatch.send(command), 8000, "cloudwatch_get_metric_avg");
   const datapoint = result.Datapoints?.[0];
   return {
     average: datapoint?.Average ?? null,
@@ -107,7 +108,7 @@ async function getMetricSum(metricName, periodHours = 24) {
     Statistics: ["Sum"],
   });
 
-  const result = await cloudwatch.send(command);
+  const result = await withTimeout(cloudwatch.send(command), 8000, "cloudwatch_get_metric_sum");
   return result.Datapoints?.[0]?.Sum ?? 0;
 }
 

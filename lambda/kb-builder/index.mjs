@@ -8,6 +8,7 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
 import { createLogger } from "lambda-shared/logger";
+import { withTimeout } from "lambda-shared/timeout";
 import { CATEGORY_ORDER, validateEntryFields } from "./validation.mjs";
 
 const s3Client = new S3Client({ region: "us-east-1" });
@@ -50,10 +51,14 @@ const CATEGORY_LABELS = {
 async function fetchEntries(activeOnly = false) {
   const filter = activeOnly ? '*[_type == "kbEntry" && isActive == true]' : '*[_type == "kbEntry"]';
 
-  return sanityClient.fetch(
-    `${filter} | order(category asc, sortOrder asc, date desc) {
+  return withTimeout(
+    sanityClient.fetch(
+      `${filter} | order(category asc, sortOrder asc, date desc) {
       _id, _createdAt, _updatedAt, title, category, content, date, sortOrder, isActive
     }`,
+    ),
+    8000,
+    "sanity_fetch_entries",
   );
 }
 
@@ -109,12 +114,17 @@ async function uploadToS3(document) {
     Body: document,
     ContentType: "text/plain; charset=utf-8",
   });
-  return s3Client.send(command);
+  return withTimeout(s3Client.send(command), 10000, "s3_upload");
 }
 
 export const handler = async (event) => {
   if (event.requestContext?.http?.method === "OPTIONS") {
     return respond(200, { ok: true }, CORS_ORIGIN);
+  }
+
+  // Health check (no auth required — used by post-deploy checks and monitoring)
+  if (event.requestContext?.http?.method === "GET" && (event.rawPath || "") === "/health") {
+    return respond(200, { ok: true, service: "kb-builder", version: "1.0.0" }, CORS_ORIGIN);
   }
 
   const requestId = randomUUID();

@@ -6,6 +6,7 @@ export { issueSessionToken, verifySessionToken, SESSION_TOKEN_VERSION } from "./
 export { authenticateRequest } from "./requestAuth.mjs";
 export { MetricsCollector, MAX_METRICS_PER_CALL } from "./metrics.mjs";
 export { createLogger, redact, LEVELS } from "./logger.mjs";
+export { withTimeout } from "./timeout.mjs";
 export {
   SITE_ORIGIN,
   BLOG_SEARCH_QUERY,

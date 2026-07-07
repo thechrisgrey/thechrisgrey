@@ -1,0 +1,58 @@
+name: Flaky Test Detection
+
+on:
+  schedule:
+    # Nightly at 3:00 AM UTC (off-peak, won't compete with PR CI)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  detect-flaky-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Lambda dependencies
+        run: |
+          set -e
+          for dir in lambda/shared lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server lambda/session-token; do
+            if [ -f "$dir/package-lock.json" ]; then
+              (cd "$dir" && npm ci --no-audit --no-fund)
+            else
+              (cd "$dir" && npm install --no-audit --no-fund)
+            fi
+          done
+
+      - name: Run flaky test detection (3 runs)
+        id: flaky
+        run: node scripts/detect-flaky-tests.mjs --runs 3
+        continue-on-error: true
+
+      - name: Create issue if flaky tests detected
+        if: steps.flaky.outcome == 'failure'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Flaky tests detected (nightly run ${new Date().toISOString().split('T')[0]})`,
+              body: `The nightly flaky test detection job found tests that pass sometimes and fail other times.\n\n[View the run](${runUrl})\n\n\`\`\`\n${{ steps.flaky.outputs.summary || 'See run logs for details' }}\n\`\`\`\n\n**Action needed:** Investigate the flaky tests and either fix the root cause or quarantine the test.`,
+              labels: ['flaky-test', 'bug', 'ci']
+            });
+
+      - name: Fail the job if flaky tests were detected
+        if: steps.flaky.outcome == 'failure'
+        run: exit 1

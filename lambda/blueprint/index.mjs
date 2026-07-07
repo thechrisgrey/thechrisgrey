@@ -102,6 +102,15 @@ function logStructured(requestId, event, extra = {}) {
 }
 
 export const handler = awslambda.streamifyResponse(async (event, responseStream, context) => {
+  // Health check (no auth required — used by post-deploy checks and monitoring)
+  const healthMethod = event.requestContext?.http?.method;
+  const healthPath = event.rawPath || event.requestContext?.http?.path || "/";
+  if (healthMethod === "GET" && healthPath === "/health") {
+    responseStream.write(JSON.stringify({ ok: true, service: "blueprint", version: "1.0.0" }));
+    responseStream.end();
+    return;
+  }
+
   const requestId = randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/Blueprint");
   const start = Date.now();
