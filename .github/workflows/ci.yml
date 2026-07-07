@@ -37,6 +37,17 @@ jobs:
       - name: Run Lambda lint
         run: npm run lint:lambda
 
+      - name: Generate code quality report
+        run: npm run lint:quality -- --json code-quality-report.json
+
+      - name: Upload code quality report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: code-quality-report
+          path: code-quality-report.json
+          retention-days: 30
+
       - name: Run tests with coverage
         run: npx vitest run --coverage --reporter=verbose
 
@@ -46,6 +57,14 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
+          retention-days: 14
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test-results/
           retention-days: 14
 
       - name: Install Lambda dependencies
@@ -66,6 +85,14 @@ jobs:
 
       - name: Run Lambda tests
         run: npm run test:lambda
+
+      - name: Upload Lambda test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lambda-test-results
+          path: lambda-test-results.xml
+          retention-days: 14
 
       - name: Audit production dependencies (informational — does not gate merges)
         # npm audit checks the live advisory DB, so a hard gate here flips CI red on

@@ -212,7 +212,8 @@ describe('useChatEngine', () => {
       // Verify the request shape (method, headers, signal)
       const [, options] = mockFetch.mock.calls[0];
       expect(options.method).toBe('POST');
-      expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
+      expect(options.headers['Content-Type']).toBe('application/json');
+      expect(options.headers['X-Request-Id']).toBeDefined();
       expect(options.signal).toBeInstanceOf(AbortSignal);
 
       // Verify the body includes the user message

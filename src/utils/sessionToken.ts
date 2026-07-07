@@ -1,5 +1,6 @@
 import { getOrCreateDeviceId } from './deviceId';
 import { getTurnstileToken } from './turnstile';
+import { withTraceId } from './traceId';
 
 /**
  * Client-side session-token manager.
@@ -56,11 +57,14 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
 
   async function refresh(): Promise<void> {
     const turnstileToken = await deps.getTurnstileToken();
-    const res = await deps.fetchImpl(deps.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId: deps.getDeviceId(), turnstileToken }),
-    });
+    const res = await deps.fetchImpl(
+      deps.endpoint,
+      withTraceId({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId: deps.getDeviceId(), turnstileToken }),
+      }),
+    );
     if (!res.ok) {
       throw new Error(`session issuance failed: ${res.status}`);
     }

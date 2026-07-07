@@ -4,6 +4,7 @@ import type { PageContext } from '../utils/pageContext';
 import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId, clearDeviceId } from '../utils/deviceId';
 import { createChatStreamParser, type DraftAction, type ChatEvent } from '../utils/chatEvents';
+import { withTraceId } from '../utils/traceId';
 import type { UiBlock } from '../utils/uiBlocks';
 
 const MAX_HISTORY = 20;
@@ -196,15 +197,18 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
         });
         const token = await getSessionToken('chat');
 
-        const response = await fetch(CHAT_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: requestBody,
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          CHAT_ENDPOINT,
+          withTraceId({
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: requestBody,
+            signal: controller.signal,
+          }),
+        );
 
         if (!response.ok) throw new Error('Failed to get response');
 
@@ -419,14 +423,17 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
     const token = await getSessionToken('chat');
     const forgetUrl = CHAT_ENDPOINT.endsWith('/') ? `${CHAT_ENDPOINT}forget` : `${CHAT_ENDPOINT}/forget`;
     try {
-      const response = await fetch(forgetUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: requestBody,
-      });
+      const response = await fetch(
+        forgetUrl,
+        withTraceId({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: requestBody,
+        }),
+      );
       let json: { ok?: boolean; deleted?: number; error?: string } | null = null;
       try {
         json = await response.json();

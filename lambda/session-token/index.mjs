@@ -86,7 +86,7 @@ export function createIssuerHandler({ docClient, UpdateCommand, verifyTurnstile,
   });
 
   return async function issuerHandler(event) {
-    const requestId = randomUUID();
+    const requestId = event.headers?.["x-request-id"] || randomUUID();
     const method = event.requestContext?.http?.method;
 
     if (method === "OPTIONS") {

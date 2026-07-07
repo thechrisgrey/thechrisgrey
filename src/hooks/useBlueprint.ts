@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId } from '../utils/deviceId';
+import { withTraceId } from '../utils/traceId';
 import type { BlueprintInput, BlueprintOutput, BlueprintResponse, BlueprintSuccessResponse } from '../types/blueprint';
 
 const BLUEPRINT_ENDPOINT = import.meta.env.VITE_BLUEPRINT_ENDPOINT || '';
@@ -123,15 +124,18 @@ export function useBlueprint(): UseBlueprintReturn {
 
     try {
       const token = await getSessionToken('blueprint');
-      const response = await fetch(BLUEPRINT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body,
-        signal: controller.signal,
-      });
+      const response = await fetch(
+        BLUEPRINT_ENDPOINT,
+        withTraceId({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body,
+          signal: controller.signal,
+        }),
+      );
 
       let parsed: BlueprintResponse | null = null;
       try {

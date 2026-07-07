@@ -81,7 +81,7 @@ if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
 function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": CORS_ORIGIN,
-    "Access-Control-Allow-Headers": "Content-Type, x-blueprint-timestamp, x-blueprint-signature",
+    "Access-Control-Allow-Headers": "Content-Type, x-blueprint-timestamp, x-blueprint-signature, X-Request-Id",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "3600",
   };
@@ -111,7 +111,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     return;
   }
 
-  const requestId = randomUUID();
+  const requestId = event.headers?.["x-request-id"] || randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/Blueprint");
   const start = Date.now();
 

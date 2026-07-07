@@ -66,7 +66,7 @@ function corsHeaders() {
   return {
     "Access-Control-Allow-Origin": CORS_ORIGIN,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Mcp-Protocol-Version",
+    "Access-Control-Allow-Headers": "Content-Type, Mcp-Protocol-Version, X-Request-Id",
     "Access-Control-Max-Age": "86400",
   };
 }
@@ -85,7 +85,7 @@ function jsonRpcResponse(status, payload) {
 export const handler = async (event) => {
   const method = event?.requestContext?.http?.method || "POST";
   const path = event?.rawPath || "/";
-  const requestId = event?.requestContext?.requestId || crypto.randomUUID();
+  const requestId = event.headers?.["x-request-id"] || event?.requestContext?.requestId || crypto.randomUUID();
   const log = createLogger(requestId, { service: "mcp-server" });
   const metrics = new MetricsCollector(cloudwatchClient, METRICS_NAMESPACE);
 

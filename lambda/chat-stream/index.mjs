@@ -139,7 +139,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     return;
   }
 
-  const requestId = randomUUID();
+  const requestId = event.headers?.["x-request-id"] || randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/SiteMetrics");
   const log = createLogger(requestId, { service: "chat-stream" });
   const requestStart = Date.now();

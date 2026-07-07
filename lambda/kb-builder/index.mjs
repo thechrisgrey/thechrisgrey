@@ -127,7 +127,7 @@ export const handler = async (event) => {
     return respond(200, { ok: true, service: "kb-builder", version: "1.0.0" }, CORS_ORIGIN);
   }
 
-  const requestId = randomUUID();
+  const requestId = event.headers?.["x-request-id"] || randomUUID();
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
   const log = createLogger(requestId, { service: "kb-builder" });

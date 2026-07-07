@@ -196,7 +196,7 @@ async function handleHealth(authHeader) {
 }
 
 export const handler = async (event) => {
-  const requestId = randomUUID();
+  const requestId = event.headers?.["x-request-id"] || randomUUID();
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
   const clientIp = event.requestContext?.http?.sourceIp || "unknown";
