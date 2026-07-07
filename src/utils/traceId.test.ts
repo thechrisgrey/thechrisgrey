@@ -15,21 +15,21 @@ describe('withTraceId', () => {
   it('generates a UUID when crypto.randomUUID is available', () => {
     const uuid = '12345678-1234-1234-1234-123456789012';
     vi.stubGlobal('crypto', { randomUUID: () => uuid });
-    const result = withTraceId({ method: 'GET' });
+    const result = withTraceId({ method: 'GET' } as RequestInit);
     expect((result.headers as Record<string, string>)['X-Request-Id']).toBe(uuid);
   });
 
   it('falls back to a timestamp-based ID when crypto.randomUUID is unavailable', () => {
     vi.stubGlobal('crypto', {});
-    const result = withTraceId({ method: 'GET' });
+    const result = withTraceId({ method: 'GET' } as RequestInit);
     const traceId = (result.headers as Record<string, string>)['X-Request-Id'];
     expect(traceId).toMatch(/^trace-\d+-\w+$/);
   });
 
   it('generates a unique ID on each call', () => {
     vi.stubGlobal('crypto', { randomUUID: () => '12345678-1234-1234-1234-123456789012' });
-    const a = withTraceId({ method: 'GET' });
-    const b = withTraceId({ method: 'GET' });
+    const a = withTraceId({ method: 'GET' } as RequestInit);
+    const b = withTraceId({ method: 'GET' } as RequestInit);
     const aId = (a.headers as Record<string, string>)['X-Request-Id'];
     const bId = (b.headers as Record<string, string>)['X-Request-Id'];
     // With the mocked randomUUID, both will return the same value.

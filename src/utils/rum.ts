@@ -67,7 +67,7 @@ export function recordEvent(eventType: string, eventData?: Record<string, unknow
 /**
  * Record a page view manually (for client-side route changes).
  */
-export function recordPageView(pageId?: string) {
+export function recordPageView(pageId: string) {
   if (!awsRum) return;
   awsRum.recordPageView(pageId);
 }
