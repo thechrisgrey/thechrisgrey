@@ -1,7 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { typography } from '../utils/typography';
-import { captureError, isSentryInitialized } from '../utils/sentry';
+import { captureError, isRumInitialized } from '../utils/rum';
 
 interface Props {
   children: ReactNode;
@@ -27,7 +27,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    if (isSentryInitialized) {
+    if (isRumInitialized) {
       captureError(error, {
         componentStack: errorInfo.componentStack,
         pageName: this.props.pageName || 'unknown',
