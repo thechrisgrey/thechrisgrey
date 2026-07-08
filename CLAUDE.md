@@ -144,7 +144,7 @@ Full-viewport chat at `/chat` + floating 3D widget on all other pages. Powered b
 
 **KB Sync** (`lambda/kb-sync/`): S3 event-triggered → StartIngestionJob. Manual: `aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-source-id TXQTRAJOSD --region us-east-1`
 
-**Logging:** Log group `tcg-AI-chat` (7-day retention). See `docs/bedrock-logging-queries.md`.
+**Logging:** Log group `tcg-AI-chat` (7-day retention). All Lambda logging goes through `lambda/shared/logger.mjs` `createLogger()`, which automatically redacts PII (emails, phone-shaped digit runs) and sensitive keys (authorization, token, password, secret) via the `redact()` function before writing to CloudWatch. See `docs/bedrock-logging-queries.md`.
 
 ### Blueprint (in development)
 

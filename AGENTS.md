@@ -145,8 +145,12 @@ docs/                Internal plans and runbooks
   `src/utils/shikiHighlighter.ts` singleton, never `import('shiki')` directly.
 - **3D / WebGL:** mock `AltiMascot`/Three.js in jsdom tests (no WebGL there).
 - **Lambdas** are ESM `.mjs` on AWS SDK v3. Emit structured JSON logs
-  (`console.log(JSON.stringify({ requestId, event, ... }))`) and never log PII;
-  `lambda/chat-stream/memory.mjs` `sanitizeFactContent` enforces PII rejection.
+  (`console.log(JSON.stringify({ requestId, event, ... }))`) and never log PII.
+  All logging goes through `lambda/shared/logger.mjs` `createLogger()`, which
+  automatically redacts PII (emails, phone-shaped digit runs) and sensitive keys
+  (authorization, token, password, secret, signingKey) from every log line via
+  the `redact()` function. `lambda/chat-stream/memory.mjs` `sanitizeFactContent`
+  enforces PII rejection for stored visitor facts.
 - **Tailwind v4** is CSS-first: theme colors live in the `@theme` block in
   `src/index.css`, not in a standalone Tailwind JS config file.
 - **CSP:** when adding an external resource, update the CSP allowlist in
