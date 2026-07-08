@@ -86,6 +86,9 @@ jobs:
       - name: Run Lambda tests
         run: npm run test:lambda
 
+      - name: Check Lambda coverage thresholds
+        run: npm run test:lambda:coverage
+
       - name: Upload Lambda test results
         if: always()
         uses: actions/upload-artifact@v7

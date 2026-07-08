@@ -1,0 +1,178 @@
+name: Error Insights
+
+# Error-to-insight pipeline: creates GitHub issues from production errors and
+# CI failures so they can be tracked and resolved instead of sitting unnoticed.
+#
+# Two triggers:
+# 1. workflow_run — fires when the CI workflow completes with failure, creating
+#    an issue immediately so the team knows the main branch is broken.
+# 2. schedule — daily check of CloudWatch alarm states and Lambda error logs.
+#    If any alarms are in ALARM state or error logs are found, creates an issue.
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+  schedule:
+    - cron: '0 9 * * *' # Daily 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+jobs:
+  ci-failure-issue:
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue for CI failure
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const run = github.event.workflow_run;
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${run.id}`;
+            const title = `CI failed on main (${run.head_commit?.id?.substring(0, 7) || 'unknown'})`;
+            const body = [
+              `**CI workflow failed on \`main\`**`,
+              '',
+              `Commit: ${run.head_sha?.substring(0, 7) || 'unknown'}`,
+              `Message: ${run.head_commit?.message?.split('\n')[0] || 'unknown'}`,
+              `Run: ${url}`,
+              '',
+              'Investigate the failure and fix before the next deploy.',
+              'Close this issue once resolved — it does not auto-close.',
+            ].join('\n');
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'error-insight',
+            });
+            if (open.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['error-insight', 'ci'],
+              });
+            }
+
+  production-error-check:
+    if: ${{ github.event_name != 'workflow_run' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::205930636302:role/github-actions-error-insights
+          aws-region: us-east-1
+
+      - name: Check CloudWatch alarm states
+        id: alarms
+        run: |
+          ALARMS=$(aws cloudwatch describe-alarms \
+            --state-value ALARM \
+            --alarm-name-prefix thechrisgrey \
+            --query 'MetricAlarms[].AlarmName' \
+            --output text \
+            --region us-east-1 2>/dev/null || echo "")
+          if [ -n "$ALARMS" ]; then
+            echo "alarms<<EOF" >> $GITHUB_OUTPUT
+            echo "$ALARMS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "Found alarms in ALARM state: $ALARMS"
+          else
+            echo "No alarms in ALARM state."
+          fi
+
+      - name: Check Lambda error logs (last 24h)
+        id: errors
+        run: |
+          ERROR_COUNT=0
+          ERROR_DETAILS=""
+          for log_group in \
+            "/aws/lambda/thechrisgrey-chat-stream" \
+            "/aws/lambda/thechrisgrey-blueprint" \
+            "/aws/lambda/thechrisgrey-kb-builder" \
+            "/aws/lambda/thechrisgrey-kb-sync" \
+            "/aws/lambda/thechrisgrey-metrics" \
+            "/aws/lambda/thechrisgrey-mcp-server" \
+            "/aws/lambda/thechrisgrey-session-token"; do
+            
+            COUNT=$(aws logs filter-log-events \
+              --log-group-name "$log_group" \
+              --filter-pattern '"level":"error"' \
+              --start-time $(($(date +%s) - 86400))000 \
+              --end-time $(date +%s)000 \
+              --query 'events | length(@)' \
+              --output text \
+              --region us-east-1 2>/dev/null || echo "0")
+            
+            if [ "$COUNT" != "0" ] && [ -n "$COUNT" ]; then
+              ERROR_COUNT=$((ERROR_COUNT + COUNT))
+              ERROR_DETAILS="${ERROR_DETAILS}\n  - ${log_group}: ${COUNT} error(s)"
+              echo "Found ${COUNT} errors in ${log_group}"
+            fi
+          done
+
+          echo "error_count=${ERROR_COUNT}" >> $GITHUB_OUTPUT
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "error_details<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$ERROR_DETAILS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create issue for production errors
+        if: steps.alarms.outputs.alarms != '' || steps.errors.outputs.error_count != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const alarms = ${{ steps.alarms.outputs.alarms && 'true' || 'false' }};
+            const alarmList = `${{ steps.alarms.outputs.alarms || '' }}`;
+            const errorCount = parseInt(`${{ steps.errors.outputs.error_count || '0' }}`);
+            const errorDetails = `${{ steps.errors.outputs.error_details || '' }}`;
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const sections = ['**Production error check found issues**', ''];
+            if (alarmList) {
+              sections.push(`**CloudWatch alarms in ALARM state:**`);
+              sections.push('```');
+              sections.push(alarmList);
+              sections.push('```');
+              sections.push('');
+            }
+            if (errorCount > 0) {
+              sections.push(`**Lambda error logs (last 24h): ${errorCount} total errors**`);
+              sections.push('```');
+              sections.push(errorDetails);
+              sections.push('```');
+              sections.push('');
+            }
+            sections.push(`Run: ${url}`);
+            sections.push('');
+            sections.push('Investigate and resolve. Close this issue once cleared — it does not auto-close.');
+
+            const title = `Production errors detected (${new Date().toISOString().split('T')[0]})`;
+            const body = sections.join('\n');
+
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'error-insight',
+            });
+            if (open.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['error-insight', 'production'],
+              });
+            }
