@@ -49,6 +49,9 @@ jobs:
       - name: Duplicate code detection (jscpd)
         run: npx jscpd src lambda scripts
 
+      - name: Tech debt tracking (TODO/FIXME)
+        run: node scripts/check-tech-debt.mjs
+
       - name: Generate code quality report
         run: npm run lint:quality -- --json code-quality-report.json
 

@@ -29,6 +29,7 @@
     "lint:quality": "node scripts/code-quality-report.mjs",
     "knip": "knip",
     "jscpd": "jscpd src lambda scripts",
+    "check:tech-debt": "node scripts/check-tech-debt.mjs",
     "prepare": "husky"
   },
   "dependencies": {
