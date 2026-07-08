@@ -46,6 +46,9 @@ jobs:
       - name: Dead code analysis (knip)
         run: npx knip --reporter symbols || echo "::warning::Knip found unused code. Run 'npm run knip' locally to review."
 
+      - name: Duplicate code detection (jscpd)
+        run: npx jscpd src lambda scripts
+
       - name: Generate code quality report
         run: npm run lint:quality -- --json code-quality-report.json
 

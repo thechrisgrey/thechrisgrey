@@ -28,6 +28,7 @@
     "test:flaky": "node scripts/detect-flaky-tests.mjs",
     "lint:quality": "node scripts/code-quality-report.mjs",
     "knip": "knip",
+    "jscpd": "jscpd src lambda scripts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -70,6 +71,7 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
+    "jscpd": "^5.0.11",
     "jsdom": "^29.0.2",
     "knip": "^6.25.0",
     "lint-staged": "^17.0.8",

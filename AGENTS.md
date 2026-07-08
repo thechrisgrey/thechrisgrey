@@ -47,6 +47,7 @@ app can talk to its backends. Never commit `.env` or `.env.local`.
 | `npm run cy:open`                 | Cypress interactive runner                  |
 | `npm run validate:agents`         | Check this file stays in sync with the code |
 | `npm run knip`                    | Dead code and unused dependency detection   |
+| `npm run jscpd`                   | Duplicate code detection (threshold 5%)     |
 | `npm run deploy:lambda -- <name>` | Deploy one Lambda (see Deployment)          |
 
 ### Build pipeline

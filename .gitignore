@@ -84,3 +84,6 @@ vite.config.js
 
 # Raw source images — input for the not-yet-run editorial redesign (kept on disk, not versioned)
 scripts/editorial-raw/
+
+# jscpd duplicate code report
+jscpd-report/
