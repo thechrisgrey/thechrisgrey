@@ -101,6 +101,7 @@ function logStructured(requestId, event, extra = {}) {
   createLogger(requestId, { service: "blueprint" }).info(event, extra);
 }
 
+// eslint-disable-next-line complexity -- streaming handler: auth, rate limit, guardrail, engine, NDJSON framing, error mapping
 export const handler = awslambda.streamifyResponse(async (event, responseStream, context) => {
   // Health check (no auth required — used by post-deploy checks and monitoring)
   const healthMethod = event.requestContext?.http?.method;

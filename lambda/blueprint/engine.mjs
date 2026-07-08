@@ -81,6 +81,7 @@ function emit(onProgress, event) {
  *        `{type:"status", phase}` events even when omitted.
  * @returns {Promise<object>}
  */
+// eslint-disable-next-line complexity -- orchestrates multi-stage generation (guardrail, RAG, Opus, Haiku validation); splitting would obscure the pipeline
 export async function generateBlueprint(rawSpec, deps) {
   const start = Date.now();
   const {

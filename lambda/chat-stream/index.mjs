@@ -123,6 +123,7 @@ async function handleForget(event, responseStream, requestId, metrics) {
   }
 }
 
+// eslint-disable-next-line complexity -- streaming handler: CORS, health, auth, rate limit, session token, guardrail, agent orchestration, error mapping
 export const handler = awslambda.streamifyResponse(async (event, responseStream, _context) => {
   if (event.requestContext?.http?.method === "OPTIONS") {
     responseStream.write("");

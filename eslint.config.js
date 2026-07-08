@@ -132,6 +132,9 @@ export default [
       // call site, GenerativeBlocks.tsx's Comparison.Column, has been
       // hoisted to module scope.
       'react-hooks/static-components': 'error',
+      // Enforce cyclomatic complexity threshold. Functions exceeding 35 must
+      // be refactored or carry an inline eslint-disable with rationale.
+      complexity: ['error', 35],
     },
   },
 
@@ -152,6 +155,7 @@ export default [
     rules: {
       'no-console': 'off',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      complexity: ['error', 35],
     },
   },
 
@@ -162,6 +166,9 @@ export default [
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: { ...globals.node },
+    },
+    rules: {
+      complexity: ['error', 35],
     },
   },
 ];

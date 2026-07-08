@@ -148,7 +148,7 @@ function findLargeFiles(dir) {
         const ext = extname(entry);
         if (!['.ts', '.tsx', '.mjs', '.js', '.jsx'].includes(ext)) continue;
         const sizeKb = st.size / 1024;
-        let lineCount = 0;
+        let lineCount;
         try {
           lineCount = readFileSync(full, 'utf-8').split('\n').length;
         } catch {

@@ -117,6 +117,7 @@ async function uploadToS3(document) {
   return withTimeout(s3Client.send(command), 10000, "s3_upload");
 }
 
+// eslint-disable-next-line complexity -- CRUD handler: auth, route dispatch, validation, S3 publish, error mapping across 6 endpoints
 export const handler = async (event) => {
   if (event.requestContext?.http?.method === "OPTIONS") {
     return respond(200, { ok: true }, CORS_ORIGIN);
