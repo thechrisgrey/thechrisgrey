@@ -26,7 +26,9 @@
     "smoke:lambda": "node scripts/smoke-test-lambdas.mjs",
     "iam:drift": "bash scripts/iam-drift.sh",
     "test:flaky": "node scripts/detect-flaky-tests.mjs",
-    "lint:quality": "node scripts/code-quality-report.mjs"
+    "lint:quality": "node scripts/code-quality-report.mjs",
+    "knip": "knip",
+    "prepare": "husky"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1000.0",
@@ -56,7 +58,6 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/aws-lambda": "^8.10.162",
-    "@types/dompurify": "^3.2.0",
     "@types/node": "^22.19.21",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -68,7 +69,10 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.2",
+    "knip": "^6.25.0",
+    "lint-staged": "^17.0.8",
     "postcss": "^8.4.32",
     "prettier": "^3.9.4",
     "puppeteer": "^25.1.0",

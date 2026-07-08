@@ -46,6 +46,7 @@ app can talk to its backends. Never commit `.env` or `.env.local`.
 | `npm run cy:run`                  | Cypress e2e (headless)                      |
 | `npm run cy:open`                 | Cypress interactive runner                  |
 | `npm run validate:agents`         | Check this file stays in sync with the code |
+| `npm run knip`                    | Dead code and unused dependency detection   |
 | `npm run deploy:lambda -- <name>` | Deploy one Lambda (see Deployment)          |
 
 ### Build pipeline
@@ -83,7 +84,8 @@ assume behavior the live SDK may not exhibit.
 Run before finishing any change: `npm run format:check`, `npm run lint`, `npm run
 lint:lambda` and `npm run tsc:lambda` (if you touched `lambda/`), `npm test`, and
 `npm run test:lambda` (if you touched `lambda/`), and `npm run test:lambda:coverage`
-(if you touched `lambda/`).
+(if you touched `lambda/`). Pre-commit hooks (husky + lint-staged) auto-run ESLint
+and Prettier on staged files, but the full checks above should still be run manually.
 
 If you edit this file, run `npm run validate:agents` to confirm it stays in
 sync with the code. That check verifies every documented `npm run` command, file

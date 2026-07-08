@@ -43,6 +43,9 @@ jobs:
       - name: Check file sizes
         run: node scripts/check-file-sizes.mjs
 
+      - name: Dead code analysis (knip)
+        run: npx knip --reporter symbols || echo "::warning::Knip found unused code. Run 'npm run knip' locally to review."
+
       - name: Generate code quality report
         run: npm run lint:quality -- --json code-quality-report.json
 
