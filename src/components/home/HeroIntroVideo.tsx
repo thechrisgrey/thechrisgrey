@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from 'react';
 import { isMotionDisabled } from '../../utils/motion';
 import introPoster from '../../assets/hero-intro-poster.webp';
 
@@ -14,37 +15,61 @@ const HERO_INTRO_SRC = 'https://d1x8296f4gso9u.cloudfront.net/thechrisgrey/hero-
 // the clip's own dark corners, so the framing reads as seamless at any viewport.
 const MEDIA_CLASS = 'absolute inset-0 h-full w-full object-contain';
 
-// Guarantee the muted *property* is set the instant the element attaches. React
-// applies `muted` as a property after creating the node, and browsers gate
-// gesture-free autoplay on the muted state, so setting it here removes any doubt.
-// Stable module-level identity keeps the ref from re-firing on every render.
-function ensureMuted(el: HTMLVideoElement | null) {
-  if (el) el.muted = true;
-}
+// First-interaction events that grant the user activation browsers require
+// before a media element may play audio. Scrolling on this Lenis-driven site is
+// wheel/touch, so those cover "scroll anywhere" alongside clicks and keys.
+const UNMUTE_EVENTS = ['pointerdown', 'keydown', 'touchstart', 'wheel'] as const;
 
 /**
  * Full-bleed animated brand intro for the home hero. It plays once and rests on
  * the fully assembled wordmark.
  *
+ * Sound: browsers block gesture-free autoplay WITH audio, so the clip autoplays
+ * muted and unmutes on the visitor's first interaction (click / key / touch /
+ * wheel-scroll) — the earliest moment audio is permitted. That listener is
+ * one-shot and self-removing.
+ *
  * When motion is disabled (prefers-reduced-motion or the prerender crawl) it
  * renders the assembled frame as a static image instead — the same end state,
  * without animation, and a stable DOM for crawlers.
  *
- * Playback is driven purely by the muted + inline autoplay attributes, which
- * every modern browser allows without a user gesture. We intentionally do NOT
- * call play() imperatively: under React StrictMode the effect double-invokes and
- * the play() promise rejected with a transient AbortError, which intermittently
- * swapped the video for the poster. The media is decorative — identity is carried
- * by the sibling sr-only <h1> — so it is aria-hidden.
+ * Playback is driven purely by the muted + inline autoplay attributes (no
+ * imperative play(), which under React StrictMode's double-invoked effects
+ * rejected with a transient AbortError and intermittently swapped in the
+ * poster). The media is decorative — identity is carried by the sibling sr-only
+ * <h1> — so it is aria-hidden.
  */
 export default function HeroIntroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Mute at attach time — React applies `muted` as a property after creating the
+  // node, and gesture-free autoplay is gated on the muted state, so setting it
+  // the instant the element mounts removes any doubt. Also keeps a handle for
+  // the unmute effect below.
+  const attachVideo = useCallback((el: HTMLVideoElement | null) => {
+    videoRef.current = el;
+    if (el) el.muted = true;
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return; // reduced-motion / prerender renders the poster, no video
+
+    const unmute = () => {
+      video.muted = false;
+      UNMUTE_EVENTS.forEach((type) => window.removeEventListener(type, unmute));
+    };
+    UNMUTE_EVENTS.forEach((type) => window.addEventListener(type, unmute, { passive: true }));
+    return () => UNMUTE_EVENTS.forEach((type) => window.removeEventListener(type, unmute));
+  }, []);
+
   if (isMotionDisabled()) {
     return <img src={introPoster} alt="" aria-hidden="true" className={MEDIA_CLASS} width={1920} height={1080} />;
   }
 
   return (
     <video
-      ref={ensureMuted}
+      ref={attachVideo}
       className={MEDIA_CLASS}
       src={HERO_INTRO_SRC}
       autoPlay

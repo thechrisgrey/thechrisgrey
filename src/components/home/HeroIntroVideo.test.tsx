@@ -45,6 +45,26 @@ describe('HeroIntroVideo', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 
+  it('unmutes the video on the first user interaction (click / scroll)', () => {
+    const { container } = render(<HeroIntroVideo />);
+    const video = container.querySelector('video') as HTMLVideoElement;
+
+    // Starts muted so gesture-free autoplay is allowed...
+    expect(video.muted).toBe(true);
+
+    // ...and the first interaction anywhere enables audio.
+    window.dispatchEvent(new Event('wheel'));
+    expect(video.muted).toBe(false);
+  });
+
+  it('does not attach interaction listeners when motion is disabled', () => {
+    mockedIsMotionDisabled.mockReturnValue(true);
+    const { container } = render(<HeroIntroVideo />);
+    // Poster branch: no video to unmute, and dispatching an event must not throw.
+    expect(container.querySelector('video')).toBeNull();
+    expect(() => window.dispatchEvent(new Event('wheel'))).not.toThrow();
+  });
+
   it('renders the static assembled frame (no video) when motion is disabled', () => {
     mockedIsMotionDisabled.mockReturnValue(true);
     const { container } = render(<HeroIntroVideo />);
