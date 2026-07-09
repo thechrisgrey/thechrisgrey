@@ -3,10 +3,6 @@ import { render, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
-// Mock the WebGL hero backdrop — R3F's Canvas needs ResizeObserver/WebGL, which
-// jsdom lacks (see CLAUDE.md: mock 3D in jsdom tests). SEO assertions don't need it.
-vi.mock('../../components/home/HeroCanvas', () => ({ default: () => null }));
-
 // Mock GSAP — the Home page uses FadeReveal/SplitReveal which register ScrollTrigger
 // at module-eval time. Without this mock, ScrollTrigger's internal _sync setTimeout
 // fires after jsdom teardown and throws "requestAnimationFrame is not defined",
@@ -33,7 +29,7 @@ vi.mock('gsap', () => ({
 vi.mock('gsap/ScrollTrigger', () => ({ ScrollTrigger: {} }));
 
 // Mock static image imports
-vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
+vi.mock('../../assets/hero-intro-poster.webp', () => ({ default: '/mock-hero-intro-poster.webp' }));
 vi.mock('../../assets/aws-hero.png', () => ({ default: '/mock-aws-hero.png' }));
 vi.mock('../../assets/aws-community-builder.webp', () => ({
   default: '/mock-aws-cb.webp',

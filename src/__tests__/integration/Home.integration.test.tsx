@@ -4,17 +4,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Home from '../../pages/Home';
 
-// Mock static image imports that Vite handles at build time
-vi.mock('../../assets/hero2.png', () => ({ default: '/mock-hero.png' }));
-
-// WebGL is unavailable in jsdom — mock R3F so the lazy hero backdrop Canvas
-// never touches the GPU when Home mounts it. Children (R3F intrinsics) are
-// dropped rather than rendered as unknown DOM nodes.
-vi.mock('@react-three/fiber', () => ({
-  Canvas: () => <div data-testid="hero-canvas" />,
-  useFrame: () => {},
-  useThree: () => ({ size: { width: 800, height: 600 }, invalidate: () => {} }),
-}));
+// The hero renders an animated brand-intro <video> (HeroIntroVideo); its poster
+// is a bundled asset that Vite resolves at build time.
+vi.mock('../../assets/hero-intro-poster.webp', () => ({ default: '/mock-hero-intro-poster.webp' }));
 
 const renderHome = () => {
   return render(
@@ -32,18 +24,20 @@ describe('Home Page Integration', () => {
   });
 
   describe('Hero section', () => {
-    it('renders the hero image with correct alt text', () => {
-      renderHome();
-      const heroImage = screen.getByAltText('Leadership Forged in Service');
-      expect(heroImage).toBeInTheDocument();
-      expect(heroImage.tagName).toBe('IMG');
+    it('renders the animated brand-intro video from the CloudFront source', () => {
+      const { container } = renderHome();
+      const video = container.querySelector('section video');
+      expect(video).toBeInTheDocument();
+      expect(video).toHaveAttribute('src', 'https://d1x8296f4gso9u.cloudfront.net/thechrisgrey/hero-h264.mp4');
+      // Decorative — page identity is carried by the sr-only <h1>.
+      expect(video).toHaveAttribute('aria-hidden', 'true');
     });
 
-    it('reserves the hero image box with intrinsic width and height (CLS)', () => {
-      renderHome();
-      const heroImage = screen.getByAltText('Leadership Forged in Service');
-      expect(heroImage).toHaveAttribute('width', '1500');
-      expect(heroImage).toHaveAttribute('height', '1500');
+    it('reserves the hero media box with intrinsic width and height (CLS)', () => {
+      const { container } = renderHome();
+      const video = container.querySelector('section video');
+      expect(video).toHaveAttribute('width', '1920');
+      expect(video).toHaveAttribute('height', '1080');
     });
 
     it('renders an accessible h1 heading for screen readers', () => {
