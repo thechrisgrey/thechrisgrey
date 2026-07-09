@@ -1,25 +1,16 @@
-import { lazy, useRef, type RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
 import ViewTransitionLink from '../components/ViewTransitionLink';
 import SplitReveal from '../components/SplitReveal';
 import FadeReveal from '../components/FadeReveal';
 import { SEO } from '../components/SEO';
 const profileImage = '/profile1.jpeg';
-import heroImage from '../assets/hero2.png';
+import HeroIntroVideo from '../components/home/HeroIntroVideo';
 import { typography } from '../utils/typography';
 import { homeFAQs, buildWebPageSchema } from '../utils/schemas';
 import { SOCIAL_LINKS } from '../constants/links';
 import SocialIcon from '../components/SocialIcon';
 import NewsletterForm from '../components/NewsletterForm';
 import Testimonials from '../components/Testimonials';
-import { useMediaQuery } from '../hooks/useMediaQuery';
-import SafeCanvas from '../components/SafeCanvas';
-import { checkWebGLSupport } from '../utils/checkWebGL';
-import { isPrerender } from '../utils/prerender';
-
-// Lazy so the WebGL hero backdrop is its own chunk that hydrates after the
-// critical path. The static hero2.png is always rendered on top and stays the
-// LCP element; the backdrop fades in behind it once its chunk resolves.
-const HeroCanvas = lazy(() => import('../components/home/HeroCanvas'));
 
 const keyPoints = [
   { title: 'Personal Biography', subtitle: 'Christian Perez', link: '/about' },
@@ -88,9 +79,6 @@ const KeyPointTab = ({ point, index, triggerRef, mirrored = false }: KeyPointTab
 
 const Home = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
-  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const webglOk = checkWebGLSupport();
 
   return (
     <div className="min-h-screen">
@@ -109,44 +97,13 @@ const Home = () => {
           }),
         ]}
       />
-      {/* Hero Section with fade-in animation */}
-      <section
-        ref={heroRef}
-        className="relative min-h-screen flex items-center justify-center overflow-hidden opacity-0 animate-fade-in"
-      >
-        {/* Base background gradient — also the resting look under reduced motion
-            and the color shown before the WebGL backdrop hydrates. */}
-        <div className="absolute inset-0 bg-linear-to-br from-altivum-dark via-altivum-navy to-altivum-blue opacity-50"></div>
-
-        {/* Living "signal field" backdrop. Mounted only when motion is allowed,
-            WebGL is supported, and we are not prerendering; its lazy chunk loads
-            after the static brandmark below, so the brandmark remains the LCP
-            element. isPrerender() skips it during the build-time crawl so the
-            headless render reaches a stable DOM instead of a never-idle loop. */}
-        {!reducedMotion && webglOk && !isPrerender() && (
-          <div className="absolute inset-0" aria-hidden="true">
-            {/* Static gradient behind (above) is the fallback, so null is fine. */}
-            <SafeCanvas>
-              <HeroCanvas heroRef={heroRef} />
-            </SafeCanvas>
-          </div>
-        )}
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="mb-6 sm:mb-8">
-              <img
-                src={heroImage}
-                alt="Leadership Forged in Service"
-                className="w-full max-w-3xl mx-auto"
-                width={1500}
-                height={1500}
-                fetchPriority="high"
-              />
-              <h1 className="sr-only">Christian Perez - Leadership Forged in Service</h1>
-            </div>
-          </div>
-        </div>
+      {/* Hero Section: full-bleed animated brand intro, fading in on load.
+          The clip carries its own dark-navy background and the complete
+          "@TheChrisGrey" wordmark, so it is the hero's living backdrop — the
+          solid altivum-dark section matches its corners for seamless framing. */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-altivum-dark opacity-0 animate-fade-in">
+        <HeroIntroVideo />
+        <h1 className="sr-only">Christian Perez - Leadership Forged in Service</h1>
       </section>
 
       {/* Sticky Profile Image Section with Scrolling Summary Tabs */}
