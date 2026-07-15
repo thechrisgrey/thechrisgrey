@@ -47,6 +47,10 @@ paths = [
   '''coverage/.*''',
   '''.*\.lock''',
   '''package-lock\.json''',
+  # Nested git worktrees are separate checkouts, not this tree's committed content
+  # (and never exist in a CI checkout). Scanning them only produces local noise.
+  '''\.worktrees/.*''',
+  '''\.claude/worktrees/.*''',
 ]
 regexes = [
   '''VITE_CHAT_SIGNING_KEY.*ci-placeholder-key''',
@@ -61,4 +65,14 @@ stopwords = [
   "test-turnstile-secret",
   "integration-test-signing-secret",
   "server-only-signing-secret",
+  # Public Cloudflare Web Analytics beacon token — shipped in index.html to every
+  # visitor by design, not a secret.
+  "dce081f277f9412c9cb0d916e2d76b60",
+  # Test fixture device id in src/utils/deviceId.test.ts
+  "abc12345-valid-id",
+  # Docs show how to GENERATE a key, not a real key:
+  #   export BLUEPRINT_SIGNING_KEY="$(openssl rand -hex 32)"
+  "openssl rand",
+  # Docs placeholder: SESSION_TOKEN_KEY="<PASTE_KEY>"
+  "PASTE_KEY",
 ]
