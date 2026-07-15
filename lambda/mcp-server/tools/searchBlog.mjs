@@ -1,4 +1,5 @@
 import { BLOG_SEARCH_QUERY, SITE_ORIGIN, normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
+import { createLogger } from "lambda-shared/logger";
 
 const INPUT_SCHEMA = {
   type: "object",
@@ -21,17 +22,19 @@ const INPUT_SCHEMA = {
   additionalProperties: false,
 };
 
+/** @param {any} raw */
 function coerceLimit(raw) {
   const n = Number.isFinite(raw) ? Math.floor(raw) : 3;
   return Math.max(1, Math.min(5, n));
 }
 
+/** @param {string} normalized @param {any[]} results */
 function formatResult(normalized, results) {
   if (results.length === 0) {
     return `No posts matching "${normalized}".`;
   }
   const header = `Found ${results.length} post${results.length === 1 ? "" : "s"} matching "${normalized}":`;
-  const lines = results.map((r, idx) => {
+  const lines = results.map((/** @type {any} */ r, /** @type {number} */ idx) => {
     const excerpt = r.excerpt ? ` — ${r.excerpt}` : "";
     const url = `${SITE_ORIGIN}/blog/${r.slug}`;
     return `${idx + 1}. ${r.title}${excerpt}\n   ${url}`;
@@ -39,7 +42,11 @@ function formatResult(normalized, results) {
   return [header, "", ...lines].join("\n");
 }
 
+/**
+ * @param {{ sanityClient: any, metrics: any, requestId: string }} deps
+ */
 export function buildSearchBlogMcpTool({ sanityClient, metrics, requestId }) {
+  const log = createLogger(requestId, { service: "mcp-server" });
   return {
     name: "search_blog",
     description:
@@ -47,7 +54,7 @@ export function buildSearchBlogMcpTool({ sanityClient, metrics, requestId }) {
       "Returns up to 5 matching posts ordered by relevance with title, excerpt, and URL. " +
       "Use get_blog_post afterward to fetch the full body of a specific post by slug.",
     inputSchema: INPUT_SCHEMA,
-    handler: async ({ arguments: args }) => {
+    handler: async (/** @type {{ arguments: any }} */ { arguments: args }) => {
       const rawQuery = typeof args?.query === "string" ? args.query : "";
       const normalized = normalizeQuery(rawQuery);
       const limit = coerceLimit(args?.limit);
@@ -88,15 +95,11 @@ export function buildSearchBlogMcpTool({ sanityClient, metrics, requestId }) {
         };
       } catch (error) {
         metrics?.record("McpFailure_SearchBlog");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "mcp_tool_error",
-            tool: "search_blog",
-            error: error?.name,
-            message: error?.message,
-          }),
-        );
+        log.error("mcp_tool_error", {
+          tool: "search_blog",
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         return {
           isError: true,
           content: [{ type: "text", text: "Unable to search the blog right now. Try again shortly." }],

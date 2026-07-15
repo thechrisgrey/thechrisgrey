@@ -52,8 +52,12 @@ const TOKEN_TIMEOUT_MS = 12000;
  * generic "Unable to process request." Cloudflare error codes:
  * https://developers.cloudflare.com/turnstile/troubleshooting/client-side-errors/error-codes/
  */
+import { createLogger } from './logger';
+
+const log = createLogger('Turnstile');
+
 function warnTurnstile(reason: string, detail?: unknown): void {
-  console.warn(`[turnstile] token not obtained: ${reason}`, detail ?? '');
+  log.warn('token_not_obtained', { reason, detail: detail ?? '' });
 }
 
 let scriptPromise: Promise<void> | null = null;

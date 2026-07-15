@@ -2,9 +2,13 @@ import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { putFact, MAX_FACT_LENGTH } from "../memory.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const _tool = /** @type {any} */ (tool);
 
+/**
+ * @param {{ docClient: any, PutCommand: any, deviceId: string, responseStream: any, metrics: any, requestId: string, timeoutMs: number }} deps
+ */
 export function buildRememberFactTool({
   docClient,
   PutCommand,
@@ -14,6 +18,7 @@ export function buildRememberFactTool({
   requestId,
   timeoutMs,
 }) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   return _tool({
     name: "remember_fact",
     description:
@@ -31,7 +36,7 @@ export function buildRememberFactTool({
           "Third-person fact about the visitor, e.g. 'Is preparing for SFAS' or 'Runs a fintech startup in Dallas'",
         ),
     }),
-    callback: async ({ fact }) => {
+    callback: async (/** @type {{ fact: string }} */ { fact }) => {
       if (!deviceId) {
         metrics?.record("ToolRejection_RememberFact_NoDevice");
         return { ok: false, error: "No visitor device identified; cannot persist memory." };
@@ -49,19 +54,16 @@ export function buildRememberFactTool({
         });
         return { ok: true, remembered: saved.content };
       } catch (error) {
+        const errName = error instanceof Error ? error.name : String(error);
         // Distinguish a hung-write timeout from a genuine DynamoDB failure so the
         // two are separable in CloudWatch and the visitor gets accurate copy.
-        const timedOut = error?.name === "TimeoutError";
+        const timedOut = errName === "TimeoutError";
         metrics?.record(timedOut ? "ToolTimeout_RememberFact" : "ToolFailure_RememberFact");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "tool_error",
-            tool: "remember_fact",
-            error: error.name,
-            message: error.message,
-          }),
-        );
+        log.error("tool_error", {
+          tool: "remember_fact",
+          error: errName,
+          message: error instanceof Error ? error.message : "",
+        });
         return {
           ok: false,
           error: timedOut ? "Unable to save that right now — it timed out." : "Unable to save that right now.",

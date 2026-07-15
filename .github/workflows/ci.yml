@@ -20,6 +20,14 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      - name: Cache Vite build
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            vite-cache-${{ runner.os }}-
+
       - name: Validate AGENTS.md consistency
         # Fails fast (no deps needed) if AGENTS.md drifts from the code:
         # documented npm scripts, file references, and Node version must all match.
@@ -51,6 +59,12 @@ jobs:
 
       - name: Tech debt tracking (TODO/FIXME)
         run: node scripts/check-tech-debt.mjs
+
+      - name: Dead feature flag detection
+        run: node scripts/check-dead-feature-flags.mjs
+
+      - name: Version drift detection (syncpack)
+        run: npx syncpack lint
 
       - name: Generate code quality report
         run: npm run lint:quality -- --json code-quality-report.json
@@ -87,14 +101,14 @@ jobs:
           set -e
           # Canonical list mirrors the lambda-audit job below — keep in sync.
           # shared installed first so file:../shared dependents resolve a fresh copy.
-          # npm ci from each committed lockfile for reproducibility; fall back to
-          # npm install only if a dir ever ships without a lockfile.
+          # --no-workspaces: install locally in each Lambda dir, not hoisted to root.
+          # --ignore-scripts: skip root prepare (husky) which is irrelevant for Lambdas.
           for dir in lambda/shared lambda/chat-stream lambda/blueprint lambda/kb-builder lambda/metrics lambda/kb-sync lambda/mcp-server lambda/session-token; do
             echo "=== Installing $dir ==="
             if [ -f "$dir/package-lock.json" ]; then
-              (cd "$dir" && npm ci --no-audit --no-fund)
+              (cd "$dir" && npm ci --no-audit --no-fund --no-workspaces --ignore-scripts)
             else
-              (cd "$dir" && npm install --no-audit --no-fund)
+              (cd "$dir" && npm install --no-audit --no-fund --no-workspaces --ignore-scripts)
             fi
           done
 
@@ -214,6 +228,97 @@ jobs:
             echo "=== Auditing $dir ==="
             # --ignore-scripts: audit only needs the dependency tree, not postinstall
             # native-binary downloads (e.g. @anthropic-ai/claude-code) that fail in CI.
-            (cd "$dir" && npm install --no-audit --no-fund --ignore-scripts)
+            (cd "$dir" && npm install --no-audit --no-fund --no-workspaces --ignore-scripts)
             (cd "$dir" && npm audit --audit-level=high --omit=dev) || echo "::warning::$dir has high-severity advisories (non-blocking) — see Dependabot PRs."
           done
+
+  build-performance:
+    # Runs the timed build in parallel with the main CI job to collect
+    # per-step build timing data for performance trend analysis.
+    # Non-blocking: failures here don't gate merges.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Cache Vite build
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-cache-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            vite-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run timed build
+        run: node scripts/track-build-performance.mjs --output build-performance-report.json
+        env:
+          VITE_CONTACT_ENDPOINT: https://placeholder.example.com
+          VITE_NEWSLETTER_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_ENDPOINT: https://placeholder.example.com
+          VITE_CHAT_SIGNING_KEY: ci-placeholder-key
+          VITE_SESSION_ENDPOINT: https://placeholder.example.com
+          VITE_TURNSTILE_SITE_KEY: ci-placeholder-turnstile
+          VITE_COGNITO_USER_POOL_ID: us-east-1_placeholder
+          VITE_COGNITO_CLIENT_ID: placeholder
+          VITE_KB_BUILDER_ENDPOINT: https://placeholder.example.com
+          VITE_METRICS_ENDPOINT: https://placeholder.example.com
+
+      - name: Download previous build report
+        uses: actions/download-artifact@v5
+        with:
+          name: build-performance-report
+          path: previous-report
+        continue-on-error: true
+
+      - name: Compare build performance
+        run: |
+          PREV=""
+          if [ -f previous-report/build-performance-report.json ]; then
+            PREV="--previous previous-report/build-performance-report.json"
+          fi
+          node scripts/compare-build-performance.mjs --current build-performance-report.json $PREV --summary
+
+      - name: Upload build performance report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-performance-report
+          path: build-performance-report.json
+          retention-days: 90
+
+      # Bundle-size / heavy-dependency guard. Reuses the dist/ produced by the
+      # timed build above, checks each chunk against bundle-size-budgets.json,
+      # and reports gzip-size deltas vs the previous run in the job summary.
+      - name: Download previous bundle-size report
+        uses: actions/download-artifact@v5
+        with:
+          name: bundle-size-report
+          path: previous-bundle
+        continue-on-error: true
+
+      - name: Report bundle size
+        run: |
+          PREV=""
+          if [ -f previous-bundle/bundle-size-report.json ]; then
+            PREV="--previous previous-bundle/bundle-size-report.json"
+          fi
+          node scripts/track-bundle-size.mjs --output bundle-size-report.json $PREV --summary
+
+      - name: Upload bundle-size report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bundle-size-report
+          path: bundle-size-report.json
+          retention-days: 90

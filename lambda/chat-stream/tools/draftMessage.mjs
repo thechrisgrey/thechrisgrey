@@ -2,6 +2,7 @@ import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
+/** @param {{ responseStream: any, metrics: any }} deps */
 export function buildDraftMessageTool({ responseStream, metrics }) {
   return tool({
     name: "draft_message",

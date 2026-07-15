@@ -11,6 +11,10 @@ export const MAX_METRICS_PER_CALL = 20;
  * "TheChrisGrey/Blueprint"). The CloudWatch client is injected so tests can stub it.
  */
 export class MetricsCollector {
+  /**
+   * @param {{ send: any }} cloudwatchClient - Injected CloudWatchClient
+   * @param {string} namespace - CloudWatch metric namespace
+   */
   constructor(cloudwatchClient, namespace) {
     if (!cloudwatchClient) {
       throw new Error("MetricsCollector requires a cloudwatchClient");
@@ -20,9 +24,15 @@ export class MetricsCollector {
     }
     this.client = cloudwatchClient;
     this.namespace = namespace;
+    /** @type {{ MetricName: string, Value: number, Unit: string, Timestamp: Date }[]} */
     this.buffer = [];
   }
 
+  /**
+   * @param {string} metricName
+   * @param {number} [value=1]
+   * @param {string} [unit="Count"]
+   */
   record(metricName, value = 1, unit = "Count") {
     this.buffer.push({
       MetricName: metricName,
@@ -35,19 +45,29 @@ export class MetricsCollector {
   async flush() {
     if (this.buffer.length === 0) return;
 
+    // Snapshot then clear the buffer up front, so a collector that is reused
+    // across warm invocations (e.g. a module-scoped singleton like the one in
+    // session-token) does not re-emit already-flushed metrics on the next
+    // request. A Node Lambda runs one invocation at a time per container, so
+    // there is no concurrent flush racing this reassignment.
+    const pending = this.buffer;
+    this.buffer = [];
+
     const batches = [];
-    for (let i = 0; i < this.buffer.length; i += MAX_METRICS_PER_CALL) {
-      batches.push(this.buffer.slice(i, i + MAX_METRICS_PER_CALL));
+    for (let i = 0; i < pending.length; i += MAX_METRICS_PER_CALL) {
+      batches.push(pending.slice(i, i + MAX_METRICS_PER_CALL));
     }
 
     await Promise.all(
       batches.map((batch) =>
-        this.client.send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: batch })).catch((err) =>
-          createLogger(null, { service: "metrics-collector" }).error("metrics_flush_error", {
-            error: err.name,
-            message: err.message,
-          }),
-        ),
+        this.client
+          .send(new PutMetricDataCommand({ Namespace: this.namespace, MetricData: /** @type {any} */ (batch) }))
+          .catch((/** @type {unknown} */ err) =>
+            createLogger(null, { service: "metrics-collector" }).error("metrics_flush_error", {
+              error: err instanceof Error ? err.name : String(err),
+              message: err instanceof Error ? err.message : "",
+            }),
+          ),
       ),
     );
   }

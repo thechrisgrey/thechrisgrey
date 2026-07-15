@@ -1,0 +1,47 @@
+name: Dependency Release Age Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+
+jobs:
+  check-release-age:
+    # Only run on PRs that update dependencies (Dependabot PRs or manually labeled).
+    if: contains(github.event.pull_request.labels.*.name, 'dependencies') || github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Check minimum dependency release age
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: node scripts/check-dependency-age.mjs --min-age 7
+
+      - name: Comment on failure
+        if: failure()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: [
+                '⚠️ **Minimum Dependency Release Age Check Failed**',
+                '',
+                'One or more dependency updates in this PR target versions published less than 7 days ago.',
+                'This policy enforces a cooling period to mitigate supply chain attacks.',
+                '',
+                'The PR can be merged once the target versions are at least 7 days old.',
+                'If this is urgent (e.g., a security fix), add the `skip-release-age` label and re-run.'
+              ].join('\n')
+            });

@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Generate changelog entry
+        id: changelog
+        run: |
+          # Get the previous tag (the one before the just-pushed tag)
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Generating changelog from $PREVIOUS_TAG to $CURRENT_TAG"
+            node scripts/generate-changelog.mjs --from "$PREVIOUS_TAG" --write --version "${CURRENT_TAG#v}"
+          else
+            echo "No previous tag found, generating full changelog"
+            node scripts/generate-changelog.mjs --write --version "${CURRENT_TAG#v}"
+          fi
+
+          # Capture the generated entry for the GitHub Release body
+          ENTRY=$(awk '/^## \[/{found=1} found{print} /^## \[/ && NR>1{exit}' CHANGELOG.md)
+          {
+            echo "body<<EOF"
+            echo "$ENTRY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Commit changelog to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git add CHANGELOG.md
+          git commit -m "docs(changelog): update CHANGELOG.md for ${GITHUB_REF#refs/tags/}" || echo "No changes to commit"
+          git push origin main
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.body }}
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}

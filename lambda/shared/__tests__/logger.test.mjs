@@ -207,3 +207,22 @@ test("LEVELS has the expected numeric ordering", () => {
   assert.ok(LEVELS.info < LEVELS.warn);
   assert.ok(LEVELS.warn < LEVELS.error);
 });
+
+test("logger redacts PII in static context fields at creation time", () => {
+  const cap = captureConsole();
+  try {
+    const log = createLogger("req-ctx-pii", {
+      service: "chat-stream",
+      email: "admin@example.com",
+      token: "secret-value",
+    });
+    log.info("request_start");
+
+    const entry = parseLogEntry(cap.lines.log[0]);
+    assert.equal(entry.service, "chat-stream");
+    assert.equal(entry.email, "[REDACTED]", "email in context must be redacted");
+    assert.equal(entry.token, "[REDACTED]", "token in context must be redacted");
+  } finally {
+    cap.restore();
+  }
+});

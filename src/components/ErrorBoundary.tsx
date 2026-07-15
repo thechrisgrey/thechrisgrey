@@ -1,7 +1,11 @@
 import { Component, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { typography } from '../utils/typography';
-import { captureError, isRumInitialized } from '../utils/rum';
+import { captureError, isRumInitialized, addBreadcrumb } from '../utils/rum';
+import { captureSentryError, isSentryInitialized } from '../utils/sentry';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('ErrorBoundary');
 
 interface Props {
   children: ReactNode;
@@ -27,13 +31,23 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    addBreadcrumb('error', `ErrorBoundary caught: ${error.message}`, {
+      pageName: this.props.pageName || 'unknown',
+    });
     if (isRumInitialized) {
       captureError(error, {
         componentStack: errorInfo.componentStack,
         pageName: this.props.pageName || 'unknown',
       });
-    } else {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    }
+    if (isSentryInitialized()) {
+      captureSentryError(error, {
+        componentStack: errorInfo.componentStack,
+        pageName: this.props.pageName || 'unknown',
+      });
+    }
+    if (!isRumInitialized && !isSentryInitialized()) {
+      log.error('uncaught_error', { error: error.message, componentStack: errorInfo.componentStack });
     }
   }
 

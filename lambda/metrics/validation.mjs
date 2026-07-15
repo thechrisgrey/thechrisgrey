@@ -9,7 +9,7 @@ const CSP_URI_PATTERN = /^https?:\/\/[\w.-]+$/;
 
 /**
  * @param {{name?: string, value?: number, rating?: string}} body
- * @returns {{ok:true, dimensions:Array}|{ok:false, status:number, error:string}}
+ * @returns {{ok:true, dimensions:Array<{Name:string,Value:string}>}|{ok:false, status:number, error:string}}
  */
 export function validateVitals(body) {
   const { name, value, rating } = body;

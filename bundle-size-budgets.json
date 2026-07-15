@@ -1,0 +1,14 @@
+{
+  "description": "Gzipped size budgets (KB) for the frontend production bundle, enforced by scripts/track-bundle-size.mjs after `vite build`. Per-chunk budgets guard the named code-split groups from vite.config.ts; the totals guard against unnoticed dependency bloat across all emitted JS/CSS. Budgets are gzipped (what CloudFront transfers) and carry deliberate headroom over observed sizes. Raise a budget only when a chunk grows for a justified reason.",
+  "totalJsGzipKB": 2100,
+  "totalCssGzipKB": 25,
+  "chunks": {
+    "entry (index)": { "match": "index-", "ext": "js", "maxGzipKB": 45 },
+    "vendor (react)": { "match": "vendor-", "ext": "js", "maxGzipKB": 80 },
+    "router": { "match": "router-", "ext": "js", "maxGzipKB": 30 },
+    "sanity": { "match": "sanity-", "ext": "js", "maxGzipKB": 55 },
+    "cognito": { "match": "cognito-", "ext": "js", "maxGzipKB": 55 },
+    "three-vendor": { "match": "three-vendor-", "ext": "js", "maxGzipKB": 230 },
+    "gsap-vendor": { "match": "gsap-vendor-", "ext": "js", "maxGzipKB": 60 }
+  }
+}

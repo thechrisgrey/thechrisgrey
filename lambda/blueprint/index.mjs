@@ -34,6 +34,8 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
 import { createLogger } from "lambda-shared/logger";
+import { setRequestContext, captureError, addBreadcrumb, flushSentry } from "lambda-shared/errorTracking";
+import { captureProductEvent, flushProductAnalytics } from "lambda-shared/productAnalytics";
 import { generateBlueprint } from "./engine.mjs";
 import { resolveOpusDeadlineMs } from "./bedrock.mjs";
 import { createGoldenExamplesFetcher } from "./goldenExamples.mjs";
@@ -67,15 +69,12 @@ const sanityClient = sanityProjectId
   : null;
 
 // Module-scope fetcher so the 5-min cache persists across warm invocations.
-const examplesFetcher = sanityClient ? createGoldenExamplesFetcher(sanityClient) : null;
+const examplesFetcher = sanityClient ? createGoldenExamplesFetcher(sanityClient) : undefined;
 
 if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
-  console.warn(
-    JSON.stringify({
-      event: "startup_warning",
-      message: "Neither SESSION_TOKEN_KEY nor BLUEPRINT_SIGNING_KEY set — request authentication disabled",
-    }),
-  );
+  createLogger(null, { service: "blueprint" }).warn("startup_warning", {
+    message: "Neither SESSION_TOKEN_KEY nor BLUEPRINT_SIGNING_KEY set — request authentication disabled",
+  });
 }
 
 function corsHeaders() {
@@ -87,16 +86,19 @@ function corsHeaders() {
   };
 }
 
+/** @param {any} raw @returns {string|null} */
 function validateDeviceId(raw) {
   if (typeof raw !== "string") return null;
   if (!DEVICE_ID_PATTERN.test(raw)) return null;
   return raw;
 }
 
+/** @param {string} deviceId @returns {string} */
 function hashDeviceId(deviceId) {
   return createHash("sha256").update(deviceId).digest("hex");
 }
 
+/** @param {string|null} requestId @param {string} event @param {any} [extra] */
 function logStructured(requestId, event, extra = {}) {
   createLogger(requestId, { service: "blueprint" }).info(event, extra);
 }
@@ -115,6 +117,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
   const requestId = event.headers?.["x-request-id"] || randomUUID();
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/Blueprint");
   const start = Date.now();
+  setRequestContext(requestId, "blueprint", { method: event.requestContext?.http?.method, path: event.rawPath });
 
   // Anchor a single absolute Opus deadline = start + remaining - buffer. The
   // engine re-derives each attempt's timeout from this shared deadline
@@ -133,6 +136,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
   let ndjsonMode = false;
 
   // Commit headers + status for a buffered-style JSON response and end.
+  /** @param {number} statusCode @param {any} body */
   const closeWithJson = (statusCode, body) => {
     if (streamOpened) return; // caller bug — defensive no-op
     const withMeta = awslambda.HttpResponseStream.from(responseStream, {
@@ -162,7 +166,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       streamOpened = true;
       ndjsonMode = true;
     }
-    return (ev) => {
+    return (/** @type {any} */ ev) => {
       try {
         responseStream.write(JSON.stringify(ev) + "\n");
       } catch {
@@ -207,6 +211,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     }
     // Watch the legacy path drain to zero before retiring the bundled HMAC key.
     metrics.record(auth.method === "token" ? "AuthSessionToken" : "AuthLegacySignature");
+    addBreadcrumb("auth", "request_authenticated", { method: auth.method });
 
     // Parse body
     let payload;
@@ -259,9 +264,9 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     writeEvent({ type: "ready", requestId });
 
     const logger = {
-      info: (code, extra) => logStructured(requestId, code, extra),
-      warn: (code, extra) => logStructured(requestId, code, extra),
-      error: (code, extra) => logStructured(requestId, code, extra),
+      info: (/** @type {string} */ code, /** @type {any} */ extra) => logStructured(requestId, code, extra),
+      warn: (/** @type {string} */ code, /** @type {any} */ extra) => logStructured(requestId, code, extra),
+      error: (/** @type {string} */ code, /** @type {any} */ extra) => logStructured(requestId, code, extra),
     };
 
     const result = await generateBlueprint(spec, {
@@ -336,6 +341,8 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       haiku_verdict: result.meta?.haiku_verdict?.confidence,
     });
 
+    captureProductEvent("BlueprintGenerated", { outcome: "success", latencyMs: totalMs, category: spec?.category });
+
     writeEvent({
       type: "complete",
       ok: true,
@@ -351,11 +358,12 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     responseStream.end();
   } catch (error) {
     logStructured(requestId, "handler_error", {
-      error: error?.name,
-      message: error?.message,
-      stack: error?.stack,
+      error: error instanceof Error ? error.name : String(error),
+      message: error instanceof Error ? error.message : "",
+      stack: error instanceof Error ? error.stack || "" : "",
     });
     metrics.record("BlueprintHandlerError");
+    captureError(error, { handler: "blueprint", path: event.rawPath });
 
     if (streamOpened && ndjsonMode) {
       // Stream already live — surface the error as an NDJSON event.
@@ -387,6 +395,8 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
     }
   } finally {
     await metrics.flush();
+    await flushSentry();
+    await flushProductAnalytics();
   }
 });
 

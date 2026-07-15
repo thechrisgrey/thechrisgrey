@@ -1,0 +1,56 @@
+openapi: 3.1.0
+info:
+  title: TheChrisGrey Frontend API
+  version: '1.0.0'
+  description: |
+    React 19 SPA deployed on AWS Amplify. The frontend does not expose a
+    traditional REST API, but it serves a static health check endpoint and
+    consumes the 6 HTTP Lambda services documented in `lambda/*/openapi.yaml`.
+
+    This spec documents the frontend's own HTTP surface (the health check
+    static file) and references the backend Lambda APIs it consumes for
+    integration discovery.
+servers:
+  - url: https://thechrisgrey.com
+    description: Production (AWS Amplify, us-east-2)
+  - url: http://localhost:5173
+    description: Local dev server
+tags:
+  - name: health
+  - name: consumed-apis
+paths:
+  /health.json:
+    get:
+      tags: [health]
+      operationId: frontendHealth
+      summary: Static health check endpoint
+      description: |
+        Served by AWS Amplify from `public/health.json` (copied to `dist/`
+        during build). Provides a liveness probe for external monitors
+        (Route 53, UptimeRobot). If the site is down, this URL won't respond.
+      security: []
+      responses:
+        '200':
+          description: Site is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: thechrisgrey-frontend
+                  version:
+                    type: string
+                    example: '1.0.0'
+components:
+  securitySchemes:
+    sessionToken:
+      type: http
+      scheme: bearer
+      description: |
+        Server-issued session token (Turnstile-gated, issued by
+        `lambda/session-token/`). Sent as `Authorization: Bearer <token>`.

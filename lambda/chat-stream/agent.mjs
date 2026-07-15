@@ -34,6 +34,7 @@ export function buildBedrockModel({
 } = {}) {
   if (!modelId) throw new Error("buildBedrockModel: modelId is required");
 
+  /** @type {Record<string, any>} */
   const config = {
     modelId,
     region,
@@ -101,6 +102,7 @@ export function buildAgent({
   return agent;
 }
 
+/** @param {any} streamEvent */
 function extractText(streamEvent) {
   const inner = streamEvent?.event;
   if (inner?.type !== "modelContentBlockDeltaEvent") return null;
@@ -108,12 +110,14 @@ function extractText(streamEvent) {
   return inner.delta.text || null;
 }
 
+/** @param {any} streamEvent */
 function extractUsage(streamEvent) {
   const inner = streamEvent?.event;
   if (inner?.type === "modelMetadataEvent" && inner.usage) return inner.usage;
   return null;
 }
 
+/** @param {any} result */
 function toolResultStatus(result) {
   if (!result) return "unknown";
   if (typeof result.status === "string") return result.status;

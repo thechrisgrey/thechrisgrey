@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { typography } from '../utils/typography';
 import { getConsent, setConsent } from '../utils/consent';
 import { isPostHogConfigured, enablePostHog } from '../utils/posthog';
+import { grantRumCookies, revokeRumCookies } from '../utils/rum';
+import { enableSentry } from '../utils/sentry';
 import { isPrerender } from '../utils/prerender';
 import ViewTransitionLink from './ViewTransitionLink';
 
@@ -23,11 +25,16 @@ const ConsentBanner = () => {
   const accept = () => {
     setConsent('granted');
     void enablePostHog();
+    // RUM is already running cookieless; upgrade it to cookie-backed sessions.
+    grantRumCookies();
+    enableSentry();
     setVisible(false);
   };
 
   const decline = () => {
     setConsent('denied');
+    // Ensure RUM stays cookieless and purge any cookies set this session.
+    revokeRumCookies();
     setVisible(false);
   };
 

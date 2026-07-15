@@ -8,6 +8,8 @@ import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
 import { createLogger } from "lambda-shared/logger";
 import { withTimeout } from "lambda-shared/timeout";
+import { setRequestContext, captureError, flushSentry } from "lambda-shared/errorTracking";
+import { captureProductEvent, flushProductAnalytics } from "lambda-shared/productAnalytics";
 import { validateVitals, validateCspUri } from "./validation.mjs";
 
 const cloudwatch = new CloudWatchClient({ region: "us-east-1" });
@@ -16,7 +18,13 @@ const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 const NAMESPACE = "TheChrisGrey/SiteMetrics";
+const moduleLog = createLogger(null, { service: "metrics" });
 
+/**
+ * @param {string} metricName
+ * @param {number} value
+ * @param {Array<{ Name: string, Value: string }>} [dimensions]
+ */
 async function putMetric(metricName, value, dimensions = []) {
   const command = new PutMetricDataCommand({
     Namespace: NAMESPACE,
@@ -33,6 +41,7 @@ async function putMetric(metricName, value, dimensions = []) {
   await withTimeout(cloudwatch.send(command), 5000, "cloudwatch_put_metric");
 }
 
+/** @param {any} body */
 async function handleVitals(body) {
   const { name, value } = body;
   const v = validateVitals(body);
@@ -46,16 +55,19 @@ async function handleVitals(body) {
   } catch {
     return respond(202, { received: true, note: "metric accepted but write deferred" });
   }
+  captureProductEvent("VitalsReported", { metric: name, rating: body.rating });
   return respond(200, { received: true });
 }
 
 // Hash a URI into one of 10 buckets to cap CloudWatch metric dimension cardinality.
 // Raw URIs are logged for forensic investigation without creating unbounded dimensions.
+/** @param {string} uri @returns {number} */
 function hashBucket(uri) {
   return parseInt(createHash("sha256").update(uri).digest("hex").slice(0, 8), 16) % 10;
 }
 
-async function handleCspReport(body) {
+/** @param {any} body @param {{ info: Function, error: Function }} [log] */
+async function handleCspReport(body, log) {
   const report = body["csp-report"] || body;
   const rawUri = (report["blocked-uri"] || report.blockedURL || "unknown").toString();
   const blockedUri = rawUri.substring(0, 256);
@@ -65,8 +77,12 @@ async function handleCspReport(body) {
     return respond(400, { error: "Invalid blocked-uri format" });
   }
 
-  // Log full URI for forensic investigation
-  console.log("CSP violation:", JSON.stringify({ blockedUri }));
+  // Log full URI for forensic investigation (structured + PII-redacted via logger)
+  if (log) {
+    log.info("csp_violation", { blockedUri });
+  } else {
+    moduleLog.info("csp_violation", { blockedUri });
+  }
 
   // Use bucketed dimension to prevent CloudWatch cardinality explosion
   const bucket = `csp-bucket-${hashBucket(blockedUri)}`;
@@ -74,6 +90,10 @@ async function handleCspReport(body) {
   return respond(200, { received: true });
 }
 
+/**
+ * @param {string} metricName
+ * @param {number} [periodHours=24]
+ */
 async function getMetricAverage(metricName, periodHours = 24) {
   const now = new Date();
   const start = new Date(now.getTime() - periodHours * 60 * 60 * 1000);
@@ -95,6 +115,10 @@ async function getMetricAverage(metricName, periodHours = 24) {
   };
 }
 
+/**
+ * @param {string} metricName
+ * @param {number} [periodHours=24]
+ */
 async function getMetricSum(metricName, periodHours = 24) {
   const now = new Date();
   const start = new Date(now.getTime() - periodHours * 60 * 60 * 1000);
@@ -115,14 +139,17 @@ async function getMetricSum(metricName, periodHours = 24) {
 /**
  * @param {PromiseSettledResult<any>} result
  * @param {any} [fallback=null]
+ * @param {{ error: Function }} [log]
  */
-function settledValue(result, fallback = null) {
+function settledValue(result, fallback = null, log) {
   if (result.status === "fulfilled") return result.value;
-  console.error("Metric fetch failed:", result.reason?.message || result.reason);
+  const logger = log || moduleLog;
+  logger.error("metric_fetch_failed", { reason: result.reason?.message || String(result.reason) });
   return fallback;
 }
 
-async function handleHealth(authHeader) {
+/** @param {string|undefined} authHeader @param {{ error: Function }} [log] */
+async function handleHealth(authHeader, log) {
   const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
   if (!user) {
     return respond(401, { error: "Unauthorized" });
@@ -135,7 +162,7 @@ async function handleHealth(authHeader) {
     getMetricAverage("FCP"),
     getMetricAverage("TTFB"),
   ]);
-  const [lcp, cls, inp, fcp, ttfb] = vitalsResults.map((r) => settledValue(r, { average: null, count: 0 }));
+  const [lcp, cls, inp, fcp, ttfb] = vitalsResults.map((r) => settledValue(r, { average: null, count: 0 }, log));
 
   const metricResults = await Promise.allSettled([
     getMetricSum("CSPViolation"),
@@ -164,7 +191,7 @@ async function handleHealth(authHeader) {
     kbLatency,
     bedrockLatency,
     totalLatency,
-  ] = metricResults.map((r, i) => settledValue(r, i >= 9 ? { average: null, count: 0 } : 0));
+  ] = metricResults.map((r, i) => settledValue(r, i >= 9 ? { average: null, count: 0 } : 0, log));
   const guardrails = guardrailStream + guardrailPreStream;
 
   const kbTotal = kbSuccesses + kbFailures;
@@ -195,12 +222,14 @@ async function handleHealth(authHeader) {
   });
 }
 
+/** @param {any} event */
 export const handler = async (event) => {
   const requestId = event.headers?.["x-request-id"] || randomUUID();
   const method = event.requestContext?.http?.method;
   const path = event.rawPath || "";
   const clientIp = event.requestContext?.http?.sourceIp || "unknown";
   const log = createLogger(requestId, { service: "metrics" });
+  setRequestContext(requestId, "metrics", { method, path });
 
   try {
     if (method === "POST" && path === "/vitals") {
@@ -242,17 +271,24 @@ export const handler = async (event) => {
       } catch {
         return respond(400, { error: "Invalid JSON" });
       }
-      return await handleCspReport(body);
+      return await handleCspReport(body, log);
     }
 
     if (method === "GET" && path === "/health") {
       const authHeader = event.headers?.authorization || event.headers?.Authorization;
-      return await handleHealth(authHeader);
+      return await handleHealth(authHeader, log);
     }
 
     return respond(404, { error: "Not found" });
   } catch (error) {
-    log.error("handler_error", { error: error.name, message: error.message });
+    log.error("handler_error", {
+      error: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "",
+    });
+    captureError(error, { handler: "metrics", path });
     return respond(500, { error: "Internal server error" });
+  } finally {
+    await flushSentry();
+    await flushProductAnalytics();
   }
 };

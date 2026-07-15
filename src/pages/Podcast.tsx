@@ -22,6 +22,9 @@ import { podcastClient, PODCAST_GUESTS_QUERY, classifySanityError, isPodcastGues
 import type { PodcastGuest } from '../sanity';
 import GuestCard from '../components/GuestCard';
 import { SpotifyIcon, ApplePodcastIcon, YouTubeIcon } from '../components/PodcastPlatformIcons';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('Podcast');
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -49,13 +52,13 @@ const Podcast = () => {
         if (isPodcastGuestArray(data)) {
           setGuests(data);
         } else {
-          console.error('Podcast guests response failed shape validation');
+          log.error('shape_validation_failed');
           setGuests([]);
         }
       })
       .catch((err) => {
         const classified = classifySanityError(err, 'Podcast guests');
-        console.error('Failed to fetch podcast guests:', classified.kind, classified.message);
+        log.error('fetch_failed', { kind: classified.kind, message: classified.message });
         setGuests([]);
       })
       .finally(() => setIsLoadingGuests(false));

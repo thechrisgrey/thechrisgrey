@@ -1,0 +1,26 @@
+{
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "name": "thechrisgrey API Reference",
+  "includeVersion": true,
+  "readme": "none",
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**", "src/vite-env.d.ts", "src/data/**"],
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "categorizeByGroup": true,
+  "categoryOrder": ["Hooks", "Utils", "Components", "Types", "*"],
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "searchInComments": true,
+  "groupOrder": ["Functions", "Classes", "Interfaces", "Types", "Enums", "Variables"]
+}

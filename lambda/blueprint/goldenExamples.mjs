@@ -12,6 +12,10 @@
  * just owns the fetch + cache.
  */
 
+import { createLogger } from "lambda-shared/logger";
+
+const log = createLogger(null, { service: "blueprint" });
+
 export const CACHE_TTL_MS = 5 * 60 * 1000;
 export const NEGATIVE_CACHE_TTL_MS = 30 * 1000;
 
@@ -24,7 +28,7 @@ export const GOLDEN_EXAMPLES_QUERY = `*[_type == "architectureBlueprint" && isAc
 /**
  * Build a fetcher with its own private cache. One per Lambda container.
  *
- * @param {object} sanityClient - @sanity/client instance.
+ * @param {{ fetch: any }} sanityClient - @sanity/client instance.
  * @param {object} [opts]
  * @param {number} [opts.ttlMs=CACHE_TTL_MS]
  * @param {number} [opts.negativeTtlMs=NEGATIVE_CACHE_TTL_MS]
@@ -36,7 +40,9 @@ export function createGoldenExamplesFetcher(sanityClient, opts = {}) {
   const negativeTtlMs = opts.negativeTtlMs ?? NEGATIVE_CACHE_TTL_MS;
   const now = opts.now ?? (() => Date.now());
 
+  /** @type {any} */
   let cache = null; // { data, expiresAt }
+  /** @type {any} */
   let inflight = null;
 
   async function fetchFresh() {
@@ -62,13 +68,10 @@ export function createGoldenExamplesFetcher(sanityClient, opts = {}) {
         cache = { data, expiresAt: now() + ttlMs };
         return data;
       } catch (error) {
-        console.error(
-          JSON.stringify({
-            event: "golden_examples_fetch_error",
-            error: error?.name,
-            message: error?.message,
-          }),
-        );
+        log.error("golden_examples_fetch_error", {
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         cache = { data: [], expiresAt: now() + negativeTtlMs };
         return [];
       } finally {

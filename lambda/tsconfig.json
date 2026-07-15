@@ -15,8 +15,8 @@
     "paths": {
       "lambda-shared/*": ["./shared/*.mjs"]
     },
-    "noImplicitAny": false,
-    "useUnknownInCatchVariables": false
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true
   },
   "include": [
     "shared/**/*.mjs",

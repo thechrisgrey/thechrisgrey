@@ -5,6 +5,7 @@ import { emitEvent, EVENT_KINDS } from "../events.mjs";
 
 const _tool = /** @type {any} */ (tool);
 
+/** @param {{ responseStream: any, metrics: any }} deps */
 export function buildNavigateTool({ responseStream, metrics }) {
   return _tool({
     name: "navigate_to",
@@ -18,7 +19,7 @@ export function buildNavigateTool({ responseStream, metrics }) {
       path: z.string().describe("The route path, e.g. /about or /blog/post-slug"),
       reason: z.string().min(4).max(240).describe("One sentence explaining why this page helps the visitor"),
     }),
-    callback: async ({ path, reason }) => {
+    callback: async (/** @type {{ path: string, reason: string }} */ { path, reason }) => {
       if (path === "/admin" || path === "/chat") {
         metrics?.record("ToolRejection_NavigateTo");
         return { ok: false, error: "Path is restricted." };

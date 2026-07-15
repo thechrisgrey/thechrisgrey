@@ -16,16 +16,22 @@ const JSONRPC_ERRORS = {
   INTERNAL_ERROR: { code: -32603, message: "Internal error" },
 };
 
+/**
+ * @param {any} id
+ * @param {{ code: number, message: string, data?: any }} errorObj
+ * @param {any} [data]
+ */
 function rpcError(id, { code, message }, data) {
-  const error = { code, message };
-  if (data !== undefined) error.data = data;
+  const error = data !== undefined ? { code, message, data } : { code, message };
   return { jsonrpc: "2.0", id: id ?? null, error };
 }
 
+/** @param {any} id @param {any} result */
 function rpcResult(id, result) {
   return { jsonrpc: "2.0", id, result };
 }
 
+/** @param {any} zodShape */
 function toJsonSchema(zodShape) {
   // Minimal zod→JSON-Schema projection for MCP tool input schemas.
   // We only use the subset MCP clients actually read: type, properties, required,
@@ -42,10 +48,12 @@ function toJsonSchema(zodShape) {
  * A tool definition is: { name, description, inputSchema, handler }
  * - inputSchema is a plain JSON Schema object (MCP-native), NOT a Zod schema.
  * - handler({ arguments, context }) returns { content: [{ type, text }], isError?: boolean }.
+ * @param {{ tools: any[], serverInfo: any }} opts
  */
 export function buildMcpServer({ tools, serverInfo }) {
-  const toolsByName = new Map(tools.map((t) => [t.name, t]));
+  const toolsByName = new Map(tools.map((/** @type {any} */ t) => [t.name, t]));
 
+  /** @param {any} request @param {any} [context] */
   async function handle(request, context = {}) {
     if (!request || typeof request !== "object") {
       return rpcError(null, JSONRPC_ERRORS.INVALID_REQUEST);
@@ -74,7 +82,7 @@ export function buildMcpServer({ tools, serverInfo }) {
 
         case "tools/list":
           return rpcResult(id, {
-            tools: tools.map((t) => ({
+            tools: tools.map((/** @type {any} */ t) => ({
               name: t.name,
               description: t.description,
               inputSchema: toJsonSchema(t.inputSchema),
@@ -99,7 +107,7 @@ export function buildMcpServer({ tools, serverInfo }) {
           return rpcError(id, JSONRPC_ERRORS.METHOD_NOT_FOUND, `Unknown method: ${method}`);
       }
     } catch (err) {
-      return rpcError(id, JSONRPC_ERRORS.INTERNAL_ERROR, err?.message ?? String(err));
+      return rpcError(id, JSONRPC_ERRORS.INTERNAL_ERROR, err instanceof Error ? err.message : String(err));
     }
   }
 

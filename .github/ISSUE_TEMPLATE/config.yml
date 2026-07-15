@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ideas under consideration
+    url: https://github.com/thechrisgrey/thechrisgrey/blob/main/docs/ideas-to-consider.md
+    about: Check the ideas list before opening a feature request — it may already be tracked.
+  - name: Privacy policy
+    url: https://thechrisgrey.com/privacy
+    about: Questions about data handling, consent, or cookie usage.

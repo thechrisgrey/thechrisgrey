@@ -1,0 +1,16 @@
+{
+  "description": "Absolute build-time budgets (milliseconds) per pipeline step, enforced by scripts/compare-build-performance.mjs. These are ceilings, not measured baselines: a step exceeding its budget is flagged as over-budget in the CI build-performance summary. Budgets carry deliberate headroom over observed local timings (which vary with network-bound steps hitting Sanity/YouTube and Puppeteer prerender). Raise a budget only when a step's cost grows for a justified reason.",
+  "totalBudgetMs": 180000,
+  "steps": {
+    "validate-env": 5000,
+    "generate-podcast-episodes": 20000,
+    "lint": 20000,
+    "tsc": 20000,
+    "vite-build": 30000,
+    "generate-og-images": 15000,
+    "prerender": 90000,
+    "validate-prerender-seo": 10000,
+    "generate-sitemap": 15000,
+    "generate-rss": 15000
+  }
+}

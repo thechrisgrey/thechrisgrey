@@ -7,6 +7,8 @@ export { authenticateRequest } from "./requestAuth.mjs";
 export { MetricsCollector, MAX_METRICS_PER_CALL } from "./metrics.mjs";
 export { createLogger, redact, LEVELS } from "./logger.mjs";
 export { withTimeout } from "./timeout.mjs";
+export { isSentryInitialized, setRequestContext, captureError, addBreadcrumb, flushSentry } from "./errorTracking.mjs";
+export { isProductAnalyticsInitialized, captureProductEvent, flushProductAnalytics } from "./productAnalytics.mjs";
 export {
   SITE_ORIGIN,
   BLOG_SEARCH_QUERY,

@@ -7,6 +7,8 @@ import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { checkRateLimit } from "lambda-shared/rateLimit";
 import { createLogger } from "lambda-shared/logger";
 import { MetricsCollector } from "lambda-shared/metrics";
+import { setRequestContext, captureError, addBreadcrumb, flushSentry } from "lambda-shared/errorTracking";
+import { captureProductEvent, flushProductAnalytics } from "lambda-shared/productAnalytics";
 import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { buildMcpServer } from "./server.mjs";
 import { buildSearchBlogMcpTool } from "./tools/searchBlog.mjs";
@@ -49,10 +51,12 @@ const kbCache = createKbCache();
 // are isolated from other services.
 const METRICS_NAMESPACE = "TheChrisGrey/McpServer";
 
+/** @param {string} ip */
 function hashIp(ip) {
   return crypto.createHash("sha256").update(ip).digest("hex").slice(0, 24);
 }
 
+/** @param {any} raw */
 function parseBody(raw) {
   if (!raw) return null;
   try {
@@ -71,6 +75,7 @@ function corsHeaders() {
   };
 }
 
+/** @param {number} status @param {any} payload */
 function jsonRpcResponse(status, payload) {
   return {
     statusCode: status,
@@ -82,12 +87,14 @@ function jsonRpcResponse(status, payload) {
   };
 }
 
+/** @param {any} event */
 export const handler = async (event) => {
   const method = event?.requestContext?.http?.method || "POST";
   const path = event?.rawPath || "/";
   const requestId = event.headers?.["x-request-id"] || event?.requestContext?.requestId || crypto.randomUUID();
   const log = createLogger(requestId, { service: "mcp-server" });
   const metrics = new MetricsCollector(cloudwatchClient, METRICS_NAMESPACE);
+  setRequestContext(requestId, "mcp-server", { method, path });
 
   // CORS preflight
   if (method === "OPTIONS") {
@@ -134,8 +141,10 @@ export const handler = async (event) => {
     }
   } catch (err) {
     // Rate limiter fails open per shared implementation; log and proceed.
-    log.error("mcp_ratelimit_error", { message: err?.message });
+    log.error("mcp_ratelimit_error", { message: err instanceof Error ? err.message : String(err) });
   }
+
+  addBreadcrumb("ratelimit", "rate_limit_checked");
 
   const body = parseBody(event.body);
   if (body === undefined) {
@@ -153,41 +162,61 @@ export const handler = async (event) => {
     });
   }
 
-  const tools = [];
-  if (sanityClient) {
-    tools.push(buildSearchBlogMcpTool({ sanityClient, metrics, requestId }));
-    tools.push(buildGetBlogPostMcpTool({ sanityClient, metrics, requestId }));
-  }
-  tools.push(
-    buildAskAltiMcpTool({
-      bedrockClient,
-      ConverseCommand,
-      agentClient,
-      RetrieveCommand,
-      kbId: KB_ID,
-      modelId: MODEL_ID,
-      guardrailId: GUARDRAIL_ID,
-      guardrailVersion: GUARDRAIL_VERSION,
-      kbCache,
-      metrics,
-      requestId,
-    }),
-  );
+  try {
+    const tools = [];
+    if (sanityClient) {
+      tools.push(buildSearchBlogMcpTool({ sanityClient, metrics, requestId }));
+      tools.push(buildGetBlogPostMcpTool({ sanityClient, metrics, requestId }));
+    }
+    tools.push(
+      buildAskAltiMcpTool({
+        bedrockClient,
+        ConverseCommand,
+        agentClient,
+        RetrieveCommand,
+        kbId: KB_ID,
+        modelId: MODEL_ID,
+        guardrailId: GUARDRAIL_ID,
+        guardrailVersion: GUARDRAIL_VERSION,
+        kbCache,
+        metrics,
+        requestId,
+      }),
+    );
 
-  const server = buildMcpServer({
-    tools,
-    serverInfo: { name: "alti-mcp", version: "1.0.0" },
-  });
+    const server = buildMcpServer({
+      tools,
+      serverInfo: { name: "alti-mcp", version: "1.0.0" },
+    });
 
-  const rpcResponse = await server.handle(body, { requestId, sourceIp });
+    const rpcResponse = await server.handle(body, { requestId, sourceIp });
 
-  // Notifications (null response) should return 202 Accepted per MCP guidance.
-  if (rpcResponse === null) {
+    // Notifications (null response) should return 202 Accepted per MCP guidance.
+    if (rpcResponse === null) {
+      await metrics.flush();
+      return { statusCode: 202, headers: corsHeaders(), body: "" };
+    }
+
+    metrics.record("McpRequestComplete");
+    captureProductEvent("McpToolCalled", { method: body.method, hasResult: !("error" in rpcResponse) });
+    addBreadcrumb("rpc", "request_complete", { id: body.id });
     await metrics.flush();
-    return { statusCode: 202, headers: corsHeaders(), body: "" };
+    return jsonRpcResponse(200, rpcResponse);
+  } catch (error) {
+    log.error("mcp_handler_error", {
+      error: error instanceof Error ? error.name : String(error),
+      message: error instanceof Error ? error.message : "",
+    });
+    metrics.record("McpHandlerError");
+    captureError(error, { handler: "mcp-server", method: body?.method });
+    await metrics.flush();
+    return jsonRpcResponse(500, {
+      jsonrpc: "2.0",
+      id: body?.id ?? null,
+      error: { code: -32603, message: "Internal error" },
+    });
+  } finally {
+    await flushSentry();
+    await flushProductAnalytics();
   }
-
-  metrics.record("McpRequestComplete");
-  await metrics.flush();
-  return jsonRpcResponse(200, rpcResponse);
 };

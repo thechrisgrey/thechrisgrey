@@ -1,6 +1,10 @@
 import { getOrCreateDeviceId } from './deviceId';
 import { getTurnstileToken } from './turnstile';
 import { withTraceId } from './traceId';
+import { createLogger } from './logger';
+import { CircuitBreaker, CircuitOpenError } from './resilience';
+
+const log = createLogger('SessionToken');
 
 /**
  * Client-side session-token manager.
@@ -47,6 +51,7 @@ const REFRESH_MARGIN_SEC = 30;
 export function createSessionTokenManager(deps: SessionTokenDeps) {
   const cache: Partial<Record<SessionScope, CachedToken>> = {};
   let inflight: Promise<void> | null = null;
+  const breaker = new CircuitBreaker('session-token-issuer', { threshold: 5, cooldown: 30_000 });
 
   function isValid(scope: SessionScope): boolean {
     const c = cache[scope];
@@ -80,8 +85,11 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
     try {
       // Dedupe concurrent issuance: one Turnstile challenge + one fetch serves
       // every caller waiting on a refresh, and mints both scopes at once.
+      // Circuit breaker prevents repeated Turnstile challenges when the issuer
+      // is down — fails fast after 5 consecutive failures, then retries after
+      // a 30s cooldown.
       if (!inflight) {
-        inflight = refresh().finally(() => {
+        inflight = breaker.execute(refresh).finally(() => {
           inflight = null;
         });
       }
@@ -89,8 +97,12 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
     } catch (err) {
       // Graceful: request goes out unauthenticated → server rejects with a clear
       // path. Surface the cause so a token-issuance failure (Turnstile, the issuer
-      // endpoint, CORS) is diagnosable instead of a silent "Unable to process request".
-      console.warn('[sessionToken] could not obtain a session token:', err);
+      // endpoint, CORS, circuit open) is diagnosable instead of a silent "Unable to process request".
+      if (err instanceof CircuitOpenError) {
+        log.warn('circuit_open', { circuit: err.circuitName, remainingCooldown: err.remainingCooldown });
+      } else {
+        log.warn('token_issuance_failed', { error: err instanceof Error ? err.message : String(err) });
+      }
       return '';
     }
     return cache[scope]?.token ?? '';
@@ -101,6 +113,7 @@ export function createSessionTokenManager(deps: SessionTokenDeps) {
     reset() {
       delete cache.chat;
       delete cache.blueprint;
+      breaker.reset();
     },
   };
 }

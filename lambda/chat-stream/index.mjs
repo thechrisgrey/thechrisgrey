@@ -16,6 +16,8 @@ import { checkRateLimit } from "lambda-shared/rateLimit";
 import { authenticateRequest } from "lambda-shared/requestAuth";
 import { MetricsCollector } from "lambda-shared/metrics";
 import { createLogger } from "lambda-shared/logger";
+import { setRequestContext, captureError, addBreadcrumb, flushSentry } from "lambda-shared/errorTracking";
+import { captureProductEvent, flushProductAnalytics } from "lambda-shared/productAnalytics";
 import { validateInput, validatePageContext, getLatestUserMessage } from "./validation.mjs";
 import { buildSystemPrompt } from "./prompts.mjs";
 import { retrieveContext } from "./kbRetrieve.mjs";
@@ -54,26 +56,28 @@ const SESSION_TOKEN_KEY = process.env.SESSION_TOKEN_KEY || "";
 const BEDROCK_MAX_MESSAGES = 20;
 const DEVICE_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/;
 
+const startupLog = createLogger(null, { service: "chat-stream" });
+
 if (!SESSION_TOKEN_KEY && !SIGNING_KEY) {
-  console.warn(
-    JSON.stringify({
-      event: "startup_warning",
-      message: "Neither SESSION_TOKEN_KEY nor CHAT_SIGNING_KEY set — request authentication is DISABLED",
-    }),
-  );
+  startupLog.warn("startup_warning", {
+    message: "Neither SESSION_TOKEN_KEY nor CHAT_SIGNING_KEY set — request authentication is DISABLED",
+  });
 }
 
+/** @param {any} responseStream @param {string} message */
 function writeSystemMessage(responseStream, message) {
   responseStream.write(SYSTEM_MESSAGE_PREFIX + message);
   responseStream.end();
 }
 
+/** @param {any} raw @returns {string|null} */
 function validateDeviceId(raw) {
   if (typeof raw !== "string") return null;
   if (!DEVICE_ID_PATTERN.test(raw)) return null;
   return raw;
 }
 
+/** @param {any[]} messages */
 function toStrandsMessages(messages) {
   const truncated =
     messages.length > BEDROCK_MAX_MESSAGES ? messages.slice(messages.length - BEDROCK_MAX_MESSAGES) : messages;
@@ -85,7 +89,7 @@ function toStrandsMessages(messages) {
   if (latest.role !== "user") return { history: [], latest: null };
 
   const historyRaw = windowed.slice(0, -1);
-  const history = historyRaw.map((msg) => ({
+  const history = historyRaw.map((/** @type {any} */ msg) => ({
     role: msg.role,
     content: [{ text: msg.content }],
   }));
@@ -93,11 +97,18 @@ function toStrandsMessages(messages) {
   return { history, latest: latest.content };
 }
 
+/** @param {any} responseStream @param {any} payload */
 function writeForgetResult(responseStream, payload) {
   responseStream.write(JSON.stringify(payload));
   responseStream.end();
 }
 
+/**
+ * @param {any} event
+ * @param {any} responseStream
+ * @param {string} requestId
+ * @param {{ record: any, flush: any }} metrics
+ */
 async function handleForget(event, responseStream, requestId, metrics) {
   const log = createLogger(requestId, { service: "chat-stream" });
   try {
@@ -116,7 +127,10 @@ async function handleForget(event, responseStream, requestId, metrics) {
     writeForgetResult(responseStream, { ok: true, deleted });
     await metrics.flush();
   } catch (error) {
-    log.error("forget_error", { error: error.name, message: error.message });
+    log.error("forget_error", {
+      error: error instanceof Error ? error.name : String(error),
+      message: error instanceof Error ? error.message : "",
+    });
     metrics.record("ForgetFailure");
     writeForgetResult(responseStream, { ok: false, error: "Unable to clear memory right now." });
     await metrics.flush();
@@ -144,6 +158,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
   const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/SiteMetrics");
   const log = createLogger(requestId, { service: "chat-stream" });
   const requestStart = Date.now();
+  setRequestContext(requestId, "chat-stream", { method: event.requestContext?.http?.method, path: event.rawPath });
 
   // Accept EITHER a server-issued session token (new model) OR the legacy
   // request-body HMAC signature (transition window). See lambda-shared/requestAuth.
@@ -155,10 +170,13 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
   if (!auth.valid) {
     metrics.record("AuthRejection");
     log.info("auth_rejected", { method: auth.method, reason: auth.error });
+    addBreadcrumb("auth", "request_rejected", { method: auth.method, reason: auth.error });
     writeSystemMessage(responseStream, "Unable to process request.");
     await metrics.flush();
+    await flushSentry();
     return;
   }
+  addBreadcrumb("auth", "request_authenticated", { method: auth.method });
   // Watch the legacy path drain to zero before retiring the bundled HMAC key.
   metrics.record(auth.method === "token" ? "AuthSessionToken" : "AuthLegacySignature");
 
@@ -182,6 +200,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       requestId,
     });
     metrics.record("RateLimitLatency", Date.now() - rateLimitStart, "Milliseconds");
+    addBreadcrumb("ratelimit", "rate_limit_checked", { allowed: rateLimit.allowed });
 
     if (!rateLimit.allowed) {
       metrics.record("RateLimitRejection");
@@ -221,6 +240,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
 
     const latestQuery = getLatestUserMessage(messages) || latest;
 
+    /** @type {any[]} */
     let facts = [];
     if (deviceId) {
       const memStart = Date.now();
@@ -230,7 +250,10 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
         metrics.record("MemoryFactsLoaded", facts.length);
       } catch (err) {
         metrics.record("MemoryLoadFailure");
-        log.error("memory_load_failure", { error: err.name, message: err.message });
+        log.error("memory_load_failure", {
+          error: err instanceof Error ? err.name : String(err),
+          message: err instanceof Error ? err.message : "",
+        });
         facts = [];
       }
     }
@@ -377,20 +400,25 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
 
     metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
     log.info("request_complete", { totalMs: Date.now() - requestStart });
+    captureProductEvent("ChatMessageSent", { outcome: "success", latencyMs: Date.now() - requestStart });
 
     responseStream.end();
     await metrics.flush();
+    await flushSentry();
+    await flushProductAnalytics();
   } catch (error) {
-    log.error("request_error", { error: error.name, message: error.message });
+    const errName = error instanceof Error ? error.name : String(error);
+    const errMsg = error instanceof Error ? error.message || "" : "";
+    log.error("request_error", { error: errName, message: errMsg });
 
-    if (error.name === "AbortError") {
+    if (errName === "AbortError") {
       metrics.record("AgentTimeout");
       writeSystemMessage(responseStream, "The response is taking too long. Please try again.");
       await metrics.flush();
       return;
     }
 
-    if (error.name === "ValidationException" && error.message?.toLowerCase().includes("guardrail")) {
+    if (errName === "ValidationException" && errMsg?.toLowerCase().includes("guardrail")) {
       log.info("guardrail_intervened_prestream");
       metrics.record("GuardrailInterventionPreStream");
       writeSystemMessage(
@@ -401,7 +429,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
       return;
     }
 
-    if (error.name === "ThrottlingException" || error.name === "ServiceQuotaExceededException") {
+    if (errName === "ThrottlingException" || errName === "ServiceQuotaExceededException") {
       metrics.record("BedrockThrottled");
       writeSystemMessage(responseStream, "The service is currently busy. Please try again in a moment.");
       await metrics.flush();
@@ -410,7 +438,11 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream,
 
     metrics.record("UnhandledError");
     metrics.record("TotalRequestLatency", Date.now() - requestStart, "Milliseconds");
+    captureProductEvent("ChatMessageSent", { outcome: "error", latencyMs: Date.now() - requestStart });
+    captureError(error, { handler: "chat-stream", path: event.rawPath });
     writeSystemMessage(responseStream, "I encountered an error processing your request. Please try again.");
     await metrics.flush();
+    await flushSentry();
+    await flushProductAnalytics();
   }
 });

@@ -9,7 +9,7 @@ export const SIGNATURE_MAX_AGE_SECONDS = 300;
  * implementation: chat-stream uses x-chat-* (the defaults), blueprint passes
  * its x-blueprint-* pair via `options`.
  *
- * @param {object} event - The Lambda event (Function URL shape).
+ * @param {{ headers?: Record<string, string>, body?: string }} event - The Lambda event (Function URL shape).
  * @param {string|undefined} signingKey - Shared secret. Empty string disables verification.
  * @param {{ signatureHeader?: string, timestampHeader?: string }} [options]
  * @returns {{ valid: true } | { valid: false, error: string }}

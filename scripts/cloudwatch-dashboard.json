@@ -1,0 +1,239 @@
+{
+  "widgets": [
+    {
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 1,
+      "properties": {
+        "markdown": "# thechrisgrey Deployment Observability Dashboard\n\nKey metrics across all services. Watch for spikes after deploys. Deployment markers appear in the bottom row."
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["/aws/lambda/thechrisgrey-chat-stream", "Errors"],
+          ["/aws/lambda/thechrisgrey-blueprint", "Errors"],
+          ["/aws/lambda/thechrisgrey-mcp-server", "Errors"],
+          ["/aws/lambda/thechrisgrey-session-token", "Errors"],
+          ["/aws/lambda/thechrisgrey-metrics", "Errors"],
+          ["/aws/lambda/thechrisgrey-kb-builder", "Errors"],
+          ["/aws/lambda/thechrisgrey-kb-sync", "Errors"]
+        ],
+        "title": "Lambda Error Rate (all services)",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 1,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["/aws/lambda/thechrisgrey-chat-stream", "Invocations"],
+          ["/aws/lambda/thechrisgrey-blueprint", "Invocations"],
+          ["/aws/lambda/thechrisgrey-mcp-server", "Invocations"],
+          ["/aws/lambda/thechrisgrey-session-token", "Invocations"],
+          ["/aws/lambda/thechrisgrey-metrics", "Invocations"],
+          ["/aws/lambda/thechrisgrey-kb-builder", "Invocations"],
+          ["/aws/lambda/thechrisgrey-kb-sync", "Invocations"]
+        ],
+        "title": "Lambda Invocations (all services)",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 7,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/SiteMetrics", "KBRetrievalFailure"],
+          ["TheChrisGrey/SiteMetrics", "RateLimitRejection"],
+          ["TheChrisGrey/SiteMetrics", "GuardrailInterventionStream"],
+          ["TheChrisGrey/SiteMetrics", "AgentTimeout"]
+        ],
+        "title": "chat-stream: Key Metrics",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 7,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/Blueprint", "BlueprintOpusInputTokens"],
+          ["TheChrisGrey/Blueprint", "BlueprintHandlerError"],
+          ["TheChrisGrey/Blueprint", "BlueprintValidationFailure"],
+          ["TheChrisGrey/Blueprint", "BlueprintOpusTimeout"]
+        ],
+        "title": "blueprint: Key Metrics",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 7,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/SiteMetrics", "BedrockInputTokens"],
+          ["TheChrisGrey/SiteMetrics", "BedrockOutputTokens"]
+        ],
+        "title": "Bedrock Token Usage (cost tracking)",
+        "period": 3600,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 13,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/McpServer", "McpRateLimitRejection"],
+          ["TheChrisGrey/McpServer", "McpHandlerError"],
+          ["TheChrisGrey/McpServer", "McpRequestComplete"]
+        ],
+        "title": "mcp-server: Key Metrics",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 13,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/SessionToken", "SessionTurnstileFailure"],
+          ["TheChrisGrey/SessionToken", "SessionRateLimited"],
+          ["TheChrisGrey/SessionToken", "TokensIssued"]
+        ],
+        "title": "session-token: Key Metrics",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 13,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/SiteMetrics", "CSPViolation"],
+          ["TheChrisGrey/SiteMetrics", "KBSyncFailure"],
+          ["TheChrisGrey/SiteMetrics", "KBSyncTriggered"],
+          ["TheChrisGrey/KBBuilder", "KbBuilderError"]
+        ],
+        "title": "metrics + kb-builder + kb-sync",
+        "period": 300,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 19,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/SiteMetrics", "LCP", "Source", "frontend"],
+          ["TheChrisGrey/SiteMetrics", "CLS", "Source", "frontend"],
+          ["TheChrisGrey/SiteMetrics", "INP", "Source", "frontend"]
+        ],
+        "title": "Frontend Web Vitals (LCP, CLS, INP)",
+        "period": 300,
+        "stat": "Average"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 19,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "chat-stream"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "blueprint"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "mcp-server"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "session-token"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "metrics"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "kb-builder"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "kb-sync"],
+          ["TheChrisGrey/Deployments", "Deployment", "Service", "frontend"]
+        ],
+        "title": "Deployment Markers (correlate deploys with metric changes)",
+        "period": 60,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 19,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          ["/aws/lambda/thechrisgrey-chat-stream", "Duration"],
+          ["/aws/lambda/thechrisgrey-mcp-server", "Duration"],
+          ["/aws/lambda/thechrisgrey-session-token", "Duration"],
+          ["/aws/lambda/thechrisgrey-metrics", "Duration"]
+        ],
+        "title": "Lambda Duration (p95 latency)",
+        "period": 300,
+        "stat": "p95"
+      }
+    }
+  ]
+}

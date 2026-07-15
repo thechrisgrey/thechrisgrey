@@ -1,3 +1,7 @@
+import { createLogger } from "./logger.mjs";
+
+const log = createLogger(null, { service: "auth" });
+
 /**
  * Validate a Cognito access token via the GetUser API AND authorize the caller
  * against an explicit admin allowlist.
@@ -9,17 +13,12 @@
  *
  * Fails closed: if the allowlist is empty/unset, NO caller is authorized.
  *
- * @param {any} cognitoClient - Injected CognitoIdentityProviderClient (duck-typed: must have .send)
- * @param {any} GetUserCommand - Injected GetUserCommand constructor
+ * @param {{ send: any }} cognitoClient - Injected CognitoIdentityProviderClient (duck-typed: must have .send)
+ * @param {{ new (input: any): any }} GetUserCommand - Injected GetUserCommand constructor
  * @param {string|undefined} authHeader - The `Authorization` header value (e.g. "Bearer xxx").
  * @param {{ allowlist?: string }} [options] - Override the allowlist source (defaults to ADMIN_ALLOWLIST env).
  * @returns {Promise<any>} The GetUser response if authenticated AND authorized, else null.
  */
-
-import { createLogger } from "./logger.mjs";
-
-const log = createLogger(null, { service: "auth" });
-
 export async function validateCognitoToken(
   cognitoClient,
   GetUserCommand,
@@ -42,7 +41,7 @@ export async function validateCognitoToken(
     const command = new GetUserCommand({ AccessToken: authHeader.slice(7) });
     const response = await cognitoClient.send(command);
 
-    const attrs = response.UserAttributes || [];
+    const attrs = /** @type {{ Name: string, Value?: string }[]} */ (response.UserAttributes || []);
     const email = attrs
       .find((a) => a.Name === "email")
       ?.Value?.trim()
@@ -56,7 +55,7 @@ export async function validateCognitoToken(
 
     return response;
   } catch (error) {
-    log.error("token_validation_failed", { error: error.name });
+    log.error("token_validation_failed", { error: error instanceof Error ? error.name : "Unknown" });
     return null;
   }
 }

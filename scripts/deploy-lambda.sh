@@ -32,10 +32,12 @@ DIR="$ROOT/lambda/$NAME"
 cd "$DIR"
 
 echo "==> [$NAME] Installing deps"
+# --no-workspaces: install locally in the Lambda dir, not hoisted to root.
+# --ignore-scripts: skip root prepare (husky) which is irrelevant for Lambda bundles.
 if [ -f package-lock.json ]; then
-  npm ci --no-audit --no-fund
+  npm ci --no-audit --no-fund --no-workspaces --ignore-scripts
 else
-  npm install --no-audit --no-fund
+  npm install --no-audit --no-fund --no-workspaces --ignore-scripts
 fi
 
 if [ -L node_modules/lambda-shared ]; then
@@ -90,4 +92,10 @@ aws lambda update-function-code \
   --function-name "thechrisgrey-$NAME" \
   --zip-file "fileb://function.zip" \
   --region "$REGION"
+
+# Record a deployment marker in CloudWatch so deploys are visible in the
+# thechrisgrey dashboard (correlates deploys with metric changes).
+# Best-effort: failures are logged but do not block the deploy.
+node "$ROOT/scripts/mark-deployment.mjs" "$NAME" --region "$REGION" 2>/dev/null || true
+
 echo "==> [$NAME] Done."

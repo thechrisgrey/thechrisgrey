@@ -119,6 +119,21 @@ aws cloudwatch put-metric-alarm \
   --comparison-operator "GreaterThanThreshold" \
   --treat-missing-data "notBreaching"
 
+# Chat-stream agent timeouts — indicates Bedrock or KB is hanging.
+aws cloudwatch put-metric-alarm \
+  --region "$REGION" \
+  --alarm-name "thechrisgrey-chat-agent-timeout" \
+  --alarm-description "Chat agent timeouts exceed 5 in a 15-minute window (Bedrock or KB hang)" \
+  --alarm-actions "$SNS_TOPIC_ARN" \
+  --namespace "TheChrisGrey/SiteMetrics" \
+  --metric-name "AgentTimeout" \
+  --statistic "Sum" \
+  --period 900 \
+  --evaluation-periods 1 \
+  --threshold 5 \
+  --comparison-operator "GreaterThanThreshold" \
+  --treat-missing-data "notBreaching"
+
 echo ""
 echo "--- Blueprint ---"
 
@@ -164,6 +179,36 @@ aws cloudwatch put-metric-alarm \
   --comparison-operator "GreaterThanThreshold" \
   --treat-missing-data "notBreaching"
 
+# Blueprint Opus timeouts — indicates Bedrock is hanging on generation.
+aws cloudwatch put-metric-alarm \
+  --region "$REGION" \
+  --alarm-name "thechrisgrey-blueprint-opus-timeout" \
+  --alarm-description "Blueprint Opus generation timeouts exceed 3 in a 15-minute window" \
+  --alarm-actions "$SNS_TOPIC_ARN" \
+  --namespace "TheChrisGrey/Blueprint" \
+  --metric-name "BlueprintOpusTimeout" \
+  --statistic "Sum" \
+  --period 900 \
+  --evaluation-periods 1 \
+  --threshold 3 \
+  --comparison-operator "GreaterThanThreshold" \
+  --treat-missing-data "notBreaching"
+
+# Blueprint generation errors — Opus generation failures (not validation, not handler).
+aws cloudwatch put-metric-alarm \
+  --region "$REGION" \
+  --alarm-name "thechrisgrey-blueprint-generation-errors" \
+  --alarm-description "Blueprint Opus generation errors exceed 5 in a 1-hour window" \
+  --alarm-actions "$SNS_TOPIC_ARN" \
+  --namespace "TheChrisGrey/Blueprint" \
+  --metric-name "BlueprintGenerationError" \
+  --statistic "Sum" \
+  --period 3600 \
+  --evaluation-periods 1 \
+  --threshold 5 \
+  --comparison-operator "GreaterThanThreshold" \
+  --treat-missing-data "notBreaching"
+
 echo ""
 echo "--- KB Sync ---"
 
@@ -180,6 +225,42 @@ aws cloudwatch put-metric-alarm \
   --threshold 0 \
   --comparison-operator "GreaterThanThreshold" \
   --treat-missing-data "notBreaching"
+
+# ─── NEW: Metrics Lambda alarm ───────────────────────────────────────────────
+
+echo ""
+echo "--- Metrics Lambda (NEW) ---"
+
+# Metrics Lambda handler errors — this Lambda is the telemetry pipeline for the
+# frontend (Web Vitals, CSP reports). If it fails, the CLS/CSP alarms go blind
+# (treat-missing-data is notBreaching, so they won't fire on the outage).
+# A log-based metric filter catches handler_error events from the structured logger.
+METRICS_LOG_GROUP="/aws/lambda/thechrisgrey-metrics"
+
+if aws logs describe-log-groups --region "$REGION" --log-group-name-prefix "$METRICS_LOG_GROUP" 2>/dev/null | grep -q "$METRICS_LOG_GROUP"; then
+  aws logs put-metric-filter \
+    --region "$REGION" \
+    --log-group-name "$METRICS_LOG_GROUP" \
+    --filter-name "MetricsHandlerErrors" \
+    --filter-pattern '{ $.event = "handler_error" }' \
+    --metric-transformations "metricName=MetricsHandlerError,metricNamespace=TheChrisGrey/SiteMetrics,metricValue=1"
+
+  aws cloudwatch put-metric-alarm \
+    --region "$REGION" \
+    --alarm-name "thechrisgrey-metrics-errors" \
+    --alarm-description "Metrics Lambda handler errors exceed 5 in a 15-minute window (telemetry pipeline down)" \
+    --alarm-actions "$SNS_TOPIC_ARN" \
+    --namespace "TheChrisGrey/SiteMetrics" \
+    --metric-name "MetricsHandlerError" \
+    --statistic "Sum" \
+    --period 900 \
+    --evaluation-periods 1 \
+    --threshold 5 \
+    --comparison-operator "GreaterThanThreshold" \
+    --treat-missing-data "notBreaching"
+else
+  echo "  (skipping metrics log filter: log group $METRICS_LOG_GROUP not found)"
+fi
 
 # ─── NEW: MCP Server alarms ──────────────────────────────────────────────────
 
@@ -308,14 +389,14 @@ if aws logs describe-log-groups --region "$REGION" --log-group-name-prefix "$KB_
     --log-group-name "$KB_LOG_GROUP" \
     --filter-name "KbBuilderErrors" \
     --filter-pattern '{ $.event = "handler_error" }' \
-    --metric-transformations "metricName=KbBuilderError,metricNamespace=TheChrisGrey/KbBuilder,metricValue=1"
+    --metric-transformations "metricName=KbBuilderError,metricNamespace=TheChrisGrey/KBBuilder,metricValue=1"
 
   aws cloudwatch put-metric-alarm \
     --region "$REGION" \
     --alarm-name "thechrisgrey-kb-builder-errors" \
     --alarm-description "KB builder handler errors exceed 5 in a 15-minute window" \
     --alarm-actions "$SNS_TOPIC_ARN" \
-    --namespace "TheChrisGrey/KbBuilder" \
+    --namespace "TheChrisGrey/KBBuilder" \
     --metric-name "KbBuilderError" \
     --statistic "Sum" \
     --period 900 \
@@ -329,6 +410,16 @@ fi
 
 echo ""
 echo "=== Alarm setup complete ==="
+echo ""
+echo "Alarms configured (all 8 apps covered):"
+echo "  Frontend:     high-cls, csp-violations"
+echo "  Chat-stream:  kb-failures, rate-limit-surge, bedrock-cost, agent-timeout"
+echo "  Blueprint:    opus-cost, errors, validation-failures, opus-timeout, generation-errors"
+echo "  KB-builder:   kb-builder-errors (log-based, namespace TheChrisGrey/KBBuilder)"
+echo "  KB-sync:      kb-sync-failure"
+echo "  Metrics:      metrics-errors (log-based, telemetry pipeline health)"
+echo "  MCP-server:   mcp-ratelimit-surge, mcp-errors (log-based)"
+echo "  Session-token: session-turnstile-failures (log-based), session-ratelimit-surge (log-based)"
 echo ""
 echo "To verify all alarms:"
 echo "  aws cloudwatch describe-alarms --region $REGION --alarm-name-prefix thechrisgrey- --query 'MetricAlarms[].[AlarmName,StateValue]' --output table"

@@ -12,6 +12,21 @@ import type { PostHog } from 'posthog-js';
 let instance: PostHog | null = null;
 let loading = false;
 
+// Subscribers notified when PostHog's remote feature flags load or change, so
+// the feature-flag layer can re-resolve and components can re-render once a
+// percentage-rollout / targeted flag arrives from the PostHog server.
+const flagListeners = new Set<() => void>();
+
+function notifyFlagListeners(): void {
+  flagListeners.forEach((cb) => {
+    try {
+      cb();
+    } catch {
+      // A listener must never break flag delivery.
+    }
+  });
+}
+
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
 const POSTHOG_HOST = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com';
 
@@ -38,6 +53,9 @@ export async function enablePostHog(): Promise<void> {
       session_recording: { maskAllInputs: true },
     });
     instance = posthog;
+    // Re-resolve feature flags whenever PostHog delivers an updated set (initial
+    // load and any live change), enabling remote rollouts without a redeploy.
+    posthog.onFeatureFlags(() => notifyFlagListeners());
     // Capture the entry pageview (the page in view at consent/load time). Further
     // SPA navigations are captured by the route-change effect in App.tsx.
     posthog.capture('$pageview');
@@ -58,6 +76,32 @@ export function disablePostHog(): void {
     // No-op.
   }
   instance = null;
+  // Flags are no longer available; let consumers fall back to env/defaults.
+  notifyFlagListeners();
+}
+
+/**
+ * Read a remote feature flag value from PostHog. Returns `undefined` until
+ * PostHog is initialized (consent granted) and flags have loaded, so callers
+ * transparently fall back to their env/default value. A boolean flag returns a
+ * boolean; a multivariate flag returns its string variant key.
+ */
+export function getPostHogFeatureFlag(key: string): boolean | string | undefined {
+  try {
+    return instance?.getFeatureFlag(key);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Subscribe to PostHog remote feature-flag changes. The callback fires when
+ * flags first load, on any live update, and when consent is withdrawn. Returns
+ * an unsubscribe function.
+ */
+export function subscribeToPostHogFeatureFlags(callback: () => void): () => void {
+  flagListeners.add(callback);
+  return () => void flagListeners.delete(callback);
 }
 
 /** Forward a named event to PostHog. No-op until enablePostHog() has run. */

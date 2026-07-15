@@ -25,6 +25,7 @@ const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 // years (2024), ZIPs (78701), and "18D for 12 years" stay under the threshold.
 const PHONE_PATTERN = /(?:\+?\d[\s().-]*){10,}/;
 
+/** @param {string} deviceId @returns {string} */
 export function hashDeviceId(deviceId) {
   if (!deviceId || typeof deviceId !== "string") {
     throw new Error("hashDeviceId: deviceId must be a non-empty string");
@@ -32,6 +33,7 @@ export function hashDeviceId(deviceId) {
   return createHash("sha256").update(deviceId).digest("hex");
 }
 
+/** @param {any} raw @returns {string} */
 export function sanitizeFactContent(raw) {
   if (!raw || typeof raw !== "string") return "";
   const collapsed = raw.replace(/\s+/g, " ").trim();
@@ -42,16 +44,25 @@ export function sanitizeFactContent(raw) {
   return collapsed.slice(0, MAX_FACT_LENGTH);
 }
 
+/** @param {number} timestampSeconds @returns {string} */
 function buildFactId(timestampSeconds) {
   const ts = String(timestampSeconds).padStart(12, "0");
   return `${ts}#${randomUUID()}`;
 }
 
+/**
+ * @param {{ send: any }} docClient
+ * @param {any} QueryCommand
+ * @param {string} deviceId
+ * @param {{ limit?: number }} [opts]
+ * @returns {Promise<Array<{ factId: string, content: string, createdAt: number }>>}
+ */
 export async function getFacts(docClient, QueryCommand, deviceId, { limit = MAX_FACTS_RETURNED } = {}) {
   if (!deviceId) return [];
   const deviceHash = hashDeviceId(deviceId);
   const now = Math.floor(Date.now() / 1000);
   const collected = [];
+  /** @type {any} */
   let lastKey;
 
   while (collected.length < limit) {
@@ -70,9 +81,9 @@ export async function getFacts(docClient, QueryCommand, deviceId, { limit = MAX_
     for (const item of items) {
       if (typeof item.ttl === "number" && item.ttl <= now) continue;
       collected.push({
-        factId: item.factId,
-        content: item.content,
-        createdAt: item.createdAt,
+        factId: /** @type {string} */ (item.factId),
+        content: /** @type {string} */ (item.content),
+        createdAt: /** @type {number} */ (item.createdAt),
       });
       if (collected.length >= limit) break;
     }
@@ -84,6 +95,14 @@ export async function getFacts(docClient, QueryCommand, deviceId, { limit = MAX_
   return collected;
 }
 
+/**
+ * @param {{ send: any }} docClient
+ * @param {any} PutCommand
+ * @param {string} deviceId
+ * @param {string} content
+ * @param {{ timeoutMs?: number }} [opts]
+ * @returns {Promise<{ factId: string, content: string, createdAt: number }>}
+ */
 export async function putFact(docClient, PutCommand, deviceId, content, { timeoutMs = PUT_FACT_TIMEOUT_MS } = {}) {
   if (!deviceId) throw new Error("putFact: deviceId is required");
   if (!content || typeof content !== "string") {
@@ -118,7 +137,14 @@ export async function putFact(docClient, PutCommand, deviceId, content, { timeou
   return { factId, content: sanitized, createdAt: now };
 }
 
+/**
+ * @param {{ send: any }} docClient
+ * @param {any} BatchWriteCommand
+ * @param {any[]} batch
+ * @returns {Promise<number>}
+ */
 async function flushBatch(docClient, BatchWriteCommand, batch) {
+  /** @type {Record<string, any>} */
   let requestItems = { [MEMORY_TABLE]: batch };
   let attempt = 0;
   let processed = 0;
@@ -141,11 +167,19 @@ async function flushBatch(docClient, BatchWriteCommand, batch) {
   return processed;
 }
 
+/**
+ * @param {{ send: any }} docClient
+ * @param {any} QueryCommand
+ * @param {any} BatchWriteCommand
+ * @param {string} deviceId
+ * @returns {Promise<{ deleted: number }>}
+ */
 export async function forgetDevice(docClient, QueryCommand, BatchWriteCommand, deviceId) {
   if (!deviceId) throw new Error("forgetDevice: deviceId is required");
   const deviceHash = hashDeviceId(deviceId);
 
   let deleted = 0;
+  /** @type {any} */
   let lastKey;
   do {
     const page = await docClient.send(
@@ -163,7 +197,7 @@ export async function forgetDevice(docClient, QueryCommand, BatchWriteCommand, d
     if (items.length === 0) break;
 
     for (let i = 0; i < items.length; i += 25) {
-      const batch = items.slice(i, i + 25).map((item) => ({
+      const batch = items.slice(i, i + 25).map((/** @type {any} */ item) => ({
         DeleteRequest: { Key: { deviceHash: item.deviceHash, factId: item.factId } },
       }));
       deleted += await flushBatch(docClient, BatchWriteCommand, batch);

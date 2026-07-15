@@ -87,13 +87,15 @@ Style rules:
  * fields that materially inform the model's output depth and style — the full
  * zod document is too big to fit 3 of them in a prompt.
  *
- * @param {object} example - A document matching GoldenExampleSchema.
+ * @param {any} example - A document matching GoldenExampleSchema.
  * @returns {string}
  */
 export function formatExampleForPrompt(example) {
   const { spec, output } = example;
-  const services = output.services.map((s) => `  - ${s.service}: ${s.purpose}`).join("\n");
-  const artifacts = output.claude_artifacts.map((a) => `  - ${a.kind}: ${a.name} — ${a.description}`).join("\n");
+  const services = output.services.map((/** @type {any} */ s) => `  - ${s.service}: ${s.purpose}`).join("\n");
+  const artifacts = output.claude_artifacts
+    .map((/** @type {any} */ a) => `  - ${a.kind}: ${a.name} — ${a.description}`)
+    .join("\n");
   const costLo = output.cost_estimate.monthly_low_usd;
   const costHi = output.cost_estimate.monthly_high_usd;
 
@@ -115,25 +117,25 @@ export function formatExampleForPrompt(example) {
  * primary selector; after that we break ties by `sortOrder` ascending (lower
  * first = curated preference).
  *
- * @param {Array<object>} allExamples - Active GoldenExample documents.
- * @param {object} spec - A validated BlueprintInput.
+ * @param {any[]} allExamples - Active GoldenExample documents.
+ * @param {any} spec - A validated BlueprintInput.
  * @param {number} [limit=3]
- * @returns {Array<object>}
+ * @returns {any[]}
  */
 export function selectExamples(allExamples, spec, limit = 3) {
   if (!Array.isArray(allExamples) || allExamples.length === 0) return [];
 
   const categoryMatches = allExamples
-    .filter((ex) => ex.category === spec.category)
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    .filter((/** @type {any} */ ex) => ex.category === spec.category)
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
   if (categoryMatches.length >= limit) {
     return categoryMatches.slice(0, limit);
   }
 
   const others = allExamples
-    .filter((ex) => ex.category !== spec.category)
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    .filter((/** @type {any} */ ex) => ex.category !== spec.category)
+    .sort((/** @type {any} */ a, /** @type {any} */ b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
   return [...categoryMatches, ...others].slice(0, limit);
 }
@@ -141,7 +143,7 @@ export function selectExamples(allExamples, spec, limit = 3) {
 /**
  * Format the user spec as a human-readable block for the user-turn prompt.
  *
- * @param {object} spec - A validated BlueprintInput.
+ * @param {any} spec - A validated BlueprintInput.
  * @returns {string}
  */
 export function formatSpecForPrompt(spec) {
@@ -179,9 +181,7 @@ export function formatSpecForPrompt(spec) {
  * Compose the full system prompt. The examples are injected as a separate
  * section so they can be swapped/re-ordered without touching the principles.
  *
- * @param {object} opts
- * @param {Array<object>} [opts.examples] - 0–3 GoldenExample docs.
- * @param {string} [opts.principles=ARCHITECTURE_PRINCIPLES] - Overridable for tests.
+ * @param {{ examples?: any[], principles?: string }} opts
  * @returns {string}
  */
 export function buildSystemPrompt({ examples = [], principles = ARCHITECTURE_PRINCIPLES } = {}) {
@@ -202,7 +202,7 @@ export function buildSystemPrompt({ examples = [], principles = ARCHITECTURE_PRI
 /**
  * Compose the user-turn prompt (the spec restated as plain text).
  *
- * @param {object} spec - A validated BlueprintInput.
+ * @param {any} spec - A validated BlueprintInput.
  * @returns {string}
  */
 export function buildUserPrompt(spec) {

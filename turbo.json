@@ -1,0 +1,13 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/*.d.ts"],
+      "outputs": [],
+      "env": ["NODE_ENV"]
+    }
+  },
+  "globalDependencies": ["package-lock.json", "eslint.config.js", "lambda/tsconfig.json"]
+}

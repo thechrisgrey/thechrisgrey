@@ -5,7 +5,10 @@ import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId, clearDeviceId } from '../utils/deviceId';
 import { createChatStreamParser, type DraftAction, type ChatEvent } from '../utils/chatEvents';
 import { withTraceId } from '../utils/traceId';
+import { createLogger } from '../utils/logger';
 import type { UiBlock } from '../utils/uiBlocks';
+
+const log = createLogger('ChatEngine');
 
 const MAX_HISTORY = 20;
 
@@ -379,7 +382,7 @@ export function useChatEngine(pageContext?: PageContext, options?: ChatEngineOpt
             ];
           });
         } else {
-          console.error('Chat error:', error);
+          log.error('chat_error', { error: error instanceof Error ? error.message : String(error) });
           setMessages((prev) => {
             const hasMessage = prev.some((m) => m.id === assistantMessageId);
             if (hasMessage) return prev;

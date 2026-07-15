@@ -6,6 +6,11 @@
   "dependencies": {
     "@aws-sdk/client-bedrock-agent": "^3.1068.0",
     "@aws-sdk/client-cloudwatch": "^3.1068.0",
+    "@sentry/node": "^10.0.0",
+    "posthog-node": "^5.39.4",
     "lambda-shared": "file:../shared"
+  },
+  "scripts": {
+    "test": "node --test __tests__/*.test.mjs"
   }
 }

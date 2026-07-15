@@ -22,6 +22,7 @@ export const VALID_PATHS = new Set([
 export const BLOG_SLUG_PATTERN = /^\/blog\/[a-z0-9][a-z0-9-]*$/;
 export const SAFE_TEXT_PATTERN = /^[a-zA-Z0-9 ()/:,&'-]+$/;
 
+/** @param {string} path @returns {boolean} */
 export function isValidPath(path) {
   return VALID_PATHS.has(path) || BLOG_SLUG_PATTERN.test(path);
 }
@@ -30,6 +31,7 @@ export function isValidPath(path) {
  * Strip a trailing slash so production paths (Amplify serves "/chat/") and any
  * stale client bundle resolve to the canonical form ("/chat") before validation.
  * The root path "/" is preserved.
+ * @param {any} path @returns {any}
  */
 export function normalizePath(path) {
   if (typeof path !== "string") return path;
@@ -70,6 +72,7 @@ export function validateInput(messages) {
  * Sanitize pageContext from a request. Returns null on any validation failure
  * rather than partial data — the caller then simply omits visitor context.
  */
+/** @param {any} pageContext */
 export function validatePageContext(pageContext) {
   if (!pageContext || typeof pageContext !== "object") return null;
 
@@ -96,6 +99,7 @@ export function validatePageContext(pageContext) {
   };
 }
 
+/** @param {any[]} messages @returns {string|null} */
 export function getLatestUserMessage(messages) {
   for (let i = messages.length - 1; i >= 0; i--) {
     if (messages[i].role === "user") {

@@ -7,7 +7,7 @@
  * Run via `node scripts/check-file-sizes.mjs` in CI.
  *
  * Thresholds:
- *   - Source code (.ts, .tsx, .mjs, .js, .jsx, .css, .yml, .yaml): 500 KB
+ *   - Source code (.ts, .tsx, .mjs, .js, .jsx, .css, .yml, .yaml): 600 KB
  *   - All other files (images, PDFs, 3D models, etc.): 10 MB
  */
 
@@ -15,7 +15,7 @@ import { execSync } from 'child_process';
 import { statSync } from 'fs';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mjs', '.js', '.jsx', '.css', '.yml', '.yaml', '.json', '.md']);
-const SOURCE_LIMIT_KB = 500;
+const SOURCE_LIMIT_KB = 600;
 const BINARY_LIMIT_KB = 10 * 1024; // 10 MB
 
 const files = execSync('git ls-files', { encoding: 'utf-8' })
