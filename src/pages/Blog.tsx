@@ -24,6 +24,9 @@ import {
 import BlogPostSkeleton from '../components/BlogPostSkeleton';
 import SanityResponsiveImage from '../components/SanityResponsiveImage';
 import { prefetchBlogPostChunk } from '../utils/routeManifest';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('Blog');
 
 const Blog = () => {
   const [posts, setPosts] = useState<SanityPostPreview[]>([]);
@@ -52,7 +55,7 @@ const Blog = () => {
       // Validate the shape before trusting/caching it — a CMS schema drift would
       // otherwise enter the cache and render as a blank page.
       if (!isBlogListingResult(result)) {
-        console.error('Blog listing response failed shape validation');
+        log.error('shape_validation_failed');
         setFetchError({ kind: 'malformed', message: 'We could not load the blog right now. Please try again.' });
         return;
       }
@@ -60,7 +63,11 @@ const Blog = () => {
       setPosts(result.posts);
     } catch (error) {
       const classified = classifySanityError(error, 'Blog listing');
-      console.error('Error fetching blog data:', classified.kind, classified.message, error);
+      log.error('fetch_failed', {
+        kind: classified.kind,
+        message: classified.message,
+        error: error instanceof Error ? error.message : String(error),
+      });
       setFetchError(classified);
     } finally {
       setIsLoading(false);

@@ -10,12 +10,14 @@
  * For SDK calls that accept an abortSignal (e.g. Bedrock, DynamoDB), prefer
  * passing AbortController directly instead of wrapping with withTimeout.
  *
- * @param {Promise} promise   the work to bound
+ * @template T
+ * @param {Promise<T>} promise   the work to bound
  * @param {number}  ms        timeout in milliseconds
  * @param {string}  [label]   name used in the timeout error message
- * @returns {Promise}
+ * @returns {Promise<T>}
  */
 export function withTimeout(promise, ms, label = "operation") {
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
   let timeoutId;
   const timeout = new Promise((_resolve, reject) => {
     timeoutId = setTimeout(() => {

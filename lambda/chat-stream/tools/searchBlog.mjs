@@ -2,10 +2,13 @@ import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { BLOG_SEARCH_QUERY, SITE_ORIGIN, normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const _tool = /** @type {any} */ (tool);
 
+/** @param {{ sanityClient: any, responseStream: any, metrics: any, requestId: string }} deps */
 export function buildSearchBlogTool({ sanityClient, responseStream, metrics, requestId }) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   return _tool({
     name: "search_blog",
     description:
@@ -21,7 +24,7 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
         .describe("Keyword or short phrase to search for, e.g. 'Green Beret' or 'Strands agents'"),
       limit: z.number().int().min(1).max(5).default(3).describe("Maximum number of results to return (1-5)"),
     }),
-    callback: async ({ query, limit }) => {
+    callback: async (/** @type {{ query: string, limit: number }} */ { query, limit }) => {
       const normalized = normalizeQuery(query);
       if (!isMeaningful(normalized)) {
         metrics?.record("ToolRejection_SearchBlog");
@@ -40,8 +43,8 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
 
         const safeResults = Array.isArray(results) ? results : [];
         const normalizedResults = safeResults
-          .filter((r) => r && typeof r.slug === "string" && typeof r.title === "string")
-          .map((r) => ({
+          .filter((/** @type {any} */ r) => r && typeof r.slug === "string" && typeof r.title === "string")
+          .map((/** @type {any} */ r) => ({
             slug: r.slug,
             title: r.title,
             excerpt: typeof r.excerpt === "string" ? r.excerpt : "",
@@ -56,7 +59,7 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
           kind: EVENT_KINDS.DRAFT_ACTION,
           action: "blog_search_results",
           query: normalized,
-          results: normalizedResults.map((r) => ({
+          results: normalizedResults.map((/** @type {any} */ r) => ({
             slug: r.slug,
             title: r.title,
             excerpt: r.excerpt,
@@ -71,15 +74,11 @@ export function buildSearchBlogTool({ sanityClient, responseStream, metrics, req
         };
       } catch (error) {
         metrics?.record("ToolFailure_SearchBlog");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "tool_error",
-            tool: "search_blog",
-            error: error.name,
-            message: error.message,
-          }),
-        );
+        log.error("tool_error", {
+          tool: "search_blog",
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         return { ok: false, error: "Unable to search the blog right now." };
       }
     },

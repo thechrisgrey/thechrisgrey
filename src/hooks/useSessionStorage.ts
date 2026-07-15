@@ -1,4 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('SessionStorage');
 
 /**
  * Custom hook for managing state persisted in sessionStorage.
@@ -22,7 +25,7 @@ export function useSessionStorage<T>(
       }
       return initialValue;
     } catch (error) {
-      console.warn(`Error reading sessionStorage key "${key}":`, error);
+      log.warn('read_failed', { key, error: error instanceof Error ? error.message : String(error) });
       return initialValue;
     }
   });
@@ -36,7 +39,7 @@ export function useSessionStorage<T>(
     try {
       window.sessionStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
-      console.warn(`Error writing sessionStorage key "${key}":`, error);
+      log.warn('write_failed', { key, error: error instanceof Error ? error.message : String(error) });
     }
   }, [key, storedValue]);
 

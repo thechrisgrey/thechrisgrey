@@ -8,6 +8,10 @@ import { useFocusTrap } from '../hooks';
 import SocialIcon from '../components/SocialIcon';
 import { trackEvent } from '../utils/analytics';
 import Testimonials from '../components/Testimonials';
+import { createLogger } from '../utils/logger';
+import { withTraceId } from '../utils/traceId';
+
+const log = createLogger('Contact');
 
 type FieldName = 'name' | 'email' | 'message';
 
@@ -143,19 +147,22 @@ const Contact = () => {
     const timeoutId = setTimeout(() => controller.abort(), 10_000);
 
     try {
-      const response = await fetch(import.meta.env.VITE_CONTACT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          message: `Subject: ${formData.subject.trim() || 'No subject'}\n\n${formData.message.trim()}`,
-          website: formData.website, // honeypot
+      const response = await fetch(
+        import.meta.env.VITE_CONTACT_ENDPOINT,
+        withTraceId({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            message: `Subject: ${formData.subject.trim() || 'No subject'}\n\n${formData.message.trim()}`,
+            website: formData.website, // honeypot
+          }),
+          signal: controller.signal,
         }),
-        signal: controller.signal,
-      });
+      );
 
       const result = await response.json();
 
@@ -176,7 +183,7 @@ const Contact = () => {
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      log.error('send_failed', { error: error instanceof Error ? error.message : String(error) });
       if (error instanceof Error && error.name === 'AbortError') {
         setFormStatus({
           type: 'error',

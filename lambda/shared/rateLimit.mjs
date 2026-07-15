@@ -1,6 +1,8 @@
 import { createHash } from "crypto";
 import { createLogger } from "./logger.mjs";
 
+const fallbackLog = createLogger(null, { service: "rate-limit" });
+
 /**
  * Atomic DynamoDB-based rate limiter with sliding windows.
  *
@@ -54,8 +56,9 @@ export async function checkRateLimit(
     }
     return { allowed: true, remaining: maxRequests - count };
   } catch (error) {
+    const errName = error instanceof Error ? error.name : String(error);
     // ConditionalCheckFailedException = stale window, safe to reset
-    if (error.name === "ConditionalCheckFailedException") {
+    if (errName === "ConditionalCheckFailedException") {
       try {
         await docClient.send(
           new UpdateCommand({
@@ -77,9 +80,9 @@ export async function checkRateLimit(
     }
     if (requestId) {
       const log = createLogger(requestId, { service: "rate-limit" });
-      log.error("rate_limit_error", { error: error.name });
+      log.error("rate_limit_error", { error: errName });
     } else {
-      console.error("Rate limit error:", error.name);
+      fallbackLog.error("rate_limit_error", { error: errName });
     }
     return { allowed: true, remaining: -1 };
   }

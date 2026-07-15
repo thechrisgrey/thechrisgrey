@@ -1,0 +1,25 @@
+# Code ownership for thechrisgrey/thechrisgrey
+# Reviews are automatically requested from the owner on PRs touching these paths.
+
+# Frontend (React app, components, pages, hooks, utils)
+/src/          @thechrisgrey
+
+# Lambda services
+/lambda/       @thechrisgrey
+
+# CI/CD and infrastructure
+/.github/      @thechrisgrey
+/amplify.yml   @thechrisgrey
+/customHttp.yml @thechrisgrey
+
+# Build scripts and tooling
+/scripts/      @thechrisgrey
+
+# Root config files
+/eslint.config.js  @thechrisgrey
+/tsconfig.json     @thechrisgrey
+/knip.json         @thechrisgrey
+/.prettierrc       @thechrisgrey
+
+# Catch-all: the owner reviews any file not explicitly assigned above
+*               @thechrisgrey

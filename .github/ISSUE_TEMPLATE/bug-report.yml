@@ -1,0 +1,98 @@
+name: Bug Report
+description: Report something that is broken or behaving incorrectly
+title: 'bug: '
+labels: ['bug', 'needs-triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Fill out the sections below so
+        it can be reproduced and fixed quickly. If this is a security issue, do
+        **not** file a public issue — see the Security policy instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A one or two sentence description of the bug.
+      placeholder: 'The chat widget fails to open on mobile Safari when...'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      description: Which part of the system is this bug in?
+      options:
+        - Frontend (React app / pages / components)
+        - Alti chat (chat-stream Lambda / chat UI)
+        - Blueprint generator
+        - KB Admin (/admin)
+        - Lambda service (kb-builder, kb-sync, metrics, mcp-server, session-token)
+        - CI/CD pipeline
+        - Infrastructure (AWS, Amplify, CloudFront)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How impactful is this bug?
+      options:
+        - P0 — Site down / data loss / security
+        - P1 — Major feature broken
+        - P2 — Feature partially broken / poor UX
+        - P3 — Minor / cosmetic
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps to trigger the bug. Include URLs if relevant.
+      placeholder: |
+        1. Go to /chat
+        2. Type a message and hit send
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, device, OS, or Lambda runtime info.
+      placeholder: 'Safari 18, iPhone 15, iOS 18.2 — or: Node 22, us-east-1'
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / error output
+      description: Console errors, CloudWatch logs, or network responses. Redact PII.
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, related issues, or anything else useful.

@@ -3,13 +3,12 @@ import { SEO } from '../components/SEO';
 import { typography } from '../utils/typography';
 import { buildWebPageSchema } from '../utils/schemas';
 import { useBlueprint } from '../hooks/useBlueprint';
+import { useIsFeatureEnabled } from '../hooks/useFeatureFlag';
 import { BlueprintForm } from '../components/blueprint/BlueprintForm';
 import { BlueprintResult } from '../components/blueprint/BlueprintResult';
 import { LoadingSkeleton } from '../components/blueprint/LoadingSkeleton';
 import { Waitlist } from '../components/blueprint/Waitlist';
 import { RateLimitedCard } from '../components/blueprint/RateLimitedCard';
-
-const BLUEPRINT_ENABLED = import.meta.env.VITE_BLUEPRINT_ENABLED === 'true';
 
 const HIGHLIGHT_ITEMS: Array<{ icon: string; title: string; body: string }> = [
   {
@@ -97,6 +96,7 @@ function WaitlistPlaceholder() {
 export default function Blueprint() {
   const { output, meta, isGenerating, error, generate, reset } = useBlueprint();
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const blueprintEnabled = useIsFeatureEnabled('blueprint');
 
   const structuredData = useMemo(
     () => [
@@ -116,7 +116,7 @@ export default function Blueprint() {
     }
   }, [output]);
 
-  if (!BLUEPRINT_ENABLED) {
+  if (!blueprintEnabled) {
     return (
       <div className="min-h-screen bg-altivum-dark pt-28">
         <SEO

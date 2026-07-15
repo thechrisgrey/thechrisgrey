@@ -21,6 +21,7 @@ export function createKbCache({ ttlMs = DEFAULT_TTL_MS, maxEntries = DEFAULT_MAX
     }
   }
 
+  /** @param {string} key */
   function get(key) {
     const entry = store.get(key);
     if (!entry) return null;
@@ -34,6 +35,7 @@ export function createKbCache({ ttlMs = DEFAULT_TTL_MS, maxEntries = DEFAULT_MAX
     return entry.value;
   }
 
+  /** @param {string} key @param {any} value */
   function set(key, value) {
     if (store.has(key)) store.delete(key);
     store.set(key, { value, expiresAt: now() + ttlMs });

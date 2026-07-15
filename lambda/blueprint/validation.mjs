@@ -52,7 +52,7 @@ be ok=true — the user sees them as recommendations.`;
  * prompt instruction.
  *
  * @param {string} text
- * @returns {{ ok: true, data: object } | { ok: false, error: string }}
+ * @returns {{ ok: true, data: any } | { ok: false, error: string }}
  */
 export function tryParseJson(text) {
   if (typeof text !== "string" || text.trim().length === 0) {
@@ -72,7 +72,7 @@ export function tryParseJson(text) {
     }
     return { ok: true, data };
   } catch (error) {
-    return { ok: false, error: `json_parse_error: ${error.message}` };
+    return { ok: false, error: `json_parse_error: ${error instanceof Error ? error.message : String(error)}` };
   }
 }
 
@@ -98,7 +98,7 @@ export function validateSchema(data) {
 /**
  * Run the Haiku quality pass. The output is a soft signal.
  *
- * @param {object} bedrockClient
+ * @param {{ send: any }} bedrockClient
  * @param {object} output - Schema-valid BlueprintOutput.
  * @param {object} [opts]
  * @param {string|null} [opts.requestId]
@@ -130,7 +130,7 @@ export async function validateWithHaiku(bedrockClient, output, opts = {}) {
 
   const { data } = parsed;
   const issues = Array.isArray(data.issues) ? data.issues : [];
-  const hasError = issues.some((i) => i?.severity === "error");
+  const hasError = issues.some((/** @type {any} */ i) => i?.severity === "error");
   return {
     ok: typeof data.ok === "boolean" ? data.ok && !hasError : !hasError,
     confidence: ["high", "medium", "low"].includes(data.confidence) ? data.confidence : "medium",

@@ -3,6 +3,10 @@ import { typography } from '../utils/typography';
 import { isValidEmail } from '../utils/validators';
 import { useFocusTrap } from '../hooks';
 import { trackEvent } from '../utils/analytics';
+import { createLogger } from '../utils/logger';
+import { withTraceId } from '../utils/traceId';
+
+const log = createLogger('NewsletterForm');
 
 interface NewsletterFormProps {
   variant?: 'full' | 'compact';
@@ -48,16 +52,19 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
     const timeoutId = setTimeout(() => controller.abort(), 10_000);
 
     try {
-      const response = await fetch(import.meta.env.VITE_NEWSLETTER_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: subscribeEmail.trim(),
+      const response = await fetch(
+        import.meta.env.VITE_NEWSLETTER_ENDPOINT,
+        withTraceId({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: subscribeEmail.trim(),
+          }),
+          signal: controller.signal,
         }),
-        signal: controller.signal,
-      });
+      );
 
       const result = await response.json();
 
@@ -78,7 +85,7 @@ const NewsletterForm = ({ variant = 'full', source }: NewsletterFormProps) => {
         });
       }
     } catch (error) {
-      console.error('Error:', error);
+      log.error('subscribe_failed', { error: error instanceof Error ? error.message : String(error) });
       if (error instanceof Error && error.name === 'AbortError') {
         setSubscribeStatus({
           type: 'error',

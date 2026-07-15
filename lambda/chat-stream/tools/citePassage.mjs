@@ -2,10 +2,13 @@ import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { BLOG_CITE_QUERY, SITE_ORIGIN } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const _tool = /** @type {any} */ (tool);
 
+/** @param {{ sanityClient: any, responseStream: any, metrics: any, requestId: string }} deps */
 export function buildCitePassageTool({ sanityClient, responseStream, metrics, requestId }) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   return _tool({
     name: "cite_blog_passage",
     description:
@@ -20,7 +23,7 @@ export function buildCitePassageTool({ sanityClient, responseStream, metrics, re
         .max(120)
         .describe("The blog post slug, e.g. 'building-agentic-alti'"),
     }),
-    callback: async ({ slug }) => {
+    callback: async (/** @type {{ slug: string }} */ { slug }) => {
       const startedAt = Date.now();
       try {
         const post = await sanityClient.fetch(BLOG_CITE_QUERY, { slug });
@@ -51,15 +54,11 @@ export function buildCitePassageTool({ sanityClient, responseStream, metrics, re
         };
       } catch (error) {
         metrics?.record("ToolFailure_CitePassage");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "tool_error",
-            tool: "cite_blog_passage",
-            error: error.name,
-            message: error.message,
-          }),
-        );
+        log.error("tool_error", {
+          tool: "cite_blog_passage",
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         return { ok: false, error: "Unable to fetch citation right now." };
       }
     },

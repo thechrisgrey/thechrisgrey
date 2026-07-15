@@ -58,12 +58,20 @@ const STOP_ONLY = new Set([
   "was",
 ]);
 
+/**
+ * @param {unknown} raw
+ * @returns {string}
+ */
 export function normalizeQuery(raw) {
   return String(raw ?? "")
     .trim()
     .replace(/\s+/g, " ");
 }
 
+/**
+ * @param {string} query
+ * @returns {boolean}
+ */
 export function isMeaningful(query) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   return words.some((w) => !STOP_ONLY.has(w));

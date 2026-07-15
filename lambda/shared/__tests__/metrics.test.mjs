@@ -79,3 +79,28 @@ test("flush swallows send errors", async () => {
   m.record("Foo");
   await assert.doesNotReject(m.flush());
 });
+
+test("flush drains the buffer so a reused collector does not re-emit metrics", async () => {
+  // Guards the warm-invocation reuse path: session-token injects a
+  // module-scoped singleton MetricsCollector, so a flush that left the buffer
+  // intact would re-send every prior request's metrics on the next invocation,
+  // inflating the CloudWatch counts. Each flush must carry ONLY the metrics
+  // recorded since the previous flush.
+  const client = fakeClient();
+  const m = new MetricsCollector(client, SITE);
+
+  m.record("First");
+  await m.flush();
+  m.record("Second");
+  await m.flush();
+
+  assert.equal(client.calls.length, 2);
+  assert.equal(client.calls[0].MetricData.length, 1);
+  assert.equal(client.calls[0].MetricData[0].MetricName, "First");
+  assert.equal(client.calls[1].MetricData.length, 1);
+  assert.equal(client.calls[1].MetricData[0].MetricName, "Second");
+
+  // A flush with nothing new buffered must be a true no-op (no empty send).
+  await m.flush();
+  assert.equal(client.calls.length, 2);
+});

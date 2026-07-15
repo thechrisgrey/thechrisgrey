@@ -264,3 +264,31 @@ test("a failing metric publish is swallowed and does not break the success path"
   assert.equal(bedrockCalls.length, 1);
   assert.equal(response.statusCode, 200);
 });
+
+test("health check mode returns 200 without triggering ingestion or metrics", async () => {
+  const response = await handler({ healthCheck: true });
+
+  assert.equal(response.statusCode, 200);
+  const body = JSON.parse(response.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.service, "kb-sync");
+  assert.equal(body.version, "1.0.0");
+  assert.equal(body.knowledgeBaseId, EXPECTED_KB_ID);
+  assert.equal(body.dataSourceId, EXPECTED_DATA_SOURCE_ID);
+
+  // Health check must not trigger any Bedrock or CloudWatch calls
+  assert.equal(bedrockCalls.length, 0, "health check must not trigger ingestion");
+  assert.equal(cloudwatchCalls.length, 0, "health check must not publish metrics");
+});
+
+test("health check mode works alongside normal S3 events in the same handler", async () => {
+  // Verify the health check doesn't interfere with normal operation
+  const healthResponse = await handler({ healthCheck: true });
+  assert.equal(healthResponse.statusCode, 200);
+
+  // Reset and verify normal S3 event still works
+  bedrockCalls = [];
+  const syncResponse = await handler(s3PutEvent());
+  assert.equal(syncResponse.statusCode, 200);
+  assert.equal(bedrockCalls.length, 1, "normal S3 event still triggers ingestion after health check");
+});

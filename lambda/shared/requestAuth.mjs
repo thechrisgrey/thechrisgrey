@@ -16,7 +16,7 @@ import { verifySessionToken } from "./sessionToken.mjs";
  *
  * After the transition window, callers drop the legacy branch and require a token.
  *
- * @param {object} event - Lambda Function URL event
+ * @param {{ headers?: Record<string, string> }} event - Lambda Function URL event
  * @param {object} [opts] - Auth options
  * @param {string} [opts.sessionKey] - server-only session-token signing key ("" disables the token path)
  * @param {string} [opts.scope] - required token scope ("chat" | "blueprint")

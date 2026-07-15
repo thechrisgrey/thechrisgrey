@@ -1,0 +1,64 @@
+title = "thechrisgrey secret scanning config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aws-access-key-id"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "chat-signing-key"
+description = "Chat signing key assignment"
+regex = '''CHAT_SIGNING_KEY\s*=\s*["'][^"']{8,}["']'''
+tags = ["secret", "thechrisgrey"]
+
+[[rules]]
+id = "blueprint-signing-key"
+description = "Blueprint signing key assignment"
+regex = '''BLUEPRINT_SIGNING_KEY\s*=\s*["'][^"']{8,}["']'''
+tags = ["secret", "thechrisgrey"]
+
+[[rules]]
+id = "session-token-key"
+description = "Session token signing key assignment"
+regex = '''SESSION_TOKEN_KEY\s*=\s*["'][^"']{8,}["']'''
+tags = ["secret", "thechrisgrey"]
+
+[[rules]]
+id = "turnstile-secret"
+description = "Cloudflare Turnstile secret key assignment"
+regex = '''TURNSTILE_SECRET\s*=\s*["'][^"']{8,}["']'''
+tags = ["secret", "cloudflare"]
+
+[[rules]]
+id = "sanity-write-token"
+description = "Sanity CMS write token"
+regex = '''SANITY_WRITE_TOKEN\s*=\s*["'][^"']{8,}["']'''
+tags = ["secret", "sanity"]
+
+[allowlist]
+description = "Allowed paths and patterns"
+paths = [
+  '''node_modules/.*''',
+  '''dist/.*''',
+  '''coverage/.*''',
+  '''.*\.lock''',
+  '''package-lock\.json''',
+]
+regexes = [
+  '''VITE_CHAT_SIGNING_KEY.*ci-placeholder-key''',
+  '''VITE_CHAT_SIGNING_KEY.*placeholder''',
+  # .env.example intentionally contains placeholder values for documentation
+  '''\.env\.example''',
+]
+stopwords = [
+  "ci-placeholder-key",
+  "placeholder",
+  "test-token",
+  "test-turnstile-secret",
+  "integration-test-signing-secret",
+  "server-only-signing-secret",
+]

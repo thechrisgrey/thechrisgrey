@@ -1,0 +1,103 @@
+name: DAST Security Scan
+
+# Dynamic Application Security Testing using OWASP ZAP baseline scan.
+# Runs a non-destructive (passive) scan against the live site to detect
+# common web vulnerabilities: missing security headers, XSS exposure,
+# information disclosure, insecure cookies, mixed content, and more.
+#
+# The baseline scan is safe for production — it spiders the site and analyzes
+# responses without sending attack payloads. It complements the existing
+# SAST (ESLint, gitleaks) and SCA (npm audit, Dependabot) security layers.
+#
+# Findings open or update a tracked GitHub issue (same pattern as
+# security-audit.yml) so vulnerabilities cannot sit unaddressed.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC (before the npm audit at 12:00)
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL to scan (default: https://thechrisgrey.com)'
+        required: false
+        default: 'https://thechrisgrey.com'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  zap-baseline:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Determine target URL
+        id: target
+        run: |
+          URL="${{ github.event.inputs.target_url || 'https://thechrisgrey.com' }}"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Scanning: $URL"
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ steps.target.outputs.url }}
+          cmd_options: '-a -j -z "-configfile /zap/wrk/zap.options"'
+          fail_action: false
+          issue_title: 'DAST: OWASP ZAP baseline scan findings'
+          action_name: 'OWASP ZAP Baseline Scan'
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: report_html.html
+          retention-days: 30
+
+      - name: Open or update tracking issue on findings
+        if: failure()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const target = '${{ steps.target.outputs.url }}';
+            const title = 'DAST: OWASP ZAP baseline scan findings';
+            const body = [
+              `The OWASP ZAP baseline scan found potential security issues scanning \`${target}\`.`,
+              '',
+              `Run log: ${url}`,
+              '',
+              'Download the `zap-baseline-report` artifact from the run for the full HTML report.',
+              '',
+              'The baseline scan is passive (non-destructive). Findings typically include:',
+              '- Missing or misconfigured security headers',
+              '- Cross-site scripting (XSS) exposure',
+              '- Information disclosure (server version, comments, etc.)',
+              '- Insecure cookie attributes (missing HttpOnly, Secure, SameSite)',
+              '- Mixed content (HTTP resources on HTTPS pages)',
+              '- CSP violations or missing Content-Security-Policy',
+              '',
+              'Remediation: review the ZAP report, fix findings, and re-run the workflow',
+              'via `workflow_dispatch` to verify. Close this issue once resolved.',
+            ].join('\n');
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'security,dast-scan',
+            });
+            if (open.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['security', 'dast-scan'],
+              });
+            }

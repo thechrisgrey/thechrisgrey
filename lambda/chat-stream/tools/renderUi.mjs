@@ -1,6 +1,7 @@
 import { tool } from "@strands-agents/sdk";
 import { RenderUiInputSchema } from "../uiBlocks.mjs";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const _tool = /** @type {any} */ (tool);
 
@@ -16,7 +17,9 @@ const _tool = /** @type {any} */ (tool);
  * (buildTools gates it on deps.surface === 'page'). The floating widget never
  * receives it, so the model cannot emit blocks there.
  */
+/** @param {{ responseStream: any, metrics: any, requestId: string }} deps */
 export function buildRenderUiTool({ responseStream, metrics, requestId }) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   return _tool({
     name: "render_ui",
     description:
@@ -26,7 +29,7 @@ export function buildRenderUiTool({ responseStream, metrics, requestId }) {
       "Most answers need none; one block is plenty, three is the maximum. " +
       "ALWAYS also write a short text reply — the block supplements your words, it never replaces them.",
     inputSchema: RenderUiInputSchema,
-    callback: async ({ blocks }) => {
+    callback: async (/** @type {{ blocks: any[] }} */ { blocks }) => {
       try {
         for (const block of blocks) {
           emitEvent(responseStream, {
@@ -36,18 +39,14 @@ export function buildRenderUiTool({ responseStream, metrics, requestId }) {
         }
         metrics?.record("ToolCall_RenderUi");
         metrics?.record("RenderUiBlocks", blocks.length);
-        return { ok: true, rendered: blocks.map((b) => b.type) };
+        return { ok: true, rendered: blocks.map((/** @type {any} */ b) => b.type) };
       } catch (error) {
         metrics?.record("ToolFailure_RenderUi");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "tool_error",
-            tool: "render_ui",
-            error: error.name,
-            message: error.message,
-          }),
-        );
+        log.error("tool_error", {
+          tool: "render_ui",
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         return { ok: false, error: "Unable to render that block." };
       }
     },

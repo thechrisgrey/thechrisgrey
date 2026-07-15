@@ -183,7 +183,15 @@ Series filtering (`?series=<slug>`), categories from data, Shiki syntax highligh
   - Namespace: `TheChrisGrey/SiteMetrics`
   - Rate limits: 200 vitals/min, 100 CSP/min per IP
 - CloudWatch alarms → SNS `thechrisgrey-site-alerts` → chris@altivum.ai:
-  - high-cls (>0.25/1hr), kb-failures (>5/hr), rate-limit-surge (>50/hr), csp-violations (>20/hr), kb-sync-failure, bedrock-cost ($25/day)
+  - Frontend: high-cls (>0.25/1hr), csp-violations (>20/hr)
+  - Chat-stream: kb-failures (>5/hr), rate-limit-surge (>50/hr), bedrock-cost ($25/day), agent-timeout (>5/15min)
+  - Blueprint: opus-cost ($25/day), errors (>3/15min), validation-failures (>5/hr), opus-timeout (>3/15min), generation-errors (>5/hr)
+  - KB-builder: kb-builder-errors (>5/15min, log-based)
+  - KB-sync: kb-sync-failure (>0/5min)
+  - Metrics: metrics-errors (>5/15min, log-based, telemetry pipeline health)
+  - MCP-server: mcp-ratelimit-surge (>20/hr), mcp-errors (>10/15min, log-based)
+  - Session-token: session-turnstile-failures (>30/hr, log-based), session-ratelimit-surge (>50/hr, log-based)
+  - Alarms are managed via `scripts/setup-alarms.sh` (run after infra changes)
 - Site Health Dashboard on `/admin` via `useSiteHealth.ts`
 
 ### Lambda Fleet

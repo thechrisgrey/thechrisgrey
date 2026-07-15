@@ -3,6 +3,7 @@ import { z } from "zod";
 import { normalizeQuery, isMeaningful } from "lambda-shared/sanityQueries";
 import { emitEvent, EVENT_KINDS } from "../events.mjs";
 import { retrievePodcastChunks } from "../podcastRetrieve.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const _tool = /** @type {any} */ (tool);
 
@@ -11,15 +12,18 @@ const MAX_CITATIONS = 3;
 /**
  * Format a second-offset as a YouTube-style timestamp label (MM:SS or H:MM:SS).
  */
+/** @param {number} totalSeconds @returns {string} */
 export function formatTimestamp(totalSeconds) {
   const s = Math.max(0, Math.floor(Number(totalSeconds) || 0));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
+  /** @param {number} n */
   const pad = (n) => String(n).padStart(2, "0");
   return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`;
 }
 
+/** @param {any} text @param {number} [max] @returns {string} */
 function trimQuote(text, max = 240) {
   const clean = String(text).replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
@@ -31,6 +35,9 @@ function trimQuote(text, max = 240) {
  * `podcast_citation` draft action per top result, each deep-linking to the exact
  * YouTube timestamp. Mirrors the searchBlog tool's structure and metrics.
  */
+/**
+ * @param {{ agentClient: any, RetrieveCommand: any, podcastKbId: string, responseStream: any, metrics: any, requestId: string }} deps
+ */
 export function buildSearchPodcastTool({
   agentClient,
   RetrieveCommand,
@@ -39,6 +46,7 @@ export function buildSearchPodcastTool({
   metrics,
   requestId,
 }) {
+  const log = createLogger(requestId, { service: "chat-stream" });
   return _tool({
     name: "search_podcast",
     description:
@@ -54,7 +62,7 @@ export function buildSearchPodcastTool({
         .max(120, "Query too long")
         .describe("Topic, phrase, or question to search the podcast for, e.g. 'women veterans' or 'AI in defense'"),
     }),
-    callback: async ({ query }) => {
+    callback: async (/** @type {{ query: string }} */ { query }) => {
       const normalized = normalizeQuery(query);
       if (!isMeaningful(normalized)) {
         metrics?.record("ToolRejection_SearchPodcast");
@@ -105,7 +113,7 @@ export function buildSearchPodcastTool({
         return {
           ok: true,
           query: normalized,
-          results: top.map((c) => ({
+          results: top.map((/** @type {any} */ c) => ({
             episodeTitle: c.episodeTitle || "The Vector Podcast",
             timestampLabel: formatTimestamp(c.startSeconds),
             quote: trimQuote(c.text, 320),
@@ -113,15 +121,11 @@ export function buildSearchPodcastTool({
         };
       } catch (error) {
         metrics?.record("ToolFailure_SearchPodcast");
-        console.error(
-          JSON.stringify({
-            requestId,
-            event: "tool_error",
-            tool: "search_podcast",
-            error: error.name,
-            message: error.message,
-          }),
-        );
+        log.error("tool_error", {
+          tool: "search_podcast",
+          error: error instanceof Error ? error.name : String(error),
+          message: error instanceof Error ? error.message : "",
+        });
         return { ok: false, error: "Unable to search the podcast right now." };
       }
     },

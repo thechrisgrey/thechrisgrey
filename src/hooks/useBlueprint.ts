@@ -2,9 +2,10 @@ import { useCallback, useRef, useState } from 'react';
 import { getSessionToken } from '../utils/sessionToken';
 import { getOrCreateDeviceId } from '../utils/deviceId';
 import { withTraceId } from '../utils/traceId';
+import { getFeatureFlag } from '../utils/featureFlags';
 import type { BlueprintInput, BlueprintOutput, BlueprintResponse, BlueprintSuccessResponse } from '../types/blueprint';
 
-const BLUEPRINT_ENDPOINT = import.meta.env.VITE_BLUEPRINT_ENDPOINT || '';
+const BLUEPRINT_ENDPOINT = getFeatureFlag('blueprintEndpoint');
 const REQUEST_TIMEOUT_MS = 90_000; // Opus generation can take a while
 
 export type BlueprintErrorKind =

@@ -45,10 +45,11 @@ GENERAL RULES:
  * Build the visitor-context block that is silently prepended to the system
  * prompt. Returns an empty string if pageContext is null.
  */
+/** @param {any} pageContext @returns {string} */
 export function buildVisitorContext(pageContext) {
   if (!pageContext) return "";
 
-  const priorPages = pageContext.visitedPages.filter((p) => p !== pageContext.currentPage);
+  const priorPages = pageContext.visitedPages.filter((/** @type {any} */ p) => p !== pageContext.currentPage);
   const journeyLine = priorPages.length > 0 ? `\nThey have also visited: ${priorPages.join(", ")}.` : "";
 
   return `
@@ -63,11 +64,12 @@ Use this ONLY to silently prioritize which details to lead with. NEVER acknowled
  * Build the visitor-memory block containing facts the visitor previously
  * shared. Returns an empty string when there are no facts.
  */
+/** @param {any[]} facts @returns {string} */
 export function buildMemoryContext(facts) {
   if (!Array.isArray(facts) || facts.length === 0) return "";
 
   const lines = facts
-    .map((f) => (typeof f === "string" ? f : f?.content))
+    .map((/** @type {any} */ f) => (typeof f === "string" ? f : f?.content))
     .filter((s) => typeof s === "string" && s.trim().length > 0)
     .map((s) => `- ${s.trim()}`);
 
@@ -101,6 +103,7 @@ You have a render_ui tool that draws a small visual block to supplement an answe
  * Facts (optional) is the visitor's stored memory from the remember_fact tool.
  * Surface ('page' | 'widget') controls whether render_ui guidance is included.
  */
+/** @param {string|null} retrievedContext @param {any} pageContext @param {any[]} facts @param {string} surface @returns {string} */
 export function buildSystemPrompt(retrievedContext, pageContext, facts, surface) {
   const visitorContext = buildVisitorContext(pageContext);
   const memoryContext = buildMemoryContext(facts);

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { execSync } from 'child_process';
 
 // Git commit hash for RUM release ID (source map resolution in CloudWatch).
@@ -18,6 +19,10 @@ const releaseId = getReleaseId();
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Persistent dependency optimization cache — speeds up dev server starts and
+  // builds by caching pre-bundled deps. In CI, this is paired with
+  // actions/cache for node_modules/.vite (see .github/workflows/ci.yml).
+  cacheDir: 'node_modules/.vite',
   plugins: [
     react(),
     ViteImageOptimizer({
@@ -28,6 +33,19 @@ export default defineConfig({
       png: { quality: 80 },
       webp: { quality: 80 },
     }),
+    // Sentry source map upload — only active when SENTRY_AUTH_TOKEN is set
+    // (CI/Amplify build env). Locally, the plugin is a no-op.
+    ...(process.env.SENTRY_AUTH_TOKEN
+      ? [
+          sentryVitePlugin({
+            org: process.env.SENTRY_ORG || 'thechrisgrey',
+            project: process.env.SENTRY_PROJECT || 'thechrisgrey',
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            release: { name: releaseId },
+            sourcemaps: { filesToDeleteAfterUpload: ['**/*.js.map'] },
+          }),
+        ]
+      : []),
   ],
   define: {
     'import.meta.env.VITE_RUM_RELEASE_ID': JSON.stringify(releaseId),
@@ -51,8 +69,8 @@ export default defineConfig({
         },
       },
     },
-    // Hidden sourcemaps: generated for RUM source map upload to S3, but not
-    // referenced in the build output (not deployed publicly).
+    // Hidden sourcemaps: generated for RUM source map upload to S3 and Sentry
+    // source map upload, but not referenced in the build output (not deployed).
     sourcemap: 'hidden',
     minify: 'terser',
     terserOptions: {

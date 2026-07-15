@@ -29,6 +29,9 @@ import BlogPostArticleSkeleton from '../components/BlogPostArticleSkeleton';
 import SanityResponsiveImage from '../components/SanityResponsiveImage';
 import { getYouTubeId } from '../utils/youtube';
 import { buildVideoObjectSchema } from '../utils/schemas';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('BlogPost');
 
 /**
  * Extract word count from Portable Text blocks
@@ -161,7 +164,7 @@ const BlogPost = () => {
         setNotFound(true);
       } else if (!isSanityPost(data)) {
         // Shape drift — don't cache or render a malformed post.
-        console.error('Post response failed shape validation for slug:', slug);
+        log.error('shape_validation_failed', { slug });
         setFetchError({ kind: 'malformed', message: 'We could not load this article right now. Please try again.' });
       } else {
         setPost(data);
@@ -171,7 +174,11 @@ const BlogPost = () => {
       // Ignore abort errors (expected on unmount or slug change)
       if (error instanceof Error && error.name === 'AbortError') return;
       const classified = classifySanityError(error, 'Blog post');
-      console.error('Error fetching post:', classified.kind, classified.message, error);
+      log.error('fetch_failed', {
+        kind: classified.kind,
+        message: classified.message,
+        error: error instanceof Error ? error.message : String(error),
+      });
       setFetchError(classified);
     } finally {
       setIsLoading(false);
@@ -199,7 +206,7 @@ const BlogPost = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      log.error('clipboard_failed', { error: err instanceof Error ? err.message : String(err) });
     }
   };
 

@@ -1,0 +1,39 @@
+# GitHub Release Notes configuration.
+# Categorizes conventional commits into labeled sections in auto-generated
+# GitHub Releases. Used by GitHub's native release notes feature when
+# creating releases from tags.
+# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+  categories:
+    - title: Features
+      labels:
+        - feature
+    - title: Bug Fixes
+      labels:
+        - bugfix
+    - title: Observability & Monitoring
+      labels:
+        - observability
+    - title: Code Quality
+      labels:
+        - code-quality
+    - title: Security
+      labels:
+        - security
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Tests
+      labels:
+        - tests
+    - title: Chores & Maintenance
+      labels:
+        - chore
+    - title: Other Changes
+      labels:
+        - '*'

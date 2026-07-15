@@ -24,6 +24,7 @@ export const GENUI_OPUS_MODEL_ID = process.env.BEDROCK_OPUS_MODEL_ID || "us.anth
 // matching inside unrelated words (e.g. "genuine").
 const GENUI_PATTERN = /\bgen[\s_-]?ui\b/i;
 
+/** @param {any} text @returns {boolean} */
 export function detectGenUiIntent(text) {
   return typeof text === "string" && GENUI_PATTERN.test(text);
 }
@@ -31,6 +32,7 @@ export function detectGenUiIntent(text) {
 // Convert the shared Zod block vocabulary into a Bedrock-compatible JSON Schema.
 // Memoized; computed lazily so a conversion issue surfaces as a handled error
 // rather than a module-load crash.
+/** @type {any} */
 let _toolSpec = null;
 function renderUiToolSpec() {
   if (_toolSpec) return _toolSpec;
@@ -50,6 +52,7 @@ function renderUiToolSpec() {
   return _toolSpec;
 }
 
+/** @param {string} retrievedContext @returns {string} */
 function genUiSystem(retrievedContext) {
   return [
     'You are Alti\'s visual composer for thechrisgrey.com. The visitor explicitly asked for a visual answer (a "gen-ui" request), so you MUST call render_ui.',
@@ -63,6 +66,10 @@ function genUiSystem(retrievedContext) {
  * Force-render a generative-UI answer. Emits a short text lead-in followed by the
  * validated block(s) as framed ui_block events. Returns { ok, blockCount } or
  * { ok:false, error } — callers fall back to a normal answer on failure.
+ */
+/**
+ * @param {{ bedrockClient: any, ConverseCommand: any, modelId?: string, userMessage: string, history?: any[], retrievedContext?: string, responseStream: any, metrics: any, requestId: string, abortSignal?: any }} deps
+ * @returns {Promise<{ ok: boolean, blockCount?: number, error?: string }>}
  */
 export async function renderGenUi({
   bedrockClient,
@@ -94,11 +101,11 @@ export async function renderGenUi({
 
     const content = resp?.output?.message?.content || [];
     const leadIn = content
-      .map((c) => c.text)
+      .map((/** @type {any} */ c) => c.text)
       .filter(Boolean)
       .join(" ")
       .trim();
-    const toolUse = content.find((c) => c.toolUse)?.toolUse;
+    const toolUse = content.find((/** @type {any} */ c) => c.toolUse)?.toolUse;
 
     if (!toolUse) {
       metrics?.record("GenUiNoTool");
@@ -111,7 +118,7 @@ export async function renderGenUi({
       parsed = RenderUiInputSchema.parse(toolUse.input);
     } catch (e) {
       metrics?.record("GenUiInvalidBlocks");
-      log.error("genui_invalid_blocks", { message: e?.message });
+      log.error("genui_invalid_blocks", { message: e instanceof Error ? e.message : String(e) });
       return { ok: false, error: "invalid_blocks" };
     }
 
@@ -131,7 +138,10 @@ export async function renderGenUi({
     return { ok: true, blockCount: parsed.blocks.length };
   } catch (error) {
     metrics?.record("GenUiError");
-    log.error("genui_error", { error: error?.name, message: error?.message });
+    log.error("genui_error", {
+      error: error instanceof Error ? error.name : String(error),
+      message: error instanceof Error ? error.message : "",
+    });
     return { ok: false, error: "genui_failed" };
   }
 }

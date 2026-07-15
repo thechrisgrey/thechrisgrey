@@ -20,6 +20,13 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 export const SESSION_TOKEN_VERSION = "v1";
 
+/**
+ * @param {string|number} exp
+ * @param {string} scope
+ * @param {string} deviceHash
+ * @param {string} key
+ * @returns {string}
+ */
 function computeSignature(exp, scope, deviceHash, key) {
   return createHmac("sha256", key).update(`${exp}.${scope}.${deviceHash}`).digest("hex");
 }

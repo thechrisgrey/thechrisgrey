@@ -21,7 +21,9 @@
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 
-const DEFAULT_LEVEL = LEVELS[process.env.LOG_LEVEL?.toLowerCase()] ?? LEVELS.info;
+const LOG_LEVEL = process.env.LOG_LEVEL?.toLowerCase() ?? "";
+/** @type {number} */
+const DEFAULT_LEVEL = LEVELS[/** @type {keyof typeof LEVELS} */ (LOG_LEVEL)] || LEVELS.info;
 
 // PII redaction patterns (mirrors memory.mjs sanitizeFactContent guards).
 // Email: token with '@' and a dotted domain. The '.' after '@' prevents
@@ -46,7 +48,7 @@ function redact(value) {
   if (typeof value !== "object") return value;
   if (Array.isArray(value)) return value.map(redact);
 
-  const out = {};
+  const out = /** @type {Record<string, unknown>} */ ({});
   for (const [key, val] of Object.entries(value)) {
     // Skip keys that commonly hold secrets regardless of value content.
     const lowerKey = key.toLowerCase();
@@ -104,18 +106,21 @@ function emit(levelNum, levelName, requestId, context, event, extra) {
  * @returns {{ debug: (event:string, extra?:object)=>void, info: (event:string, extra?:object)=>void, warn: (event:string, extra?:object)=>void, error: (event:string, extra?:object)=>void }}
  */
 export function createLogger(requestId, context = {}) {
+  // Redact context once at creation time so PII in static fields is scrubbed
+  // from every log line without per-call overhead.
+  const sanitizedContext = /** @type {object} */ (redact(context));
   return {
     debug(event, extra) {
-      emit(LEVELS.debug, "debug", requestId, context, event, extra);
+      emit(LEVELS.debug, "debug", requestId, sanitizedContext, event, extra);
     },
     info(event, extra) {
-      emit(LEVELS.info, "info", requestId, context, event, extra);
+      emit(LEVELS.info, "info", requestId, sanitizedContext, event, extra);
     },
     warn(event, extra) {
-      emit(LEVELS.warn, "warn", requestId, context, event, extra);
+      emit(LEVELS.warn, "warn", requestId, sanitizedContext, event, extra);
     },
     error(event, extra) {
-      emit(LEVELS.error, "error", requestId, context, event, extra);
+      emit(LEVELS.error, "error", requestId, sanitizedContext, event, extra);
     },
   };
 }

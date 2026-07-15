@@ -9,6 +9,7 @@ export const EVENT_KINDS = Object.freeze({
   GUARDRAIL: "guardrail",
 });
 
+/** @param {any} responseStream @param {any} event */
 export function emitEvent(responseStream, event) {
   if (!responseStream || typeof responseStream.write !== "function") {
     throw new Error("emitEvent: responseStream.write is required");

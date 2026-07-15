@@ -61,7 +61,11 @@ describe('webVitals', () => {
         navigationType: 'navigate',
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[Web Vitals] CLS: 0.05'));
+      // Structured logger outputs [DEBUG][WebVitals] metric { name, value }
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[DEBUG][WebVitals] metric'),
+        expect.objectContaining({ name: 'CLS' }),
+      );
 
       consoleSpy.mockRestore();
     });
@@ -98,6 +102,7 @@ describe('webVitals', () => {
         delta: 2500,
         id: 'lcp-id',
         navigationType: 'navigate',
+        traceId: expect.any(String),
       });
 
       vi.unstubAllEnvs();

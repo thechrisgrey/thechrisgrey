@@ -87,3 +87,9 @@ scripts/editorial-raw/
 
 # jscpd duplicate code report
 jscpd-report/
+
+# Turborepo task cache
+.turbo/
+
+# Generated API documentation (run: npm run docs:gen)
+docs/api/

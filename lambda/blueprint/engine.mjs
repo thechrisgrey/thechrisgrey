@@ -46,6 +46,7 @@ const SILENT_LOGGER = {
  *     attempt?: number, examplesUsed?: number }
  *   { type: "token", text: string }  (streaming only)
  */
+/** @param {any} onProgress @param {any} event */
 function emit(onProgress, event) {
   if (!onProgress) return;
   try {
@@ -61,10 +62,10 @@ function emit(onProgress, event) {
  * @param {object} rawSpec - Unvalidated spec from the caller.
  * @param {object} deps
  * @param {"free"|"pro"} [deps.tier="free"]
- * @param {object|null} [deps.sanityClient] - For fetching golden examples.
- * @param {object} deps.bedrockClient       - BedrockRuntimeClient (required).
- * @param {object} [deps.logger]            - { info, warn, error }.
- * @param {object} [deps.examplesFetcher]   - Pre-built fetcher (preferred for
+ * @param {{ fetch: any }|null} [deps.sanityClient] - For fetching golden examples.
+ * @param {{ send: any }} deps.bedrockClient       - BedrockRuntimeClient (required).
+ * @param {{ warn: any, info: any, error: any }} [deps.logger]            - { info, warn, error }.
+ * @param {{ getExamples: () => Promise<any[]> }} [deps.examplesFetcher]   - Pre-built fetcher (preferred for
  *                                            reuse across requests); otherwise
  *                                            created from sanityClient.
  * @param {string} [deps.requestId]
@@ -79,7 +80,7 @@ function emit(onProgress, event) {
  *        callback. When provided, the engine uses streamOpus and relays each
  *        token delta as `{type:"token", text}`. Also emits lifecycle
  *        `{type:"status", phase}` events even when omitted.
- * @returns {Promise<object>}
+ * @returns {Promise<any>}
  */
 // eslint-disable-next-line complexity -- orchestrates multi-stage generation (guardrail, RAG, Opus, Haiku validation); splitting would obscure the pipeline
 export async function generateBlueprint(rawSpec, deps) {
@@ -134,8 +135,8 @@ export async function generateBlueprint(rawSpec, deps) {
     } catch (error) {
       logger.warn?.("golden_examples_load_error", {
         requestId,
-        error: error?.name,
-        message: error?.message,
+        error: error instanceof Error ? error.name : String(error),
+        message: error instanceof Error ? error.message : "",
       });
       allExamples = [];
     }
@@ -220,16 +221,18 @@ export async function generateBlueprint(rawSpec, deps) {
       }
     } catch (error) {
       const code = error instanceof BedrockTimeoutError ? "opus_timeout" : "opus_error";
+      const errName = error instanceof Error ? error.name : String(error);
+      const errMsg = error instanceof Error ? error.message || "" : "";
       logger.error?.(code, {
         requestId,
-        error: error?.name,
-        message: error?.message,
+        error: errName,
+        message: errMsg,
         attempt,
       });
       return {
         ok: false,
         error: code,
-        details: error?.message,
+        details: errMsg,
         meta: {
           tier,
           total_ms: Date.now() - start,
@@ -291,6 +294,7 @@ export async function generateBlueprint(rawSpec, deps) {
   // 5. Haiku quality pass (soft signal)
   emit(onProgress, { type: "status", phase: "validating_output" });
   let haikuVerdict;
+  /** @type {any} */
   let haikuUsage = { input_tokens: 0, output_tokens: 0 };
   let haikuLatencyMs = 0;
   try {
@@ -312,8 +316,8 @@ export async function generateBlueprint(rawSpec, deps) {
   } catch (error) {
     logger.warn?.("haiku_validator_error", {
       requestId,
-      error: error?.name,
-      message: error?.message,
+      error: error instanceof Error ? error.name : String(error),
+      message: error instanceof Error ? error.message : "",
     });
     haikuVerdict = { ok: true, confidence: "low", issues: [] };
   }

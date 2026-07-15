@@ -1,0 +1,141 @@
+openapi: 3.1.0
+info:
+  title: KB Sync Service
+  version: '1.0.0'
+  description: |
+    Event-driven Lambda that syncs the Bedrock Knowledge Base when content
+    changes in the `thechrisgrey-kb-source` S3 bucket. Triggered by S3 PUT/DELETE
+    events, not HTTP requests. Also supports a health check invocation via
+    `aws lambda invoke --payload '{"healthCheck":true}'`.
+
+    This is not a traditional HTTP API. The OpenAPI spec documents the Lambda's
+    input/output contracts for the S3 event trigger and the health check mode,
+    serving as the API contract for integration testing and monitoring.
+servers:
+  - url: arn:aws:lambda:us-east-1:function:thechrisgrey-kb-sync
+    description: Lambda ARN (invoked via S3 event or aws lambda invoke)
+tags:
+  - name: sync
+  - name: health
+paths:
+  /sync:
+    post:
+      tags: [sync]
+      operationId: syncKnowledgeBase
+      summary: Trigger a Knowledge Base ingestion job from S3 events
+      description: |
+        Invoked automatically by S3 event notifications when objects are
+        created or deleted in the `thechrisgrey-kb-source` bucket. The handler
+        calls `StartIngestionJob` on the Bedrock Knowledge Base (ID
+        `ARFYABW8HP`, DataSource `TXQTRAJOSD`) with a 15s timeout.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [Records]
+              properties:
+                Records:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      eventName:
+                        type: string
+                        example: ObjectCreated:Put
+                      s3:
+                        type: object
+                        properties:
+                          bucket:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                example: thechrisgrey-kb-source
+                          object:
+                            type: object
+                            properties:
+                              key:
+                                type: string
+                                example: knowledge-base.txt
+      responses:
+        '200':
+          description: Ingestion job started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Knowledge Base sync triggered
+                  ingestionJobId:
+                    type: string
+                    example: job-abc123
+                  triggeredBy:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        eventName:
+                          type: string
+                        key:
+                          type: string
+                        bucket:
+                          type: string
+        '500':
+          description: Failed to trigger ingestion job
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to trigger Knowledge Base sync
+                  error:
+                    type: string
+  /health:
+    post:
+      tags: [health]
+      operationId: healthCheck
+      summary: Liveness probe for the kb-sync Lambda
+      description: |
+        Invoke with `{"healthCheck":true}` payload via `aws lambda invoke` or
+        EventBridge scheduled rule. Returns service status without performing a
+        KB sync or publishing metrics.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [healthCheck]
+              properties:
+                healthCheck:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  service:
+                    type: string
+                    example: kb-sync
+                  version:
+                    type: string
+                    example: '1.0.0'
+                  knowledgeBaseId:
+                    type: string
+                    example: ARFYABW8HP
+                  dataSourceId:
+                    type: string
+                    example: TXQTRAJOSD

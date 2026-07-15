@@ -5,6 +5,8 @@ import ViewTransitionLink from '../components/ViewTransitionLink';
 import { buildWebPageSchema } from '../utils/schemas';
 import { clearConsent, getConsent } from '../utils/consent';
 import { disablePostHog, isPostHogConfigured } from '../utils/posthog';
+import { revokeRumCookies } from '../utils/rum';
+import { disableSentry } from '../utils/sentry';
 import { isPrerender } from '../utils/prerender';
 
 const Privacy = () => {
@@ -19,6 +21,9 @@ const Privacy = () => {
   const resetAnalyticsPreference = () => {
     clearConsent();
     disablePostHog();
+    // Return RUM to cookieless and purge its cookies; tear down Sentry.
+    revokeRumCookies();
+    disableSentry();
     window.location.reload();
   };
 

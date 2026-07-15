@@ -1,8 +1,23 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { withTraceId } from './traceId';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+
+// Mock rum and sentry to verify trace context propagation
+vi.mock('./rum', () => ({
+  addBreadcrumb: vi.fn(),
+  isRumInitialized: false,
+}));
+
+vi.mock('./sentry', () => ({
+  addSentryBreadcrumb: vi.fn(),
+  isSentryInitialized: vi.fn(() => false),
+}));
+
+import { withTraceId, generateTraceId } from './traceId';
+import { addBreadcrumb } from './rum';
+import { addSentryBreadcrumb, isSentryInitialized } from './sentry';
 
 describe('withTraceId', () => {
   afterEach(() => vi.restoreAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it('adds an X-Request-Id header to the init object', () => {
     const init: RequestInit = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
@@ -32,8 +47,6 @@ describe('withTraceId', () => {
     const b = withTraceId({ method: 'GET' } as RequestInit);
     const aId = (a.headers as Record<string, string>)['X-Request-Id'];
     const bId = (b.headers as Record<string, string>)['X-Request-Id'];
-    // With the mocked randomUUID, both will return the same value.
-    // In production, randomUUID generates unique IDs per call.
     expect(aId).toBeDefined();
     expect(bId).toBeDefined();
   });
@@ -56,5 +69,45 @@ describe('withTraceId', () => {
     expect(result.method).toBe('POST');
     expect(result.body).toBe('{"test":true}');
     expect(result.signal).toBe(controller.signal);
+  });
+
+  it('sets trace context as a RUM breadcrumb', () => {
+    const uuid = 'trace-test-uuid';
+    vi.stubGlobal('crypto', { randomUUID: () => uuid });
+    withTraceId({ method: 'GET' } as RequestInit);
+
+    expect(addBreadcrumb).toHaveBeenCalledWith('custom', `trace_id: ${uuid}`, { traceId: uuid });
+  });
+
+  it('does not call Sentry breadcrumb when Sentry is not initialized', () => {
+    vi.mocked(isSentryInitialized).mockReturnValue(false);
+    const uuid = 'trace-test-uuid-2';
+    vi.stubGlobal('crypto', { randomUUID: () => uuid });
+    withTraceId({ method: 'GET' } as RequestInit);
+
+    expect(addSentryBreadcrumb).not.toHaveBeenCalled();
+  });
+});
+
+describe('generateTraceId', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('generates a UUID when crypto.randomUUID is available', () => {
+    const uuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    vi.stubGlobal('crypto', { randomUUID: () => uuid });
+    expect(generateTraceId()).toBe(uuid);
+  });
+
+  it('falls back to a timestamp-based ID when crypto.randomUUID is unavailable', () => {
+    vi.stubGlobal('crypto', {});
+    const traceId = generateTraceId();
+    expect(traceId).toMatch(/^trace-\d+-\w+$/);
+  });
+
+  it('is exported and callable standalone', () => {
+    expect(typeof generateTraceId).toBe('function');
+    const traceId = generateTraceId();
+    expect(typeof traceId).toBe('string');
+    expect(traceId.length).toBeGreaterThan(0);
   });
 });

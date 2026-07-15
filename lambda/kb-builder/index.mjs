@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { CloudWatchClient } from "@aws-sdk/client-cloudwatch";
 import { createClient } from "@sanity/client";
 import { randomUUID } from "crypto";
 import { checkRateLimit } from "lambda-shared/rateLimit";
@@ -9,10 +10,14 @@ import { validateCognitoToken } from "lambda-shared/auth";
 import { respond } from "lambda-shared/response";
 import { createLogger } from "lambda-shared/logger";
 import { withTimeout } from "lambda-shared/timeout";
+import { MetricsCollector } from "lambda-shared/metrics";
+import { setRequestContext, captureError, addBreadcrumb, flushSentry } from "lambda-shared/errorTracking";
+import { captureProductEvent, flushProductAnalytics } from "lambda-shared/productAnalytics";
 import { CATEGORY_ORDER, validateEntryFields } from "./validation.mjs";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
+const cloudwatchClient = new CloudWatchClient({ region: "us-east-1" });
 const dynamoClient = new DynamoDBClient({ region: "us-east-1" });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
@@ -35,6 +40,7 @@ const sanityClient = createClient({
   timeout: 10000, // 10s — prevent hanging on Sanity API issues
 });
 
+/** @type {Record<string, string>} */
 const CATEGORY_LABELS = {
   biography: "BIOGRAPHY",
   military: "MILITARY SERVICE",
@@ -48,6 +54,7 @@ const CATEGORY_LABELS = {
   book: "BEYOND THE ASSESSMENT",
 };
 
+/** @param {boolean} [activeOnly=false] @returns {Promise<any>} */
 async function fetchEntries(activeOnly = false) {
   const filter = activeOnly ? '*[_type == "kbEntry" && isActive == true]' : '*[_type == "kbEntry"]';
 
@@ -62,7 +69,9 @@ async function fetchEntries(activeOnly = false) {
   );
 }
 
+/** @param {any[]} entries @returns {string} */
 function assembleDocument(entries) {
+  /** @type {Record<string, any[]>} */
   const grouped = {};
 
   for (const entry of entries) {
@@ -107,6 +116,7 @@ function assembleDocument(entries) {
   return sections.join("\n\n");
 }
 
+/** @param {string} document */
 async function uploadToS3(document) {
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET,
@@ -117,6 +127,7 @@ async function uploadToS3(document) {
   return withTimeout(s3Client.send(command), 10000, "s3_upload");
 }
 
+/** @param {any} event */
 // eslint-disable-next-line complexity -- CRUD handler: auth, route dispatch, validation, S3 publish, error mapping across 6 endpoints
 export const handler = async (event) => {
   if (event.requestContext?.http?.method === "OPTIONS") {
@@ -133,27 +144,32 @@ export const handler = async (event) => {
   const path = event.rawPath || "";
   const log = createLogger(requestId, { service: "kb-builder" });
   log.info("request_start", { method, path });
-
-  const authHeader = event.headers?.authorization || event.headers?.Authorization;
-  const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
-  if (!user) {
-    return respond(401, { error: "Unauthorized" }, CORS_ORIGIN);
-  }
-
-  const clientIp = event.requestContext?.http?.sourceIp || "unknown";
-  const { allowed } = await checkRateLimit(docClient, UpdateCommand, {
-    table: "thechrisgrey-chat-ratelimit",
-    ip: clientIp,
-    prefix: "kb-builder-",
-    maxRequests: 30,
-    windowSeconds: 60,
-    ttlBuffer: 300,
-  });
-  if (!allowed) {
-    return respond(429, { error: "Too many requests" }, CORS_ORIGIN);
-  }
+  const metrics = new MetricsCollector(cloudwatchClient, "TheChrisGrey/KBBuilder");
+  setRequestContext(requestId, "kb-builder", { method, path });
 
   try {
+    const authHeader = event.headers?.authorization || event.headers?.Authorization;
+    const user = await validateCognitoToken(cognitoClient, GetUserCommand, authHeader);
+    if (!user) {
+      metrics.record("AuthFailed");
+      return respond(401, { error: "Unauthorized" }, CORS_ORIGIN);
+    }
+    addBreadcrumb("auth", "cognito_authenticated", { user: user.Username });
+
+    const clientIp = event.requestContext?.http?.sourceIp || "unknown";
+    const { allowed } = await checkRateLimit(docClient, UpdateCommand, {
+      table: "thechrisgrey-chat-ratelimit",
+      ip: clientIp,
+      prefix: "kb-builder-",
+      maxRequests: 30,
+      windowSeconds: 60,
+      ttlBuffer: 300,
+    });
+    if (!allowed) {
+      metrics.record("RateLimited");
+      return respond(429, { error: "Too many requests" }, CORS_ORIGIN);
+    }
+
     if (method === "GET" && path === "/entries") {
       const entries = await fetchEntries(false);
       return respond(200, { entries }, CORS_ORIGIN);
@@ -184,6 +200,7 @@ export const handler = async (event) => {
       };
 
       const result = await sanityClient.create(doc);
+      metrics.record("EntryCreated");
       return respond(201, { entry: result }, CORS_ORIGIN);
     }
 
@@ -228,6 +245,7 @@ export const handler = async (event) => {
       if (body.isActive !== undefined) patch.set({ isActive: body.isActive });
 
       const result = await patch.commit();
+      metrics.record("EntryUpdated");
       return respond(200, { entry: result }, CORS_ORIGIN);
     }
 
@@ -246,6 +264,7 @@ export const handler = async (event) => {
       }
 
       await sanityClient.delete(id);
+      metrics.record("EntryDeleted");
       return respond(200, { deleted: true }, CORS_ORIGIN);
     }
 
@@ -258,6 +277,8 @@ export const handler = async (event) => {
 
       const document = assembleDocument(entries);
       await uploadToS3(document);
+      metrics.record("KbPublished");
+      captureProductEvent("KBPublished", { entryCount: entries.length });
 
       return respond(
         200,
@@ -273,7 +294,16 @@ export const handler = async (event) => {
 
     return respond(404, { error: "Not found" }, CORS_ORIGIN);
   } catch (error) {
-    log.error("handler_error", { error: error.name, message: error.message });
+    metrics.record("HandlerError");
+    log.error("handler_error", {
+      error: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "",
+    });
+    captureError(error, { handler: "kb-builder", path });
     return respond(500, { error: "Internal server error" }, CORS_ORIGIN);
+  } finally {
+    await metrics.flush();
+    await flushSentry();
+    await flushProductAnalytics();
   }
 };

@@ -9,13 +9,13 @@ import { createLogger } from "lambda-shared/logger";
  * for the bio KB), this returns structured results so the search_podcast tool can
  * build "Play at MM:SS" citation cards.
  *
- * @param {object} agentClient - BedrockAgentRuntimeClient instance (injected).
+ * @param {{ send: any }} agentClient - BedrockAgentRuntimeClient instance (injected).
  * @param {any} RetrieveCommand - RetrieveCommand constructor (injected).
  * @param {string} query - User query.
  * @param {object} opts
  * @param {string} opts.knowledgeBaseId - The podcast KB id (PODCAST_KB_ID).
  * @param {string} opts.requestId
- * @param {object} opts.metrics - MetricsCollector instance.
+ * @param {{ record: any }} opts.metrics - MetricsCollector instance.
  * @param {number} [opts.timeoutMs=4000]
  * @param {number} [opts.numberOfResults=4]
  * @returns {Promise<Array<{text:string, score:number|null, videoId:string, startSeconds:number, episodeTitle:string|null}>>}
@@ -58,7 +58,7 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
     }
 
     const chunks = response.retrievalResults
-      .map((result) => {
+      .map((/** @type {any} */ result) => {
         const meta = result.metadata || {};
         const startSecondsRaw = Number(meta.startSeconds);
         return {
@@ -69,20 +69,25 @@ export async function retrievePodcastChunks(agentClient, RetrieveCommand, query,
           episodeTitle: typeof meta.episodeTitle === "string" ? meta.episodeTitle : null,
         };
       })
-      .filter((c) => c.text && c.videoId && c.startSeconds !== null);
+      .filter((/** @type {any} */ c) => c.text && c.videoId && c.startSeconds !== null);
 
     metrics?.record("PodcastKBRetrievalSuccess");
     log.info("podcast_kb_retrieval_success", { chunks: chunks.length, latencyMs: elapsed });
     return chunks;
   } catch (error) {
     const elapsed = Date.now() - start;
+    const errName = error instanceof Error ? error.name : String(error);
     metrics?.record("PodcastKBRetrievalLatency", elapsed, "Milliseconds");
 
-    if (error.name === "AbortError") {
+    if (errName === "AbortError") {
       log.error("podcast_kb_retrieval_timeout", { latencyMs: elapsed });
       metrics?.record("PodcastKBRetrievalTimeout");
     } else {
-      log.error("podcast_kb_retrieval_error", { error: error.name, message: error.message, latencyMs: elapsed });
+      log.error("podcast_kb_retrieval_error", {
+        error: errName,
+        message: error instanceof Error ? error.message : "",
+        latencyMs: elapsed,
+      });
       metrics?.record("PodcastKBRetrievalFailure");
     }
     return [];

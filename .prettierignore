@@ -13,6 +13,12 @@ podcast-transcripts/
 .transcribe-audio/
 scripts/editorial-raw/
 
+# Turborepo cache
+.turbo/
+
+# Generated API documentation
+docs/api/
+
 # Generated files
 src/data/generatedEpisodes.json
 
@@ -20,3 +26,5 @@ src/data/generatedEpisodes.json
 *.pdf
 *.glb
 *.zip
+.gitleaks.toml
+.syncpackrc.json

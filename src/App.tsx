@@ -9,6 +9,9 @@ import ChatWidget from './components/chat/ChatWidget';
 import ConsentBanner from './components/ConsentBanner';
 import { getConsent } from './utils/consent';
 import { enablePostHog, capturePostHogPageview } from './utils/posthog';
+import { isRumInitialized, recordPageView, setUserContext, addBreadcrumb } from './utils/rum';
+import { setSentryUserContext, addSentryBreadcrumb, enableSentry } from './utils/sentry';
+import { getOrCreateDeviceId } from './utils/deviceId';
 
 // Static import — critical first-load path
 import Home from './pages/Home';
@@ -48,16 +51,33 @@ function App() {
   const location = useLocation();
   const isFullscreenPage = location.pathname === '/chat' || location.pathname === '/admin';
 
-  // Re-enable PostHog on load for visitors who already consented (no-op if PostHog
-  // isn't configured or consent wasn't granted). enablePostHog() captures the entry
-  // pageview itself; the effect below captures subsequent SPA navigations.
+  // Re-enable cookie-based analytics on load for visitors who already consented
+  // (all no-ops if unconfigured or consent wasn't granted). enablePostHog()
+  // captures the entry pageview itself; the effect below captures subsequent SPA
+  // navigations. RUM already runs cookieless from its module init; enableSentry()
+  // starts Sentry (dormant until consent). New consent is handled by ConsentBanner.
   useEffect(() => {
-    if (getConsent() === 'granted') void enablePostHog();
+    if (getConsent() === 'granted') {
+      void enablePostHog();
+      enableSentry();
+    }
   }, []);
 
-  // SPA pageview tracking. Skip the first run (the entry pageview is captured by
-  // enablePostHog) and capture on each subsequent route change. No-op until/unless
-  // PostHog is enabled.
+  // Set anonymous user context (device hash) for error tracking correlation.
+  // No PII — only the SHA-256 hash of the localStorage device ID.
+  // Forwarded to both RUM and Sentry for cross-service correlation.
+  useEffect(() => {
+    const deviceId = getOrCreateDeviceId();
+    if (deviceId) {
+      const ctx = { deviceId, sessionStart: new Date().toISOString() };
+      setUserContext(ctx);
+      setSentryUserContext(ctx);
+    }
+  }, []);
+
+  // SPA pageview + breadcrumb tracking. Skip the first run (the entry pageview
+  // is captured by enablePostHog) and capture on each subsequent route change.
+  // RUM page views and breadcrumbs are recorded alongside PostHog pageviews.
   const isFirstNavigation = useRef(true);
   useEffect(() => {
     if (isFirstNavigation.current) {
@@ -65,6 +85,11 @@ function App() {
       return;
     }
     capturePostHogPageview();
+    if (isRumInitialized) {
+      recordPageView(location.pathname);
+    }
+    addBreadcrumb('navigation', `Navigated to ${location.pathname}`);
+    addSentryBreadcrumb('navigation', `Navigated to ${location.pathname}`);
   }, [location.pathname]);
 
   return (

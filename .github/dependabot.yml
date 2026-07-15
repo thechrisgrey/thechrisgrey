@@ -126,6 +126,21 @@ updates:
           - 'patch'
 
   - package-ecosystem: 'npm'
+    directory: '/lambda/session-token'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 3
+    labels:
+      - 'dependencies'
+      - 'lambda'
+    groups:
+      lambda-dependencies:
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  - package-ecosystem: 'npm'
     directory: '/lambda/shared'
     schedule:
       interval: 'weekly'

@@ -20,6 +20,11 @@ const MAX_CONTENT_LENGTH = 50000;
 const MAX_DATE_LENGTH = 20;
 const MAX_SORT_ORDER = 1000;
 
+/**
+ * @param {{ title?: string, category?: string, content?: string, date?: string|null, sortOrder?: number }} fields
+ * @param {boolean} [requireAll=false]
+ * @returns {string|null}
+ */
 export function validateEntryFields({ title, category, content, date, sortOrder }, requireAll = false) {
   if (requireAll && (!title || !category || !content)) {
     return "title, category, and content are required";

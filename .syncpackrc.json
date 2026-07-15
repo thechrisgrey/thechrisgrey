@@ -1,0 +1,24 @@
+{
+  "sortAz": ["dependencies", "devDependencies"],
+  "semverGroups": [
+    {
+      "label": "Intentionally pinned to an exact version (deliberate; must NOT use a caret)",
+      "dependencies": ["turbo"],
+      "packages": ["**"],
+      "range": ""
+    },
+    {
+      "label": "Every other dependency uses a caret range so a shared package resolves to one version across all workspaces",
+      "dependencies": ["**"],
+      "packages": ["**"],
+      "range": "^"
+    }
+  ],
+  "versionGroups": [
+    {
+      "label": "Local workspace packages (file: specifiers for deploy script compatibility)",
+      "dependencies": ["lambda-shared"],
+      "isIgnored": true
+    }
+  ]
+}

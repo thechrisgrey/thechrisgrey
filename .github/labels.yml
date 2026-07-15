@@ -1,0 +1,93 @@
+# GitHub label definitions. Synced by .github/workflows/labeler.yml via
+# crazy-max/ghaction-github-labeler on push to main. Editing this file and
+# merging updates labels on the repo automatically.
+#
+# Label system:
+#   Priority: P0-P3 (severity)
+#   Type:     bug, feature, chore, documentation, tests, security, etc.
+#   Area:     frontend, backend, infra, chat, blueprint
+
+# ── Priority ──────────────────────────────────────────────────────────────
+- name: P0
+  description: Site down / data loss / security — drop everything
+  color: 'b60205'
+- name: P1
+  description: Major feature broken
+  color: 'd93f0b'
+- name: P2
+  description: Feature partially broken / poor UX
+  color: 'fbca04'
+- name: P3
+  description: Minor / cosmetic
+  color: '0e8a16'
+
+# ── Type ──────────────────────────────────────────────────────────────────
+- name: bug
+  description: Something isn't working
+  color: 'd73a4a'
+- name: feature
+  description: New feature or improvement
+  color: 'a2eeef'
+- name: chore
+  description: Maintenance, refactoring, dependency bumps
+  color: 'cfd3d7'
+- name: documentation
+  description: Improvements or additions to documentation
+  color: '0075ca'
+- name: tests
+  description: Test additions or fixes
+  color: '5319e7'
+- name: security
+  description: Security-related change or finding
+  color: 'b60205'
+- name: code-quality
+  description: Linting, formatting, type safety, complexity
+  color: '0075ca'
+- name: observability
+  description: Logging, metrics, tracing, alerting, dashboards
+  color: '1d76db'
+- name: dependencies
+  description: Dependency update (Dependabot)
+  color: '0366d6'
+
+# ── Area ──────────────────────────────────────────────────────────────────
+- name: frontend
+  description: React app, pages, components, hooks, utils
+  color: '0075ca'
+- name: backend
+  description: Lambda services and server-side logic
+  color: '0e8a16'
+- name: infra
+  description: AWS, Amplify, CloudFront, CI/CD, infrastructure
+  color: 'd93f0b'
+- name: chat
+  description: Alti chat agent (chat-stream Lambda + chat UI)
+  color: '5319e7'
+- name: blueprint
+  description: Architecture blueprint generator
+  color: 'c5a572'
+
+# ── Triage ────────────────────────────────────────────────────────────────
+- name: needs-triage
+  description: Needs review / priority assignment
+  color: 'fbca04'
+
+# ── Existing (kept in sync) ────────────────────────────────────────────────
+- name: enhancement
+  description: New feature or request (synonym for feature)
+  color: 'a2eeef'
+- name: security-audit
+  description: Automated security audit finding
+  color: 'ededed'
+- name: dast-scan
+  description: OWASP ZAP DAST scan finding
+  color: 'B22222'
+- name: error-insight
+  description: Auto-created from error-to-insight pipeline
+  color: 'B22222'
+- name: good first issue
+  description: Good for newcomers
+  color: '7057ff'
+- name: help wanted
+  description: Extra attention is needed
+  color: '008672'

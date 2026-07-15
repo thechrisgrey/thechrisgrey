@@ -7,6 +7,7 @@
  * @returns {{ statusCode: number, headers: object, body: string }}
  */
 export function respond(statusCode, body, corsOrigin = null) {
+  /** @type {Record<string, string>} */
   const headers = { "Content-Type": "application/json" };
 
   if (corsOrigin) {

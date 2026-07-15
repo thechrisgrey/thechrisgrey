@@ -1,4 +1,5 @@
 import { buildAskAltiSystemPrompt } from "../prompts.mjs";
+import { createLogger } from "lambda-shared/logger";
 
 const INPUT_SCHEMA = {
   type: "object",
@@ -21,12 +22,17 @@ const TEMPERATURE = 0.5;
 const BEDROCK_TIMEOUT_MS = 12000;
 const KB_RETRIEVAL_TIMEOUT_MS = 4000;
 
+/** @param {string} question */
 function cacheKey(question) {
   // Normalize for cache hits across minor whitespace / case differences.
   return question.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+/**
+ * @param {{ agentClient: any, RetrieveCommand: any, kbId: string, question: string, requestId: string, kbCache: any, metrics: any }} deps
+ */
 async function retrieveKbContext({ agentClient, RetrieveCommand, kbId, question, requestId, kbCache, metrics }) {
+  const log = createLogger(requestId, { service: "mcp-server" });
   if (!agentClient || !RetrieveCommand || !kbId) return null;
 
   const key = cacheKey(question);
@@ -49,7 +55,9 @@ async function retrieveKbContext({ agentClient, RetrieveCommand, kbId, question,
     });
     const resp = await agentClient.send(cmd, { abortSignal: controller.signal });
     const chunks = Array.isArray(resp?.retrievalResults)
-      ? resp.retrievalResults.map((r) => r?.content?.text).filter((t) => typeof t === "string" && t.length > 0)
+      ? resp.retrievalResults
+          .map((/** @type {any} */ r) => r?.content?.text)
+          .filter((/** @type {any} */ t) => typeof t === "string" && t.length > 0)
       : [];
     const joined = chunks.length > 0 ? chunks.join("\n\n---\n\n") : null;
     const latencyMs = Date.now() - startedAt;
@@ -58,25 +66,25 @@ async function retrieveKbContext({ agentClient, RetrieveCommand, kbId, question,
     if (joined !== null) kbCache?.set(key, joined);
     return joined;
   } catch (err) {
-    if (err?.name === "AbortError") {
+    const errName = err instanceof Error ? err.name : String(err);
+    if (errName === "AbortError") {
       metrics?.record("McpKbTimeout");
     } else {
       metrics?.record("McpKbFailure");
     }
-    console.error(
-      JSON.stringify({
-        requestId,
-        event: "mcp_kb_error",
-        error: err?.name,
-        message: err?.message,
-      }),
-    );
+    log.error("mcp_kb_error", {
+      error: errName,
+      message: err instanceof Error ? err.message : "",
+    });
     return null;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
+/**
+ * @param {{ bedrockClient: any, ConverseCommand: any, modelId: string, guardrailId: string, guardrailVersion: string, systemPrompt: string, question: string, requestId: string, metrics: any }} deps
+ */
 async function invokeBedrock({
   bedrockClient,
   ConverseCommand,
@@ -88,6 +96,7 @@ async function invokeBedrock({
   requestId,
   metrics,
 }) {
+  const log = createLogger(requestId, { service: "mcp-server" });
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), BEDROCK_TIMEOUT_MS);
   const startedAt = Date.now();
@@ -107,8 +116,8 @@ async function invokeBedrock({
     const resp = await bedrockClient.send(cmd, { abortSignal: controller.signal });
     const blocks = resp?.output?.message?.content ?? [];
     const text = blocks
-      .filter((c) => typeof c.text === "string")
-      .map((c) => c.text)
+      .filter((/** @type {any} */ c) => typeof c.text === "string")
+      .map((/** @type {any} */ c) => c.text)
       .join("");
 
     const latencyMs = Date.now() - startedAt;
@@ -125,27 +134,27 @@ async function invokeBedrock({
     metrics?.record("McpBedrockSuccess");
     return { text: text.trim() };
   } catch (err) {
-    if (err?.name === "AbortError") {
+    const errName = err instanceof Error ? err.name : String(err);
+    if (errName === "AbortError") {
       metrics?.record("McpBedrockTimeout");
       return {
         error: "That question took longer than expected. Try a simpler phrasing.",
       };
     }
     metrics?.record("McpBedrockFailure");
-    console.error(
-      JSON.stringify({
-        requestId,
-        event: "mcp_bedrock_error",
-        error: err?.name,
-        message: err?.message,
-      }),
-    );
+    log.error("mcp_bedrock_error", {
+      error: errName,
+      message: err instanceof Error ? err.message : "",
+    });
     return { error: "Alti is unavailable right now. Try again shortly." };
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
+/**
+ * @param {{ bedrockClient: any, ConverseCommand: any, agentClient: any, RetrieveCommand: any, kbId: string, modelId: string, guardrailId: string, guardrailVersion: string, kbCache: any, metrics: any, requestId: string }} deps
+ */
 export function buildAskAltiMcpTool({
   bedrockClient,
   ConverseCommand,
@@ -167,7 +176,7 @@ export function buildAskAltiMcpTool({
       "or his AWS / Applied AI engineering practice. Returns a concise 2-4 sentence reply grounded in " +
       "Christian's published writing and autobiography. Does NOT answer general knowledge questions.",
     inputSchema: INPUT_SCHEMA,
-    handler: async ({ arguments: args }) => {
+    handler: async (/** @type {{ arguments: any }} */ { arguments: args }) => {
       const question = typeof args?.question === "string" ? args.question.trim() : "";
       if (question.length < 3 || question.length > 1000) {
         return {
