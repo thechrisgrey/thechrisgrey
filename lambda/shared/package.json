@@ -20,9 +20,9 @@
     "./productAnalytics": "./productAnalytics.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch": "^3.1068.0",
-    "@sentry/node": "^10.0.0",
-    "posthog-node": "^5.39.4"
+    "@aws-sdk/client-cloudwatch": "^3.1090.0",
+    "@sentry/node": "^10.67.0",
+    "posthog-node": "^5.45.2"
   },
   "scripts": {
     "test": "node --test __tests__/*.test.mjs"
