@@ -5,6 +5,9 @@
 # Usage:
 #   bash scripts/deploy-lambda.sh <name> [--region us-east-1] [--dry-run]
 #   npm run deploy:lambda -- <name> [--region us-east-1] [--dry-run]
+#   Deploys as profile personal-dev and refuses unless the caller account is
+#   Delta Centric 512880383078 (scripts/lib/aws-preflight.sh). A --dry-run makes
+#   no AWS call.
 #
 # What it guarantees over the old hand-typed `zip` commands:
 #   1. Installs from the committed lockfile (npm ci) when present.
@@ -29,6 +32,10 @@ done
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIR="$ROOT/lambda/$NAME"
 [ -f "$DIR/index.mjs" ] || { echo "No deployable Lambda at $DIR" >&2; exit 1; }
+
+# Pin and assert the account before any AWS call (scripts/lib/aws-preflight.sh).
+. "$ROOT/scripts/lib/aws-preflight.sh"
+if [ "$DRY_RUN" -eq 0 ]; then tcg_aws_preflight; fi
 cd "$DIR"
 
 echo "==> [$NAME] Installing deps"

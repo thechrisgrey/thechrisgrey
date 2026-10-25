@@ -13,10 +13,11 @@
  * Then it stages + syncs + starts the KB ingestion job.
  *
  * Env:
- *   PODCAST_KB_ID            (required for ingestion)  default: FCNAZHLCUH
- *   PODCAST_KB_DATA_SOURCE_ID                          default: ZLFD3PWKPN
- *   PODCAST_KB_SOURCE_BUCKET                           default: thechrisgrey-kb-podcast-source
- *   AWS_REGION                                         default: us-east-1
+ *   THECHRISGREY_AWS_PROFILE   default: personal-dev (only value accepted); account 512880383078 asserted first
+ *   PODCAST_KB_ID              default: AFLBVXFPUZ
+ *   PODCAST_KB_DATA_SOURCE_ID  default: UG78ZHKEUN
+ *   PODCAST_KB_SOURCE_BUCKET   default: thechrisgrey-kb-podcast-source-512880383078
+ *   AWS_REGION                 default: us-east-1
  *
  * Usage: node scripts/transcribe-podcast.mjs
  */
@@ -26,15 +27,17 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { pinAwsAccount } from './lib/aws-preflight.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const HOME = pinAwsAccount(); // asserts the account before any AWS call
 const REGION = process.env.AWS_REGION || 'us-east-1';
-const KB_ID = process.env.PODCAST_KB_ID || 'FCNAZHLCUH';
-const DS_ID = process.env.PODCAST_KB_DATA_SOURCE_ID || 'ZLFD3PWKPN';
-const SRC_BUCKET = process.env.PODCAST_KB_SOURCE_BUCKET || 'thechrisgrey-kb-podcast-source';
+const KB_ID = process.env.PODCAST_KB_ID || HOME.podcastKbId;
+const DS_ID = process.env.PODCAST_KB_DATA_SOURCE_ID || HOME.podcastDataSourceId;
+const SRC_BUCKET = process.env.PODCAST_KB_SOURCE_BUCKET || HOME.podcastSourceBucket;
 const RSS_URL = 'https://api.riverside.fm/hosting/heA0qRHh.rss';
-const TMP_BUCKET = 'thechrisgrey-transcribe-tmp-205930636302';
+const TMP_BUCKET = `thechrisgrey-transcribe-tmp-${HOME.account}`;
 const TRANSCRIPTS_DIR = join(ROOT, 'podcast-transcripts');
 const AUDIO_TMP = join(ROOT, '.transcribe-audio');
 

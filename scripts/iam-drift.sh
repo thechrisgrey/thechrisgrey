@@ -56,22 +56,29 @@ UNVERIFIED=(
 
 # Account and Bedrock resource identifiers differ per AWS account, so the
 # committed iam-policy.json files carry ${PLACEHOLDER} tokens instead of literals
-# and are expanded here before comparison. Defaults mirror the env-first pattern
-# used by the Lambda code (see 2647a8e): the value falls back to the ORIGINAL
-# account so behaviour is unchanged when nothing is exported, while checking a
-# different account is just:
+# and are expanded here before comparison. The script reads as profile
+# personal-dev and asserts the live account is Delta Centric 512880383078
+# (scripts/lib/aws-preflight.sh), so every placeholder defaults to that account's
+# value (ACCOUNT_ID=512880383078 KB_ID=PSSJPTMXHQ PODCAST_KB_ID=AFLBVXFPUZ
+# GUARDRAIL_ID=xiekxgo2pdoq). Each can still be overridden from the environment,
+# but an ACCOUNT_ID that disagrees with the asserted credentials is refused:
 #
-#   ACCOUNT_ID=512880383078 KB_ID=PSSJPTMXHQ PODCAST_KB_ID=AFLBVXFPUZ \
-#   GUARDRAIL_ID=xiekxgo2pdoq bash scripts/iam-drift.sh
+#   bash scripts/iam-drift.sh
 #
 # Hardcoding these literals is what let a migration copy policies with the right
 # account number but the wrong knowledge-base and guardrail IDs -- ARNs that were
 # well-formed yet named resources that did not exist, so bedrock:Retrieve failed
 # SILENTLY while the agent answered anyway.
-ACCOUNT_ID="${ACCOUNT_ID:-205930636302}"
-KB_ID="${KB_ID:-ARFYABW8HP}"
-PODCAST_KB_ID="${PODCAST_KB_ID:-FCNAZHLCUH}"
-GUARDRAIL_ID="${GUARDRAIL_ID:-5kofhp46ssob}"
+. "$ROOT/scripts/lib/aws-preflight.sh"
+tcg_aws_preflight
+ACCOUNT_ID="${ACCOUNT_ID:-$TCG_AWS_ACCOUNT}"
+KB_ID="${KB_ID:-PSSJPTMXHQ}"
+PODCAST_KB_ID="${PODCAST_KB_ID:-AFLBVXFPUZ}"
+GUARDRAIL_ID="${GUARDRAIL_ID:-xiekxgo2pdoq}"
+if [ "$ACCOUNT_ID" != "$TCG_AWS_ACCOUNT" ]; then
+  echo "ERROR  ACCOUNT_ID=$ACCOUNT_ID but the credentials are for $TCG_AWS_ACCOUNT" >&2
+  exit 1
+fi
 
 # Expand ${...} placeholders on stdin. Deliberately NOT `envsubst` (not present
 # on a stock macOS) and NOT `eval` (the file is JSON, not shell).

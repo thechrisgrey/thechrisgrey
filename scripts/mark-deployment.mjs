@@ -30,6 +30,17 @@ const service = process.argv[2];
 const regionArg = process.argv.find((a) => process.argv[process.argv.indexOf(a) - 1] === '--region');
 const REGION = regionArg || process.env.AWS_REGION || 'us-east-1';
 
+// Same account pin as scripts/lib/aws-preflight.sh: profile personal-dev (Delta
+// Centric 512880383078), never the ambient AWS_PROFILE. deploy-lambda.sh has
+// already asserted the account and exported the profile; this best-effort marker
+// does not repeat the STS check, and skips rather than write anywhere else.
+const PROFILE = process.env.THECHRISGREY_AWS_PROFILE || 'personal-dev';
+if (PROFILE !== 'personal-dev') {
+  console.warn(`[mark-deployment] THECHRISGREY_AWS_PROFILE='${PROFILE}' is not this repo's home; skipping the marker.`);
+  process.exit(0);
+}
+process.env.AWS_PROFILE = PROFILE;
+
 if (!service) {
   console.error('Usage: node scripts/mark-deployment.mjs <service-name> [--region us-east-1]');
   process.exit(1);

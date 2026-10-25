@@ -11,7 +11,9 @@ bundles keep working during the transition.
 > below has been run against AWS yet — green tests are not proof. Treat every step
 > as unverified until you run the live checks in §7.
 
-Account `205930636302`, region `us-east-1`. Function name = `thechrisgrey-<dir>`.
+Account `512880383078` (Delta Centric, profile `personal-dev`), region `us-east-1`. Function name = `thechrisgrey-<dir>`.
+
+> Written against Altivum `205930636302` before the 2026-09 account migration, so the ARNs below still name that account. The site's home is now Delta Centric `512880383078`: substitute it in each ARN and pass `--profile personal-dev` on every command, since a bare `aws` call follows whatever `AWS_PROFILE` the shell exports.
 
 ## 0. Secrets (never commit these)
 

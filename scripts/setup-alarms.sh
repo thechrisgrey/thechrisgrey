@@ -17,6 +17,9 @@
 #     logs:PutMetricFilter, logs:DescribeLogGroups permissions
 #   - The SNS topic thechrisgrey-site-alerts must exist (created by the
 #     infrastructure setup in docs/superpowers/plans/2026-03-23-differentiated-page-experiences.md)
+#   - Runs as profile personal-dev and refuses unless the caller account is Delta
+#     Centric 512880383078 (scripts/lib/aws-preflight.sh); the alarms and their SNS
+#     action both go to that asserted account
 
 set -euo pipefail
 
@@ -31,7 +34,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-SNS_TOPIC_ARN="arn:aws:sns:${REGION}:205930636302:thechrisgrey-site-alerts"
+# Pin and assert the account before any AWS call (scripts/lib/aws-preflight.sh).
+# A dry run resolves the account from the profile name without calling AWS.
+. "$(dirname "$0")/lib/aws-preflight.sh"
+if $DRY_RUN; then tcg_aws_resolve; else tcg_aws_preflight; fi
+
+SNS_TOPIC_ARN="arn:aws:sns:${REGION}:${TCG_AWS_ACCOUNT}:thechrisgrey-site-alerts"
 
 # Wrap aws CLI so --dry-run prints instead of executing.
 if $DRY_RUN; then
