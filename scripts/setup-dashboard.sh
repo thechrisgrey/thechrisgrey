@@ -29,6 +29,10 @@ done
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+# Pin and assert the account before any AWS call (scripts/lib/aws-preflight.sh).
+. "$ROOT/scripts/lib/aws-preflight.sh"
+tcg_aws_preflight
+
 echo "==> Deploying CloudWatch dashboard 'thechrisgrey' to ${REGION}"
 
 aws cloudwatch put-dashboard \

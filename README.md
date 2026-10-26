@@ -239,10 +239,11 @@ git push origin main
 
 ```bash
 aws amplify start-job \
-  --app-id d3du8eg39a9peo \
+  --app-id d3btl94rm91y13 \
   --branch-name main \
   --job-type RELEASE \
-  --region us-east-2
+  --region us-east-2 \
+  --profile personal-dev   # Delta Centric 512880383078, the site's home
 ```
 
 ### Lambda Deployment
@@ -256,7 +257,8 @@ a Lambda that crashes on cold start.
 # Verify the bundle builds and resolves, without uploading:
 npm run deploy:lambda -- chat-stream --dry-run
 
-# Deploy for real:
+# Deploy for real (runs as profile personal-dev and refuses unless the caller
+# account is Delta Centric 512880383078):
 npm run deploy:lambda -- chat-stream
 ```
 

@@ -4,7 +4,9 @@ End-to-end AWS deployment of the Blueprint Lambda plus CSP and monitoring alarms
 Feature stays behind `VITE_BLUEPRINT_ENABLED` so the waitlist page keeps shipping
 until you flip it. All commands assume `us-east-1` (Bedrock region) unless noted.
 
-**Account:** 205930636302 &nbsp;•&nbsp; **Region:** us-east-1
+**Account:** 512880383078 (Delta Centric, profile `personal-dev`) &nbsp;•&nbsp; **Region:** us-east-1
+
+> Written against Altivum `205930636302` before the 2026-09 account migration, so the ARNs below still name that account. The site's home is now Delta Centric `512880383078`: substitute it in each ARN and pass `--profile personal-dev` on every command, since a bare `aws` call follows whatever `AWS_PROFILE` the shell exports.
 
 ---
 

@@ -311,8 +311,8 @@ analytics or error tracking outside the logger).
   upload:
 
 ```bash
-npm run deploy:lambda -- <name> --dry-run   # build + verify, no upload
-npm run deploy:lambda -- <name>             # deploy (default region us-east-1)
+npm run deploy:lambda -- <name> --dry-run   # build + verify, no upload, no AWS call
+npm run deploy:lambda -- <name>             # asserts account 512880383078 (personal-dev), then deploys (default region us-east-1)
 ```
 
 ## Health checks

@@ -35,13 +35,15 @@ npm run preview      # Preview production build
 npm run lint         # ESLint
 ```
 
-**Deployment:** Push to `main` triggers Amplify. Manual: `aws amplify start-job --app-id d3du8eg39a9peo --branch-name main --job-type RELEASE --region us-east-2`
+**Deployment:** Push to `main` triggers Amplify. Manual: `aws amplify start-job --app-id d3btl94rm91y13 --branch-name main --job-type RELEASE --region us-east-2 --profile personal-dev`
+
+**AWS account: always explicit.** The site's home is Delta Centric `512880383078` (profile `personal-dev`, the 2026-09-03 migration target; see `docs/migration-execution-plan.md`). The original backend still exists in Altivum `205930636302` under identical resource names, and the IDs `d3du8eg39a9peo`, `ARFYABW8HP`/`TXQTRAJOSD` and `5kofhp46ssob` elsewhere in this file are that Altivum copy; the Delta Centric equivalents are `d3btl94rm91y13`, `PSSJPTMXHQ`/`XJCD62RDOG` and `xiekxgo2pdoq`. Interactive shells may export any `AWS_PROFILE`, so never run a bare `aws` command for this repo: pass `--profile personal-dev`. The AWS scripts (`deploy:lambda`, `setup-alarms.sh`, `setup-dashboard.sh`, `iam-drift.sh`, `transcribe-*.mjs`) pin that profile themselves (`THECHRISGREY_AWS_PROFILE`, default `personal-dev`, no other value accepted) and refuse to run unless the caller account is `512880383078` (`scripts/lib/aws-preflight.sh`).
 
 **Lambda deploy pattern:** Use the verified script — never hand-build `function.zip` (the manual `zip` glob omits sibling modules each handler imports and ships a crash-on-cold-start artifact).
 
 ```bash
-npm run deploy:lambda -- <name> --dry-run   # build + verify module graph, no upload
-npm run deploy:lambda -- <name>             # deploy (default region us-east-1; --region to override)
+npm run deploy:lambda -- <name> --dry-run   # build + verify module graph, no upload, no AWS call
+npm run deploy:lambda -- <name>             # asserts account 512880383078 (personal-dev), then deploys (default region us-east-1; --region to override)
 ```
 
 `scripts/deploy-lambda.sh` runs `npm ci`, dereferences `lambda-shared` fresh into the bundle, and runs a stubbed-`awslambda` `import()` smoke check that aborts on any unresolved import before calling `update-function-code`.
@@ -142,7 +144,7 @@ Full-viewport chat at `/chat` + floating 3D widget on all other pages. Powered b
 
 **Knowledge Base:** ID `ARFYABW8HP`, DataSource `TXQTRAJOSD`, bucket `s3://thechrisgrey-kb-source/` (us-east-1), S3 Vectors store, Titan Embeddings v2. S3 Vectors require `AMAZON_BEDROCK_TEXT` + `AMAZON_BEDROCK_METADATA` as non-filterable keys.
 
-**KB Sync** (`lambda/kb-sync/`): S3 event-triggered → StartIngestionJob. Manual: `aws bedrock-agent start-ingestion-job --knowledge-base-id ARFYABW8HP --data-source-id TXQTRAJOSD --region us-east-1`
+**KB Sync** (`lambda/kb-sync/`): S3 event-triggered → StartIngestionJob. Manual: `aws bedrock-agent start-ingestion-job --knowledge-base-id PSSJPTMXHQ --data-source-id XJCD62RDOG --region us-east-1 --profile personal-dev`
 
 **Logging:** Log group `tcg-AI-chat` (7-day retention). All Lambda logging goes through `lambda/shared/logger.mjs` `createLogger()`, which automatically redacts PII (emails, phone-shaped digit runs) and sensitive keys (authorization, token, password, secret) via the `redact()` function before writing to CloudWatch. See `docs/bedrock-logging-queries.md`.
 
@@ -228,7 +230,7 @@ Seven services under `lambda/`. All ESM `.mjs`, all on AWS SDK v3 (current `^3.1
 
 **KB-sync Lambda:** `KB_ID` (default `ARFYABW8HP`), `KB_DATA_SOURCE_ID` (default `TXQTRAJOSD`; the legacy `DATA_SOURCE_ID` name is still honoured as a fallback). A retryable `StartIngestionJob` failure is re-thrown so the S3 async invoke retries instead of dropping the sync, and the role needs `bedrock:GetIngestionJob` (it polls the job to settle) alongside `bedrock:StartIngestionJob`.
 
-**Important:** Local `.env.local` not synced to prod. Add via: `aws amplify update-branch --app-id d3du8eg39a9peo --branch-name main --environment-variables "VAR=value" --region us-east-2`
+**Important:** Local `.env.local` not synced to prod. Add via: `aws amplify update-branch --app-id d3btl94rm91y13 --branch-name main --environment-variables "VAR=value" --region us-east-2 --profile personal-dev`
 
 ## Deployment Notes
 
